@@ -1,0 +1,230 @@
+### 创建dip-agent-operator-document-demo索引
+PUT http://192.168.124.91:9200/dip-agent-operator-document-demo
+Content-Type: application/json
+Authorization: Basic user:password
+
+# 注意: base64_encoded_credentials 应替换为实际的 Base64 编码的 username:password
+# 例如: 如果用户名是 elastic，密码是 changeme，则应该用 Base64 编码 elastic:changeme
+# 生成方式: echo -n "elastic:changeme" | base64
+# 结果示例: Authorization: Basic tokenexample
+
+{
+  "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "basename": {
+          "type": "text",
+          "fields": {
+            "graph": {
+              "type": "text",
+              "analyzer": "graph_analyzer"
+            },
+            "keyword": {
+              "type": "keyword"
+            },
+            "ngram": {
+              "type": "text",
+              "analyzer": "2ngram_analyzer",
+              "search_analyzer": "keyword"
+            }
+          },
+          "analyzer": "as_hanlp_analyzer"
+        },
+        "slice_content": {
+          "type": "text",
+          "fields": {
+            "alphanumeric": {
+              "type": "text",
+              "index_options": "offsets",
+              "analyzer": "custom_alphanumeric_analyzer"
+            }
+          },
+          "index_options": "offsets",
+          "analyzer": "as_hanlp_analyzer"
+        },
+        "docid": {
+          "type": "keyword"
+        },
+        "doclib_id": {
+          "type": "keyword"
+        },
+        "folder_id": {
+          "type": "keyword"
+        },
+        "ext_type": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            }
+          },
+          "analyzer": "lower_case_keyword_analyzer"
+        },
+        "mimetype": {
+          "type": "keyword"
+        },
+        "parent_path": {
+          "type": "keyword"
+        },
+        "size": {
+          "type": "long"
+        },
+        "source": {
+          "type": "keyword"
+        },
+        "doclib_type": {
+          "type": "keyword"
+        },
+        "creator": {
+          "type": "keyword"
+        },
+        "creator_name": {
+          "type": "keyword"
+        },
+        "create_time": {
+          "type": "long"
+        },
+        "editor": {
+          "type": "keyword"
+        },
+        "editor_name": {
+          "type": "keyword"
+        },
+        "modity_time": {
+          "type": "long"
+        },
+        "embedding": {
+          "type": "float"
+        },
+        "embedding_sq": {
+          "type": "knn_vector",
+          "dimension": 768,
+          "data_type": "BYTE",
+          "method": {
+            "engine": "lucene",
+            "space_type": "cosinesimil",
+            "name": "hnsw",
+            "parameters": {
+              "ef_construction": 128,
+              "m": 24
+            }
+          }
+        },
+        "segment_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "settings": {
+      "index": {
+        "replication": {
+          "type": "DOCUMENT"
+        },
+        "max_ngram_diff": "18",
+        "number_of_shards": "1",
+        "knn.algo_param": {
+          "ef_search": "100"
+        },
+        "similarity": {
+          "custom_bm25": {
+            "type": "BM25",
+            "b": "0.1",
+            "k1": "1.2"
+          }
+        },
+        "knn": "true",
+        "analysis": {
+          "filter": {
+            "as_word_delimiter_graph_filter": {
+              "split_on_numerics": "false",
+              "split_on_case_change": "false",
+              "type": "word_delimiter_graph",
+              "type_table": [
+                ". => DIGIT"
+              ],
+              "stem_english_possessive": "true"
+            },
+            "erase_alphanumeric_filter": {
+              "pattern": "^(\\d+|[a-zA-Z]+)$",
+              "type": "pattern_replace",
+              "replacement": ""
+            }
+          },
+          "char_filter": {
+            "not_alphanumeric_char_filter": {
+              "pattern": "[^a-zA-Z0-9]+",
+              "type": "pattern_replace",
+              "replacement": " "
+            }
+          },
+          "normalizer": {
+            "lowercase_normalizer": {
+              "filter": [
+                "lowercase",
+                "asciifolding"
+              ],
+              "type": "custom",
+              "char_filter": []
+            }
+          },
+          "analyzer": {
+            "graph_analyzer": {
+              "filter": [
+                "lowercase",
+                "asciifolding",
+                "as_word_delimiter_graph_filter"
+              ],
+              "tokenizer": "keyword"
+            },
+            "custom_alphanumeric_analyzer": {
+              "filter": [
+                "erase_alphanumeric_filter",
+                "lowercase",
+                "asciifolding"
+              ],
+              "char_filter": [
+                "not_alphanumeric_char_filter"
+              ],
+              "tokenizer": "whitespace"
+            },
+            "lower_case_keyword_analyzer": {
+              "filter": [
+                "lowercase",
+                "as_word_delimiter_graph_filter"
+              ],
+              "type": "custom",
+              "tokenizer": "keyword"
+            },
+            "as_hanlp_analyzer": {
+              "filter": [
+                "lowercase",
+                "asciifolding"
+              ],
+              "tokenizer": "as_hanlp"
+            },
+            "2ngram_analyzer": {
+              "tokenizer": "2ngram_tokenizer"
+            }
+          },
+          "tokenizer": {
+            "2ngram_tokenizer": {
+              "token_chars": [
+                "letter",
+                "digit"
+              ],
+              "min_gram": "1",
+              "type": "ngram",
+              "max_gram": "10"
+            },
+            "as_hanlp": {
+              "enable_custom_config": "true",
+              "type": "hanlp_index",
+              "enable_stop_dictionary": "true"
+            }
+          }
+        },
+        "number_of_replicas": "0"
+      }
+    }
+}

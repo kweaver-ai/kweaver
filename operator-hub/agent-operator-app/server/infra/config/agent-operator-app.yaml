@@ -1,0 +1,31 @@
+project:
+  language: zh-CN
+  host: "0.0.0.0"
+  port: 9000
+  logger_level: 1
+  name:
+  pod_id : "POD_ID"
+  machine_id: ""
+  debug: false
+oauth:
+  public_host: "hydra-public"
+  public_port: 4444
+  public_protocol: "http"
+  admin_host: "hydra-admin"
+  admin_port: 4445
+  admin_protocol: "http"
+  admin_prefix: "/admin"
+user_management:
+  private_protocol: "http"
+  private_host: "user-management-private"
+  private_port: 30980
+operator_integration:
+  private_protocol: "http"
+  private_host: "agent-operator-integration.anyshare"
+  private_port: 9000
+db:
+  conn_timeout: 30
+  read_timeout: 30
+  write_timeout: 30
+  max_open_conns: 30
+  system_id: ""

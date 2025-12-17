@@ -1,0 +1,204 @@
+openapi: 3.0.3
+info:
+  title: MCP服务实例生命周期管理
+  version: 5.0.0.2
+  description: |
+    本OpenAPI文档包含MCP服务实例生命周期管理接口，涵盖服务端与执行端所有RESTful接口，便于统一查阅与开发。
+servers:
+  - url: http://localhost:8080
+security:
+  - BearerAuth: []
+tags:
+  - name: MCP服务实例管理
+    description: MCP服务实例生命周期管理接口
+paths:
+  /api/agent-operator-app/internal-v1/mcp/instance/create:
+    post:
+      tags: [MCP服务实例管理]
+      summary: 创建MCP Server实例
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mcp_id:
+                  type: string
+                  description: MCP Server ID
+                version:
+                  type: integer
+                  description: MCP Server版本
+                name:
+                  type: string
+                  description: MCP Server名称
+                instructions:
+                  type: string
+                  description: 服务器说明
+                tools:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MCPToolConfig"
+      responses:
+        "200":
+          description: 成功返回结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mcp_id:
+                    type: string
+                    description: MCP Server ID
+                  version:
+                    type: integer
+                    description: MCP Server版本
+                  stream_url:
+                    type: string
+                    description: MCP Server Streamable HTTP Endpoint
+                  sse_url:
+                    type: string
+                    description: MCP Server SSE URL
+        "400":
+          description: 请求错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: 内部错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/agent-operator-app/internal-v1/mcp/instance/update/:mcp_id/:mcp_version:
+    put:
+      tags: [MCP服务实例管理]
+      summary: 更新MCP Server实例
+      parameters:
+        - name: mcp_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MCP Server ID
+        - name: mcp_version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MCP Server版本
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mcp_server_name:
+                  type: string
+                  description: MCP Server名称
+                instructions:
+                  type: string
+                  description: 服务器说明
+                tools:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MCPToolConfig"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mcp_id:
+                    type: string
+                    description: MCP Server ID
+                  version:
+                    type: integer
+                    description: MCP Server版本
+                  stream_url:
+                    type: string
+                    description: MCP Server Streamable HTTP Endpoint
+                  sse_url:
+                    type: string
+                    description: MCP Server SSE URL
+        "404":
+          description: 未找到
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: 内部错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/agent-operator-app/internal-v1/mcp/instance/remove/:mcp_id/:mcp_version:
+    delete:
+      tags: [MCP服务实例管理]
+      summary: 删除MCP Server实例
+      parameters:
+        - name: mcp_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MCP Server ID
+        - name: mcp_version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MCP Server版本
+      responses:
+        "200":
+          description: 成功
+        "404":
+          description: 未找到
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: 内部错误
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 错误码
+        description:
+          type: string
+          description: 错误描述
+        detail:
+          type: object
+          description: 错误详情
+        solution:
+          type: string
+          description: 解决方案
+        link:
+          type: string
+          description: 错误链接
+    MCPToolConfig:
+      type: object
+      properties:
+        tool_id:
+          type: string
+          description: 工具ID
+        name:
+          type: string
+          description: 工具名称
+        description:
+          type: string
+          description: 工具描述
+        input_schema:
+          type: object

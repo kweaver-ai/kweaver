@@ -1,0 +1,116 @@
+replicaCount: 1
+
+nodeSelector: {}
+
+namespace: dip
+moduleName: agent-operator-app
+
+# 设置为dev则为开发模式.
+runMode: release
+
+enableSecurityContext: true
+securityContext:
+  runAsUser: 5000
+  runAsGroup: 5000
+
+image:
+  registry: acr.aishu.cn
+  service:
+    repository: dip/agent-operator-app
+    tag: data-581755
+    pullPolicy: IfNotPresent
+
+service:
+  podID: "POD_ID" # 使用PODID作为machineID, 这里填写podID环境变量名
+  machineID: ""
+  ingressclassname: "class-443"
+  agentOperatorApp:
+    nodePort: 31023
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /api/agent-operator-app/v1
+  type: ClusterIP
+  enableDualStack: false
+  port: 9000
+  language: zh-CN
+  loggerOutput: stdout
+  loggerLevel: 1
+  debug: false
+  businessTimeOffset: 0
+  readinessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 5
+  livenessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 5
+  startupProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+
+
+depServices:
+  rds:
+    type: mysql
+    host: 127.0.0.1
+    port: 3320
+    user: ""
+    password: ""
+    maxConnections: 30
+    useExternalDB: false
+    connTimeout: 30
+    readTimeout: 30
+    writeTimeout: 30
+    database: dip_data_operator_hub
+    dbCharset: utf8mb4
+    system_id: ""
+  hydra:
+    publicHost: hydra-public
+    publicPort: 4444
+    publicProtocol: http
+    administrativeHost: hydra-admin
+    administrativePort: 4445
+    administrativeProtocol: http
+    administrativePrefix: /admin
+  user-management:
+    privateHost: user-management-private
+    privatePort: 30980
+    privateProtocol: http
+  operator-integration:
+    privateHost: agent-operator-integration
+    privatePort: 9000
+    privateProtocol: http
+  opensearch:
+    deployTrait:
+      aiid: 1
+      cid: 23
+      trait:
+        status: 4
+        timeout: 0
+      version: ""
+    host: opensearch-master.resource
+    password: "***"
+    port: 9200
+    protocol: http
+    user: admin
+    version: 7.10.0
+
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 200Mi
+  limits:
+    cpu: 4
+    memory: 8Gi

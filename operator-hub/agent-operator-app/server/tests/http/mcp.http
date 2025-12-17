@@ -1,0 +1,115 @@
+### 创建mcp实例
+POST http://agent-operator-app.anyshare:9000/api/agent-operator-app/internal-v1/mcp/instance/create
+Content-Type: application/json
+
+{
+    "mcp_id": "99ss-abd",
+    "version": 1,
+    "name": "test-mcp",
+    "instructions": "test-instructions, 这个是mcp的说明",
+    "tools": [
+        {
+            "name": "test-tool",
+            "description": "test-description",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "message"
+                    }
+                },
+                "required": ["message"]
+             }
+        }
+    ]
+}
+
+### 创建实例2
+POST http://agent-operator-app.anyshare:9000/api/agent-operator-app/internal-v1/mcp/instance/create
+Content-Type: application/json
+
+{
+    "mcp_id": "4069fae7-441c-42ee-be81-ab815b51ccc",
+    "version": 1,
+    "name": "custom_internal_mcp_1",
+    "instructions": "这个一段测试描述,用于描述MCP服务的信息",
+    "tools": [
+        {
+            "tool_id": "6e2529ee-b44c-4f71-baf4-aef9b974970c",
+            "name": "AddAnimalInfo",
+            "description": "AddAnimalInfo描述信息\n use rule:",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "message"
+                ]
+            }
+        },
+        {
+            "tool_id": "ec634d65-1508-4f61-8ed1-75e4801e1082",
+            "name": "GetAnimalInfList",
+            "description": "\n use rule:",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "message"
+                ]
+            }
+        }
+    ]
+}
+
+### 更新实例
+PUT http://localhost:9000/api/agent-operator-app/internal-v1/mcp/instance/update/aabbcc/1
+Content-Type: application/json
+
+{
+    "name": "test-mcp-update",
+    "instructions": "test-instructions, 这个是mcp的说明,我已经更新了",
+   "tools": [
+        {
+            "tool_id": "123qqq",
+            "name": "test-tool3333",
+            "description": "test-description",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "message"
+                    }
+                },
+                "required": ["message"]
+            }
+        },
+        {
+            "tool_id": "123sdf",
+            "name": "test-tool-2",
+            "description": "test-description-2",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "message"
+                    }
+                },
+                "required": ["message"]
+            }
+        }
+    ]
+}
+
+### 删除示例
+DELETE http://agent-operator-app.anyshare:9000/api/agent-operator-app/internal-v1/mcp/instance/remove/73e47890-95d6-4184-a543-3a57bb886319/0

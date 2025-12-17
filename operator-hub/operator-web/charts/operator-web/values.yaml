@@ -1,0 +1,77 @@
+replicaCount: 1
+
+namespace: dip
+moduleName: operator-web
+
+image:
+  registry: acr.aishu.cn
+  repository: /dip/operator-web
+  tag: 3.0.0.5
+  pullPolicy: IfNotPresent
+  name: operator-web
+
+service:
+  ingressclassname: ''
+  agentWEB:
+    type: ClusterIP
+    port: 1108
+    nodePort: 1108
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /operator-web
+  enableDualStack: false
+  type: ClusterIP
+  ports:
+    port1: 1108
+    protocol1: TCP
+    targetPort1: 1108
+    name1: operator-web
+  enableSensitiveWordDetection: false
+
+resources:
+  requests:
+    cpu: 1
+    memory: 1Gi
+  limits:
+    cpu: 11
+    memory: 20Gi
+
+probe:
+  livenessProbe:
+    httpGet:
+      path: /probe
+      port: 1108
+    initialDelaySeconds: 25
+    periodSeconds: 50
+    timeoutSeconds: 20
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /probe
+      port: 1108
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    httpGet:
+      path: /probe
+      port: 1108
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+
+nodeSelector: {}
+
+depServices:
+
+enableSystemLog: true
+
+rps:
+  limit: 100 #每秒最大请求数

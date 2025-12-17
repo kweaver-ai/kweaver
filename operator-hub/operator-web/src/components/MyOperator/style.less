@@ -1,0 +1,81 @@
+.my-operator {
+    height: 100%;
+    padding: 24px;
+
+    .flex {
+        display: flex;
+    }
+
+    .justify-between {
+        justify-content: space-between;
+    }
+}
+
+
+//基础算子详情 
+.operator-details {
+    &-head {
+        width: 100%;
+        border-bottom: 1px solid rgb(229 229 229);
+        border-top: 1px solid transparent;
+        padding: 10px 20px;
+
+        &-back {
+            cursor: pointer;
+        }
+    }
+
+    &-title {
+        padding: 0px 0 20px;
+        border-bottom: 1px solid rgb(208, 209, 216);
+        margin: 20px;
+        overflow: hidden;
+        display: flex;
+        font-size: 12px;
+
+        &-name {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        &-des {
+            color: rgba(0, 0, 0, 0.45);
+            margin-bottom: 5px;
+        }
+
+        &-url {
+            margin-bottom: 5px;
+        }
+
+        &-button {
+            margin-left: auto;
+
+            button {
+                margin-left: 12px;
+            }
+        }
+    }
+
+    &-content {
+        padding: 0 20px;
+
+        &-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        &-name {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px 0;
+        }
+    }
+
+    &-collapse {
+        .@{ant-prefix}-collapse-header-text {
+            font-weight: bold;
+        }
+    }
+}

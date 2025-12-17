@@ -1,0 +1,51 @@
+{
+    "audit_log": {
+        "unknown_operation": "未知操作“%s”"
+    },
+    "desc": {
+        "BadRequest": "参数错误",
+        "Unauthorized": "认证失败",
+        "Forbidden": "权限错误",
+        "NotFound": "对象不存在",
+        "MethodNotAllowed": "不支持的mtehod方法",
+        "Conflict": "资源冲突",
+        "InternalServerError": "内部错误",
+        "NotImplemented": "服务端未实现请求方法",
+        "ServiceUnavailable": "服务端暂时不可用",
+        "ValidationRequired": "必填信息不能为空",
+        "ValidationFormat": "存在请求参数输入格式不正确",
+        "ValidationRange": "存在请求参数输入值超出允许范围",
+        "ValidationEnum": "请从可选项中选择",
+        "CommonNameInvalid": "仅支持输入中文、字母、数字、下划线",
+        "CommonOperationForbidden": "权限不足，您暂无当前操作权限，请联系管理员申请授权",
+        "CommonEditForbidden": "权限不足，您暂无编辑该资源的权限，请联系管理员申请授权",
+        "CommonAddForbidden": "权限不足，您暂无新建该资源的权限，请联系管理员申请授权",
+        "CommonDeleteForbidden": "权限不足，您暂无删除该资源的权限，请联系管理员申请授权",
+        "CommonPublishForbidden": "权限不足，您暂无发布该资源的权限，请联系管理员申请授权",
+        "CommonUnpublishForbidden": "权限不足，您暂无下架该资源的权限，请联系管理员申请授权",
+        "CommonPermissionForbidden": "权限不足，您暂无管理该资源的权限，请联系管理员申请授权",
+        "CommonPublicAccessForbidden": "权限不足，您暂无公共访问该资源的权限，请联系管理员申请授权",
+        "CommonUseForbidden": "权限不足，您暂无使用该资源的权限，请联系管理员申请授权",
+        "CommonViewForbidden": "权限不足，您暂无查看该资源的权限，请联系管理员申请授权",
+        "CommonUserNotFound": "用户不存在",
+        "CommonAnonymousUserNotAllowed": "匿名用户不允许访问",
+        "CommonExternalServerError": "外部服务调用异常",
+        "MCPInstanceAlreadyExists": "MCP实例已存在",
+        "MCPInstanceNotFound": "MCP实例不存在"
+    },
+    "sol": {
+        "Common": "请联系管理员",
+        "BadRequest": "请检查参数是否正确",
+        "None": "无",
+        "ValidationRequired": "请填写完整信息后重试",
+        "ValidationFormat": "请检查输入格式并重新输入",
+        "ValidationRange": "请调整输入值到合理范围内",
+        "ValidationEnum": "请重新选择正确的选项",
+        "CommonExternalServerError": "Please check the service",
+        "MCPInstanceAlreadyExists": "无",
+        "MCPInstanceNotFound": "无"
+    },
+    "link": {
+        "None": "无"
+    }
+}

@@ -1,0 +1,218 @@
+#operator-web {
+    .@{ant-prefix}-btn-color-primary {
+        color: white;
+    }
+}
+.operator-content-tabs {
+    .@{ant-prefix}-tabs-nav {
+        margin: 0;
+    }
+    .@{ant-prefix}-tabs-tab {
+        margin-left: 0 !important;
+        border-radius: 0 !important;
+        padding: 8px 20px !important;
+    }
+}
+.operator-list {
+    height: 100%;
+    background: white;
+    padding: 0 25px 25px;
+
+    &-tabs {
+        margin-top: 16px !important;
+        .@{ant-prefix}-tabs-tab {
+            padding: 5px 0 !important;
+        }
+         .@{ant-prefix}-tabs-tab+.@{ant-prefix}-tabs-tab {
+            margin: 0 0 0 24px !important;
+        }
+    }
+    &-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        // margin-bottom: 8px;
+        &-name {
+            font-size: 16px;
+            line-height: 22px;
+            font-weight: bold;
+        }
+    }
+    &-filter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+       .@{ant-prefix}-space-gap-col-small {
+            column-gap: 12px !important;
+        }
+       .@{ant-prefix}-space-gap-col-middle {
+            column-gap: 12px !important;
+        }
+    }
+
+    .@{ant-prefix}-tabs-nav {
+        &::before {
+            border: none !important;
+        }
+    }
+
+    &-content {
+        // height: 545px;
+        height: 100%;
+        &-card {
+            height: 100%;
+            transition: all 0.3s ease;
+            border: 1px solid #00000019;
+            box-shadow: 0 2px 8px 0px #00000016;
+        }
+        &-user {
+            margin-right: 10px;
+            // min-width: 36px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        &-release {
+            display: flex;
+            color: #00000072;
+            font-size: 12px;
+            align-items: center;
+
+            .@{ant-prefix}-avatar {
+                margin-right: 6px !important;
+                background: #8A90A5;
+            }
+
+        }
+    }
+
+
+}
+
+//新建算子
+.create-operator-menu {
+    &-title {
+        color: #0000003F;
+        font-size: 12px;
+        line-height: 22px;
+        margin: 5px 10px;
+    }
+
+    &-desc {
+        color: #00000072;
+        font-size: 12px;
+        line-height: 18px;
+        width: 200px;
+    }
+
+    &-name {
+        color: #000000D8;
+        font-size: 14px;
+        line-height: 22px;
+    }
+}
+
+//新建弹窗
+.operator-create-modal {
+    margin: 20px 0;
+
+    li {
+        border-radius: 8px;
+        background: #FFFFFF;
+        border: 1px solid #0000000C;
+        box-shadow: 0px 1px 3px 0px #0000000C;
+        padding: 20px;
+        color: #00000072;
+        font-size: 12px;
+        line-height: 20px;
+        display: inline-block;
+        margin-right: 16px;
+        cursor: pointer;
+
+        &:hover {
+            border: 1px solid #126EE3;
+            background: #e7f0fc;
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+
+    &-name {
+        color: #000000D8;
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 24px;
+
+    }
+
+}
+
+//新建mcp 弹窗
+.create-mcp-form {
+    margin-top: 10px;
+
+    .@{ant-prefix}-form-item-label {
+        padding: 0 0 0px;
+    }
+
+    .@{ant-prefix}-form-item {
+        margin-bottom: 10px;
+    }
+}
+
+.operator-list-empty {
+    width: 100%;
+    height: 100%;
+    min-height: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    .@{ant-prefix}-empty-image {
+        height: 150px;
+    }
+}
+
+
+.operator-menu-delete {
+    color: #ff4d4f !important;
+    border-top: 1px solid #0000000C;
+    border-radius: 0;
+
+    &:hover {
+        background: #ff4d4f !important;
+        color: white !important;
+    }
+}
+
+.operator-detail {
+    &-header-operate {
+        margin-left: auto;
+
+        button {
+            margin-left: 10px;
+        }
+    }
+
+    &-nav-back {
+        cursor: pointer;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+    }
+}
+
+.debug-result-stream {
+    background-color: rgb(250, 250, 250);
+    padding: 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    &-data {
+        padding: 10px 0;
+        line-height: 20px;
+    }
+}

@@ -1,0 +1,401 @@
+openapi: 3.0.3
+info:
+  title: demo算子 API
+  description: 提供文档索引的写入与召回功能，支持批量索引写入和基于关键词与向量的文档搜索
+  version: 1.0.0
+  contact:
+    name: API 支持团队
+    email: support@example.com
+
+servers:
+  - url: https://10.4.110.92
+    description: 生产环境
+
+paths:
+  /api/agent-operator-app/v1/demo/document/bulk_index:
+    post:
+      summary: 批量写入文档索引
+      description: 批量创建或更新文档索引，支持多条文档数据的一次性写入
+      parameters:
+        - name: X-Op-Request-ID
+          in: header
+          required: true
+          description: 请求唯一标识符
+          schema:
+            type: string
+            format: uuid
+          example: "1234567890"
+        - name: X-Op-Trace-ID
+          in: header
+          required: true
+          description: 请求追踪标识符
+          schema:
+            type: string
+          example: "1234567890"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkDocumentIndexRequest'
+            example:
+              - docid: "gns:xxxx/xxxx"
+                basename: "test白皮书"
+                doclib_id: "gns:xxxx/xxxx"
+                ext_type: ".docx"
+                mimetype: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                parent_path: "gnx:xxxxx"
+                size: 8484848
+                source: "document_center"
+                doclib_type: "custom_doc_lib"
+                creator: "8a471f3a-f4df-11ef-8c8d-8e15b6893f4e"
+                creator_name: "ghxl"
+                create_time: 1223384387484
+                editor: "8a471f3a-f4df-11ef-8c8d-8e15b6893f4e"
+                editor_name: "ghxl"
+                modity_time: 2142342342
+                slice_contents: ["第一段切片内容", "第二段切片内容"]
+                embeddings: [[1, 2, 3], [4, 5, 6]]
+                embedding_info: [{"segment_id": 0, "slice_content":"第一段切片内容","embedding":[1, 2, 3]}, {"segment_id": 1, "slice_content":"第二段切片内容","embedding":[4, 5, 6]}]
+      responses:
+        '200':
+          description: 索引写入成功
+          headers:
+            X-Op-Request-ID:
+              description: 请求唯一标识符
+              schema:
+                type: string
+                format: uuid
+              example: "550e8400-e29b-41d4-a716-446655440000"
+            X-Op-Trace-ID:
+              description: 请求追踪标识符
+              schema:
+                type: string
+              example: "trace_abc123"
+            X-Op-Metrics:
+              description: 请求性能指标
+              schema:
+                type: string
+              example: '{"latency":30,"start":1700998200000,"end":1700998200030}'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/agent-operator-app/v1/demo/document/search:
+    post:
+      summary: 搜索文档索引
+      description: 根据查询词或向量嵌入搜索文档索引，支持混合检索
+      parameters:
+        - name: X-Op-Request-ID
+          in: header
+          required: true
+          description: 请求唯一标识符
+          schema:
+            type: string
+            format: uuid
+          example: "1234567890"
+        - name: X-Op-Trace-ID
+          in: header
+          required: true
+          description: 请求追踪标识符
+          schema:
+            type: string
+          example: "1234567890"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentSearchRequest'
+      responses:
+        '200':
+          description: 索引召回成功
+          headers:
+            X-Op-Request-ID:
+              description: 请求唯一标识符
+              schema:
+                type: string
+                format: uuid
+              example: "550e8400-e29b-41d4-a716-446655440000"
+            X-Op-Trace-ID:
+              description: 请求追踪标识符
+              schema:
+                type: string
+              example: "trace_abc123"
+            X-Op-Metrics:
+              description: 请求性能指标
+              schema:
+                type: string
+              example: '{"latency":30,"start":1700998200000,"end":1700998200030}'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentSearchResponse'
+              example:
+                - docid: "gns:xxxx/xxxx"
+                  basename: "test白皮书"
+                  doclib_id: "gns:xxxx/xxxx"
+                  folder_id: []
+                  ext_type: ".docx"
+                  mimetype: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  parent_path: "gnx:xxxxx"
+                  size: 8484848
+                  source: "document_center"
+                  doclib_type: "custom_doc_lib"
+                  slice_contents:
+                    - segment_id: 0
+                      slice_content: "第一段切片内容"
+                    - segment_id: 1
+                      slice_content: "第二段切片内容"
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+components:
+  schemas:
+    DocumentIndexItem:
+      type: object
+      required:
+        - docid
+        - basename
+        - doclib_id
+      properties:
+        docid:
+          type: string
+          description: 文档唯一标识符
+          example: "gns:xxxx/xxxx"
+        basename:
+          type: string
+          description: 文件名
+          example: "test白皮书"
+        doclib_id:
+          type: string
+          description: 文档库ID
+          example: "gns:xxxx/xxxx"
+        folder_id:
+          type: array
+          description: 文件目录ID列表
+          items:
+            type: string
+          example: []
+        ext_type:
+          type: string
+          description: 文件扩展名
+          example: ".docx"
+        mimetype:
+          type: string
+          description: 文件MIME类型
+          example: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        parent_path:
+          type: string
+          description: 父级路径
+          example: "gnx:xxxxx"
+        size:
+          type: integer
+          description: 文件大小(字节)
+          example: 8484848
+        source:
+          type: string
+          description: 文档来源
+          example: "document_center"
+        doclib_type:
+          type: string
+          description: 文档库类型
+          example: "custom_doc_lib"
+        creator:
+          type: string
+          description: 文件创建人ID
+          example: "8a471f3a-f4df-11ef-8c8d-8e15b6893f4e"
+        creator_name:
+          type: string
+          description: 文件创建人名称
+          example: "ghxl"
+        create_time:
+          type: integer
+          description: 文件创建时间(时间戳)
+          example: 1223384387484
+        editor:
+          type: string
+          description: 文件编辑人ID
+          example: "8a471f3a-f4df-11ef-8c8d-8e15b6893f4e"
+        editor_name:
+          type: string
+          description: 文件编辑人名称
+          example: "ghxl"
+        modity_time:
+          type: integer
+          description: 文件修改时间(时间戳)
+          example: 2142342342
+        slice_contents:
+          type: array
+          description: 切片内容列表
+          items:
+            type: string
+          example: ["第一段切片内容", "第二段切片内容"]
+        embeddings:
+          type: array
+          description: 文档向量嵌入列表，与slice_contents一一对应
+          items:
+            type: array
+            items:
+              type: number
+              format: float
+          example: [[1, 2, 3], [4, 5, 6]]
+        embedding_info:
+          type: array
+          description: 文档向量嵌入信息列表
+          items:
+            type: object
+    DocumentSearchItem:
+      type: object
+      required:
+        - docid
+        - basename
+      properties:
+        docid:
+          type: string
+          description: 文档唯一标识符
+          example: "gns:xxxx/xxxx"
+        basename:
+          type: string
+          description: 文件名
+          example: "test白皮书"
+        doclib_id:
+          type: string
+          description: 文档库ID
+          example: "gns:xxxx/xxxx"
+        folder_id:
+          type: array
+          description: 文件目录ID列表
+          items:
+            type: string
+          example: []
+        ext_type:
+          type: string
+          description: 文件扩展名
+          example: ".docx"
+        mimetype:
+          type: string
+          description: 文件MIME类型
+          example: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        parent_path:
+          type: string
+          description: 父级路径
+          example: "gnx:xxxxx"
+        size:
+          type: integer
+          description: 文件大小(字节)
+          example: 8484848
+        source:
+          type: string
+          description: 文档来源
+          example: "document_center"
+        doclib_type:
+          type: string
+          description: 文档库类型
+          example: "custom_doc_lib"
+        slice_contents:
+          type: array
+          description: 切片内容列表
+          items:
+            type: object
+            properties:
+              segment_id:
+                type: integer
+                description: 切片分段ID
+                example: 0
+              slice_content:
+                type: string
+                description: 切片文本内容
+                example: "第一段切片内容"
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - description
+      properties:
+        code:
+          type: string
+          description: 错误代码
+          example: "DOMAIN.BadRequest.CATEGORY_REASON"
+        description:
+          type: string
+          description: 错误描述
+          example: "错误的描述信息"
+        solution:
+          type: string
+          description: 建议的解决方案
+          example: "建议的解决方案"
+        detail:
+          type: object
+          description: 错误的详细信息
+
+    DocumentSearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: 文本查询关键词
+          example: "白皮书"
+        query_embedding:
+          type: array
+          description: 查询的向量嵌入
+          items:
+            type: number
+            format: float
+          example: [1.1458, 0.8089]
+        limit:
+          type: integer
+          description: 返回结果的最大数量
+          default: 10
+          example: 10
+
+    DocumentSearchResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/DocumentSearchItem'
+
+    BulkDocumentIndexRequest:
+      type: array
+      description: 文档索引数据列表
+      items:
+        $ref: '#/components/schemas/DocumentIndexItem'
+
+  responses:
+    ErrorResponse:
+      description: 错误响应
+      headers:
+        X-Op-Request-ID:
+          description: 请求唯一标识符
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        X-Op-Trace-ID:
+          description: 请求追踪标识符
+          schema:
+            type: string
+          example: "trace_abc123"
+        X-Op-Metrics:
+          description: 请求性能指标
+          schema:
+            type: string
+          example: '{"latency":30,"start":1700998200000,"end":1700998200030}'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "DOMAIN.BadRequest.CATEGORY_REASON"
+            description: "错误的描述信息"
+            solution: "建议的解决方案"
+            detail: {}

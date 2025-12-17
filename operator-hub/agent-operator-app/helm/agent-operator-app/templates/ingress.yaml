@@ -1,0 +1,33 @@
+{{- if .Values.service.agentOperatorApp.ingress.enabled -}}
+{{ if .Values.service.agentOperatorApp.ingress.interface }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.moduleName }}-ingress
+  namespace: {{ .Values.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: 'more_set_headers ''Access-Control-Expose-Headers:
+      Location'';'
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,Location,pragma,X-Language
+    nginx.ingress.kubernetes.io/cors-allow-methods: GET,PUT,POST,DELETE,HEAD,OPTIONS
+    nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: 2048m
+spec:
+  ingressClassName: class-443
+  rules:
+  - http:
+      paths:
+        {{- range .Values.service.agentOperatorApp.ingress.interface.path }}
+        - path: {{ . }}
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ $.Values.moduleName }}
+              port:
+                number: {{ $.Values.service.port }}
+        {{- end }}
+{{ end }}
+{{- end }}

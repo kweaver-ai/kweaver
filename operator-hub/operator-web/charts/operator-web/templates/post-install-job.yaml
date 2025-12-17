@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-post-install-job
+  labels:
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}
+    version: {{ .Chart.Version }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ .Chart.Name }}
+        version: {{ .Chart.Version }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command:
+            - "sh"
+            - "-c"
+            - |
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/logics || true &&
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/actions || true &&
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/all-operators || true &&
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/operator-management || true &&
+              curl -f -H "Content-Type:application/json" -X PUT -d '
+              [{
+                "name": "operator-factory",
+                "parent": "root",
+                "orderIndex": 2500,
+                "app": {
+                  "textZHCN": "算子工厂",
+                  "textZHTW": "算子工厂",
+                  "textENUS": "Operator Factory",
+                  "icon": "//ip:port/operator-web/public/operator-factory.svg"
+                },
+                "subapp": {"children": {}}
+              },
+              {
+                "name": "operator-management",
+                "parent": "operator-factory",
+                "orderIndex": 0,
+                "app": {
+                  "textZHCN": "算子管理",
+                  "textZHTW": "算子管理",
+                  "textENUS": "My Operator",
+                  "icon": "//ip:port/operator-web/public/my-operator.svg"
+                },
+                "subapp": {
+                  "entry": "//ip:port/operator-web/operator-management.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              },
+              {
+                "name": "all-operators",
+                "parent": "operator-factory",
+                "orderIndex": 1,
+                "app": {
+                  "textZHCN": "全部算子",
+                  "textZHTW": "全部算子",
+                  "textENUS": "All Operator",
+                  "icon": "//ip:port/operator-web/public/all-operator.svg"
+                },
+                "subapp": {
+                  "entry": "//ip:port/operator-web/all-operators.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              }]' http://studio-web-service:8877/api/workstation/v1/webapp

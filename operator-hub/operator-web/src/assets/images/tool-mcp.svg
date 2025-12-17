@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 6</title>
+    <defs>
+        <linearGradient x1="0%" y1="50.0008784%" x2="99.8574424%" y2="50.0008784%" id="linearGradient-1">
+            <stop stop-color="#747474" offset="0%"></stop>
+            <stop stop-color="#585858" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="-8.11251497e-15%" y1="50.000549%" x2="100%" y2="50.000549%" id="linearGradient-2">
+            <stop stop-color="#FFDF40" offset="0%"></stop>
+            <stop stop-color="#FFBE40" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="49.999634%" x2="100.000289%" y2="49.999634%" id="linearGradient-3">
+            <stop stop-color="#FFDF40" offset="0%"></stop>
+            <stop stop-color="#FFBE40" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="45.1331314%" x2="100%" y2="56.4394076%" id="linearGradient-4">
+            <stop stop-color="#5E5E5E" offset="0%"></stop>
+            <stop stop-color="#4B4B4B" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="工具箱-列表为空" transform="translate(-260.000000, -307.000000)">
+            <g id="编组-4" transform="translate(244.000000, 151.000000)">
+                <g id="我的应用表头备份-3" transform="translate(0.000000, 144.000000)">
+                    <g id="编组-6" transform="translate(16.000000, 12.000000)">
+                        <rect id="矩形" stroke="#FFECD9" fill="#FFFAF4" x="0.5" y="0.5" width="31" height="31" rx="3"></rect>
+                        <g id="5259769" transform="translate(7.000000, 9.000000)" fill-rule="nonzero">
+                            <g id="编组">
+                                <polygon id="路径" fill="url(#linearGradient-1)" points="12.6914003 2.6367211 11.6367211 2.6367211 11.6367211 1.05467918 6.3632789 1.05467918 6.3632789 2.6367211 5.30859972 2.6367211 5.30859972 0 12.6914003 0"></polygon>
+                                <polygon id="路径" fill="url(#linearGradient-2)" points="17.114114 6.32812138 0.88588604 6.32812138 2.29181614 2.10935835 15.7081839 2.10935835"></polygon>
+                                <polygon id="路径" fill="url(#linearGradient-3)" points="10.5820419 7.38284688 10.5820419 8.43752606 7.41795807 8.43752606 7.41795807 7.38284688 0.973849313 7.38284688 2.23951991 13.7109683 4.25387422 13.7109683 4.78123697 11.6015636 5.30859972 13.7109683 12.6914466 13.7109683 13.2188093 11.6015636 13.7460795 13.7109683 15.7604338 13.7109683 17.0261507 7.38284688"></polygon>
+                                <g id="Toolbox_1_" transform="translate(4.253874, 10.546884)">
+                                    <polygon id="路径" fill="#FFBE40" points="0 0 1.05467918 0 1.05467918 3.16408385 0 3.16408385"></polygon>
+                                    <polygon id="路径" fill="#FF9F40" points="8.43752606 0 9.49220523 0 9.49220523 3.16408385 8.43752606 3.16408385"></polygon>
+                                </g>
+                                <polygon id="路径" fill="#FFBE40" points="0 5.80080495 6.3632789 5.80080495 7.41795807 7.91016331 0 7.91016331"></polygon>
+                                <polygon id="路径" fill="#FF9F40" points="18 5.80080495 18 7.91016331 10.5820419 7.91016331 11.6367211 5.80080495"></polygon>
+                                <polygon id="路径" fill="url(#linearGradient-4)" points="6.3632789 5.80080495 6.3632789 7.51507991 6.3632789 8.80080495 11.6367211 8.80080495 11.6367211 7.51507991 11.6367211 5.80080495"></polygon>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

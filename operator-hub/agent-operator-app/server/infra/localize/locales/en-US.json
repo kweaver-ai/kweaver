@@ -1,0 +1,43 @@
+{
+    "audit_log": {
+        "unknown_operation": "Unknown operation '%s'"
+    },
+    "desc": {
+        "BadRequest": "Invalid parameters",
+        "Unauthorized": "Authentication failed",
+        "Forbidden": "Permission denied",
+        "NotFound": "Resource not found",
+        "MethodNotAllowed": "Method not allowed",
+        "Conflict": "Resource conflict",
+        "InternalServerError": "Internal server error",
+        "NotImplemented": "Method not implemented",
+        "ServiceUnavailable": "Service unavailable",
+        "ValidationRequired": "Required information cannot be empty",
+        "ValidationFormat": "Request parameter input format is incorrect",
+        "ValidationRange": "Request parameter input value exceeds allowed range",
+        "ValidationEnum": "Please select from the options",
+        "CommonAddForbidden": "Permission denied: You do not have permission to create current operation, please contact the administrator to open relevant permissions",
+        "CommonNameInvalid": "OOnly Chinese, letters, numbers, and underscores can be entered",
+        "CommonUserNotFound": "User not found",
+        "CommonAnonymousUserNotAllowed": "Anonymous user not allowed",
+        "CommonExternalServerError": "External service call exception",
+        "MCPInstanceAlreadyExists": "MCP instance already exists",
+        "MCPInstanceNotFound": "MCP instance not found"
+    },
+    "sol": {
+        "Common": "Contact administrator",
+        "BadRequest": "Please check if the parameters are correct",
+        "None": "None",
+        "ValidationRequired": "Required information cannot be empty",
+        "ValidationFormat": "Please check the input format and re-enter",
+        "ValidationRange": "Please adjust the input value to a reasonable range",
+        "ValidationEnum": "Please select the correct option",
+        "CommonAddForbidden": "Permission denied: You do not have permission to create current operation, please contact the administrator to open relevant permissions",
+        "CommonExternalServerError": "Please check the service",
+        "MCPInstanceAlreadyExists": "None",
+        "MCPInstanceNotFound": "None"
+    },
+    "link": {
+        "None": "None"
+    }
+}

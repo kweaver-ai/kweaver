@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+data:
+  agent-operator-integration.yaml: |
+    project:
+      language: {{ .Values.service.language | quote }}
+      host: "0.0.0.0"
+      port: {{ .Values.service.port }}
+      logger_level: {{ .Values.service.loggerLevel }}
+      name: {{ .Values.service.name | quote }}
+      pod_id: {{ .Values.service.podID | quote }}
+      machine_id: {{ .Values.service.machineID | quote }}
+      debug: {{ .Values.service.debug }}
+    operator:
+      import_file_size_limit: {{ .Values.service.operator.importFileSizeLimit }}
+      import_operator_max_count: {{ .Values.service.operator.importOperatorMaxCount }}
+      operator_description_length_limit: {{ .Values.service.operator.descriptionLengthLimit }}
+    mcp:
+      conn_timeout: {{ .Values.service.mcp.connTimeout }}
+    category:
+      init_switch: {{ .Values.service.category.initSwitch }}
+    proxy_module:
+      default_timeout: {{.Values.service.proxyModule.defaultTimeout }}
+      max_timeout: {{.Values.service.proxyModule.maxTimeout }}
+      max_clients: {{.Values.service.proxyModule.maxClients }}
+      client_lifetime: {{.Values.service.proxyModule.clientLifetime }}
+    oauth:
+      public_host: {{ .Values.depServices.hydra.publicHost | quote }}
+      public_port: {{ .Values.depServices.hydra.publicPort }}
+      public_protocol: {{ .Values.depServices.hydra.publicProtocol | quote }}
+      admin_host: {{ .Values.depServices.hydra.administrativeHost | quote }}
+      admin_port: {{ .Values.depServices.hydra.administrativePort }}
+      admin_protocol: {{ .Values.depServices.hydra.administrativeProtocol | quote }}
+      admin_prefix: {{ .Values.depServices.hydra.administrativePrefix | quote }}
+    user_management:
+      private_protocol: {{ index .Values "depServices" "user-management" "privateProtocol" | quote }}
+      private_host: {{ index .Values "depServices" "user-management" "privateHost" | quote }}
+      private_port: {{ index .Values "depServices" "user-management" "privatePort" }}
+    authorization:
+      private_protocol: {{ .Values.depServices.authorization.privateProtocol | quote }}
+      private_host: {{ .Values.depServices.authorization.privateHost | quote }}
+      private_port: {{ .Values.depServices.authorization.privatePort }}
+    business-system-service:
+      private_protocol: {{ index .Values "depServices" "business-system-service" "privateProtocol" | quote }}
+      private_host: {{ index .Values "depServices" "business-system-service" "privateHost" | quote }}
+      private_port: {{ index .Values "depServices" "business-system-service" "privatePort" }}
+    agent-operator-app:
+      private_protocol: {{ index .Values "depServices" "agent-operator-app" "privateProtocol" | quote }}
+      private_host: {{ index .Values "depServices" "agent-operator-app" "privateHost" | quote }}
+      private_port: {{ index .Values "depServices" "agent-operator-app" "privatePort" }}
+    db:
+      conn_timeout: {{ .Values.depServices.rds.connTimeout }}
+      read_timeout: {{ .Values.depServices.rds.readTimeout }}
+      write_timeout: {{ .Values.depServices.rds.writeTimeout }}
+      max_open_conns: {{ .Values.depServices.rds.maxConnections }}
+      system_id: {{ .Values.depServices.rds.system_id | quote }}
+    redis:
+      connectType: {{ .Values.depServices.redis.connectType | quote }}
+      enableSSL: {{ .Values.depServices.redis.enableSSL }}
+      secretName: {{ .Values.depServices.redis.secretName | quote }}
+      caName: {{ .Values.depServices.redis.caName | quote }}
+      certName: {{ .Values.depServices.redis.certName | quote }}
+      keyName: {{ .Values.depServices.redis.keyName | quote }}
+      poolSize: {{ .Values.depServices.redis.connectInfo.poolSize }}
+    flow-automation:
+      private_protocol: {{ index .Values "depServices" "flow-automation" "privateProtocol" | quote }}
+      private_host: {{ index .Values "depServices" "flow-automation" "privateHost" | quote }}
+      private_port: {{ index .Values "depServices" "flow-automation" "privatePort" }}
+
+  mq_config.yaml: |
+    {{- toYaml .Values.depServices.mq | nindent 4 }}
+
+  observability.yaml: |
+    # 可观测相关配置
+    traceType: {{ .Values.observability.traceType | quote }}
+    logEnabled: {{ .Values.observability.logEnabled }}
+    traceEnabled: {{ .Values.observability.traceEnabled }}
+    metricEnabled: {{ .Values.observability.metricEnabled }}
+    logExporter: {{ .Values.observability.logExporter | quote }}
+    traceProvider: {{ .Values.observability.traceProvider | quote }}
+    metricProvider: {{ .Values.observability.metricProvider | quote }}
+    logLoadInternal: {{ .Values.observability.logLoadInternal }}
+    logLoadMaxLog: {{ .Values.observability.logLoadMaxLog }}
+    traceMaxQueueSize: {{ .Values.observability.traceMaxQueueSize }}
+    metricIntervalSecond: {{ .Values.observability.metricIntervalSecond }}
+    httpLogFeedIngesterUrl: {{ .Values.observability.httpLogFeedIngesterUrl | quote }}
+    httpTraceFeedIngesterUrl: {{ .Values.observability.httpTraceFeedIngesterUrl | quote }}
+    httpMetricFeedIngesterUrl: {{ .Values.observability.httpMetricFeedIngesterUrl | quote }}
+    grpcTraceFeedIngesterUrl: {{ .Values.observability.grpcTraceFeedIngesterUrl | quote }}
+    grpcTraceJobId: {{ .Values.observability.grpcTraceJobId | quote }}

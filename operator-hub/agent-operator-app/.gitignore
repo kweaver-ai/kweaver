@@ -1,0 +1,7 @@
+.idea
+.nocalhost
+build
+tmp
+.vscode
+__debug*
+coverage_report

@@ -1,0 +1,315 @@
+name: "Agent复制接口API测试"
+description: "测试Agent复制接口的各种场景，包括基础功能、错误处理和边界条件"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  # ========== 前置条件：查询已存在的Agent ==========
+  - name: "0. 查询个人空间Agent列表"
+    description: "查询个人空间下的Agent列表，获取可用于复制的Agent"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:8}"
+      params:
+        page: "1"
+        size: "10"
+        publish_status: "published"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+    variable_extraction:
+      - name: "test_user_id"
+        source: "header"
+        path: "X-User-ID"
+      - name: "source_agent_id"
+        source: "body"
+        path: "entries[0].id"
+        default: "fallback-agent-id"
+      - name: "source_agent_name"
+        source: "body"
+        path: "entries[0].name"
+        default: "测试Agent"
+    timeout: "3s"
+    retry: 0
+
+  - name: "0.1. 备用查询：已发布智能体列表"
+    description: "如果个人空间没有Agent，查询已发布的智能体列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/published/agent"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "1"
+        size: "5"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+    variable_extraction:
+      - name: "published_agent_id"
+        source: "body"
+        path: "entries[0].id"
+        default: "{{source_agent_id}}"
+      - name: "published_agent_name"
+        source: "body"
+        path: "entries[0].name"
+        default: "{{source_agent_name}}"
+      - name: "published_agent_version"
+        source: "body"
+        path: "entries[0].version"
+        default: "v1.0.0"
+    timeout: "3s"
+    retry: 0
+
+  # ========== 复制Agent测试 ==========
+  - name: "1. 复制Agent - 基础测试（提供名称）"
+    description: "测试复制Agent的基础功能，提供新Agent名称"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/{{source_agent_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body:
+        name: "{{source_agent_name}}-${random_string:2}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新Agent的ID"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含新Agent的名称"
+        - type: "exists"
+          field: "body.key"
+          message: "响应应该包含新Agent的标识"
+        - type: "exists"
+          field: "body.version"
+          message: "响应应该包含新Agent的版本"
+        - type: "equals"
+          field: "body.version"
+          value: "v0"
+          message: "新Agent的版本应该是v0"
+        - type: "type"
+          field: "body.id"
+          value: "string"
+          message: "ID应该是字符串类型"
+        - type: "type"
+          field: "body.name"
+          value: "string"
+          message: "名称应该是字符串类型"
+    variable_extraction:
+      - name: "copied_agent_id"
+        source: "body"
+        path: "id"
+      - name: "copied_agent_name"
+        source: "body"
+        path: "name"
+    timeout: "3s"
+    retry: 0
+
+  - name: "2. 复制Agent - 基础测试（不提供名称）"
+    description: "测试复制Agent时不提供名称，系统自动生成"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/{{source_agent_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body: {}
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新Agent的ID"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含新Agent的名称"
+        - type: "exists"
+          field: "body.key"
+          message: "响应应该包含新Agent的标识"
+        - type: "exists"
+          field: "body.version"
+          message: "响应应该包含新Agent的版本"
+        - type: "contains"
+          field: "body.name"
+          value: "_副本"
+          message: "自动生成的名称应该包含'_副本'"
+    timeout: "3s"
+    retry: 0
+
+  - name: "3. 复制Agent - 验证已发布版本"
+    description: "测试复制已发布版本的Agent"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/{{published_agent_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body:
+        name: "复制已发布版本{{published_agent_name}}-${random_string:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新Agent的ID"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含新Agent的名称"
+        - type: "equals"
+          field: "body.version"
+          value: "v0"
+          message: "复制的Agent版本应该是v0"
+    timeout: "3s"
+    retry: 0
+
+  # ========== 错误处理测试 ==========
+  - name: "4. 复制Agent - 错误处理（Agent不存在）"
+    description: "测试复制不存在的Agent时的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/non-existent-agent-${random_string:8}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body:
+        name: "复制的Agent-${random_string:6}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.error_details"
+          value: "不存在"
+          message: "错误描述应该提到Agent不存在"
+    timeout: "3s"
+    retry: 0
+
+  - name: "5. 复制Agent - 错误处理（名称过长）"
+    description: "测试复制Agent时提供过长名称的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/{{source_agent_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body:
+        name: "这是一个非常长的Agent名称，超过了系统允许的最大长度限制，用于测试名称长度校验功能是否正常工作，这个名称应该会被系统拒绝并返回相应的错误信息给用户进行提示和处理"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.error_details"
+          value: "长度"
+          message: "错误描述应该提到长度限制"
+    timeout: "3s"
+    retry: 0
+
+  - name: "6. 复制Agent - 错误处理（缺少agent_id）"
+    description: "测试缺少agent_id参数时的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent//copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body:
+        name: "复制的Agent-${random_string:6}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "3s"
+    retry: 0
+
+  # ========== 最终验证测试 ==========
+  - name: "7. 最终验证 - 复制功能稳定性测试"
+    description: "最终验证复制功能的稳定性"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/{{source_agent_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      body:
+        name: "最终验证复制-${random_string:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "最终验证：响应应该包含新Agent的ID"
+        - type: "exists"
+          field: "body.name"
+          message: "最终验证：响应应该包含新Agent的名称"
+        - type: "exists"
+          field: "body.key"
+          message: "最终验证：响应应该包含新Agent的标识"
+        - type: "exists"
+          field: "body.version"
+          message: "最终验证：响应应该包含新Agent的版本"
+        - type: "type"
+          field: "body.id"
+          value: "string"
+          message: "最终验证：ID应该是字符串类型"
+        - type: "type"
+          field: "body.name"
+          value: "string"
+          message: "最终验证：名称应该是字符串类型"
+    timeout: "3s"
+    retry: 0

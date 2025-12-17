@@ -1,0 +1,40 @@
+name: "agent-factory"
+serviceType: "deployment"
+containers:
+  -
+    name: "agent-factory"
+    dev:
+      gitUrl: ""
+      image: "acr.aishu.cn/public/ubuntu:22.04.20231218"
+      shell: "bash"
+      workDir: "/app/agent-factory"
+      storageClass: ""
+      resources:
+        limits:
+          memory: "2048Mi"
+          cpu: "2"
+        requests:
+          memory: "512Mi"
+          cpu: "0.5"
+      persistentVolumeDirs: []
+      command:
+        run:
+          - "./agent-factory"
+        debug: []
+      debug:
+        remoteDebugPort: 30777
+        language: "go"
+      hotReload: true
+      sync:
+        type: "send"
+        mode: "pattern"
+        filePattern:
+          - "."
+        ignoreFilePattern:
+          - ".git"
+        deleteProtection: true
+      env:
+        - name: "LOG_X"
+          value: "de"
+      portForward: []
+      sidecarImage: ""

@@ -1,0 +1,458 @@
+# Starter pipeline
+#
+
+trigger:
+  branches:
+    include:
+      - MISSION
+      - feature/*
+      - hotfix/*
+      - release/*
+      - bug/*
+
+parameters:
+  - name: TRIVY_EXIT_CODE
+    displayName: trivy exit code
+    type: number
+    default: 1
+    values:
+      - 0
+      - 1
+  - name: SKIP_SONARQUBE
+    displayName: skip sonarqube
+    type: number
+    default: 0
+    values:
+      - 0
+      - 1
+
+variables:
+  - group: global-dip
+  - name: imageRegistry
+    value: acr.aishu.cn
+  - name: imageRepository
+    value: dip/agent-app
+  - name: isMisson
+    value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/MISSION')]
+  - name: buildImage
+    value: "acr.aishu.cn/ar/go.build:1.23.7-20250311"
+  - name: baseImage
+    value: "acr.aishu.cn/public/ubuntu:22.04.20241202"
+  - name: lintReportName
+    value: lint_report.xml
+  - name: utReportName
+    value: ut_report.xml
+  - name: coverageReportName
+    value: coverage_report.xml
+  - name: chartRepo
+    value: "https://acr.aishu.cn/api/chartrepo/dip/charts"
+  - name: chartName
+    value: "agent-app"
+  - name: yqImage
+    value: "acr.aishu.cn/public/mikefarah/yq:4.26.1"
+
+
+resources:
+  containers:
+    - container: dotnet
+      endpoint: acr.aishu.cn
+      image: wing-biz/euop/dotnet-runtime:3.1
+  repositories:
+    - repository: templatesAlias
+      type: git
+      name: ONE-Architecture\Yaml-Templates
+      ref: "refs/heads/main"
+    - repository: arPipelineTemplates
+      type: git
+      name: AnyRobot\PipelineTemplates
+      ref: "refs/heads/develop"
+
+stages:
+  - stage: InitVariable
+    displayName: 初始化
+    jobs:
+      - job: InitVariable
+        pool: anydata-centos7.7-x86_64
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+          - bash: |
+              set -ex
+              VERSION=`cat VERSION`
+
+              gitCommit="$(git rev-parse --short HEAD 2>/dev/null)"
+              
+              # 处理分支名称，将/替换为-
+              # 从refs/heads/feature/12345中提取feature/12345，然后将/替换为-
+              BRANCH_NAME=$(echo $(Build.SourceBranch) | sed 's#refs/heads/##' | tr '/' '-')
+              CURRENT_TAG="${VERSION}-${BRANCH_NAME}.git-${gitCommit}.$(Build.BuildId)"
+              LATEST_TAG="${VERSION}-${BRANCH_NAME}.git-${gitCommit}"
+
+              # if [ $(isMisson) = True ]; then
+              #     CURRENT_TAG="${VERSION}.${gitCommit}.$(Build.BuildId)"
+              #     LATEST_TAG="${VERSION}.${gitCommit}"
+              # fi
+
+
+              set +x
+              echo "##vso[task.setvariable variable=VERSION;isoutput=true]$VERSION"
+              set +x
+              echo "##vso[task.setvariable variable=CURRENT_TAG;isoutput=true]$CURRENT_TAG"
+              set +x
+              echo "##vso[task.setvariable variable=LATEST_TAG;isoutput=true]$LATEST_TAG"
+              
+            name: MyOutputVar
+            
+  - stage: CodeCheck
+    dependsOn:
+      - InitVariable
+    displayName: 代码检查
+    jobs:
+      - job: CodeCheck
+        displayName: 代码检查
+        workspace:
+          clean: all
+        pool:
+          name: anydata-centos7.7-x86_64
+          demands:
+            - Agent.OSArchitecture -equals X64
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - checkout: self
+          - task: Bash@3
+            displayName: 单元测试
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                # docker run --rm \
+                #       -v $(pwd):/agent-app \
+                #       -v /root/.ssh/id_rsa:/root/.ssh/id_rsa \
+                #       -e GOPROXY='$(go.proxy)' \
+                #       $(buildImage) bash -c "
+                #   set -ex
+
+                #   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
+
+                #   cd /agent-app
+                #   go mod download -x
+                  
+                #   mkdir -p /agent-app/report
+                #   go test -gcflags=all=-l -v -coverprofile=report/ut_coverage.out ./... 2>&1 | go-junit-report > report/$(utReportName)
+                #   ls -l report
+                #   gocov convert report/ut_coverage.out | gocov-xml > report/$(coverageReportName)
+                #   go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
+                #   golangci-lint run --timeout=10m --out-format junit-xml ./... > report/$(lintReportName)
+                #   "
+
+          # - task: PublishBuildArtifacts@1 # 将相应目录publish到artifact
+          #   inputs:
+          #     PathtoPublish: "$(Build.SourcesDirectory)/report"
+          #     ArtifactName: CodeCheckReportFiles
+          - template: sonarqube-setps.yml@arPipelineTemplates
+            parameters:
+              SKIP_SONARQUBE: ${{ parameters.SKIP_SONARQUBE }}
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+
+      # - job: UploadReport
+      #   displayName: 上传检查报告
+      #   container: dotnet
+      #   dependsOn: CodeCheck
+      #   pool:
+      #     name: anydata-centos7.7-x86_64
+      #     demands:
+      #       - Agent.OSArchitecture -equals X64
+      #       - Agent.OS -equals Linux
+      #       - docker
+      #   steps:
+      #     - task: DownloadBuildArtifacts@0
+      #       inputs:
+      #         artifactName: CodeCheckReportFiles
+      #         downloadPath: $(Build.BinariesDirectory)
+
+      #     - task: PublishTestResults@2
+      #       displayName: 发布Lint测试报告
+      #       inputs:
+      #         testResultsFormat: "JUnit"
+      #         testResultsFiles: "$(Build.BinariesDirectory)/CodeCheckReportFiles/$(lintReportName)"
+      #         testRunTitle: "Lint Result"
+      #         failTaskOnFailedTests: false
+      #     - task: BuildQualityChecks@8 # 此行保持一致 Lint卡点
+      #       displayName: Quality Gate Lint # 此行保持一致
+      #       inputs:
+      #         checkWarnings: true # 此行保持一致
+      #         warningFailOption: "fixed"
+      #         warningThreshold: "1000"
+      #         showStatistics: false
+      #         evaluateTaskWarnings: false
+      #         evaluateFileWarnings: true
+      #         warningFilesFolder: "$(Build.BinariesDirectory)/CodeCheckReportFiles"
+      #         warningFiles: "**/$(lintReportName)" # 此行保持一致
+      #         warningFileFilters: '/^.+<\/failure>.*?$/'
+      #         warningFilesArtifact: "CodeCheckReportFiles"
+
+      #     - task: PublishTestResults@2
+      #       displayName: 发布UT测试报告
+      #       inputs:
+      #         testResultsFormat: "JUnit"
+      #         testResultsFiles: "$(Build.BinariesDirectory)/CodeCheckReportFiles/$(utReportName)"
+      #         testRunTitle: "UT Result"
+      #         failTaskOnFailedTests: false
+
+      #     - task: BuildQualityChecks@8 # 此行保持一致 # UT卡点
+      #       displayName: Quality Gate UT # 此行保持一致
+      #       inputs:
+      #         checkWarnings: true # 此行保持一致
+      #         warningFailOption: "fixed"
+      #         warningThreshold: "1000"
+      #         showStatistics: false
+      #         evaluateTaskWarnings: false
+      #         evaluateFileWarnings: true
+      #         warningFilesFolder: "$(Build.BinariesDirectory)/CodeCheckReportFiles"
+      #         warningFiles: "**/$(utReportName)" # 此行保持一致
+      #         warningFileFilters: '/^.+<\/failure>.*?$/'
+      #         warningFilesArtifact: "CodeCheckReportFiles"
+
+      #     - task: PublishCodeCoverageResults@1
+      #       displayName: 发布UT测试覆盖率报告
+      #       inputs:
+      #         codeCoverageTool: "Cobertura"
+      #         summaryFileLocation: "$(Build.BinariesDirectory)/CodeCheckReportFiles/$(coverageReportName)"
+
+      #     - task: BuildQualityChecks@8 # 此行保持一致 代码覆盖率卡点
+      #       displayName: Quality Gate Coverage # 此行保持一致
+      #       inputs:
+      #         coverageType: "lines" # 代表行覆盖率
+      #         coverageFailOption: "fixed"
+      #         checkCoverage: true # 此行保持一致
+      #         coverageThreshold: "0" # 代码覆盖率卡点阈值
+
+      #     - task: Post-Bash@3
+      #       inputs:
+      #         targetType: inline
+      #         script: |
+      #           rm -rf $(Build.SourcesDirectory)
+      #           ls -lah $(Agent.BuildDirectory)
+        
+  - stage: BuildImage
+    displayName: 镜像构建
+    dependsOn:
+      - InitVariable
+      - CodeCheck
+    variables:
+      VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.VERSION']]
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    jobs:
+      - job: BuildImage
+        displayName: 镜像构建
+        workspace:
+          clean: all
+        strategy:
+          matrix:
+            amd64:
+              ARCH_TYPE: amd64
+              pool: anydata-centos7.7-x86_64
+            arm64:
+              ARCH_TYPE: arm64
+              pool: anydata-centos7-arm
+              # pool: anyrobot-pools
+              
+          maxParallel: 2
+        pool:
+          name: $[ variables['pool'] ]
+          demands:
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - checkout: self
+
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              containerRegistry: "ACRDockerRegistry"
+              command: "login"
+
+          - task: Bash@3
+            name: BuildImageTask
+            displayName: 镜像构建
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                
+                CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):${CURRENT_TAG}.$(ARCH_TYPE)"
+                LATEST_IMAGE="$(imageRegistry)/$(imageRepository):${LATEST_TAG}.$(ARCH_TYPE)"
+
+                docker run --rm \
+                        -v $(pwd):/agent-app \
+                        -v /root/.ssh/id_rsa:/root/.ssh/id_rsa \
+                        -e GOPROXY='$(go.proxy)' \
+                        $(buildImage) bash -c "
+                    set -ex
+
+                    # echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
+                    echo machine devops.aishu.cn login DIP password $(System.AccessToken) > ~/.netrc
+
+                    cd /agent-app
+
+                    go mod tidy
+                    go build -ldflags "-s -w -X 'devops.aishu.cn/AISHUDevOps/DIP/_git/agent-app/conf/version.ServerVersion=${VERSION}'" -o agent-app ./main.go
+                    "
+                docker build --force-rm --no-cache --pull -t ${CURRENT_IMAGE} -f ./deploy/Dockerfile \
+                 --build-arg baseImage=$(baseImage) .
+
+                set +x
+                echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+                set +x
+                echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+
+
+          - template: scan-image-step.yml@templatesAlias
+            parameters:
+              imageName: $(BuildImageTask.CURRENT_IMAGE)
+              exitCode: ${{ parameters.TRIVY_EXIT_CODE }}
+              scanTimeout: 10m
+
+          - task: Bash@3
+            displayName: 推送镜像
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+                docker tag $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+                docker push $(BuildImageTask.CURRENT_IMAGE)
+                docker push $(BuildImageTask.LATEST_IMAGE)
+                docker rmi $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  - stage: MakeManifest
+    displayName: 制作多架构镜像
+    dependsOn:
+      - InitVariable
+      - BuildImage
+    variables:
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    jobs:
+      - job: MakeManifest
+        displayName: 制作多架构镜像
+        workspace:
+          clean: all
+        pool:
+          name: anydata-centos7.7-x86_64
+          demands:
+            - Agent.OSArchitecture -equals X64
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              containerRegistry: ACRDockerRegistry
+              command: login
+
+          - task: Bash@3
+            displayName: 制作多架构镜像
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                
+                CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):${CURRENT_TAG}"
+                LATEST_IMAGE="$(imageRegistry)/$(imageRepository):${LATEST_TAG}"
+
+                docker manifest create --amend ${CURRENT_IMAGE} ${CURRENT_IMAGE}.amd64 ${CURRENT_IMAGE}.arm64
+                docker manifest create --amend ${LATEST_IMAGE} ${LATEST_IMAGE}.amd64 ${LATEST_IMAGE}.arm64
+
+                docker manifest push -p ${CURRENT_IMAGE}
+                docker manifest push -p ${LATEST_IMAGE}
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  - stage: ChartPush
+    displayName: Chart构建
+    dependsOn:
+      - InitVariable
+    variables:
+        CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+        LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    jobs:
+      - job: ChartPush
+        displayName: Chart构建
+        workspace:
+          clean: all
+        pool:
+          name: anydata-centos7.7-x86_64
+          demands:
+            - Agent.OSArchitecture -equals X64
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - checkout: self
+          - task: Bash@3
+            displayName: Chart构建
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env
+                set -ex
+
+                chmod 777 -R $(pwd)/helm
+                docker run --rm \
+                      -v $(pwd)/helm:/chart \
+                      --entrypoint='' \
+                      $(yqImage) sh -c "
+                  set -ex
+
+                  yq eval -i '.image.registry = \"$(imageRegistry)\"' /chart/$(chartName)/values.yaml
+                  yq eval -i '.image.service.repository = \"$(imageRepository)\"' /chart/$(chartName)/values.yaml
+                  yq eval -i '.image.service.tag = \"${LATEST_TAG}\"' /chart/$(chartName)/values.yaml
+
+                  yq eval -i '.name = \"$(chartName)\"' /chart/$(chartName)/Chart.yaml
+                  yq eval -i '.appVersion = \"${CURRENT_TAG}\"' /chart/$(chartName)/Chart.yaml
+                  sed -i 's/\"version\": .*/\"version\": \"${CURRENT_TAG}\",/g' /chart/$(chartName)/_componentMeta.json
+
+                  yq eval -i '.version = \"${CURRENT_TAG}\"' /chart/$(chartName)/Chart.yaml
+                  cd /chart && tar -czf $(chartName)-${CURRENT_TAG}.tar.gz $(chartName)
+
+                  yq eval -i '.version = \"${LATEST_TAG}\"' /chart/$(chartName)/Chart.yaml
+                  cd /chart && tar -czf $(chartName)-${LATEST_TAG}.tar.gz $(chartName)
+                  "
+
+                cd helm
+                curlOptions="-s -u $(registry.username):$(registry.password) -H \"Content-Type:multipart/form-data\""
+                curl ${curlOptions} -F "chart=@$(chartName)-${CURRENT_TAG}.tar.gz;type=application/x-compressed-tar" -X POST "$(chartRepo)"
+                curl ${curlOptions} -F "chart=@$(chartName)-${LATEST_TAG}.tar.gz;type=application/x-compressed-tar" -X POST "$(chartRepo)"
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)

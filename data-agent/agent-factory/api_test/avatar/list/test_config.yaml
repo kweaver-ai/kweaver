@@ -1,0 +1,147 @@
+name: "头像列表API测试"
+description: "测试获取内置头像列表功能，验证响应格式和数据完整性"
+
+variables:
+  base_url: "http://127.0.0.1:13022"
+  api_prefix: "/api/agent-factory/v3"
+
+tests:
+  - name: "获取头像列表"
+    description: "获取所有内置头像的列表信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "avatar-list"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "equals"
+          field: "body.total"
+          value: 20
+          message: "总头像数量应该是20个"
+        - type: "length"
+          field: "body.entries"
+          value: 20
+          message: "entries数组长度应该是20"
+    variable_extraction:
+      - name: "avatar_list"
+        source: "body"
+        path: "entries"
+      - name: "total_count"
+        source: "body"
+        path: "total"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证头像列表结构"
+    description: "验证每个头像对象的数据结构"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "structure-validation"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries[0].id"
+          message: "第一个头像应该有id字段"
+
+        - type: "exists"
+          field: "body.entries[0].url"
+          message: "第一个头像应该有url字段"
+        - type: "type"
+          field: "body.entries[0].id"
+          value: "string"
+          message: "头像id应该是字符串类型"
+
+        - type: "type"
+          field: "body.entries[0].url"
+          value: "string"
+          message: "头像url应该是字符串类型"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证头像ID范围"
+    description: "验证所有头像ID都在1-20范围内"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "id-range-validation"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.entries[0].id"
+          value: "1"
+          message: "应该包含ID为1的头像"
+        - type: "contains"
+          field: "body.entries[19].id"
+          value: "20"
+          message: "应该包含ID为20的头像"
+        - type: "regex"
+          field: "body.entries[0].url"
+          value: "/agent-factory/v3/agent/avatar/built-in/([1-9]|1[0-9]|20)"
+          message: "URL格式应该正确"
+    timeout: "10s"
+    retry: 2
+
+
+
+  - name: "验证响应时间"
+    description: "验证头像列表API的响应时间"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "performance"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+    timeout: "5s"
+    retry: 1
+
+  - name: "验证Content-Type"
+    description: "验证响应的Content-Type是否正确"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "content-type"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "Content-Type应该是application/json"
+        - type: "exists"
+          field: "body.entries"
+          message: "响应体应该包含entries字段"
+    timeout: "10s"
+    retry: 2 

@@ -1,0 +1,384 @@
+name: "Agent发布信息接口测试"
+description: "测试Agent发布信息的获取和更新API，包括基础功能、参数校验和错误处理"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试Agent"
+    description: "创建一个Agent用于发布信息测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        name: "发布信息测试Agent-${random_string:6}"
+        key: "publish-info-test-agent-${timestamp}"
+        profile: "用于测试发布信息功能的Agent"
+        config:
+          prompt: "这是一个测试Agent的提示词"
+          model: "gpt-3.5-turbo"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含Agent ID"
+    variable_extraction:
+      - name: "test_agent_id"
+        source: "body"
+        path: "id"
+    timeout: "10s"
+    retry: 1
+
+  - name: "2. 获取发布信息 - 基础测试"
+    description: "测试获取Agent发布信息的基本功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.category_id"
+          message: "响应应该包含category_id字段"
+        - type: "exists"
+          field: "body.description"
+          message: "响应应该包含description字段"
+        - type: "exists"
+          field: "body.publish_to_where"
+          message: "响应应该包含publish_to_where字段"
+        - type: "exists"
+          field: "body.custom_spaces"
+          message: "响应应该包含custom_spaces字段"
+        - type: "exists"
+          field: "body.pms_control"
+          message: "响应应该包含pms_control字段"
+        - type: "exists"
+          field: "body.publish_to_be"
+          message: "响应应该包含publish_to_be字段"
+        - type: "type"
+          field: "body.publish_to_where"
+          value: "array"
+          message: "publish_to_where应该是数组类型"
+        - type: "type"
+          field: "body.custom_spaces"
+          value: "array"
+          message: "custom_spaces应该是数组类型"
+        - type: "type"
+          field: "body.publish_to_be"
+          value: "array"
+          message: "publish_to_be应该是数组类型"
+    timeout: "5s"
+    retry: 1
+
+  - name: "3. 更新发布信息 - 基础测试"
+    description: "测试更新Agent发布信息的基本功能"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        category_id: "test-category-1,test-category-2"
+        description: "这是一个测试Agent的发布描述"
+        publish_to_where:
+          - "square"
+        publish_to_be:
+          - "api_agent"
+          - "web_sdk_agent"
+    expected:
+      status_code: 204
+    timeout: "10s"
+    retry: 1
+
+  - name: "4. 验证发布信息更新"
+    description: "验证发布信息已成功更新"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.description"
+          value: "这是一个测试Agent的发布描述"
+          message: "描述应该已更新"
+        - type: "contains"
+          field: "body.publish_to_where"
+          value: "square"
+          message: "发布目标应该包含square"
+        - type: "contains"
+          field: "body.publish_to_be"
+          value: "api_agent"
+          message: "发布为标识应该包含api_agent"
+        - type: "contains"
+          field: "body.publish_to_be"
+          value: "web_sdk_agent"
+          message: "发布为标识应该包含web_sdk_agent"
+    timeout: "5s"
+    retry: 1
+
+  - name: "5. 更新发布信息 - 包含权限控制"
+    description: "测试更新发布信息时包含权限控制信息"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        category_id: "test-category-3"
+        description: "包含权限控制的发布描述"
+        publish_to_where:
+          - "custom_space"
+          - "square"
+        custom_space_ids:
+          - "space-1"
+          - "space-2"
+        pms_control:
+          role_ids:
+            - "role-1"
+            - "role-2"
+          user_ids:
+            - "user-1"
+            - "user-2"
+          user_group_ids:
+            - "group-1"
+          department_ids:
+            - "dept-1"
+        publish_to_be:
+          - "skill_agent"
+    expected:
+      status_code: 204
+    timeout: "10s"
+    retry: 1
+
+  - name: "6. 获取发布信息 - 无效Agent ID"
+    description: "测试使用无效Agent ID获取发布信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/invalid-agent-id-${random_string:10}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "5s"
+    retry: 1
+
+  - name: "7. 更新发布信息 - 无效Agent ID"
+    description: "测试使用无效Agent ID更新发布信息"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent/invalid-agent-id-${random_string:10}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        description: "测试描述"
+        publish_to_where:
+          - "square"
+        publish_to_be:
+          - "api_agent"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "5s"
+    retry: 1
+
+  - name: "8. 更新发布信息 - 无效请求体"
+    description: "测试使用无效请求体更新发布信息"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        publish_to_where:
+          - "invalid_target"
+        publish_to_be:
+          - "invalid_type"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "5s"
+    retry: 1
+
+  - name: "9. 更新发布信息 - 缺少custom_space_ids"
+    description: "测试发布到custom_space但未提供custom_space_ids"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        description: "测试描述"
+        publish_to_where:
+          - "custom_space"
+        publish_to_be:
+          - "api_agent"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "5s"
+    retry: 1
+
+  - name: "10. 获取发布信息 - 空Agent ID"
+    description: "测试使用空Agent ID获取发布信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent//publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+    expected:
+      status_code: 404
+    timeout: "5s"
+    retry: 1
+
+  - name: "11. 更新发布信息 - 空Agent ID"
+    description: "测试使用空Agent ID更新发布信息"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent//publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        description: "测试描述"
+    expected:
+      status_code: 404
+    timeout: "5s"
+    retry: 1
+
+  - name: "12. 更新发布信息 - 完整测试"
+    description: "测试包含所有字段的完整发布信息更新"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        category_id: "cat-1,cat-2,cat-3"
+        description: "完整的发布信息描述，包含所有可能的字段"
+        publish_to_where:
+          - "custom_space"
+          - "square"
+        custom_space_ids:
+          - "space-alpha"
+          - "space-beta"
+          - "space-gamma"
+        pms_control:
+          role_ids:
+            - "admin-role"
+            - "user-role"
+          user_ids:
+            - "user-001"
+            - "user-002"
+            - "user-003"
+          user_group_ids:
+            - "group-dev"
+            - "group-test"
+          department_ids:
+            - "dept-engineering"
+            - "dept-product"
+        publish_to_be:
+          - "api_agent"
+          - "web_sdk_agent"
+          - "skill_agent"
+    expected:
+      status_code: 204
+    timeout: "10s"
+    retry: 1
+
+  - name: "13. 最终验证发布信息"
+    description: "验证完整的发布信息更新结果"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/{{test_agent_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.description"
+          value: "完整的发布信息描述"
+          message: "描述应该已更新为完整描述"
+        - type: "contains"
+          field: "body.publish_to_where"
+          value: "custom_space"
+          message: "发布目标应该包含custom_space"
+        - type: "contains"
+          field: "body.publish_to_where"
+          value: "square"
+          message: "发布目标应该包含square"
+        - type: "contains"
+          field: "body.publish_to_be"
+          value: "api_agent"
+          message: "发布为标识应该包含api_agent"
+        - type: "contains"
+          field: "body.publish_to_be"
+          value: "web_sdk_agent"
+          message: "发布为标识应该包含web_sdk_agent"
+        - type: "contains"
+          field: "body.publish_to_be"
+          value: "skill_agent"
+          message: "发布为标识应该包含skill_agent"
+    timeout: "5s"
+    retry: 1

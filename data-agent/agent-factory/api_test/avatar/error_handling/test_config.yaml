@@ -1,0 +1,292 @@
+name: "头像API错误处理测试"
+description: "测试头像API的各种错误场景和边界条件"
+
+variables:
+  base_url: "http://127.0.0.1:13022"
+  api_prefix: "/api/agent-factory/v3"
+
+tests:
+  - name: "测试不存在的头像ID - 超出上限"
+    description: "测试ID为99的头像，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/99"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "invalid-id-high"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+        - type: "exists"
+          field: "body.description"
+          message: "错误响应应该包含description字段"
+        - type: "contains"
+          field: "body.error_details"
+          value: "头像不存在"
+          message: "错误详情应该说明头像不存在"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试不存在的头像ID - 低于下限"
+    description: "测试ID为0的头像，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/0"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "invalid-id-low"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+        - type: "contains"
+          field: "body.error_details"
+          value: "头像不存在"
+          message: "错误详情应该说明头像不存在"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试负数头像ID"
+    description: "测试ID为-1的头像，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/-1"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "negative-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试非数字头像ID - 字母"
+    description: "测试ID为abc的头像，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/abc"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "non-numeric-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+        - type: "contains"
+          field: "body.error_details"
+          value: "头像不存在"
+          message: "错误详情应该说明头像不存在"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试特殊字符头像ID"
+    description: "测试ID为@#$的头像，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/@%23$"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "special-chars-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试超长头像ID"
+    description: "测试超长ID，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/123456789012345678901234567890"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "long-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试空头像ID"
+    description: "测试空的头像ID路径"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "empty-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body"
+          message: "应该有响应体"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试浮点数头像ID"
+    description: "测试ID为1.5的头像，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/1.5"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "float-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试边界值 - ID为21"
+    description: "测试刚好超出范围的ID，应该返回404错误"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/21"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "boundary-id"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "application/json"
+          message: "错误响应应该是JSON格式"
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+        - type: "contains"
+          field: "body.error_details"
+          value: "头像不存在"
+          message: "错误详情应该说明头像不存在"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试错误响应格式一致性"
+    description: "验证所有错误响应的格式是否一致"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/invalid"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "error-format-consistency"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+        - type: "exists"
+          field: "body.description"
+          message: "错误响应应该包含description字段"
+        - type: "exists"
+          field: "body.solution"
+          message: "错误响应应该包含solution字段"
+        - type: "exists"
+          field: "body.error_link"
+          message: "错误响应应该包含error_link字段"
+        - type: "exists"
+          field: "body.error_details"
+          message: "错误响应应该包含error_details字段"
+        - type: "type"
+          field: "body.error_code"
+          value: "string"
+          message: "error_code应该是字符串类型"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试错误响应时间"
+    description: "验证错误响应的响应时间是否合理"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/999"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "error-response-time"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "错误响应应该包含error_code字段"
+    timeout: "5s"
+    retry: 1
+
+  - name: "测试不支持的HTTP方法"
+    description: "测试POST方法访问头像，应该返回405错误"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/1"
+      headers:
+        Accept: "image/svg+xml"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "unsupported-method"
+      body: {}
+    expected:
+      status_code: 405
+      assertions:
+        - type: "exists"
+          field: "body"
+          message: "应该有响应体"
+    timeout: "10s"
+    retry: 2 

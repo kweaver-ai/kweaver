@@ -1,0 +1,33 @@
+package bdagentdbacc
+
+import (
+	"context"
+	"database/sql"
+
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/agent-factory/src/infra/persistence/dapo"
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/agent-go-common-pkg/src/infra/common/chelper/dbhelper2"
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/agent-go-common-pkg/src/infra/common/cutil"
+	"github.com/pkg/errors"
+)
+
+// GetByBizDomainID 根据业务域ID获取关联列表
+func (repo *BizDomainAgentRelRepo) GetByBizDomainID(ctx context.Context, tx *sql.Tx, bizDomainID string) (pos []*dapo.BizDomainAgentRelPo, err error) {
+	sr := dbhelper2.NewSQLRunner(repo.db, repo.logger)
+	if tx != nil {
+		sr = dbhelper2.TxSr(tx, repo.logger)
+	}
+
+	po := &dapo.BizDomainAgentRelPo{}
+	sr.FromPo(po)
+
+	poList := make([]dapo.BizDomainAgentRelPo, 0)
+
+	err = sr.WhereEqual("f_biz_domain_id", bizDomainID).Find(&poList)
+	if err != nil {
+		return nil, errors.Wrapf(err, "get by biz domain id %s", bizDomainID)
+	}
+
+	pos = cutil.SliceToPtrSlice(poList)
+
+	return pos, nil
+}

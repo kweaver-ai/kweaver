@@ -1,0 +1,19 @@
+---
+!!python/object:app.logic.retriever.AS_doc.config.entities.QueryProcessSwitchConfig
+use_query_rewrite: !!bool true
+do_rewrite_query_check: !!bool true
+...
+---
+!!python/object:app.logic.retriever.AS_doc.config.entities.QueryProcessSwitchConfig
+use_rewrite_query: !!bool true
+embedding_use_history_message: !!bool true
+embedding_history_answer_left_len: !!int "50"
+embedding_use_origin_query: !!bool true
+...
+---
+!!python/object:app.logic.retriever.AS_doc.config.entities.QueryProcessSwitchConfig
+use_rewrite_query: !!bool true
+rerank_use_history_message: !!bool true
+rerank_history_answer_left_len: !!int "50"
+rerank_use_origin_query: !!bool true
+...

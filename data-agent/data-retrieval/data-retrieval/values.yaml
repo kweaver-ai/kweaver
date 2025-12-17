@@ -1,0 +1,118 @@
+replicaCount: 1
+
+namespace: dip
+
+image:
+  registry: acr.aishu.cn
+  repository: dip/data-retrieval
+  tag: 5.0.0
+  pullPolicy: IfNotPresent
+ports:
+  apiPort: 9100
+
+env:
+  devicecode: ""
+
+nodeSelector: {}
+
+depServices:
+  opensearch:
+    read: "opensearch-read"
+    write: "opensearch-write"
+    host: "opensearch-master"
+    port: "9200"
+    user: "admin"
+    password: "eisoo.com123"
+  redis:
+    connectType: sentinel
+    enableSSL: false
+    connectInfo:
+      sentinelHost: kg-redis-cluster-proton-redis-sentinel
+      sentinelPort: 26379
+      username: root
+      password: eisoo.com123
+      sentinelUsername: root
+      sentinelPassword: eisoo.com123
+      masterGroupName: mymaster
+      masterHost: xxx.dcs.huaweicloud.com
+      masterPort: 26379
+      slaveHost: xxx-readonly.dcs.huaweicloud.com
+      slavePort: 26379
+      host: ""
+      port: 26379
+    secretName: redis-ssl-secret
+    caName: ca.pem
+    certName: cert.pem
+    keyName: key.pem
+  hydra:
+    publicHost: "hydra-public"
+    publicPort: "4444"
+    administrativeHost: "hydra-admin"
+    administrativePort: "4445"
+  user_management:
+    publicHost: "user-management-public"
+    publicPort: "30980"
+    privateHost: "user-management-private"
+    privatePort: "30980"
+  mf_model_api:
+    privateHost: mf-model-api
+    privatePort: 9898
+    embeddingUrl: "http://mf-model-api:9898/api/private/mf-model-api/v1/small-model/embedding"
+    embeddingDimension: 768
+    rerank_url: "http://mf-model-api:9898/api/private/mf-model-api/v1/small-model/reranker"
+    rerank_model: "reranker"
+  graphDatabase:
+    type: "nebulaGraph"
+    host: "kg-nebula-cluster-proton-nebula-graphd"
+    port: "9669"
+    user: "root"
+    password: "nebula"
+    readonlyuser: "anydata"
+    readonlypassword: "eisoo.com123"
+
+
+appConfig:
+  agent:
+    modelType: "default"
+    agentMaxIterations: 20
+    agentMaxExecutionTime: 600
+    showOldThinkContent: false
+  agentSession:
+    agentSessionType: "redis"
+    agentSessionHistoryNumLimit: 10
+    agentSessionHistoryMax: 5000
+  agentLLM:
+    modelName: ""
+    openaiApiKey: "EMPTY"
+    openaiAPIBase: ""
+    ScratchpadRoundLimit: 0
+  toolSettings:
+    indicatorRecallTopK: 5
+    indicatorRewriteQuery: false
+    text2MetricModelType: "default"
+    text2MetricDimensionNumLimit: 30
+    text2sqlModelType: "default"
+    text2sqlRecallTopK: 5
+    text2sqlRewriteQuery: false
+    text2sqlForceLimit: 200
+    showSqlGraph: false
+    returnRecordLimit: 100
+    returnDataLimit: 5000
+    codeRunnerOutputLimit: 2000
+    codeRunnerOutputLinesLimit: 10
+    cacheSizeLimit: 2000
+  toolLLM:
+    modelName: ""
+    openaiApiKey: "EMPTY"
+    openaiAPIBase: ""
+  rerank_llm_model:
+    name: ""
+
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 500Mi
+  limits:
+    cpu: 1
+    memory: 1Gi

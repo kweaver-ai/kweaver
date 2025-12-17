@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "data-retrival"
+version = "0.1.0"
+authors = [
+  { name="Chen Xiao", email="xavier.chen@aishu.cn" },
+]
+description = "A library for building AF agent"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+  "Jinja2==3.1.3",
+  "langchain==0.2.1",
+  "langchain_community==0.2.1",
+  "langchain_core==0.2.3",
+  "langchain_openai==0.1.8",
+  "Requests==2.32.3",
+  "aiohttp==3.9.4",
+  "pydantic==2.7.3",
+  "pandas==2.2.2",
+  "async-timeout==4.0.3",
+  "pycryptodome==3.20.0",
+  "urllib3==2.1.0",
+  "altair==5.4.0",
+  "commentjson==0.9.0",
+  "plotly==5.23.0",
+  "jsonref==1.1.0",
+  "vegafusion==1.6.9",
+  "tabulate==0.9.0",
+  "redis==5.0.8",
+  "pydantic-settings==2.1.0",
+  "sqlparse==0.5.1",
+  "sql_metadata==2.13.0",
+  "pyahocorasick==2.0.0",
+  "jieba==0.42.1",
+  "faiss-cpu>=1.8",
+  "fastapi>=0.115.0",
+  "openai>=1.68.2",
+  "httpx==0.27.2",
+  "jupyter-kernel-gateway==3.0.1",
+  "sqlglot[rs]==26.21.0",
+  "nebula3-python==3.5.0",
+  "rank-bm25==0.2.2"
+]
+
+[project.optional-dependencies]
+linux = [
+  "gunicorn>=21.2.0"
+]
+windows = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"af_agent.prompts.tools_prompts.text2metric_prompt" = ["params_json.txt"]

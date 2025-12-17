@@ -1,0 +1,1938 @@
+{
+    "b94abee3f8894d0b83ca303eaeb43aab": [
+        {
+            "src_vid": "b94abee3f8894d0b83ca303eaeb43aab",
+            "dst_vid": "c45ed912efdafc1c5d6ae325780eb386",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b94abee3f8894d0b83ca303eaeb43aab",
+            "dst_vid": "0dcb3beb17f934f44565bb00edf06e02",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b94abee3f8894d0b83ca303eaeb43aab",
+            "dst_vid": "f47773f3f074710d7e0bb04c63367162",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b94abee3f8894d0b83ca303eaeb43aab",
+            "dst_vid": "adadc02a23e1185a62ca10f736cbf486",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "c45ed912efdafc1c5d6ae325780eb386": [
+        {
+            "src_vid": "c45ed912efdafc1c5d6ae325780eb386",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "c45ed912efdafc1c5d6ae325780eb386",
+            "dst_vid": "ad20dd6fafa837b9656327eebb0ede1f",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "f43b37dfcb18cebb12c9728d714375fa": [
+        {
+            "src_vid": "f43b37dfcb18cebb12c9728d714375fa",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "f43b37dfcb18cebb12c9728d714375fa",
+            "dst_vid": "96fa2ef063d6c45b5d70bdd1fc716d80",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "5fde26e9d5344b608b7d3c353916aaab": [
+        {
+            "src_vid": "5fde26e9d5344b608b7d3c353916aaab",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "5fde26e9d5344b608b7d3c353916aaab",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "19a8439e721158385d4ee72a3b067793": [
+        {
+            "src_vid": "19a8439e721158385d4ee72a3b067793",
+            "dst_vid": "2d309826ba6756945cd49d87ff799c75",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "af2e91c669e5b46a3e709570d42297bd": [
+        {
+            "src_vid": "af2e91c669e5b46a3e709570d42297bd",
+            "dst_vid": "2d309826ba6756945cd49d87ff799c75",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "2d309826ba6756945cd49d87ff799c75": [
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "084e0098a709045ab51399aec1d41fb4",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "0ccbd9f55c79f3a66a26cd48d687a8ee",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "25520e40bc4256eefb4ddeade7374d3a",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "2b13e0175d6cdb4c4aa3b4efb4a6af33",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "4282498ccb05dd6f0b2e0aac9f67ac44",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "54fe010f51b4e42d0de13e1f67d5bf48",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "790f23b431091ed7c0674b63e22083b8",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "7eb53818abe06b2fcdbecaa3958a39eb",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "92cbbf203e4e3bc2a851ab73aadb4c9b",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "99e265e74d40ce5d87d5e40e0cbd1a6e",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "a0e1e014e426e8ac5e732deb8bf0a195",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "a9a4dad01aa7fc0cf260e1463cfb3d00",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "c38366772ade88b78c2c5b4616113799",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "c3e062c75692126f408243f8c0e71ace",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "2d309826ba6756945cd49d87ff799c75",
+            "dst_vid": "db7b64590b8f8c32a3aea432c72acebd",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "5388cc37d90354042b6ba83aa46d7d71": [
+        {
+            "src_vid": "5388cc37d90354042b6ba83aa46d7d71",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "5388cc37d90354042b6ba83aa46d7d71",
+            "dst_vid": "3d02976d337b9402459dc8ee278f8e9f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "5388cc37d90354042b6ba83aa46d7d71",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "66e154e41c59afc7b3141fbe7d2497ec": [
+        {
+            "src_vid": "66e154e41c59afc7b3141fbe7d2497ec",
+            "dst_vid": "b12678e8afdc57e7ccecf49f4394a65f",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "66e154e41c59afc7b3141fbe7d2497ec",
+            "dst_vid": "1f35fef658483566f38d7ef451649bbc",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "b12678e8afdc57e7ccecf49f4394a65f": [
+        {
+            "src_vid": "b12678e8afdc57e7ccecf49f4394a65f",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "b12678e8afdc57e7ccecf49f4394a65f",
+            "dst_vid": "a3cf4f15825f7151a86bcface509fb47",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "4a43a08d70aafa5ee3fe812e026702a8": [
+        {
+            "src_vid": "4a43a08d70aafa5ee3fe812e026702a8",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "a795b0eb18e7953d0d21640b63a86686": [
+        {
+            "src_vid": "a795b0eb18e7953d0d21640b63a86686",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "a795b0eb18e7953d0d21640b63a86686",
+            "dst_vid": "6112e27b1fa4d6aee5a0c7bfa34b0c20",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "b6c0c4bcc6d3bf60b34e237fec145fdc": [
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "0652678f460dc0279528ac6e21224f51",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "0b5d49845bf14202b4d2766b73d50476",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "126e429bc415a92d022f2e1e53283c70",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "19c441ce49cd5430b3686fca06315b5e",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "1aa11c8e1286eea49e9fc50f4f5b48e3",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "1ca13816c96e6835f6eb5273c12dd83c",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "1cad291f8a6b978957e7d0004cfa14a7",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "31d87e41414a328bdcfb4318193d1062",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "3b332bea90552776ea4a125097f5dee3",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "3b5a5629fe8361d6242ebdea47ebdb31",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "404f1c7dd59fe5706395fd1d21579987",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "43b54261581e2917e7da75325862612b",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "4ae688de5f4356f8e9e8a128e0866d42",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "4ece7d73606ad63a0cf1389083b8a17f",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "536733169dc5ca159592854b6894a0ec",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "5bf23b70225edf41ee1a48704f882b7a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "5f1b42a620a58be67d34739fe4cbdf4f",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "6c16421eed91bb09fb029f0d0bca5ae5",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "74358b76c5a11872eb711b11806a3352",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "7a1f03872eb638a0357cd9281585541a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "80ccf3591e6c32fffd4903bea0ede118",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "8e68ddcb8f0fe1ab8b7535a4757cc702",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "9c85d64b08543f97b6a7827492bf6579",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "a39c93df6fad7cf2cf25cca38843c124",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "a9e2f8104df7074148e953661571c2d5",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "b6cf9f204d74e5fd202f46c907886679",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "bc1cec3f04795570c6d22368e7bbf181",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "bf94f058b36be6a7540948129cc1695d",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "dba307cbaac9f121d87545a0554f1756",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "ecb4c54f1058e67078778343967856b8",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "f43b37dfcb18cebb12c9728d714375fa",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "f82b6d4fd79a593ffda4e7b99c56891a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "f947893a1c2d8d44ddb6836355808275",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "0807dc110615d48f4c92259ce5b70582",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "3a4d6ce4de453bee5cbbf1efc0bd94de",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "b6c0c4bcc6d3bf60b34e237fec145fdc",
+            "dst_vid": "b97094b9330992539e3082c6a02e1ad5",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "2d33e291384c6f9b26555fcdec149fb7": [
+        {
+            "src_vid": "2d33e291384c6f9b26555fcdec149fb7",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "2d33e291384c6f9b26555fcdec149fb7",
+            "dst_vid": "9d3c06946189cd757b8831c4d4f214d7",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "ba7aff29d75e9c198f3a2db2752ae31c": [
+        {
+            "src_vid": "ba7aff29d75e9c198f3a2db2752ae31c",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "ba7aff29d75e9c198f3a2db2752ae31c",
+            "dst_vid": "0807dc110615d48f4c92259ce5b70582",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "ba7aff29d75e9c198f3a2db2752ae31c",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "40f9f2c72f195c1bccbe5487a128679d": [
+        {
+            "src_vid": "40f9f2c72f195c1bccbe5487a128679d",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "40f9f2c72f195c1bccbe5487a128679d",
+            "dst_vid": "068957865b000386ef2790de9f3c4670",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "40f9f2c72f195c1bccbe5487a128679d",
+            "dst_vid": "0fe1858f0bf5fc7ce452b1d5a19b544f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "70eea0de2c75726132d36e4bee5f7c26": [
+        {
+            "src_vid": "70eea0de2c75726132d36e4bee5f7c26",
+            "dst_vid": "199ce25070e86511ed1bcefa7586b0ba",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "70eea0de2c75726132d36e4bee5f7c26",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "70eea0de2c75726132d36e4bee5f7c26",
+            "dst_vid": "0fe1858f0bf5fc7ce452b1d5a19b544f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "2f22b438d7f031d6e734ee79d83ffce7": [
+        {
+            "src_vid": "2f22b438d7f031d6e734ee79d83ffce7",
+            "dst_vid": "39c297075fd3f14e6684fb622537c032",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "2f22b438d7f031d6e734ee79d83ffce7",
+            "dst_vid": "de6211d32d5350ef7fd591a3b6ec23c4",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "69960e5f64aa5393157d13a047520c56": [
+        {
+            "src_vid": "69960e5f64aa5393157d13a047520c56",
+            "dst_vid": "39c297075fd3f14e6684fb622537c032",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "faefb791472cfd116423df93348a6553": [
+        {
+            "src_vid": "faefb791472cfd116423df93348a6553",
+            "dst_vid": "39c297075fd3f14e6684fb622537c032",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "39c297075fd3f14e6684fb622537c032": [
+        {
+            "src_vid": "39c297075fd3f14e6684fb622537c032",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "39c297075fd3f14e6684fb622537c032",
+            "dst_vid": "53662dfa78e03fef792f22cc245fb83a",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "993810e0437d1f072a61b3779447a9b6": [
+        {
+            "src_vid": "993810e0437d1f072a61b3779447a9b6",
+            "dst_vid": "8686c0ddd02330058edf17460a4c51db",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "b963726ad2cfd5c62aa781538bfb7e47": [
+        {
+            "src_vid": "b963726ad2cfd5c62aa781538bfb7e47",
+            "dst_vid": "8686c0ddd02330058edf17460a4c51db",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "0dcb3beb17f934f44565bb00edf06e02": [
+        {
+            "src_vid": "0dcb3beb17f934f44565bb00edf06e02",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "0dcb3beb17f934f44565bb00edf06e02",
+            "dst_vid": "3326ecdc3c6a469461c3e192672f27f7",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "1aaffb124af43b5dd483be655da0b749": [
+        {
+            "src_vid": "1aaffb124af43b5dd483be655da0b749",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "1aaffb124af43b5dd483be655da0b749",
+            "dst_vid": "27bd31b8576333db878dd6b4ee29b8bb",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "1aaffb124af43b5dd483be655da0b749",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "f44e726e85845488e96f80f71b3a9c2f": [
+        {
+            "src_vid": "f44e726e85845488e96f80f71b3a9c2f",
+            "dst_vid": "fab8e3af9b269689ee3840b0c2cfde75",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "7ff96c48f0468ec93a3d2ece7b0d67a4": [
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "fab8e3af9b269689ee3840b0c2cfde75",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "aa9f453351956f523672b788dd9dbfc4",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "7341dbac2e1164a2ac8eb8223e78dbc0",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "a9af638afb36b40f5f90ca922da17cbe",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "0a395924ba937b44985276fef78c32c6",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "1e4f95fd1d24125cd341d96bfc08ba3d",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "f60b4bee25da2862f48afc32ffa78ace",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "58c757b7200dbd5e464f8899f129e045",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "c6f3483b60a7f688e883b816dba32e97",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "78ccb33550d5807a022b00b812a5cb0a",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "29072c828635dc123272c528918b3044",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "2f23769631e9da08f0b42ae2938c49e0",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "d2e30ef4e217175da93fe5ac959a858a",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "dst_vid": "93641597340f17c5150c872d9b75acb3",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "154f14b9af18cbca962bfdc58f914a52": [
+        {
+            "src_vid": "154f14b9af18cbca962bfdc58f914a52",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "154f14b9af18cbca962bfdc58f914a52",
+            "dst_vid": "2667f9fa90553a2812687f0c1988c528",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "1b97aa2009269ff481363916408d0d2a": [
+        {
+            "src_vid": "1b97aa2009269ff481363916408d0d2a",
+            "dst_vid": "7b187ae206cc667fb4e6029baf92251c",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "7b187ae206cc667fb4e6029baf92251c": [
+        {
+            "src_vid": "7b187ae206cc667fb4e6029baf92251c",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "7b187ae206cc667fb4e6029baf92251c",
+            "dst_vid": "3130418e9c94584a5abfa07ca4d9d349",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "088826b90d2d5a524c3187c279735490": [
+        {
+            "src_vid": "088826b90d2d5a524c3187c279735490",
+            "dst_vid": "0de88b28914b2a474b1f5a78ece01138",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "0de88b28914b2a474b1f5a78ece01138": [
+        {
+            "src_vid": "0de88b28914b2a474b1f5a78ece01138",
+            "dst_vid": "1055713f14b9646ea1d09e809d2b0403",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "0de88b28914b2a474b1f5a78ece01138",
+            "dst_vid": "645993883058ecbb66f759d15016f9a7",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "c70ac57ed2e1b4f8793fb77e78920d8a": [
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "3e06e4bf92ce3a889be5a51043dbc6f0",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "41c57a505843e7b99c2b5e8369734a43",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "46b6ee5ef7521f0134670e7e7125ad3c",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "670dd74d4880975a30259ce29a484903",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "7923116bdfeac209417e3587cc494425",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "b3cc10f625dc8ebe14eb2c1e4d5e88dc",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "07c757fe8469a1e5d891e253c65be894",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "c70ac57ed2e1b4f8793fb77e78920d8a",
+            "dst_vid": "9d3c06946189cd757b8831c4d4f214d7",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "d28541c7efaad96cde487de7e0098b06": [
+        {
+            "src_vid": "d28541c7efaad96cde487de7e0098b06",
+            "dst_vid": "f073d5a5fc3041e27a83d2d2239d928f",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "f073d5a5fc3041e27a83d2d2239d928f": [
+        {
+            "src_vid": "f073d5a5fc3041e27a83d2d2239d928f",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "f073d5a5fc3041e27a83d2d2239d928f",
+            "dst_vid": "43f1fa0bc0990baa19fd4d49d4c8db72",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "7f36075f5264a0d5f022e1fa9c36b65d": [
+        {
+            "src_vid": "7f36075f5264a0d5f022e1fa9c36b65d",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "7f36075f5264a0d5f022e1fa9c36b65d",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "7f36075f5264a0d5f022e1fa9c36b65d",
+            "dst_vid": "88d32e1e7ddc4e64ed696efcedb51241",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "1f3c4a78ef27c3fc9675853a13acd8d4": [
+        {
+            "src_vid": "1f3c4a78ef27c3fc9675853a13acd8d4",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "1f3c4a78ef27c3fc9675853a13acd8d4",
+            "dst_vid": "07c757fe8469a1e5d891e253c65be894",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "1f3c4a78ef27c3fc9675853a13acd8d4",
+            "dst_vid": "3a4d6ce4de453bee5cbbf1efc0bd94de",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "d3fa06071b8445eb6ca9d7a68af76fb1": [
+        {
+            "src_vid": "d3fa06071b8445eb6ca9d7a68af76fb1",
+            "dst_vid": "de6211d32d5350ef7fd591a3b6ec23c4",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d3fa06071b8445eb6ca9d7a68af76fb1",
+            "dst_vid": "dd8bd05036338b7f221c283d2c4f594d",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d3fa06071b8445eb6ca9d7a68af76fb1",
+            "dst_vid": "9c794fd95fcdffd17608101d357e1b2a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "de6211d32d5350ef7fd591a3b6ec23c4": [
+        {
+            "src_vid": "de6211d32d5350ef7fd591a3b6ec23c4",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "de6211d32d5350ef7fd591a3b6ec23c4",
+            "dst_vid": "62f08a18d8f0886df2c5cab78b28d177",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "92a865fafaa65b8b2bcc577c0cde611c": [
+        {
+            "src_vid": "92a865fafaa65b8b2bcc577c0cde611c",
+            "dst_vid": "dd8bd05036338b7f221c283d2c4f594d",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "bf593d1d54f3728f5d4e66a292d90650": [
+        {
+            "src_vid": "bf593d1d54f3728f5d4e66a292d90650",
+            "dst_vid": "dd8bd05036338b7f221c283d2c4f594d",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "dd8bd05036338b7f221c283d2c4f594d": [
+        {
+            "src_vid": "dd8bd05036338b7f221c283d2c4f594d",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "dd8bd05036338b7f221c283d2c4f594d",
+            "dst_vid": "aa1637358198f9fdb451e975b40f0e32",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "9c794fd95fcdffd17608101d357e1b2a": [
+        {
+            "src_vid": "9c794fd95fcdffd17608101d357e1b2a",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "9c794fd95fcdffd17608101d357e1b2a",
+            "dst_vid": "578601b559932d84880975d370d2d9cc",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "1a535b819574231e419f2c5cfcb52c57": [
+        {
+            "src_vid": "1a535b819574231e419f2c5cfcb52c57",
+            "dst_vid": "4ce6514cd19ce6aca9a0ab59b4f17aaf",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "4ce6514cd19ce6aca9a0ab59b4f17aaf": [
+        {
+            "src_vid": "4ce6514cd19ce6aca9a0ab59b4f17aaf",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "4ce6514cd19ce6aca9a0ab59b4f17aaf",
+            "dst_vid": "918613b9216ea2ba7dd0fde3ace4e59f",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "79390934d797523e0480c0e27f9e5f4b": [
+        {
+            "src_vid": "79390934d797523e0480c0e27f9e5f4b",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "79390934d797523e0480c0e27f9e5f4b",
+            "dst_vid": "9ff3b02c9260dd1a8a8e0d881ac63796",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "79390934d797523e0480c0e27f9e5f4b",
+            "dst_vid": "b04cf5da00b0a1b503a2fa6de7682082",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "51a17403cfda28e41914473ffdc05c80": [
+        {
+            "src_vid": "51a17403cfda28e41914473ffdc05c80",
+            "dst_vid": "5d7a121d40d3aac2dd8a5dbe399f2ac8",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "cb1afb98408b87139f9ef4ad6fad72c5": [
+        {
+            "src_vid": "cb1afb98408b87139f9ef4ad6fad72c5",
+            "dst_vid": "68e15319beb0a447f457bef017314796",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "cb1afb98408b87139f9ef4ad6fad72c5",
+            "dst_vid": "7a239b190d16353a7b52455153995fd7",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "cb1afb98408b87139f9ef4ad6fad72c5",
+            "dst_vid": "e757959f7f494bc1dbaa53471ea62a53",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "cb1afb98408b87139f9ef4ad6fad72c5",
+            "dst_vid": "ea7e28c0e8c92fcb10743977604edad0",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "cb1afb98408b87139f9ef4ad6fad72c5",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "cb1afb98408b87139f9ef4ad6fad72c5",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "0169faaccf94bd4b64ee7f351143f80c": [
+        {
+            "src_vid": "0169faaccf94bd4b64ee7f351143f80c",
+            "dst_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "7177444fe61976fed4d6db4aa5c68b02": [
+        {
+            "src_vid": "7177444fe61976fed4d6db4aa5c68b02",
+            "dst_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "7946eead34a2bd025fd1c3848a883cd0": [
+        {
+            "src_vid": "7946eead34a2bd025fd1c3848a883cd0",
+            "dst_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "87fdf9183d08a5050a403ace1f0bda58": [
+        {
+            "src_vid": "87fdf9183d08a5050a403ace1f0bda58",
+            "dst_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "aec623096a6a3e93d312ea7d28dc522f": [
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "1b7d3009bfe98b3638208112ba1d71ef",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "2c8ded442c19f5e5cd420e5a602937ab",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "2e6a836952a68693cbe3531fbe246325",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "34f60f6249561f50648baeeebdf4e608",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "3858860b12ed7caa1772348802f57dcb",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "3bc45195e1f69b4d92aad37b1c80f1c6",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "4e13125bfd5c7e74f09d12e709599442",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "518a2a3a284ad22dd19917d17f6fb3ce",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "529f434717c865aa967d59c4970de521",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "5476e28e05d3b1bd5545334ee8efc120",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "a585d8eefacd7d184040472679cd713f",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "bae78c9ce28fd54f7d6c3712dd3f580d",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "aec623096a6a3e93d312ea7d28dc522f",
+            "dst_vid": "d48b41c89ae878bfabcc76e53b1e400c",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "fcad1c6fea40a8d1765078669b34e6fc": [
+        {
+            "src_vid": "fcad1c6fea40a8d1765078669b34e6fc",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "7f7e3bb4597e7e82b471802c8b0bbe76": [
+        {
+            "src_vid": "7f7e3bb4597e7e82b471802c8b0bbe76",
+            "dst_vid": "f1be90c0967972bff274ebb56c9aa0df",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "f1be90c0967972bff274ebb56c9aa0df": [
+        {
+            "src_vid": "f1be90c0967972bff274ebb56c9aa0df",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "f1be90c0967972bff274ebb56c9aa0df",
+            "dst_vid": "0e69b5943e99d773d33ae70fed706e41",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "f652d3a7952b9cdf0d5e6b9bc221039f": [
+        {
+            "src_vid": "f652d3a7952b9cdf0d5e6b9bc221039f",
+            "dst_vid": "ba4b98be818d5251bdad0c0bb0498bea",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "ba4b98be818d5251bdad0c0bb0498bea": [
+        {
+            "src_vid": "ba4b98be818d5251bdad0c0bb0498bea",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "ba4b98be818d5251bdad0c0bb0498bea",
+            "dst_vid": "67895a3b50e7218cbf26b75ffb2b9de9",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "1abe72ee0dde2cfab40c4dcf5769b08d": [
+        {
+            "src_vid": "1abe72ee0dde2cfab40c4dcf5769b08d",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "1abe72ee0dde2cfab40c4dcf5769b08d",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "d0a1084d7aae83d2eeb70b3ab4756dc4": [
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "31a24343a6be4efdeff1809cbee8c830",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "693d6430d320106121f398df01e0d190",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "d0c6640e069c1fd48ddd100f6f0fd0f8",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "f499b51d175ada3b470a374191f9d978",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "0ce8ed789af5794d9cb17287a77eab4f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "d0a1084d7aae83d2eeb70b3ab4756dc4",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "f277587b9be901cafa80072d6bc4ba09": [
+        {
+            "src_vid": "f277587b9be901cafa80072d6bc4ba09",
+            "dst_vid": "0a395924ba937b44985276fef78c32c6",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "9eb05ea3068914157e5bafddd6fb96b4": [
+        {
+            "src_vid": "9eb05ea3068914157e5bafddd6fb96b4",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "9eb05ea3068914157e5bafddd6fb96b4",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "cc056dc43ddb93e8f41113c3ac27dadb": [
+        {
+            "src_vid": "cc056dc43ddb93e8f41113c3ac27dadb",
+            "dst_vid": "1e4f95fd1d24125cd341d96bfc08ba3d",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "7afe2542cc9e699779d55b4bb06a5811": [
+        {
+            "src_vid": "7afe2542cc9e699779d55b4bb06a5811",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "7afe2542cc9e699779d55b4bb06a5811",
+            "dst_vid": "265b9b40c13f4ed1e9c76212b163829d",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "7afe2542cc9e699779d55b4bb06a5811",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "8ae2929191ddc6f84d9148cb412ed28e": [
+        {
+            "src_vid": "8ae2929191ddc6f84d9148cb412ed28e",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "8ae2929191ddc6f84d9148cb412ed28e",
+            "dst_vid": "08d8290b68221e2f19eb503fbc6ce875",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "582e24f5361c6c5b67bb207b027d24cf": [
+        {
+            "src_vid": "582e24f5361c6c5b67bb207b027d24cf",
+            "dst_vid": "f60b4bee25da2862f48afc32ffa78ace",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "a325adb3d949dc039e1ef5999a22a039": [
+        {
+            "src_vid": "a325adb3d949dc039e1ef5999a22a039",
+            "dst_vid": "7a239b190d16353a7b52455153995fd7",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "a325adb3d949dc039e1ef5999a22a039",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "a325adb3d949dc039e1ef5999a22a039",
+            "dst_vid": "5bf1accf1e52a6fccd1d04999cf88626",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "d4d788b22bea4164f8cb904dfaff92f9": [
+        {
+            "src_vid": "d4d788b22bea4164f8cb904dfaff92f9",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "d4d788b22bea4164f8cb904dfaff92f9",
+            "dst_vid": "0807dc110615d48f4c92259ce5b70582",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "d4d788b22bea4164f8cb904dfaff92f9",
+            "dst_vid": "3a2b090caf987f96ea64ecdcf128935e",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "0003da51e8e8e5db6a3aa5926ec731cb": [
+        {
+            "src_vid": "0003da51e8e8e5db6a3aa5926ec731cb",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "0003da51e8e8e5db6a3aa5926ec731cb",
+            "dst_vid": "9d3c06946189cd757b8831c4d4f214d7",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "4d5b17ddd3ad3f0c315ffc2ff6b47420": [
+        {
+            "src_vid": "4d5b17ddd3ad3f0c315ffc2ff6b47420",
+            "dst_vid": "58c757b7200dbd5e464f8899f129e045",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "843f4e1f64a947aa2f1b7cb7f2b03367": [
+        {
+            "src_vid": "843f4e1f64a947aa2f1b7cb7f2b03367",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "843f4e1f64a947aa2f1b7cb7f2b03367",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "f0a99c280858a3526ae047aa0ec46fce": [
+        {
+            "src_vid": "f0a99c280858a3526ae047aa0ec46fce",
+            "dst_vid": "5efdee386c46ac3f024ea39b77dbecc0",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "5efdee386c46ac3f024ea39b77dbecc0": [
+        {
+            "src_vid": "5efdee386c46ac3f024ea39b77dbecc0",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "5efdee386c46ac3f024ea39b77dbecc0",
+            "dst_vid": "5b76b2d1890f09fc253807e9d9d2963a",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "d41153a8f8494a0b83b0528695b0fe30": [
+        {
+            "src_vid": "d41153a8f8494a0b83b0528695b0fe30",
+            "dst_vid": "aad98e86de2fa8ecb0399c2dc0f56069",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d41153a8f8494a0b83b0528695b0fe30",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "d41153a8f8494a0b83b0528695b0fe30",
+            "dst_vid": "69d4309ed76dd675ec1290fcf03b7659",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "712d69383967a2ae95a7092fd823c914": [
+        {
+            "src_vid": "712d69383967a2ae95a7092fd823c914",
+            "dst_vid": "78ccb33550d5807a022b00b812a5cb0a",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "4a8837192e16310db07803c6f66ca4c6": [
+        {
+            "src_vid": "4a8837192e16310db07803c6f66ca4c6",
+            "dst_vid": "6372e815195a9e418711af91b6e604cb",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "4a8837192e16310db07803c6f66ca4c6",
+            "dst_vid": "c8cc2205569a1e54677ce1fb65307604",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "4a8837192e16310db07803c6f66ca4c6",
+            "dst_vid": "c1f19f9e3e8f8f5dc3d05ab359c6a543",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "4a8837192e16310db07803c6f66ca4c6",
+            "dst_vid": "0fe1858f0bf5fc7ce452b1d5a19b544f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "1f8eb860057aa01f3977f4e6e66a72e3": [
+        {
+            "src_vid": "1f8eb860057aa01f3977f4e6e66a72e3",
+            "dst_vid": "29072c828635dc123272c528918b3044",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "ca09be80f5cf83a5304e6f14a8aa9250": [
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "2c2b2f4c88f86b127bf2a3f6f8cecd48",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "553bfa33ac747f1a8392bd87f150b6ba",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "8fa3c1f3b2fe0fa77a0b1c6463d76f71",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "a810cfada9a37a77e614436192ff179a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "d5cfa6f228ed9d1e2850c9a33dec7e85",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "ca09be80f5cf83a5304e6f14a8aa9250",
+            "dst_vid": "552692e8d9aac25423a24bfa22817817",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "95b7b6ac85def5147ff4a1d57f010093": [
+        {
+            "src_vid": "95b7b6ac85def5147ff4a1d57f010093",
+            "dst_vid": "aa9f453351956f523672b788dd9dbfc4",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "1f35fef658483566f38d7ef451649bbc": [
+        {
+            "src_vid": "1f35fef658483566f38d7ef451649bbc",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "1f35fef658483566f38d7ef451649bbc",
+            "dst_vid": "282692a5fa2c7d251c843c008a9c7946",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "e373b18847f43fd4f1a298c6408c39da": [
+        {
+            "src_vid": "e373b18847f43fd4f1a298c6408c39da",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "f77f2f7a44886de8ffd8f870bd03038e": [
+        {
+            "src_vid": "f77f2f7a44886de8ffd8f870bd03038e",
+            "dst_vid": "2f23769631e9da08f0b42ae2938c49e0",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "b97094b9330992539e3082c6a02e1ad5": [
+        {
+            "src_vid": "b97094b9330992539e3082c6a02e1ad5",
+            "dst_vid": "ed0f2941379d431b19f472ff705bdbef",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "b97094b9330992539e3082c6a02e1ad5",
+            "dst_vid": "1f8c59e088cbe7269d5c06e1395848a9",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "89b1035bd045e101806b18806087ebb8": [
+        {
+            "src_vid": "89b1035bd045e101806b18806087ebb8",
+            "dst_vid": "d2e30ef4e217175da93fe5ac959a858a",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "f6eb78b9e83e5fac3924938dd4ea5896": [
+        {
+            "src_vid": "f6eb78b9e83e5fac3924938dd4ea5896",
+            "dst_vid": "99e265e74d40ce5d87d5e40e0cbd1a6e",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "db4342a1961f7a8f86e59fd94d743e5d": [
+        {
+            "src_vid": "db4342a1961f7a8f86e59fd94d743e5d",
+            "dst_vid": "93641597340f17c5150c872d9b75acb3",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "7e9e9c1b12546053514d63e8fe67a245": [
+        {
+            "src_vid": "7e9e9c1b12546053514d63e8fe67a245",
+            "dst_vid": "50c2477df396d3fb87620c97d1a4ff92",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7e9e9c1b12546053514d63e8fe67a245",
+            "dst_vid": "afe935e497b006db72d6819bc45226c1",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7e9e9c1b12546053514d63e8fe67a245",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "7e9e9c1b12546053514d63e8fe67a245",
+            "dst_vid": "2c10966e8d84200b2b006cb36ebfc2ea",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "7e9e9c1b12546053514d63e8fe67a245",
+            "dst_vid": "3d02976d337b9402459dc8ee278f8e9f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "ebc2d743b51325cd52cdc04aaecda52d": [
+        {
+            "src_vid": "ebc2d743b51325cd52cdc04aaecda52d",
+            "dst_vid": "b86c9308b650216edfad6277c345022c",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "ebc2d743b51325cd52cdc04aaecda52d",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "ebc2d743b51325cd52cdc04aaecda52d",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "f47773f3f074710d7e0bb04c63367162": [
+        {
+            "src_vid": "f47773f3f074710d7e0bb04c63367162",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "f47773f3f074710d7e0bb04c63367162",
+            "dst_vid": "9973c0e8e8e641adeb172b0c0dcc9e7f",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "18881a930de8846807701154adcbf5e0": [
+        {
+            "src_vid": "18881a930de8846807701154adcbf5e0",
+            "dst_vid": "261150de1d2d514b57a7fd32132df278",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "9a8d99d25dec5b87178b0683010fbc6f": [
+        {
+            "src_vid": "9a8d99d25dec5b87178b0683010fbc6f",
+            "dst_vid": "261150de1d2d514b57a7fd32132df278",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "261150de1d2d514b57a7fd32132df278": [
+        {
+            "src_vid": "261150de1d2d514b57a7fd32132df278",
+            "dst_vid": "5d7a121d40d3aac2dd8a5dbe399f2ac8",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "261150de1d2d514b57a7fd32132df278",
+            "dst_vid": "6564a87d611b000eac0790ae6f727ef4",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "261150de1d2d514b57a7fd32132df278",
+            "dst_vid": "c54d83268868c1618075091a379ad005",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "261150de1d2d514b57a7fd32132df278",
+            "dst_vid": "d820173cace577ab3f21288c7304bc4e",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "adadc02a23e1185a62ca10f736cbf486": [
+        {
+            "src_vid": "adadc02a23e1185a62ca10f736cbf486",
+            "dst_vid": "97c69b64a78049b4555ad79466563ef9",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "adadc02a23e1185a62ca10f736cbf486",
+            "dst_vid": "54d6e4bcc59f1db5d9deaee931031ebe",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "7ec1de6ea1efc24fcc1fca10e8dc165b": [
+        {
+            "src_vid": "7ec1de6ea1efc24fcc1fca10e8dc165b",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "7ec1de6ea1efc24fcc1fca10e8dc165b",
+            "dst_vid": "73cbe313dd6184962b4c0493793115b6",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "7ec1de6ea1efc24fcc1fca10e8dc165b",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "d83bf7923f2028f9f67334cd55324a48": [
+        {
+            "src_vid": "d83bf7923f2028f9f67334cd55324a48",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "d83bf7923f2028f9f67334cd55324a48",
+            "dst_vid": "9d3c06946189cd757b8831c4d4f214d7",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "d83bf7923f2028f9f67334cd55324a48",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "bb4b0423a3aee0af871e8cd63d6b9ecc": [
+        {
+            "src_vid": "bb4b0423a3aee0af871e8cd63d6b9ecc",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        }
+    ],
+    "d6adcb743534ede84bdcf6cd41e24c20": [
+        {
+            "src_vid": "d6adcb743534ede84bdcf6cd41e24c20",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "d6adcb743534ede84bdcf6cd41e24c20",
+            "dst_vid": "d7cd0dff0dc55894c8d428c1365b30e9",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "62930f52acf2eafca52d134987558c5d": [
+        {
+            "src_vid": "62930f52acf2eafca52d134987558c5d",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "62930f52acf2eafca52d134987558c5d",
+            "dst_vid": "9f2aeb785d6648b8cd0c591720d9514f",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "66ae41bba85e2f9f1c164f2a02720252": [
+        {
+            "src_vid": "66ae41bba85e2f9f1c164f2a02720252",
+            "dst_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "rel_type": "court_2_district_located_at",
+            "rel_alias": "所在地区"
+        }
+    ],
+    "99dfcb0247dc555232c82d420a5a582b": [
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "07015cb9a07dfb844535b949f8c97d22",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "3c35ac85089cbb0171f84191f84a3cbc",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "3e96c3daef14c14c767a38ad95c16ce5",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "3f21c91fc16768837c437279ef9246a2",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "4e9ce0fbfa79548c543f083c37213e6e",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "8380845fa874754a49f7d0568320afc6",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "c3a47ce99d84df53114004c03f36b673",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "ce9f6bf79f409947d10c9c23d6dacf7d",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "efae8aa016a2e2db99cc6cc3d908c221",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        },
+        {
+            "src_vid": "99dfcb0247dc555232c82d420a5a582b",
+            "dst_vid": "fa1022566046ca6791a0a91da1a39364",
+            "rel_type": "district_2_district_child",
+            "rel_alias": "下级分类"
+        }
+    ],
+    "44289752d8511bf0d9911dd80dfe72b3": [
+        {
+            "src_vid": "44289752d8511bf0d9911dd80dfe72b3",
+            "dst_vid": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "44289752d8511bf0d9911dd80dfe72b3",
+            "dst_vid": "0807dc110615d48f4c92259ce5b70582",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ]
+}

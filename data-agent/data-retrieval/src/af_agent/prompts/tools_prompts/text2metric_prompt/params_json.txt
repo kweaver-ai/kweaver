@@ -1,0 +1,127 @@
+{
+    "name": "metric_query",
+    "description": "Query metrics data",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "Metric ID to be selected from the METRIC list. Can be empty ('') if no suitable metric is found. Available data sources are listed in the <metric> block"
+            },
+            "params": {
+                "type": "object",
+                "properties": {
+                    "dimensions": {
+                        "type": "array",
+                        "default": [],
+                        "description": "Dimensions to group data, default is []. PLEASE ONLY select dimensions necessary and mentioned in the input query. Please choose NONE or as LESS as possible. Choose carefully especially for temporal dimensions.",
+                        "items": {
+                            "properties": {
+                                "field_id": {
+                                    "type": "string",
+                                    "description": "Dimension ID to be selected, must be from METRIC selected in 'id'"
+                                },
+                                "original_data_type": {
+                                    "type": "string"
+                                },
+                                "format": {
+                                    "type": "string",
+                                    "enum": ["year", "quarter", "month", "week", "day"],
+                                    "description": "ONLY for temporal dimensions. DO NOT set format for other data types"
+                                }
+                            },
+                            "required": [
+                                "field_id",
+                                "original_data_type"
+                            ]
+                        }
+                    },
+                    "filters": {
+                        "description": "Query conditions based on user's question. Can be empty []. Consider the context provided in <background>. Note: Do not set time filters if already set in 'time_constraint'",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "field_id": {
+                                    "type": "string",
+                                    "description": "Dimension ID"
+                                },
+                                "operator": {
+                                    "type": "string",
+                                    "description": "Comparison operator from the OPERATOR list in the <operators> block"
+                                },
+                                "value": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "field_id",
+                                "operator",
+                                "value"
+                            ]
+                        }
+                    },
+{%- if enable_yoy_or_mom %}
+                    "metrics": {
+                        "type": "object",
+                        "description": "Period-over-period settings, ONLY set if required by user (同比环比计算配置). If set, comparison data can be calculated directly, NO NEED to query data for last period.",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "description": "Period type: 'yoy' (year-over-year) | 'mom' (month-over-month) | 'qoq' (quarter-over-quarter) | 'dod' (day-over-day)",
+                                "enum": ["yoy", "mom", "qoq", "dod"]
+                            },
+                            "interval": {
+                                "type": "integer",
+                                "description": "Period interval, default is 1. Set to 2 for comparing with data from 2 years/months/quarters/days ago",
+                                "default": 1
+                            },
+                            "value_type": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Use both only when explicitly requested by user",
+                                "enum": ["value", "percent"],
+                                "default": ["value"]
+                            
+                            }
+                        }
+                    },
+{%- endif %}
+                    "time_constraint": {
+                        "type": "object",
+                        "description": "Time span based on user query. For relative time references (e.g., 'January', 'Q1', 'last week'), calculate based on current time {{ current_date_time }}",
+                        "properties": {
+                            "start_time": {
+                                "type": "string",
+                                "description": "Start time in 'YYYY-MM-DD HH:MM:SS' format"
+                            },
+                            "end_time": {
+                                "type": "string",
+                                "description": "End time in 'YYYY-MM-DD HH:MM:SS' format"
+                            }
+                        },
+                        "required": ["start_time", "end_time"]
+                    }
+                }
+            },
+            "explanation": {
+                "type": "string",
+                "description": "Format: {{ explanation_format }}"
+            },
+            "title": {
+                "type": "string",
+                "description": "Title for the metric query results"
+            },
+            "required": [
+                "id",
+                "params",
+                "explanation",
+                "title"
+            ]
+        }
+    }
+}

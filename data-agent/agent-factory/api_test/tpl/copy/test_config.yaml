@@ -1,0 +1,415 @@
+name: "复制模板API测试"
+description: "测试复制模板功能，包括基本复制和复杂配置复制"
+
+variables:
+  base_url: "http://127.0.0.1:13021"
+  api_prefix: "/api/agent-factory/internal/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "创建源模板"
+    description: "创建一个用于复制的源模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "复制源模板-${random_string:6}"
+        key: "copy-source-${timestamp}"
+        profile: "这是一个用于复制测试的源模板，创建时间: ${timestamp_ms}"
+        avatar_type: 1
+        avatar: "2"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+            is_temp_zone_enabled: 0
+          system_prompt: "你是一个智能助手，这是源模板"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc: []
+            kg: []
+          tools: []
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 0.7
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 2000
+          is_data_flow_set_enabled: 1
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "您好！我是复制源模板。"
+          preset_questions: []
+          output:
+            variables:
+              answer_var: "answer"
+            default_format: "markdown"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "source_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "验证源模板创建"
+    description: "验证源模板创建成功并获取详细信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "源模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "复制源模板"
+          message: "源模板名称应该正确"
+        - type: "exists"
+          field: "body.config"
+          message: "源模板应该包含配置信息"
+    variable_extraction:
+      - name: "source_tpl_name"
+        source: "body"
+        path: "name"
+      - name: "source_tpl_key"
+        source: "body"
+        path: "key"
+    timeout: "10s"
+    retry: 2
+
+  - name: "基本复制模板"
+    description: "执行基本的模板复制操作"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Copy-Type: "basic"
+      body:
+        name: "基本复制-{{source_tpl_name}}-${random_string:4}"
+        key: "basic-copy-${timestamp}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新模板ID"
+    variable_extraction:
+      - name: "basic_copy_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "验证基本复制结果"
+    description: "验证基本复制的模板内容"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{basic_copy_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "复制的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "基本复制"
+          message: "复制的模板名称应该包含'基本复制'"
+        - type: "exists"
+          field: "body.config"
+          message: "复制的模板应该包含配置信息"
+        - type: "exists"
+          field: "body.config.input"
+          message: "复制的模板应该包含输入配置"
+        - type: "exists"
+          field: "body.config.output"
+          message: "复制的模板应该包含输出配置"
+    variable_extraction:
+      - name: "basic_copy_name"
+        source: "body"
+        path: "name"
+    timeout: "10s"
+    retry: 2
+
+  - name: "高级复制模板"
+    description: "执行带自定义配置的高级复制"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Copy-Type: "advanced"
+      body:
+        name: "高级复制-${random_name:6}-${random_string:4}"
+        key: "advanced-copy-${timestamp}-${random_string:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新模板ID"
+    variable_extraction:
+      - name: "advanced_copy_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "验证高级复制结果"
+    description: "验证高级复制的模板内容"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{advanced_copy_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "高级复制的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "高级复制"
+          message: "模板名称应该包含'高级复制'"
+        - type: "exists"
+          field: "body.config"
+          message: "应该包含完整的配置信息"
+    variable_extraction:
+      - name: "advanced_copy_name"
+        source: "body"
+        path: "name"
+    timeout: "10s"
+    retry: 2
+
+  - name: "批量复制测试"
+    description: "测试连续复制多个模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Copy-Type: "batch"
+      body:
+        name: "批量复制-${random_number:1-100}-${random_string:4}"
+        key: "batch-copy-${timestamp}-${random_number:1000-9999}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新模板ID"
+    variable_extraction:
+      - name: "batch_copy_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "测试错误处理 - 无效源模板ID"
+    description: "使用无效的源模板ID进行复制"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/invalid-source-${random_string:8}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "错误测试复制-${random_string:4}"
+        key: "error-copy-${timestamp}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试错误处理 - 重复key"
+    description: "使用重复的key进行复制"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "重复key测试-${random_string:4}"
+        key: "{{source_tpl_key}}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试错误处理 - 缺少必需字段"
+    description: "复制时缺少必需字段"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        # 故意只包含name，缺少key
+        name: "缺少字段测试-${random_string:4}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "验证复制的独立性"
+    description: "验证复制的模板与源模板是独立的"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{basic_copy_id}}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "{{basic_copy_name}} - 已修改"
+        profile: "这是修改后的复制模板，修改时间: ${timestamp_ms}"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "gpt-4"
+            temperature: 0.9
+            max_tokens: 3000
+          prompt_config:
+            system_prompt: "你是一个修改后的智能助手"
+            user_prompt_template: "修改后的问题: {question}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证源模板未受影响"
+    description: "验证修改复制模板不会影响源模板"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.name"
+          value: "复制源模板"
+          message: "源模板名称应该保持不变"
+        - type: "equals"
+          field: "body.config.model_config.model_name"
+          value: "gpt-3.5-turbo"
+          message: "源模板配置应该保持不变"
+    timeout: "10s"
+    retry: 2
+
+  - name: "清理测试数据 - 删除复制的模板"
+    description: "删除所有复制的测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{batch_copy_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "清理测试数据 - 删除高级复制模板"
+    description: "删除高级复制的测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{advanced_copy_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "清理测试数据 - 删除基本复制模板"
+    description: "删除基本复制的测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{basic_copy_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "清理测试数据 - 删除源模板"
+    description: "删除源测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{source_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2 

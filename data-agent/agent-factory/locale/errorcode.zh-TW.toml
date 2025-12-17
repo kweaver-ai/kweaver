@@ -1,0 +1,221 @@
+# 公共錯誤碼
+[AgentFactory.InvalidParameter.RequestBody]
+Description = "請求體無效"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+[AgentFactory.InvalidRequestHeader.Authorization]
+Description = "認證失敗"
+Solution = "請檢查Http請求頭。"
+ErrorLink = "暫無"
+
+[AgentFactory.InvalidRequestHeader.ContentType]
+Description = "無效的ContentType"
+Solution = "請檢查Http請求頭。"
+ErrorLink = "暫無"
+
+[AgentFactory.Forbidden.FilterField]
+Description = "過濾條件欄位不允許 __id 和 __routing"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+[AgentFactory.InternalError]
+Description = "伺服器內部錯誤"
+Solution = "請重試該操作，若再次出現該錯誤請提交工單或聯繫技術支援工程師。"
+ErrorLink = "暫無"
+
+
+
+# Realease 相關錯誤碼
+[AgentFactory.Release.InternalError.PublishFailed]
+Description = "發布智能體失敗，伺服器內部錯誤"
+Solution = "請重試該操作，若再次出現該錯誤請提交工單或聯繫技術支援工程師。"
+ErrorLink = "None"
+
+[AgentFactory.Release.NotFound]
+Description = "此已發布的智能體不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+[AgentFactory.Release.BadRequest.PublishFailedByConfigError]
+Description = "配置檢查失敗。請先修改配置後再嘗試發布。"
+Solution = "請檢查配置是否正確。"
+ErrorLink = "None"
+
+# ReleaseHistory 相關錯誤碼
+[AgentFactory.ReleaseHistory.NotFound]
+Description = "此已發布的智能體歷史記錄不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+
+# Data Agent Config 相關錯誤碼
+[AgentFactory.DataAgentConfig.Conflict.NameExists]
+Description = "智能體名稱已存在"
+Solution = "請修改名稱。"
+ErrorLink = "暫無"
+
+[AgentFactory.DataAgentConfig.NotFound]
+Description = "智能體不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+[AgentFactory.DataAgentConfig.Forbidden.NotOwner]
+Description = "您不是該智能體的所有者，無法操作"
+Solution = "請檢查您的權限。"
+ErrorLink = "暫無"
+
+[AgentFactory.DataAgentConfig.Conflict.Published.CannotBeDeleted]
+Description = "已發布的智能體無法刪除"
+Solution = "請先取消發布。"
+ErrorLink = "暫無"
+
+# Data Agent Config 相關錯誤碼 end
+
+# Custom Space 相關錯誤碼 start
+[AgentFactory.CustomSpace.Conflict.NameExists]
+Description = "自定義空間名稱已存在"
+Solution = "請修改名稱。"
+ErrorLink = "暫無"
+
+[AgentFactory.CustomSpace.Conflict.KeyExists]
+Description = "自定義空間標識已存在"
+Solution = "請修改標識。"
+ErrorLink = "暫無"
+
+[AgentFactory.CustomSpace.NotFound]
+Description = "自定義空間不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+[AgentFactory.DataAgentConfig.BadRequest.LlmRequired]
+Description = "此智能體未選擇LLM"
+Solution = "請先選擇LLM。"
+ErrorLink = "暫無"
+
+[AgentFactory.DataAgentConfig.BadRequest.RetrieverDataSourceKnEntryExceedLimitSize]
+Description = "知識來源中的知識條目超過數量限制，最多可添加10個知識條目。"
+Solution = "請減少知識來源中的知識條目數量。"
+ErrorLink = "None"
+
+
+# Custom Space 相關錯誤碼 end
+
+# Custom Space Member 相關錯誤碼 start
+[AgentFactory.CustomSpaceMember.NotFound]
+Description = "自定義空間成員不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+[AgentFactory.CustomSpaceMember.NotBelongsToSpace]
+Description = "自定義空間成員不屬於該空間"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+# Custom Space Member 相關錯誤碼 end
+
+# Custom Space Resource 相關錯誤碼 start
+[AgentFactory.CustomSpaceResource.NotFound]
+Description = "自定義空間資源不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+[AgentFactory.CustomSpaceResource.NotBelongsToSpace]
+Description = "自定義空間資源不屬於該空間"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+# Custom Space Resource 相關錯誤碼 end
+
+# Product 相關錯誤碼 start
+[AgentFactory.Product.Conflict.NameExists]
+Description = "此產品名稱已存在"
+Solution = "請修改名稱。"
+ErrorLink = "暫無"
+
+[AgentFactory.Product.Conflict.KeyExists]
+Description = "此產品標識已存在"
+Solution = "請修改標識。"
+ErrorLink = "暫無"
+
+[AgentFactory.Product.NotFound]
+Description = "此產品不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+# Product 相關錯誤碼 end
+
+# Category 相關錯誤碼 start
+[AgentFactory.Category.NotFound]
+Description = "智能體分類不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+# Category 相關錯誤碼 end
+
+# Agent Tpl 相關錯誤碼 start
+[AgentFactory.AgentTpl.Conflict.NameExists]
+Description = "Agent模板名稱已存在"
+Solution = "請修改名稱。"
+ErrorLink = "暫無"
+
+[AgentFactory.AgentTpl.Conflict.KeyExists]
+Description = "Agent模板標識已存在"
+Solution = "請修改標識。"
+ErrorLink = "暫無"
+
+[AgentFactory.AgentTpl.NotFound]
+Description = "此Agent模板不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "暫無"
+
+[AgentFactory.AgentTpl.Forbidden.NotOwner]
+Description = "您不是此Agent模板的所有者，無法操作"
+Solution = "請檢查您的權限。"
+ErrorLink = "暫無"
+
+[AgentFactory.AgentTpl.IsUnpublished]
+Description = "此Agent模板是未發布狀態"
+Solution = "請先發布。"
+ErrorLink = "暫無"
+
+[AgentFactory.AgentTpl.Conflict.Published.CannotBeDeleted]
+Description = "已發布的 Agent 模板無法刪除"
+Solution = "請先取消發布。"
+ErrorLink = "暫無"
+
+# Agent Tpl 相關錯誤碼 end
+
+
+#Agent AIAutoGen
+[AgentFactory.AiAutogenError]
+Description = "AI 自動生成失敗"
+Solution = "請重試該操作，若再次出現該錯誤請提交工單或聯繫技術支援工程師。"
+ErrorLink = "暫無"
+# Published Agent Tpl 相關錯誤碼 start
+[AgentFactory.PublishedTpl.NotFound]
+Description = "此已發布的Agent模板不存在"
+Solution = "請檢查參數是否正確。"
+ErrorLink = "None"
+
+# Published Agent Tpl 相關錯誤碼 end
+
+# Permission 相關錯誤碼 start
+[AgentFactory.Permission.Forbidden]
+Description = "抱歉，您目前沒有此操作的權限。"
+Solution = "請檢查您的權限。"
+ErrorLink = "暫無"
+
+# Permission 相關錯誤碼 end
+
+# Import、Export 相關錯誤碼 start
+[AgentFactory.Inout.ParseFileFailed]
+Description = "解析檔案失敗。"
+Solution = "請檢查檔案格式。"
+ErrorLink = "None"
+
+[AgentFactory.Inout.MaxSizeExceeded]
+Description = "匯入的Agent數量超過最大限制。"
+Solution = "請減少匯入的Agent數量。"
+ErrorLink = "None"
+# Import、Export 相關錯誤碼 end

@@ -1,0 +1,255 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      dnsConfig:
+        options:
+        - name: single-request-reopen
+        - name: use-vc
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          - containerPort: {{ .Values.ports.apiPort }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.ports.apiPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+               memory: {{ .Values.resources.limits.memory }}
+               cpu: {{ .Values.resources.limits.cpu }}
+          env:
+            - name: DEVICE_CODE
+              value: {{ .Values.env.devicecode }}
+            - name: OPENSEARCH_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_HOST
+            - name: OPENSEARCHWRITE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCHWRITE
+            - name: OPENSEARCHREAD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCHRED
+            - name: OPENSEARCH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_PORT
+            - name: OPENSEARCH_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_USER
+            - name: OPENSEARCH_PASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_PASS
+            - name: REDISCLUSTERMODE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISCLUSTERMODE
+            - name: REDISUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISUSER
+            - name: REDISPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISPASS
+            {{- if ne .Values.depServices.redis.connectType "master-slave" }}
+            - name: REDISHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISHOST
+            - name: REDISPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISPORT
+            {{- end }}
+            {{- if eq .Values.depServices.redis.connectType "sentinel" }}
+            - name: SENTINELMASTER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: SENTINELMASTER
+            - name: SENTINELUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: SENTINELUSER
+            - name: SENTINELPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: SENTINELPASS
+            {{- end }}
+            {{- if eq .Values.depServices.redis.connectType "master-slave" }}
+            - name: REDISREADHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADHOST
+            - name: REDISREADPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADPORT
+            - name: REDISREADUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADUSER
+            - name: REDISREADPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADPASS
+            - name: REDISWRITEHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEHOST
+            - name: REDISWRITEPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEPORT
+            - name: REDISWRITEUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEUSER
+            - name: REDISWRITEPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEPASS
+            {{- end }}
+            - name: RERANKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: RERANKER_URL
+            - name: EMB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: EMB_URL
+            - name: EMBEDDING_DIMENSION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: EMBEDDING_DIMENSION
+            - name: OAUTHPUBLICHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OAUTHPUBLICHOST
+            - name: OAUTHPUBLICPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OAUTHPUBLICPORT
+            - name: OAUTHADMINHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OAUTHADMINHOST
+            - name: OAUTHADMINPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OAUTHADMINPORT
+            - name: USERMANAGEMENTPUBLICHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: USERMANAGEMENTPUBLICHOST
+            - name: USERMANAGEMENTPUBLICPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: USERMANAGEMENTPUBLICPORT
+            - name: USERMANAGEMENTPRIVATEHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: USERMANAGEMENTPRIVATEHOST
+            - name: USERMANAGEMENTPRIVATEPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: USERMANAGEMENTPRIVATEPORT
+            - name: GRAPHDB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_TYPE
+            - name: GRAPHDB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_HOST
+            - name: GRAPHDB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_PORT
+            - name: GRAPHDB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_USER
+            - name: GRAPHDB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_PASSWORD
+            {{- if eq .Values.depServices.graphDatabase.type "nebulaGraph" }}
+            - name: GRAPHDB_READ_ONLY_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_READ_ONLY_USER
+            - name: GRAPHDB_READ_ONLY_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: GRAPHDB_READ_ONLY_PASSWORD
+            {{- end }}
+            - name: RERANK_LLM_MODEL
+              value: {{ .Values.appConfig.rerank_llm_model.name }}

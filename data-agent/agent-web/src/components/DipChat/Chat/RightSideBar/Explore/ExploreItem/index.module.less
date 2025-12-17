@@ -1,0 +1,136 @@
+.container {
+  //box-shadow: var(--dip-box-shadow);
+  padding-top: 16px;
+  box-shadow: 0 5px 16px -4px rgba(0,0,0,.05);
+
+
+  .footer {
+    padding: 0 16px 16px 16px;
+    width: 100%;
+    height: 140px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to bottom,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 1) 65%,
+    rgba(255, 255, 255, 1) 100%,);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    .tabItem {
+      border-radius: 8px;
+      width: 40px;
+      @media screen and (min-width: 1660px) {
+        width: 60px;
+      }
+      height: 8px;
+      background: rgba(var(--dip-primary-color-rgb), .12);
+      transition: all .2s;
+      cursor: pointer;
+
+      &.tabItemActive {
+        background: rgba(var(--dip-primary-color-rgb), .65);
+      }
+    }
+  }
+
+
+  .processChild {
+    border-radius: 8px;
+    padding: 10px 16px;
+    transition: all .2s;
+    background: rgba(var(--dip-primary-color-rgb), .01);
+    &:hover {
+      background: rgba(var(--dip-primary-color-rgb), .06);
+    }
+
+    .icon {
+      min-width: 24px;
+      width: auto;
+      height: 24px;
+      display: inline-block;
+    }
+  }
+
+  .processDocChild {
+    border-radius: 8px;
+    padding: 10px 16px;
+    background: rgba(var(--dip-primary-color-rgb), .01);
+  }
+
+  .processGraphChild {
+    border-radius: 8px;
+    padding: 10px 16px;
+    background: rgba(var(--dip-primary-color-rgb), .01);
+    word-break: break-all;
+  }
+
+  .link {
+    cursor: pointer;
+    color: var(--dip-text-color);
+    transition: all .2s;
+    &:hover {
+      color: var(--dip-primary-color);
+    }
+  }
+
+  .sign {
+    width: fit-content;
+    background: rgba(0, 0, 0, .06);
+    height: 32px;
+    padding: 0 12px;
+  }
+
+  /* HTML: <div class="loader"></div> */
+  .loader {
+    margin-left: 8px;
+    width: 40px;
+    height: 20px;
+    --c:no-repeat radial-gradient(farthest-side,rgba(var(--dip-primary-color-rgb), 1),#0000);
+    background:
+            var(--c) 0    0,
+            var(--c) 50%  0,
+            var(--c) 100% 0;
+    background-size: 8px 8px;
+    position: relative;
+    animation: l4-0 1s linear infinite alternate;
+    &:before {
+      content: "";
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--dip-primary-color);
+      left: 0;
+      top: 0;
+      animation:
+              l4-1 1s  linear infinite alternate,
+              l4-2 0.5s cubic-bezier(0,200,.8,200) infinite;
+    }
+  }
+
+}
+
+.expanded {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 99;
+  width: 100%;
+}
+
+@keyframes l4-0 {
+  0%      {background-position: 0  100%,50% 0   ,100% 0}
+  8%,42%  {background-position: 0  0   ,50% 0   ,100% 0}
+  50%     {background-position: 0  0   ,50% 100%,100% 0}
+  58%,92% {background-position: 0  0   ,50% 0   ,100% 0}
+  100%    {background-position: 0  0   ,50% 0   ,100% 100%}
+}
+@keyframes l4-1 {
+  100% {left:calc(100% - 8px)}
+}
+@keyframes l4-2 {
+  100% {top:-0.1px}
+}

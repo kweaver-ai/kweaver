@@ -1,0 +1,211 @@
+name: "空间删除接口测试（修复版）"
+description: "测试删除空间API的各种场景，修复了API行为适配问题"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个空间用于删除测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "待删除空间-${random_string:6}"
+        key: "delete-test-space-${timestamp}"
+        profile: "这是一个专门用于删除测试的空间，创建时间: ${timestamp_ms}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "delete_test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 验证空间存在"
+    description: "确认空间已创建成功，可以被查询到"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{delete_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{delete_test_space_id}}"
+          message: "返回的空间ID应该匹配"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含空间名称"
+        - type: "contains"
+          field: "body.name"
+          value: "待删除空间"
+          message: "空间名称应该包含'待删除空间'"
+    variable_extraction:
+      - name: "space_name"
+        source: "body"
+        path: "name"
+      - name: "space_key"
+        source: "body"
+        path: "key"
+    timeout: "10s"
+    retry: 2
+
+  - name: "3. 删除空间 - 有效ID"
+    description: "测试删除存在的空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{delete_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Delete-Reason: "测试删除"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "15s"
+    retry: 2
+
+  - name: "4. 验证删除结果"
+    description: "确认空间已被删除，无法再查询到"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{delete_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "5. 重复删除测试"
+    description: "测试删除已删除的空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{delete_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "6. 删除空间 - 无效ID"
+    description: "测试删除不存在的空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-space-id-${random_string:10}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "7. 删除空间 - 格式错误的ID"
+    description: "测试使用格式错误的ID删除空间（包含特殊字符）"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid@#$%"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "8. 创建第二个测试空间"
+    description: "创建另一个空间用于批量删除测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "批量删除测试空间-${random_string:6}"
+        key: "batch-delete-test-${timestamp}"
+        profile: "用于批量删除测试的空间"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "batch_delete_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "9. 删除第二个空间"
+    description: "删除第二个测试空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{batch_delete_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "15s"
+    retry: 2
+
+  - name: "10. 最终验证"
+    description: "验证所有测试空间都已被删除"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{batch_delete_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "第二个空间也应该已被删除"
+    timeout: "10s"
+    retry: 1 

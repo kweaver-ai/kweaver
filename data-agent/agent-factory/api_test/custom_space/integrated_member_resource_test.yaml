@@ -1,0 +1,452 @@
+name: "空间成员和资源管理综合测试"
+description: "综合测试空间成员和资源管理的完整业务场景，包括创建空间、同时管理成员和资源"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建综合测试空间"
+    description: "创建一个空间用于成员和资源综合测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        name: "综合测试空间-${random_string:6}"
+        key: "integrated-test-${timestamp}"
+        profile: "用于成员和资源综合测试的空间"
+        members:
+          - obj_type: "user"
+            obj_id: "admin-user"
+          - obj_type: "user"
+            obj_id: "test-user-001"
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "initial-agent-001"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 验证初始成员和资源"
+    description: "验证创建空间时的初始成员和资源是否正确添加"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 2
+          message: "初始成员数量应该为2"
+    timeout: "10s"
+
+  - name: "3. 验证初始资源"
+    description: "验证创建空间时的初始资源"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 1
+          message: "初始资源数量应该为1"
+    timeout: "10s"
+
+  - name: "4. 批量添加团队成员"
+    description: "为项目添加团队成员"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "developer-001"
+          - obj_type: "user"
+            obj_id: "developer-002"
+          - obj_type: "user"
+            obj_id: "tester-001"
+          - obj_type: "dept"
+            obj_id: "dev-team"
+          - obj_type: "user_group"
+            obj_id: "qa-group"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "5. 批量添加项目资源"
+    description: "为项目添加相关资源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "prod-agent-001"
+          - resource_type: "data_agent"
+            resource_id: "test-agent-001"
+          - resource_type: "data_agent"
+            resource_id: "dev-agent-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "6. 验证团队规模"
+    description: "验证团队成员总数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 7
+          message: "团队成员总数应该为7"
+    variable_extraction:
+      - name: "developer_001_id"
+        source: "body"
+        path: "entries[?(@.obj_id=='developer-001')].id"
+      - name: "tester_001_id"
+        source: "body"
+        path: "entries[?(@.obj_id=='tester-001')].id"
+    timeout: "10s"
+
+  - name: "7. 验证项目资源"
+    description: "验证项目资源总数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 4
+          message: "项目资源总数应该为4"
+    variable_extraction:
+      - name: "test_agent_id"
+        source: "body"
+        path: "entries[?(@.resource_id=='test-agent-001')].id"
+      - name: "dev_agent_id"
+        source: "body"
+        path: "entries[?(@.resource_id=='dev-agent-001')].id"
+    timeout: "10s"
+
+  - name: "8. 模拟项目重组 - 移除部分成员"
+    description: "模拟项目重组，移除部分团队成员"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members/{{developer_001_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+    expected:
+      status_code: 204
+    timeout: "10s"
+
+  - name: "9. 模拟环境清理 - 移除测试资源"
+    description: "模拟环境清理，移除测试相关资源"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources/{{test_agent_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+    expected:
+      status_code: 204
+    timeout: "10s"
+
+  - name: "10. 验证重组后的团队"
+    description: "验证项目重组后的团队状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 6
+          message: "重组后团队成员应该为6"
+    timeout: "10s"
+
+  - name: "11. 验证清理后的资源"
+    description: "验证环境清理后的资源状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 3
+          message: "清理后资源应该为3"
+    timeout: "10s"
+
+  - name: "12. 添加新的开发人员"
+    description: "为项目添加新的开发人员"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "senior-dev-001"
+          - obj_type: "user"
+            obj_id: "junior-dev-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "13. 添加生产环境资源"
+    description: "为项目添加生产环境资源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "prod-agent-002"
+          - resource_type: "data_agent"
+            resource_id: "backup-agent-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "14. 最终团队状态验证"
+    description: "验证最终的团队配置"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 8
+          message: "最终团队成员应该为8"
+    timeout: "10s"
+
+  - name: "15. 最终资源状态验证"
+    description: "验证最终的资源配置"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 5
+          message: "最终资源应该为5"
+    timeout: "10s"
+
+  - name: "16. 测试并发操作 - 同时添加成员和资源"
+    description: "测试同时进行成员和资源操作的并发场景"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "concurrent-user-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "17. 并发资源添加"
+    description: "并发添加资源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "concurrent-agent-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "18. 验证并发操作结果"
+    description: "验证并发操作后的状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "空间应该仍然存在"
+    timeout: "10s"
+
+  - name: "19. 最终成员计数验证"
+    description: "最终验证成员总数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "50"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 9
+          message: "最终成员总数应该为9"
+    timeout: "10s"
+
+  - name: "20. 最终资源计数验证"
+    description: "最终验证资源总数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+      params:
+        page: "1"
+        size: "50"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 6
+          message: "最终资源总数应该为6"
+    timeout: "10s"
+
+  - name: "21. 清理测试空间"
+    description: "删除测试用的空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "admin-user"
+    expected:
+      status_code: 204
+    timeout: "10s" 

@@ -1,0 +1,40 @@
+# Git files
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Environment
+.env
+.venv
+venv/
+
+# Documentation
+docs/
+*.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+
+# Test results
+results/
+*.log
+
+# Temporary files
+tmp/
+test_payload.json
+new_payload.json
+full_payload.json

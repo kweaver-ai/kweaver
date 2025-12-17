@@ -1,0 +1,245 @@
+name: "创建空间API测试"
+description: "测试创建空间功能，使用动态变量生成测试数据"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 10
+  random_name_length: 8
+
+tests:
+  - name: "创建基础空间"
+    description: "创建一个基础的测试空间，使用动态变量"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Timestamp: "${timestamp}"
+        X-Test-Session: "${uuid}"
+      body:
+        name: "动态测试空间-${random_string:8}"
+        key: "dynamic-space-${timestamp}"
+        profile: "这是一个使用动态变量创建的测试空间，创建时间: ${timestamp_ms}，创建者: ${random_name:8}"
+        members:
+          - obj_type: "user"
+            obj_id: "user-${random_number:1000-9999}"
+          - obj_type: "dept"
+            obj_id: "dept-${random_number:100-999}"
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "agent-${random_string:8}"
+          - resource_type: "data_agent"
+            resource_id: "agent-${random_string:8}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "created_space_id"
+        source: "body"
+        path: "id"
+    timeout: "2s"
+    retry: 0
+
+  - name: "验证创建的空间详情"
+    description: "通过详情API验证创建的空间信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{created_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Verify-Space: "{{created_space_id}}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的空间ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "动态测试空间"
+          message: "空间名称应该包含'动态测试空间'"
+        - type: "contains"
+          field: "body.key"
+          value: "dynamic-space"
+          message: "空间key应该包含'dynamic-space'"
+        - type: "exists"
+          field: "body.created_at"
+          message: "响应应该包含创建时间"
+        - type: "exists"
+          field: "body.updated_at"
+          message: "响应应该包含更新时间"
+        - type: "contains"
+          field: "body.profile"
+          value: "动态变量创建"
+          message: "简介应该包含动态变量信息"
+    variable_extraction:
+      - name: "created_space_name"
+        source: "body"
+        path: "name"
+      - name: "created_space_key"
+        source: "body"
+        path: "key"
+      - name: "creation_timestamp"
+        source: "body"
+        path: "created_at"
+    timeout: "2s"
+    retry: 0
+
+  - name: "创建带复杂数据的空间"
+    description: "创建包含复杂数据结构的空间"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Parent-Space: "{{created_space_id}}"
+      body:
+        name: "复杂数据空间-${random_name:6}"
+        key: "complex-space-${timestamp}"
+        profile: "包含复杂数据的测试空间，父空间: {{created_space_name}}"
+        members:
+          - obj_type: "user"
+            obj_id: "admin-${random_number:1000-9999}"
+          - obj_type: "user"
+            obj_id: "user-${random_number:1000-9999}"
+          - obj_type: "dept"
+            obj_id: "dept-${random_number:100-999}"
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "primary-agent-${random_string:6}"
+          - resource_type: "data_agent"
+            resource_id: "backup-agent-${random_string:6}"
+          - resource_type: "data_agent"
+            resource_id: "test-agent-${random_string:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "complex_space_id"
+        source: "body"
+        path: "id"
+    timeout: "2s"
+    retry: 0
+
+  - name: "验证复杂空间详情"
+    description: "验证复杂数据空间的详情信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{complex_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Verify-Complex: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的空间ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "复杂数据空间"
+          message: "空间名称应该包含'复杂数据空间'"
+        - type: "contains"
+          field: "body.profile"
+          value: "复杂数据"
+          message: "简介应该包含复杂数据信息"
+    variable_extraction:
+      - name: "complex_space_name"
+        source: "body"
+        path: "name"
+    timeout: "2s"
+    retry: 0
+
+  - name: "测试错误处理 - 重复key"
+    description: "测试使用重复key创建空间的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "重复key测试-${random_string:6}"
+        key: "{{created_space_key}}"
+        profile: "尝试使用重复key创建空间"
+    expected:
+      status_code: 409
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.description"
+          value: "已存在"
+          message: "错误描述应该提示已存在"
+          optional: true
+    timeout: "2s"
+    retry: 0
+
+  - name: "测试错误处理 - 重复名称"
+    description: "测试使用重复名称创建空间的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "{{created_space_name}}"
+        key: "different-key-${timestamp}"
+        profile: "尝试使用重复名称创建空间"
+    expected:
+      status_code: 409
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.description"
+          value: "已存在"
+          message: "错误描述应该提示已存在"
+          optional: true
+    timeout: "2s"
+    retry: 0
+
+  - name: "测试错误处理 - 缺少必需字段"
+    description: "测试缺少必需字段时的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        profile: "缺少名称字段的测试-${random_string:8}"
+        metadata:
+          test_type: "missing_required_field"
+          timestamp: "${timestamp}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "2s"
+    retry: 0

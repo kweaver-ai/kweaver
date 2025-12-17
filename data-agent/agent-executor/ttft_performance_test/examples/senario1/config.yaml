@@ -1,0 +1,61 @@
+# Example configuration for TTFT Performance Testing
+
+# API Configuration
+api:
+  base_url: "http://XXX:30778"
+  endpoint: "/api/agent-executor/v2/agent/run"
+  timeout: 300
+  headers:
+    x-user: "bdb78b62-6c48-11f0-af96-fa8dcc0a06b2"
+    x-visitor-type: "user"
+    Content-Type: "application/json"
+    Accept: "text/event-stream"
+  payload_template: "examples/senario1/payload.json"  # Optional custom payload template
+
+# Test Parameters
+test:
+  concurrency: 10
+  iterations: 20
+  delay_between_requests: 0.0
+  delay_between_batches: 2.0
+  max_failures: 10
+  queries:
+    - "中国和美国贸易往来的历史影响"
+    - "人工智能技术发展趋势分析"
+    - "区块链技术在金融领域的应用"
+    - "全球气候变化对经济的影响"
+    - "量子计算的最新研究进展"
+    - "大数据技术在工业领域的应用"
+    - "物联网技术在医疗健康领域的应用"
+    - "机器学习技术在智能助手领域的应用"
+    - "深度学习技术在图像识别领域的应用"
+    - "自然语言处理技术在智能助手领域的应用"
+    - "推荐系统技术在电商领域的应用"
+    - "知识图谱技术在智能助手领域的应用"
+    - "智能助手技术在智能助手领域的应用"
+    - "AI 模型在智能助手领域的应用"
+    - "Agent 模型在智能助手领域的应用"
+    - "LLM 模型在智能助手领域的应用"
+    - "ChatGPT 模型在智能助手领域的应用"
+    - "GPT-4 模型在智能助手领域的应用"
+    - "软件工程的历史影响"
+    - "软件工程在计算机科学领域的应用"
+    - "问数智能体当前的发展"
+    - "软件工程在软件测试领域的应用"
+    - "智能体发展历史影响"
+    - "软件测试技术在软件测试领域的应用"
+    - "大模型的历史影响"
+    - "大模型在软件测试领域的应用"
+
+# Report Configuration
+report:
+  output_dir: "./results"
+  formats: ["json", "txt"]
+  include_charts: true
+  chart_types: ["time_series", "distribution"]
+  timestamp_format: "%Y%m%d_%H%M%S"
+
+# Logging
+logging:
+  level: "INFO"
+  file: "ttft_tester.log"

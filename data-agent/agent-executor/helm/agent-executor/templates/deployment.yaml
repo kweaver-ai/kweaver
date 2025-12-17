@@ -1,0 +1,306 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.image.name }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum | trunc 10 | quote }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.service.ports.name1 }}
+              containerPort: {{ .Values.service.ports.port1 }}
+          livenessProbe:
+{{ toYaml .Values.probe.livenessProbe | indent 12 }}
+          readinessProbe:
+{{ toYaml .Values.probe.readinessProbe | indent 12 }}
+          startupProbe:
+{{ toYaml .Values.probe.startupProbe | indent 12 }}
+          volumeMounts:
+            - name: host-time
+              mountPath: /etc/localtime
+            - name: {{ .Release.Name }}-rds-conf
+              mountPath: /tmp/rds_conf
+            # v2版本配置文件挂载
+            - name: {{ .Release.Name }}-yaml-v2
+              mountPath: /sysvol/conf/
+          env:
+            - name: RDSHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: RDSHOST
+            - name: RDSPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: RDSPORT
+            - name: RDSUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: RDSUSER
+            - name: RDSPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: RDSPASS
+            - name: DB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: DB_TYPE
+            - name: RDSDBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: RDSDBNAME
+            - name: REDISCLUSTERMODE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISCLUSTERMODE
+            - name: REDISUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISUSER
+            - name: REDISPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISPASS
+            {{- if ne .Values.depServices.redis.connectType "master-slave" }}
+            - name: REDISHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISHOST
+            - name: REDISPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISPORT
+            {{- end }}
+            {{- if eq .Values.depServices.redis.connectType "sentinel" }}
+            - name: SENTINELMASTER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: SENTINELMASTER
+            - name: SENTINELUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: SENTINELUSER
+            - name: SENTINELPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: SENTINELPASS
+            {{- end }}
+            {{- if eq .Values.depServices.redis.connectType "master-slave" }}
+            - name: REDISREADHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADHOST
+            - name: REDISREADPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADPORT
+            - name: REDISREADUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADUSER
+            - name: REDISREADPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISREADPASS
+            - name: REDISWRITEHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEHOST
+            - name: REDISWRITEPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEPORT
+            - name: REDISWRITEUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEUSER
+            - name: REDISWRITEPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: REDISWRITEPASS
+            {{- end }}
+            - name: ENABLE_SYSTEM_LOG
+              valueFrom:
+                configMapKeyRef:
+                  key: ENABLE_SYSTEM_LOG
+                  name: {{ .Release.Name }}-yaml
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP # 宿主机IP
+            - name: RPS_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  key: RPS_LIMIT
+                  name: {{ .Release.Name }}-yaml
+            - name: TRACE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: TRACE_URL
+                  name: {{ .Release.Name }}-yaml
+            - name: O11Y_LOG_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: LOG_ENABLE
+                  name: {{ .Release.Name }}-yaml
+            - name: O11Y_TRACE_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: TRACE_ENABLE
+                  name: {{ .Release.Name }}-yaml
+            - name: OPENSEARCH_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_HOST
+            - name: OPENSEARCHWRITE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCHWRITE
+            - name: OPENSEARCHREAD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCHRED
+            - name: OPENSEARCH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_PORT
+            - name: OPENSEARCH_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_USER
+            - name: OPENSEARCH_PASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-yaml
+                  key: OPENSEARCH_PASS
+            - name: GRAPHDB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_TYPE
+                  name: {{ .Release.Name }}-yaml
+            - name: GRAPHDB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_HOST
+                  name: {{ .Release.Name }}-yaml
+            - name: GRAPHDB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_PORT
+                  name: {{ .Release.Name }}-yaml
+            - name: GRAPHDB_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_USER
+                  name: {{ .Release.Name }}-yaml
+            - name: GRAPHDB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_PASSWORD
+                  name: {{ .Release.Name }}-yaml
+            {{- if eq .Values.depServices.graphDatabase.type "nebulaGraph" }}
+            - name: GRAPHDB_READ_ONLY_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_READ_ONLY_USER
+                  name: {{ .Release.Name }}-yaml
+            - name: GRAPHDB_READ_ONLY_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: GRAPHDB_READ_ONLY_PASSWORD
+                  name: {{ .Release.Name }}-yaml
+            {{- end }}
+            - name: EMB_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: EMB_URL
+                  name: {{ .Release.Name }}-yaml
+            - name: EMBEDDING_DIMENSION
+              valueFrom:
+                configMapKeyRef:
+                  key: EMBEDDING_DIMENSION
+                  name: {{ .Release.Name }}-yaml
+            - name: RERANK_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: RERANK_URL
+                  name: {{ .Release.Name }}-yaml
+            - name: ENABLE_SENSITIVE_WORD_DETECTION
+              valueFrom:
+                configMapKeyRef:
+                  key: ENABLE_SENSITIVE_WORD_DETECTION
+                  name: {{ .Release.Name }}-yaml
+            - name: DO_NOT_USE_EXPLORE_BLOCK_V2
+              valueFrom:
+                configMapKeyRef:
+                  key: DO_NOT_USE_EXPLORE_BLOCK_V2
+                  name: {{ .Release.Name }}-yaml
+            - name:  DM_SVC_PATH
+              value: /tmp/rds_conf/
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+        - name: {{ .Release.Name }}-rds-conf
+          configMap:
+            name: {{ .Release.Name }}-yaml
+            items:
+            - key: dm_svc.conf
+              path: dm_svc.conf
+        # v2版本配置文件volume
+        - name: {{ .Release.Name }}-yaml-v2
+          configMap:
+            name: {{ .Release.Name }}-yaml-v2

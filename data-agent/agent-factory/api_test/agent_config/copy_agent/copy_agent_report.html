@@ -1,0 +1,2932 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试报告 - Agent复制接口API测试</title>
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    
+    <style>
+code[class*=language-],pre[class*=language-]{color:#ccc;background:0 0;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#2d2d2d}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.block-comment,.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#999}.token.punctuation{color:#ccc}.token.attr-name,.token.deleted,.token.namespace,.token.tag{color:#e2777a}.token.function-name{color:#6196cc}.token.boolean,.token.function,.token.number{color:#f08d49}.token.class-name,.token.constant,.token.property,.token.symbol{color:#f8c555}.token.atrule,.token.builtin,.token.important,.token.keyword,.token.selector{color:#cc99cd}.token.attr-value,.token.char,.token.regex,.token.string,.token.variable{color:#7ec699}.token.entity,.token.operator,.token.url{color:#67cdcc}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}.token.inserted{color:green}
+    </style>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .config-info {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: left;
+        }
+        .config-info h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.3em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .config-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .config-label {
+            font-weight: 500;
+            opacity: 0.9;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .config-value {
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .summary-card h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .summary-card .number {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        .success { color: #28a745; }
+        .failure { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        .tests {
+            padding: 40px;
+        }
+        .tests-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .tests-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-all-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toggle-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .test-item {
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .test-item:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .test-header:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        }
+        .test-header .toggle-icon {
+            margin-left: 15px;
+            font-size: 1.2em;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+        }
+        .test-header.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .test-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .test-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .test-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .status-failure {
+            background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        }
+        .test-index {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+        .test-details {
+            padding: 30px;
+            display: block;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+        .test-details.collapsed {
+            display: none;
+        }
+        .request-response {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .request, .response {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .section-header {
+            background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-content {
+            padding: 20px;
+        }
+        .subsection {
+            margin-bottom: 20px;
+        }
+        .subsection:last-child {
+            margin-bottom: 0;
+        }
+        .subsection-title {
+            color: #495057;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid #4a5568;
+            position: relative;
+        }
+        .json-container {
+            background-color: #1a202c;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #4a5568;
+        }
+        .json-header {
+            background-color: #2d3748;
+            padding: 10px 15px;
+            border-bottom: 1px solid #4a5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .json-header .format-type {
+            color: #68d391;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .copy-btn:hover {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        .copy-curl-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .copy-curl-btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        .copy-curl-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+        }
+        .send-request-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .send-request-btn:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4c93 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .send-request-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+        }
+        .send-request-btn:disabled {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+        }
+        .json-content {
+            padding: 20px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+        .assertions {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .assertions-header {
+            background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .assertions-header:hover {
+            background: linear-gradient(135deg, #138496 0%, #1e7e34 100%);
+        }
+        .assertions-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .assertions-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        .assertions-header.collapsed .assertions-toggle {
+            transform: rotate(-90deg);
+        }
+        .assertions-content {
+            padding: 20px;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        .assertions-content.collapsed {
+            display: none;
+        }
+        .assertion {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .assertion-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 4px solid #28a745;
+        }
+        .assertion-failure {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 4px solid #dc3545;
+        }
+        .assertion-optional {
+            opacity: 0.8;
+            border-style: dashed;
+        }
+        .assertion-content {
+            flex: 1;
+        }
+        .assertion-type {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+        }
+        .assertion-message {
+            margin-top: 4px;
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+        .assertion-icon {
+            font-size: 1.2em;
+            margin-left: 15px;
+        }
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-word;
+        }
+        .error-message strong {
+            color: #721c24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .duration {
+            color: #6c757d;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .live-response {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 2px solid #17a2b8;
+            animation: slideIn 0.5s ease-out;
+        }
+        .live-response .section-header {
+            background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+        }
+        
+         
+        @media (max-width: 1024px) {
+            .config-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 18px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .request-response {
+                grid-template-columns: 1fr;
+            }
+            .summary {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            .test-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .test-title, .test-status {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .config-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .config-item {
+                min-height: auto;
+                padding: 12px;
+            }
+            .config-label {
+                white-space: normal;
+                margin-bottom: 6px;
+            }
+            .tests {
+                padding: 20px;
+            }
+            .tests-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .config-info {
+                padding: 15px;
+                margin-top: 20px;
+            }
+            .config-item {
+                padding: 10px;
+            }
+            .config-label {
+                font-size: 0.85em;
+            }
+            .config-value {
+                font-size: 0.8em;
+                padding: 4px 8px;
+            }
+        }
+        
+         
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .test-item {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .assertion {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+         
+        .code-block::-webkit-scrollbar,
+        .json-content::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .code-block::-webkit-scrollbar-track,
+        .json-content::-webkit-scrollbar-track {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        .code-block::-webkit-scrollbar-thumb,
+        .json-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        .code-block::-webkit-scrollbar-thumb:hover,
+        .json-content::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Agent复制接口API测试</h1>
+            <p>测试Agent复制接口的各种场景，包括基础功能、错误处理和边界条件</p>
+            <p><i class="far fa-clock"></i> 测试时间: 2025-06-19 15:21:15 - 2025-06-19 15:21:15</p>
+            
+            
+            <div class="config-info">
+                <h3><i class="fas fa-cog"></i> 配置信息</h3>
+                <div class="config-grid">
+                    
+                    <div class="config-item">
+                        <div class="config-label"><i class="fas fa-file-code"></i> 配置文件</div>
+                        <div class="config-value">./copy_agent/test_config.yaml</div>
+                    </div>
+                    
+                    
+                    <div class="config-item">
+                        <div class="config-label"><i class="fas fa-code"></i> 配置格式</div>
+                        <div class="config-value">YAML</div>
+                    </div>
+                    
+                    
+                    <div class="config-item">
+                        <div class="config-label"><i class="fas fa-layer-group"></i> 并发数</div>
+                        <div class="config-value">1</div>
+                    </div>
+                    
+                    
+                    <div class="config-item">
+                        <div class="config-label"><i class="fas fa-file-alt"></i> 报告格式</div>
+                        <div class="config-value">html</div>
+                    </div>
+                    
+                    
+                    
+                    <div class="config-item">
+                        <div class="config-label"><i class="fas fa-tags"></i> 全局变量</div>
+                        <div class="config-value">2 个</div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <h3><i class="fas fa-list-ol"></i> 总测试数</h3>
+                <div class="number info">9</div>
+            </div>
+            <div class="summary-card">
+                <h3><i class="fas fa-check-circle"></i> 通过测试</h3>
+                <div class="number success">9</div>
+            </div>
+            <div class="summary-card">
+                <h3><i class="fas fa-times-circle"></i> 失败测试</h3>
+                <div class="number failure">0</div>
+            </div>
+            <div class="summary-card">
+                <h3><i class="fas fa-percentage"></i> 成功率</h3>
+                <div class="number success">
+                    100.0%
+                </div>
+            </div>
+            <div class="summary-card">
+                <h3><i class="fas fa-stopwatch"></i> 总耗时</h3>
+                <div class="number info">6.58ms</div>
+            </div>
+        </div>
+        
+        <div class="tests">
+            <div class="tests-header">
+                <h2><i class="fas fa-tasks"></i> 测试详情</h2>
+                <button onclick="toggleAllTests()" id="toggleAllBtn" class="toggle-all-btn">
+                    <i class="fas fa-expand-arrows-alt"></i> 全部展开
+                </button>
+            </div>
+            
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 0 )">
+                    <div class="test-title">
+                        <span class="test-index">1</span>
+                        <h3>0. 查询个人空间Agent列表</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 5.788833ms</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-0">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 0 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 0 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">GET http://127.0.0.1:13020/api/agent-factory/v3/personal-space/agent-list?page=1&amp;publish_status=published&amp;size=10
+Accept: application/json
+X-Request-Id: 1994ab27-ca73-4819-898f-2cdb8e0e9e78
+X-User-Id: test-user-zUCDbZlK
+</div>
+                                </div>
+                                
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 200
+大小: 635 bytes
+Content-Length: 635
+Content-Type: application/json
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-0')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-0" class="language-json" data-content="{&#34;entries&#34;:[{&#34;id&#34;:&#34;01JXJCQ8DYKEAANVWWK3HHQA58&#34;,&#34;key&#34;:&#34;1eaf6cb7-69cc-4ac1-99da-767c3f31b2e9&#34;,&#34;is_built_in&#34;:0,&#34;is_system_agent&#34;:0,&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7&#34;,&#34;profile&#34;:&#34;这是一个信息收集与图片生成小助手&#34;,&#34;category_id&#34;:&#34;&#34;,&#34;version&#34;:&#34;&#34;,&#34;avatar_type&#34;:1,&#34;avatar&#34;:&#34;2&#34;,&#34;product_key&#34;:&#34;1&#34;,&#34;status&#34;:&#34;published&#34;,&#34;agent_created_type&#34;:&#34;&#34;,&#34;publish_to_be&#34;:&#34;&#34;,&#34;updated_at&#34;:1749742756319,&#34;updated_by&#34;:&#34;mock user id&#34;,&#34;updated_by_name&#34;:&#34;mock user id_name&#34;,&#34;created_by&#34;:&#34;mock id&#34;,&#34;created_by_name&#34;:&#34;mock id_name&#34;,&#34;created_at&#34;:1749742756319,&#34;published_at&#34;:0,&#34;published_by&#34;:&#34;&#34;,&#34;published_by_name&#34;:&#34;&#34;}],&#34;total&#34;:1}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 0 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-0">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 200，实际状态码 200</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.entries)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含entries字段</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.total)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含total字段</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>type</strong> (body.entries)
+                                        
+                                    </div>
+                                    <div class="assertion-message">entries应该是数组类型</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 1 )">
+                    <div class="test-title">
+                        <span class="test-index">2</span>
+                        <h3>0.1. 备用查询：已发布智能体列表</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 1.692375ms</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-1">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 1 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 1 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">GET http://127.0.0.1:13020/api/agent-factory/v3/published/agent?page=1&amp;size=5
+Accept: application/json
+X-Request-Id: 3041ec35-76d3-4598-a50a-2f07117af9bc
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 200
+大小: 561 bytes
+Content-Length: 561
+Content-Type: application/json
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-1')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-1" class="language-json" data-content="{&#34;entries&#34;:[{&#34;id&#34;:&#34;01JXJCQ8DYKEAANVWWK3HHQA58&#34;,&#34;version&#34;:&#34;v1&#34;,&#34;key&#34;:&#34;1eaf6cb7-69cc-4ac1-99da-767c3f31b2e9&#34;,&#34;is_built_in&#34;:0,&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7&#34;,&#34;profile&#34;:&#34;这是一个信息收集与图片生成小助手&#34;,&#34;avatar_type&#34;:1,&#34;avatar&#34;:&#34;2&#34;,&#34;created_by&#34;:&#34;mock id&#34;,&#34;created_by_name&#34;:&#34;mock id_name&#34;,&#34;created_at&#34;:1749742756319,&#34;updated_by&#34;:&#34;mock user id&#34;,&#34;updated_by_name&#34;:&#34;mock user id_name&#34;,&#34;updated_at&#34;:1749742756319,&#34;published_at&#34;:1718774400123,&#34;published_by&#34;:&#34;mock_user_id2&#34;,&#34;published_by_name&#34;:&#34;mock_user_id2_name&#34;}],&#34;total&#34;:1}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 1 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-1">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 200，实际状态码 200</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.entries)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含entries字段</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>type</strong> (body.entries)
+                                        
+                                    </div>
+                                    <div class="assertion-message">entries应该是数组类型</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 2 )">
+                    <div class="test-title">
+                        <span class="test-index">3</span>
+                        <h3>1. 复制Agent - 基础测试（提供名称）</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 6.579ms</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-2">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 2 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 2 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent/01JXJCQ8DYKEAANVWWK3HHQA58/copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: 329750b8-cc73-4c94-83af-0c3f20c10f7f
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-2')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-2" class="language-json" data-content="{&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7-Gk&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 201
+大小: 165 bytes
+Content-Length: 165
+Content-Type: application/json; charset=utf-8
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-2')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-2" class="language-json" data-content="{&#34;id&#34;:&#34;01JY3H0CQF58SFXK60ND5FSW0N&#34;,&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7_副本_1750317675244&#34;,&#34;key&#34;:&#34;01JY3H0CQF58SFXK60NERN5FV0&#34;,&#34;version&#34;:&#34;v0&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 2 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-2">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 201，实际状态码 201</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.id)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的ID</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的名称</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.key)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的标识</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.version)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的版本</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>equals</strong> (body.version)
+                                        
+                                    </div>
+                                    <div class="assertion-message">新Agent的版本应该是v0</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>type</strong> (body.id)
+                                        
+                                    </div>
+                                    <div class="assertion-message">ID应该是字符串类型</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>type</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">名称应该是字符串类型</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 3 )">
+                    <div class="test-title">
+                        <span class="test-index">4</span>
+                        <h3>2. 复制Agent - 基础测试（不提供名称）</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 5.233083ms</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-3">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 3 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 3 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent/01JXJCQ8DYKEAANVWWK3HHQA58/copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: 05b26375-45d1-4a05-953a-56e3d0510009
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-3')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-3" class="language-json" data-content="{}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 201
+大小: 165 bytes
+Content-Length: 165
+Content-Type: application/json; charset=utf-8
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-3')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-3" class="language-json" data-content="{&#34;id&#34;:&#34;01JY3H0CQM21TW17N5BZ4N961N&#34;,&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7_副本_1750317675250&#34;,&#34;key&#34;:&#34;01JY3H0CQM21TW17N5C0K2P9YZ&#34;,&#34;version&#34;:&#34;v0&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 3 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-3">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 201，实际状态码 201</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.id)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的ID</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的名称</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.key)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的标识</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.version)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的版本</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>contains</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">自动生成的名称应该包含&#39;_副本&#39;</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 4 )">
+                    <div class="test-title">
+                        <span class="test-index">5</span>
+                        <h3>3. 复制Agent - 验证已发布版本</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 4.618708ms</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-4">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 4 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 4 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent/01JXJCQ8DYKEAANVWWK3HHQA58/copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: 8a1ecf7a-6b02-4389-b5ff-d9c181e0f39f
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-4')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-4" class="language-json" data-content="{&#34;name&#34;:&#34;复制已发布版本信息收集与图片生成小助手bf75402e-13c7-77RCdD&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 201
+大小: 165 bytes
+Content-Length: 165
+Content-Type: application/json; charset=utf-8
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-4')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-4" class="language-json" data-content="{&#34;id&#34;:&#34;01JY3H0CQTGFN5E624YGKJVY1T&#34;,&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7_副本_1750317675255&#34;,&#34;key&#34;:&#34;01JY3H0CQTGFN5E624YK74V0HH&#34;,&#34;version&#34;:&#34;v0&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 4 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-4">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 201，实际状态码 201</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.id)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的ID</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">响应应该包含新Agent的名称</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>equals</strong> (body.version)
+                                        
+                                    </div>
+                                    <div class="assertion-message">复制的Agent版本应该是v0</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 5 )">
+                    <div class="test-title">
+                        <span class="test-index">6</span>
+                        <h3>4. 复制Agent - 错误处理（Agent不存在）</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 591.833µs</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-5">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 5 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 5 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent/non-existent-agent-5WAG31in/copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: c15974d3-b1a5-4222-a356-8d479058d0c2
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-5')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-5" class="language-json" data-content="{&#34;name&#34;:&#34;复制的Agent-SFef9r&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 404
+大小: 193 bytes
+Content-Length: 193
+Content-Type: application/json
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-5')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-5" class="language-json" data-content="{&#34;error_code&#34;:&#34;AgentFactory.DataAgentConfig.NotFound&#34;,&#34;description&#34;:&#34;Data Agent 不存在&#34;,&#34;solution&#34;:&#34;请检查参数是否正确。&#34;,&#34;error_link&#34;:&#34;暂无&#34;,&#34;error_details&#34;:&#34;源Agent不存在&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 5 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-5">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 404，实际状态码 404</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.error_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">应该返回错误代码</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>contains</strong> (body.error_details)
+                                        
+                                    </div>
+                                    <div class="assertion-message">错误描述应该提到Agent不存在</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 6 )">
+                    <div class="test-title">
+                        <span class="test-index">7</span>
+                        <h3>5. 复制Agent - 错误处理（名称过长）</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 260.917µs</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-6">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 6 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 6 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent/01JXJCQ8DYKEAANVWWK3HHQA58/copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: 97523353-266a-4d8e-bd9a-65985166c7b5
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-6')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-6" class="language-json" data-content="{&#34;name&#34;:&#34;这是一个非常长的Agent名称，超过了系统允许的最大长度限制，用于测试名称长度校验功能是否正常工作，这个名称应该会被系统拒绝并返回相应的错误信息给用户进行提示和处理&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 400
+大小: 164 bytes
+Content-Length: 164
+Content-Type: application/json
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-6')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-6" class="language-json" data-content="{&#34;error_code&#34;:&#34;Public.BadRequest&#34;,&#34;description&#34;:&#34;参数错误&#34;,&#34;solution&#34;:&#34;暂无&#34;,&#34;error_link&#34;:&#34;暂无&#34;,&#34;error_details&#34;:&#34;agent名称长度不能超过50个字符&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 6 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-6">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 400，实际状态码 400</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.error_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">应该返回错误代码</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>contains</strong> (body.error_details)
+                                        
+                                    </div>
+                                    <div class="assertion-message">错误描述应该提到长度限制</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 7 )">
+                    <div class="test-title">
+                        <span class="test-index">8</span>
+                        <h3>6. 复制Agent - 错误处理（缺少agent_id）</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 239.75µs</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-7">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 7 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 7 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent//copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: 46cfca5d-7a25-4f20-ab98-5cc071ab18dd
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-7')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-7" class="language-json" data-content="{&#34;name&#34;:&#34;复制的Agent-2KZaPE&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 400
+大小: 144 bytes
+Content-Length: 144
+Content-Type: application/json
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-7')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-7" class="language-json" data-content="{&#34;error_code&#34;:&#34;Public.BadRequest&#34;,&#34;description&#34;:&#34;参数错误&#34;,&#34;solution&#34;:&#34;暂无&#34;,&#34;error_link&#34;:&#34;暂无&#34;,&#34;error_details&#34;:&#34;agent_id不能为空&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 7 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-7">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 400，实际状态码 400</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.error_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">应该返回错误代码</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <div class="test-header collapsed" onclick="toggleTestDetails( 8 )">
+                    <div class="test-title">
+                        <span class="test-index">9</span>
+                        <h3>7. 最终验证 - 复制功能稳定性测试</h3>
+                    </div>
+                    <div class="test-status">
+                        <span class="status-badge status-success">
+                            <i class="fas fa-check"></i> 通过
+                        </span>
+                        <span class="duration"><i class="fas fa-clock"></i> 4.768708ms</span>
+                        
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="test-details collapsed" id="test-details-8">
+                    
+                    
+                    <div class="request-response">
+                        <div class="request">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-up"></i> 请求信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <span>
+                                            <i class="fas fa-globe"></i> 请求行和请求头
+                                        </span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="send-request-btn" onclick="sendRequest( 8 )" title="发送当前请求">
+                                                <i class="fas fa-paper-plane"></i> 发送请求
+                                            </button>
+                                            <button class="copy-curl-btn" onclick="copyCurlCommand( 8 )" title="复制为curl命令">
+                                                <i class="fas fa-terminal"></i> 复制curl
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="code-block">POST http://127.0.0.1:13020/api/agent-factory/v3/agent/01JXJCQ8DYKEAANVWWK3HHQA58/copy
+Accept: application/json
+Content-Type: application/json
+X-Request-Id: 59f29fde-f482-4b81-82f3-52778277903b
+X-User-Id: {{test_user_id}}
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 请求体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('request-body-8')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="request-body-8" class="language-json" data-content="{&#34;name&#34;:&#34;最终验证复制-HupwtX&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="response">
+                            <div class="section-header">
+                                <i class="fas fa-arrow-down"></i> 响应信息
+                            </div>
+                            <div class="section-content">
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-info-circle"></i> 状态码和响应头
+                                    </div>
+                                    <div class="code-block">状态码: 201
+大小: 165 bytes
+Content-Length: 165
+Content-Type: application/json; charset=utf-8
+Date: Thu, 19 Jun 2025 07:21:15 GMT
+</div>
+                                </div>
+                                
+                                
+                                <div class="subsection">
+                                    <div class="subsection-title">
+                                        <i class="fas fa-file-code"></i> 响应体
+                                    </div>
+                                    <div class="json-container">
+                                        <div class="json-header">
+                                            <span class="format-type">JSON</span>
+                                            <button class="copy-btn" onclick="copyToClipboard('response-body-8')" title="复制内容">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="json-content">
+                                            <pre id="response-body-8" class="language-json" data-content="{&#34;id&#34;:&#34;01JY3H0CQZGC16AEDNVW0VP5DW&#34;,&#34;name&#34;:&#34;信息收集与图片生成小助手bf75402e-13c7_副本_1750317675261&#34;,&#34;key&#34;:&#34;01JY3H0CQZGC16AEDNVX2ECWH3&#34;,&#34;version&#34;:&#34;v0&#34;}"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="assertions">
+                        <div class="assertions-header collapsed" onclick="toggleAssertions( 8 )">
+                            <div class="assertions-title">
+                                <i class="fas fa-check-double"></i> 断言结果
+                            </div>
+                            <i class="fas fa-chevron-down assertions-toggle"></i>
+                        </div>
+                        <div class="assertions-content collapsed" id="assertions-content-8">
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>status_code</strong> (status_code)
+                                        
+                                    </div>
+                                    <div class="assertion-message">期望状态码 201，实际状态码 201</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.id)
+                                        
+                                    </div>
+                                    <div class="assertion-message">最终验证：响应应该包含新Agent的ID</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">最终验证：响应应该包含新Agent的名称</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.key)
+                                        
+                                    </div>
+                                    <div class="assertion-message">最终验证：响应应该包含新Agent的标识</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>exists</strong> (body.version)
+                                        
+                                    </div>
+                                    <div class="assertion-message">最终验证：响应应该包含新Agent的版本</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>type</strong> (body.id)
+                                        
+                                    </div>
+                                    <div class="assertion-message">最终验证：ID应该是字符串类型</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="assertion assertion-success ">
+                                <div class="assertion-content">
+                                    <div class="assertion-type">
+                                        <strong>type</strong> (body.name)
+                                        
+                                    </div>
+                                    <div class="assertion-message">最终验证：名称应该是字符串类型</div>
+                                </div>
+                                <div class="assertion-icon">
+                                    <i class="fas fa-check-circle success"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+    <script>
+        
+        var _self="undefined"!=typeof window?window:"undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{},Prism=function(e){var n=/(?:^|\s)lang(?:uage)?-([\w-]+)(?=\s|$)/i,t=0,r={},a={manual:e.Prism&&e.Prism.manual,disableWorkerMessageHandler:e.Prism&&e.Prism.disableWorkerMessageHandler,util:{encode:function e(n){return n instanceof i?new i(n.type,e(n.content),n.alias):Array.isArray(n)?n.map(e):n.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\u00a0/g," ")},type:function(e){return Object.prototype.toString.call(e).slice(8,-1)},objId:function(e){return e.__id||Object.defineProperty(e,"__id",{value:++t}),e.__id},clone:function e(n,t){var r,i;switch(t=t||{},a.util.type(n)){case"Object":if(i=a.util.objId(n),t[i])return t[i];for(var l in r={},t[i]=r,n)n.hasOwnProperty(l)&&(r[l]=e(n[l],t));return r;case"Array":return i=a.util.objId(n),t[i]?t[i]:(r=[],t[i]=r,n.forEach((function(n,a){r[a]=e(n,t)})),r);default:return n}},getLanguage:function(e){for(;e;){var t=n.exec(e.className);if(t)return t[1].toLowerCase();e=e.parentElement}return"none"},setLanguage:function(e,t){e.className=e.className.replace(RegExp(n,"gi"),""),e.classList.add("language-"+t)},currentScript:function(){if("undefined"==typeof document)return null;if("currentScript"in document)return document.currentScript;try{throw new Error}catch(r){var e=(/at [^(\r\n]*\((.*):[^:]+:[^:]+\)$/i.exec(r.stack)||[])[1];if(e){var n=document.getElementsByTagName("script");for(var t in n)if(n[t].src==e)return n[t]}return null}},isActive:function(e,n,t){for(var r="no-"+n;e;){var a=e.classList;if(a.contains(n))return!0;if(a.contains(r))return!1;e=e.parentElement}return!!t}},languages:{plain:r,plaintext:r,text:r,txt:r,extend:function(e,n){var t=a.util.clone(a.languages[e]);for(var r in n)t[r]=n[r];return t},insertBefore:function(e,n,t,r){var i=(r=r||a.languages)[e],l={};for(var o in i)if(i.hasOwnProperty(o)){if(o==n)for(var s in t)t.hasOwnProperty(s)&&(l[s]=t[s]);t.hasOwnProperty(o)||(l[o]=i[o])}var u=r[e];return r[e]=l,a.languages.DFS(a.languages,(function(n,t){t===u&&n!=e&&(this[n]=l)})),l},DFS:function e(n,t,r,i){i=i||{};var l=a.util.objId;for(var o in n)if(n.hasOwnProperty(o)){t.call(n,o,n[o],r||o);var s=n[o],u=a.util.type(s);"Object"!==u||i[l(s)]?"Array"!==u||i[l(s)]||(i[l(s)]=!0,e(s,t,o,i)):(i[l(s)]=!0,e(s,t,null,i))}}},plugins:{},highlightAll:function(e,n){a.highlightAllUnder(document,e,n)},highlightAllUnder:function(e,n,t){var r={callback:t,container:e,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};a.hooks.run("before-highlightall",r),r.elements=Array.prototype.slice.apply(r.container.querySelectorAll(r.selector)),a.hooks.run("before-all-elements-highlight",r);for(var i,l=0;i=r.elements[l++];)a.highlightElement(i,!0===n,r.callback)},highlightElement:function(n,t,r){var i=a.util.getLanguage(n),l=a.languages[i];a.util.setLanguage(n,i);var o=n.parentElement;o&&"pre"===o.nodeName.toLowerCase()&&a.util.setLanguage(o,i);var s={element:n,language:i,grammar:l,code:n.textContent};function u(e){s.highlightedCode=e,a.hooks.run("before-insert",s),s.element.innerHTML=s.highlightedCode,a.hooks.run("after-highlight",s),a.hooks.run("complete",s),r&&r.call(s.element)}if(a.hooks.run("before-sanity-check",s),(o=s.element.parentElement)&&"pre"===o.nodeName.toLowerCase()&&!o.hasAttribute("tabindex")&&o.setAttribute("tabindex","0"),!s.code)return a.hooks.run("complete",s),void(r&&r.call(s.element));if(a.hooks.run("before-highlight",s),s.grammar)if(t&&e.Worker){var c=new Worker(a.filename);c.onmessage=function(e){u(e.data)},c.postMessage(JSON.stringify({language:s.language,code:s.code,immediateClose:!0}))}else u(a.highlight(s.code,s.grammar,s.language));else u(a.util.encode(s.code))},highlight:function(e,n,t){var r={code:e,grammar:n,language:t};if(a.hooks.run("before-tokenize",r),!r.grammar)throw new Error('The language "'+r.language+'" has no grammar.');return r.tokens=a.tokenize(r.code,r.grammar),a.hooks.run("after-tokenize",r),i.stringify(a.util.encode(r.tokens),r.language)},tokenize:function(e,n){var t=n.rest;if(t){for(var r in t)n[r]=t[r];delete n.rest}var a=new s;return u(a,a.head,e),o(e,a,n,a.head,0),function(e){for(var n=[],t=e.head.next;t!==e.tail;)n.push(t.value),t=t.next;return n}(a)},hooks:{all:{},add:function(e,n){var t=a.hooks.all;t[e]=t[e]||[],t[e].push(n)},run:function(e,n){var t=a.hooks.all[e];if(t&&t.length)for(var r,i=0;r=t[i++];)r(n)}},Token:i};function i(e,n,t,r){this.type=e,this.content=n,this.alias=t,this.length=0|(r||"").length}function l(e,n,t,r){e.lastIndex=n;var a=e.exec(t);if(a&&r&&a[1]){var i=a[1].length;a.index+=i,a[0]=a[0].slice(i)}return a}function o(e,n,t,r,s,g){for(var f in t)if(t.hasOwnProperty(f)&&t[f]){var h=t[f];h=Array.isArray(h)?h:[h];for(var d=0;d<h.length;++d){if(g&&g.cause==f+","+d)return;var v=h[d],p=v.inside,m=!!v.lookbehind,y=!!v.greedy,k=v.alias;if(y&&!v.pattern.global){var x=v.pattern.toString().match(/[imsuy]*$/)[0];v.pattern=RegExp(v.pattern.source,x+"g")}for(var b=v.pattern||v,w=r.next,A=s;w!==n.tail&&!(g&&A>=g.reach);A+=w.value.length,w=w.next){var E=w.value;if(n.length>e.length)return;if(!(E instanceof i)){var P,L=1;if(y){if(!(P=l(b,A,e,m))||P.index>=e.length)break;var S=P.index,O=P.index+P[0].length,j=A;for(j+=w.value.length;S>=j;)j+=(w=w.next).value.length;if(A=j-=w.value.length,w.value instanceof i)continue;for(var C=w;C!==n.tail&&(j<O||"string"==typeof C.value);C=C.next)L++,j+=C.value.length;L--,E=e.slice(A,j),P.index-=A}else if(!(P=l(b,0,E,m)))continue;S=P.index;var N=P[0],_=E.slice(0,S),M=E.slice(S+N.length),W=A+E.length;g&&W>g.reach&&(g.reach=W);var z=w.prev;if(_&&(z=u(n,z,_),A+=_.length),c(n,z,L),w=u(n,z,new i(f,p?a.tokenize(N,p):N,k,N)),M&&u(n,w,M),L>1){var I={cause:f+","+d,reach:W};o(e,n,t,w.prev,A,I),g&&I.reach>g.reach&&(g.reach=I.reach)}}}}}}function s(){var e={value:null,prev:null,next:null},n={value:null,prev:e,next:null};e.next=n,this.head=e,this.tail=n,this.length=0}function u(e,n,t){var r=n.next,a={value:t,prev:n,next:r};return n.next=a,r.prev=a,e.length++,a}function c(e,n,t){for(var r=n.next,a=0;a<t&&r!==e.tail;a++)r=r.next;n.next=r,r.prev=n,e.length-=a}if(e.Prism=a,i.stringify=function e(n,t){if("string"==typeof n)return n;if(Array.isArray(n)){var r="";return n.forEach((function(n){r+=e(n,t)})),r}var i={type:n.type,content:e(n.content,t),tag:"span",classes:["token",n.type],attributes:{},language:t},l=n.alias;l&&(Array.isArray(l)?Array.prototype.push.apply(i.classes,l):i.classes.push(l)),a.hooks.run("wrap",i);var o="";for(var s in i.attributes)o+=" "+s+'="'+(i.attributes[s]||"").replace(/"/g,"&quot;")+'"';return"<"+i.tag+' class="'+i.classes.join(" ")+'"'+o+">"+i.content+"</"+i.tag+">"},!e.document)return e.addEventListener?(a.disableWorkerMessageHandler||e.addEventListener("message",(function(n){var t=JSON.parse(n.data),r=t.language,i=t.code,l=t.immediateClose;e.postMessage(a.highlight(i,a.languages[r],r)),l&&e.close()}),!1),a):a;var g=a.util.currentScript();function f(){a.manual||a.highlightAll()}if(g&&(a.filename=g.src,g.hasAttribute("data-manual")&&(a.manual=!0)),!a.manual){var h=document.readyState;"loading"===h||"interactive"===h&&g&&g.defer?document.addEventListener("DOMContentLoaded",f):window.requestAnimationFrame?window.requestAnimationFrame(f):window.setTimeout(f,16)}return a}(_self);"undefined"!=typeof module&&module.exports&&(module.exports=Prism),"undefined"!=typeof global&&(global.Prism=Prism);
+    </script>
+    
+    <script>
+        
+        Prism.languages.json={property:{pattern:/(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?=\s*:)/,lookbehind:!0,greedy:!0},string:{pattern:/(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?!\s*:)/,lookbehind:!0,greedy:!0},comment:{pattern:/\/\/.*|\/\*[\s\S]*?(?:\*\/|$)/,greedy:!0},number:/-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b/i,punctuation:/[{}[\],]/,operator:/:/,boolean:/\b(?:false|true)\b/,null:{pattern:/\bnull\b/,alias:"keyword"}},Prism.languages.webmanifest=Prism.languages.json;
+    </script>
+    
+    <script>
+        
+        !function(){if("undefined"!=typeof Prism&&"undefined"!=typeof document){var e={javascript:"clike",actionscript:"javascript",apex:["clike","sql"],arduino:"cpp",aspnet:["markup","csharp"],birb:"clike",bison:"c",c:"clike",csharp:"clike",cpp:"c",cfscript:"clike",chaiscript:["clike","cpp"],cilkc:"c",cilkcpp:"cpp",coffeescript:"javascript",crystal:"ruby","css-extras":"css",d:"clike",dart:"clike",django:"markup-templating",ejs:["javascript","markup-templating"],etlua:["lua","markup-templating"],erb:["ruby","markup-templating"],fsharp:"clike","firestore-security-rules":"clike",flow:"javascript",ftl:"markup-templating",gml:"clike",glsl:"c",go:"clike",gradle:"clike",groovy:"clike",haml:"ruby",handlebars:"markup-templating",haxe:"clike",hlsl:"c",idris:"haskell",java:"clike",javadoc:["markup","java","javadoclike"],jolie:"clike",jsdoc:["javascript","javadoclike","typescript"],"js-extras":"javascript",json5:"json",jsonp:"json","js-templates":"javascript",kotlin:"clike",latte:["clike","markup-templating","php"],less:"css",lilypond:"scheme",liquid:"markup-templating",markdown:"markup","markup-templating":"markup",mongodb:"javascript",n4js:"javascript",objectivec:"c",opencl:"c",parser:"markup",php:"markup-templating",phpdoc:["php","javadoclike"],"php-extras":"php",plsql:"sql",processing:"clike",protobuf:"clike",pug:["markup","javascript"],purebasic:"clike",purescript:"haskell",qsharp:"clike",qml:"javascript",qore:"clike",racket:"scheme",cshtml:["markup","csharp"],jsx:["markup","javascript"],tsx:["jsx","typescript"],reason:"clike",ruby:"clike",sass:"css",scss:"css",scala:"java","shell-session":"bash",smarty:"markup-templating",solidity:"clike",soy:"markup-templating",sparql:"turtle",sqf:"clike",squirrel:"clike",stata:["mata","java","python"],"t4-cs":["t4-templating","csharp"],"t4-vb":["t4-templating","vbnet"],tap:"yaml",tt2:["clike","markup-templating"],textile:"markup",twig:"markup-templating",typescript:"javascript",v:"clike",vala:"clike",vbnet:"basic",velocity:"markup",wiki:"markup",xeora:"markup","xml-doc":"markup",xquery:"markup"},a={html:"markup",xml:"markup",svg:"markup",mathml:"markup",ssml:"markup",atom:"markup",rss:"markup",js:"javascript",g4:"antlr4",ino:"arduino","arm-asm":"armasm",art:"arturo",adoc:"asciidoc",avs:"avisynth",avdl:"avro-idl",gawk:"awk",sh:"bash",shell:"bash",shortcode:"bbcode",rbnf:"bnf",oscript:"bsl",cs:"csharp",dotnet:"csharp",cfc:"cfscript","cilk-c":"cilkc","cilk-cpp":"cilkcpp",cilk:"cilkcpp",coffee:"coffeescript",conc:"concurnas",jinja2:"django","dns-zone":"dns-zone-file",dockerfile:"docker",gv:"dot",eta:"ejs",xlsx:"excel-formula",xls:"excel-formula",gamemakerlanguage:"gml",po:"gettext",gni:"gn",ld:"linker-script","go-mod":"go-module",hbs:"handlebars",mustache:"handlebars",hs:"haskell",idr:"idris",gitignore:"ignore",hgignore:"ignore",npmignore:"ignore",webmanifest:"json",kt:"kotlin",kts:"kotlin",kum:"kumir",tex:"latex",context:"latex",ly:"lilypond",emacs:"lisp",elisp:"lisp","emacs-lisp":"lisp",md:"markdown",moon:"moonscript",n4jsd:"n4js",nani:"naniscript",objc:"objectivec",qasm:"openqasm",objectpascal:"pascal",px:"pcaxis",pcode:"peoplecode",plantuml:"plant-uml",pq:"powerquery",mscript:"powerquery",pbfasm:"purebasic",purs:"purescript",py:"python",qs:"qsharp",rkt:"racket",razor:"cshtml",rpy:"renpy",res:"rescript",robot:"robotframework",rb:"ruby","sh-session":"shell-session",shellsession:"shell-session",smlnj:"sml",sol:"solidity",sln:"solution-file",rq:"sparql",sclang:"supercollider",t4:"t4-cs",trickle:"tremor",troy:"tremor",trig:"turtle",ts:"typescript",tsconfig:"typoscript",uscript:"unrealscript",uc:"unrealscript",url:"uri",vb:"visual-basic",vba:"visual-basic",webidl:"web-idl",mathematica:"wolfram",nb:"wolfram",wl:"wolfram",xeoracube:"xeora",yml:"yaml"},r={},s="components/",i=Prism.util.currentScript();if(i){var t=/\bplugins\/autoloader\/prism-autoloader\.(?:min\.)?js(?:\?[^\r\n/]*)?$/i,c=/(^|\/)[\w-]+\.(?:min\.)?js(?:\?[^\r\n/]*)?$/i,l=i.getAttribute("data-autoloader-path");if(null!=l)s=l.trim().replace(/\/?$/,"/");else{var p=i.src;t.test(p)?s=p.replace(t,"components/"):c.test(p)&&(s=p.replace(c,"$1components/"))}}var n=Prism.plugins.autoloader={languages_path:s,use_minified:!0,loadLanguages:m};Prism.hooks.add("complete",(function(e){var a=e.element,r=e.language;if(a&&r&&"none"!==r){var s=function(e){var a=(e.getAttribute("data-dependencies")||"").trim();if(!a){var r=e.parentElement;r&&"pre"===r.tagName.toLowerCase()&&(a=(r.getAttribute("data-dependencies")||"").trim())}return a?a.split(/\s*,\s*/g):[]}(a);/^diff-./i.test(r)?(s.push("diff"),s.push(r.substr("diff-".length))):s.push(r),s.every(o)||m(s,(function(){Prism.highlightElement(a)}))}}))}function o(e){if(e.indexOf("!")>=0)return!1;if((e=a[e]||e)in Prism.languages)return!0;var s=r[e];return s&&!s.error&&!1===s.loading}function m(s,i,t){"string"==typeof s&&(s=[s]);var c=s.length,l=0,p=!1;function k(){p||++l===c&&i&&i(s)}0!==c?s.forEach((function(s){!function(s,i,t){var c=s.indexOf("!")>=0;function l(){var e=r[s];e||(e=r[s]={callbacks:[]}),e.callbacks.push({success:i,error:t}),!c&&o(s)?u(s,"success"):!c&&e.error?u(s,"error"):!c&&e.loading||(e.loading=!0,e.error=!1,function(e,a,r){var s=document.createElement("script");s.src=e,s.async=!0,s.onload=function(){document.body.removeChild(s),a&&a()},s.onerror=function(){document.body.removeChild(s),r&&r()},document.body.appendChild(s)}(function(e){return n.languages_path+"prism-"+e+(n.use_minified?".min":"")+".js"}(s),(function(){e.loading=!1,u(s,"success")}),(function(){e.loading=!1,e.error=!0,u(s,"error")})))}s=s.replace("!","");var p=e[s=a[s]||s];p&&p.length?m(p,l,t):l()}(s,k,(function(){p||(p=!0,t&&t(s))}))})):i&&setTimeout(i,0)}function u(e,a){if(r[e]){for(var s=r[e].callbacks,i=0,t=s.length;i<t;i++){var c=s[i][a];c&&setTimeout(c,0)}s.length=0}}}();
+    </script>
+
+    <script>
+        
+        function isValidJSON(str) {
+            try {
+                JSON.parse(str);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        
+        function formatAndHighlightJSON(content, elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            if (isValidJSON(content)) {
+                try {
+                    const parsed = JSON.parse(content);
+                    const formatted = JSON.stringify(parsed, null, 2);
+                    element.textContent = formatted;
+                    element.className = 'language-json';
+                    
+                    
+                    Prism.highlightElement(element);
+                } catch (e) {
+                    
+                    element.textContent = content;
+                    element.className = 'language-text';
+                }
+            } else {
+                
+                element.textContent = content;
+                element.className = 'language-text';
+            }
+        }
+
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                
+                const btn = event.target.closest('.copy-btn');
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.style.color = '#28a745';
+
+                setTimeout(() => {
+                    btn.innerHTML = originalIcon;
+                    btn.style.color = '';
+                }, 1000);
+            }).catch(function(err) {
+                console.error('复制失败:', err);
+            });
+        }
+
+        
+        const testResultsData = [
+            
+            {
+                method: "GET",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/personal-space\/agent-list?page=1\u0026publish_status=published\u0026size=10",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "X-Request-Id": "1994ab27-ca73-4819-898f-2cdb8e0e9e78",
+                    
+                    "X-User-Id": "test-user-zUCDbZlK",
+                    
+                },
+                body: ""
+            },
+            
+            {
+                method: "GET",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/published\/agent?page=1\u0026size=5",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "X-Request-Id": "3041ec35-76d3-4598-a50a-2f07117af9bc",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: ""
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/01JXJCQ8DYKEAANVWWK3HHQA58\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "329750b8-cc73-4c94-83af-0c3f20c10f7f",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{\u0026#34;name\u0026#34;:\u0026#34;信息收集与图片生成小助手bf75402e-13c7-Gk\u0026#34;}"
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/01JXJCQ8DYKEAANVWWK3HHQA58\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "05b26375-45d1-4a05-953a-56e3d0510009",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{}"
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/01JXJCQ8DYKEAANVWWK3HHQA58\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "8a1ecf7a-6b02-4389-b5ff-d9c181e0f39f",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{\u0026#34;name\u0026#34;:\u0026#34;复制已发布版本信息收集与图片生成小助手bf75402e-13c7-77RCdD\u0026#34;}"
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/non-existent-agent-5WAG31in\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "c15974d3-b1a5-4222-a356-8d479058d0c2",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{\u0026#34;name\u0026#34;:\u0026#34;复制的Agent-SFef9r\u0026#34;}"
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/01JXJCQ8DYKEAANVWWK3HHQA58\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "97523353-266a-4d8e-bd9a-65985166c7b5",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{\u0026#34;name\u0026#34;:\u0026#34;这是一个非常长的Agent名称，超过了系统允许的最大长度限制，用于测试名称长度校验功能是否正常工作，这个名称应该会被系统拒绝并返回相应的错误信息给用户进行提示和处理\u0026#34;}"
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "46cfca5d-7a25-4f20-ab98-5cc071ab18dd",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{\u0026#34;name\u0026#34;:\u0026#34;复制的Agent-2KZaPE\u0026#34;}"
+            },
+            
+            {
+                method: "POST",
+                url: "http:\/\/127.0.0.1:13020\/api\/agent-factory\/v3\/agent\/01JXJCQ8DYKEAANVWWK3HHQA58\/copy",
+                headers: {
+                    
+                    "Accept": "application\/json",
+                    
+                    "Content-Type": "application\/json",
+                    
+                    "X-Request-Id": "59f29fde-f482-4b81-82f3-52778277903b",
+                    
+                    "X-User-Id": "{{test_user_id}}",
+                    
+                },
+                body: "{\u0026#34;name\u0026#34;:\u0026#34;最终验证复制-HupwtX\u0026#34;}"
+            },
+            
+        ];
+
+        
+        function sendRequest(testIndex) {
+            const result = testResultsData[testIndex];
+            const btn = event.target.closest('.send-request-btn');
+
+            if (!result) {
+                console.error('无法找到测试结果');
+                return;
+            }
+
+            
+            const testDetails = document.getElementById(`test-details-${testIndex}`);
+            const testHeader = testDetails.previousElementSibling;
+            const toggleIcon = testHeader.querySelector('.toggle-icon');
+
+            if (testDetails.classList.contains('collapsed')) {
+                testDetails.classList.remove('collapsed');
+                testHeader.classList.remove('collapsed');
+                toggleIcon.className = 'fas fa-chevron-up toggle-icon';
+            }
+
+            
+            btn.disabled = true;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中...';
+
+            
+            const requestOptions = {
+                method: result.method,
+                headers: {}
+            };
+
+            
+            if (result.headers) {
+                for (const [key, value] of Object.entries(result.headers)) {
+                    if (value && key.toLowerCase() !== 'host') { 
+                        requestOptions.headers[key] = value;
+                    }
+                }
+            }
+
+            
+            if (result.body && result.body.trim() !== '' && result.method !== 'GET') {
+                const decodedBody = htmlDecode(result.body);
+                requestOptions.body = decodedBody;
+            }
+
+            
+            fetch(result.url, requestOptions)
+                .then(async response => {
+                    
+                    await showRequestResult(testIndex, response, null);
+
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check"></i> 请求完成';
+                    btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalContent;
+                        btn.style.background = '';
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('请求失败:', error);
+
+                    
+                    showRequestResult(testIndex, null, error);
+
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-times"></i> 请求失败';
+                    btn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalContent;
+                        btn.style.background = '';
+                    }, 3000);
+                });
+        }
+
+        
+        async function showRequestResult(testIndex, response, error) {
+            const testDetails = document.getElementById(`test-details-${testIndex}`);
+
+            
+            let liveResponseSection = testDetails.querySelector('.live-response-section');
+            if (!liveResponseSection) {
+                liveResponseSection = document.createElement('div');
+                liveResponseSection.className = 'live-response-section';
+                liveResponseSection.style.marginTop = '20px';
+                testDetails.appendChild(liveResponseSection);
+            }
+
+            let resultHtml = '';
+            let responseText = '';
+
+            
+            if (!error && response) {
+                try {
+                    responseText = await response.text();
+                } catch (e) {
+                    error = e;
+                }
+            }
+
+            if (error) {
+                resultHtml = `
+                    <div class="live-response">
+                        <div class="section-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                            <i class="fas fa-exclamation-triangle"></i> 实时请求结果 - 错误
+                        </div>
+                        <div class="section-content">
+                            <div class="error-message">
+                                <strong><i class="fas fa-times-circle"></i> 请求错误:</strong>
+                                ${error.message || error}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const timestamp = new Date().toLocaleString();
+
+                
+                const responseHeaders = [];
+                for (const [key, value] of response.headers.entries()) {
+                    responseHeaders.push(`${key}: ${value}`);
+                }
+
+                
+                const escapedResponseText = escapeHtml(responseText);
+                const responseSize = responseText.length;
+                const statusCode = response.status;
+                const statusText = response.statusText;
+                const headersText = responseHeaders.join('\n');
+
+                resultHtml = `
+                    <div class="live-response">
+                        <div class="section-header" style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);">
+                            <i class="fas fa-bolt"></i> 实时请求结果 - ${timestamp}
+                        </div>
+                        <div class="section-content">
+                            <div class="subsection">
+                                <div class="subsection-title">
+                                    <i class="fas fa-info-circle"></i> 响应状态和响应头
+                                </div>
+                                <div class="code-block">状态码: ${statusCode} ${statusText}
+大小: ${responseSize} bytes
+${headersText}</div>
+                            </div>
+
+                            <div class="subsection">
+                                <div class="subsection-title">
+                                    <i class="fas fa-file-code"></i> 响应体
+                                </div>
+                                <div class="json-container">
+                                    <div class="json-header">
+                                        <span class="format-type">RESPONSE</span>
+                                        <button class="copy-btn" onclick="copyToClipboard('live-response-body-${testIndex}')" title="复制内容">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <div class="json-content">
+                                        <pre id="live-response-body-${testIndex}" class="language-json">${escapedResponseText}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            liveResponseSection.innerHTML = resultHtml;
+
+            
+            if (!error && response.headers.get('content-type')?.includes('application/json')) {
+                const responseElement = document.getElementById(`live-response-body-${testIndex}`);
+                if (responseElement) {
+                    formatAndHighlightJSONFromElement(responseElement, responseText);
+                }
+            }
+
+            
+            setTimeout(() => {
+                liveResponseSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }, 100);
+        }
+
+        
+        function copyCurlCommand(testIndex) {
+            const result = testResultsData[testIndex];
+
+            if (!result) {
+                console.error('无法找到测试结果');
+                return;
+            }
+
+            let curlCommand = `curl -X ${result.method}`;
+
+            
+            curlCommand += ` '${result.url}'`;
+
+            
+            if (result.headers) {
+                for (const [key, value] of Object.entries(result.headers)) {
+                    if (value) { 
+                        curlCommand += ` \\\n  -H '${key}: ${value}'`;
+                    }
+                }
+            }
+
+            
+            if (result.body && result.body.trim() !== '') {
+                
+                const decodedBody = htmlDecode(result.body);
+                
+                const escapedBody = decodedBody.replace(/'/g, "'\"'\"'");
+                curlCommand += ` \\\n  -d '${escapedBody}'`;
+            }
+
+            
+            navigator.clipboard.writeText(curlCommand).then(function() {
+                
+                const btn = event.target.closest('.copy-curl-btn');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                }, 2000);
+            }).catch(function(err) {
+                console.error('复制curl命令失败:', err);
+                
+                const btn = event.target.closest('.copy-curl-btn');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-times"></i> 复制失败';
+                btn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                }, 2000);
+            });
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const preElements = document.querySelectorAll('pre[data-content]');
+            
+            preElements.forEach(function(element) {
+                const content = element.getAttribute('data-content');
+                if (content) {
+                    formatAndHighlightJSONFromElement(element, content);
+                }
+            });
+        });
+        
+        
+        function htmlDecode(input) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = input;
+            return textarea.value;
+        }
+
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        
+        function formatAndHighlightJSONFromElement(element, content) {
+            
+            const decodedContent = htmlDecode(content);
+            
+            if (isValidJSON(decodedContent)) {
+                try {
+                    const parsed = JSON.parse(decodedContent);
+                    const formatted = JSON.stringify(parsed, null, 2);
+                    element.textContent = formatted;
+                    element.className = 'language-json';
+                    
+                    
+                    Prism.highlightElement(element);
+                } catch (e) {
+                    
+                    element.textContent = decodedContent;
+                    element.className = 'language-text';
+                }
+            } else {
+                
+                element.textContent = decodedContent;
+                element.className = 'language-text';
+            }
+        }
+
+        function toggleTestDetails(index) {
+            const header = document.querySelector('#test-details-' + index).previousElementSibling;
+            const details = document.getElementById('test-details-' + index);
+            const icon = header.querySelector('.toggle-icon');
+
+            if (details.classList.contains('collapsed')) {
+                
+                details.classList.remove('collapsed');
+                header.classList.remove('collapsed');
+                icon.className = 'fas fa-chevron-up toggle-icon';
+            } else {
+                
+                details.classList.add('collapsed');
+                header.classList.add('collapsed');
+                icon.className = 'fas fa-chevron-down toggle-icon';
+            }
+        }
+
+        
+        function toggleAssertions(index) {
+            const header = document.querySelector(`#assertions-content-${index}`).previousElementSibling;
+            const content = document.getElementById(`assertions-content-${index}`);
+            const icon = header.querySelector('.assertions-toggle');
+
+            if (content.classList.contains('collapsed')) {
+                
+                content.classList.remove('collapsed');
+                header.classList.remove('collapsed');
+                icon.className = 'fas fa-chevron-up assertions-toggle';
+            } else {
+                
+                content.classList.add('collapsed');
+                header.classList.add('collapsed');
+                icon.className = 'fas fa-chevron-down assertions-toggle';
+            }
+        }
+
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                if (e.target.classList.contains('test-header')) {
+                    e.preventDefault();
+                    e.target.click();
+                }
+            }
+        });
+
+        
+        function toggleAllTests() {
+            const allDetails = document.querySelectorAll('.test-details');
+            const allHeaders = document.querySelectorAll('.test-header');
+            const allIcons = document.querySelectorAll('.toggle-icon');
+            const toggleBtn = document.getElementById('toggleAllBtn');
+            
+            const isAnyExpanded = Array.from(allDetails).some(detail => !detail.classList.contains('collapsed'));
+            
+            allDetails.forEach((detail, index) => {
+                const header = allHeaders[index];
+                const icon = allIcons[index];
+                
+                if (isAnyExpanded) {
+                    
+                    detail.classList.add('collapsed');
+                    header.classList.add('collapsed');
+                    icon.className = 'fas fa-chevron-down toggle-icon';
+                    toggleBtn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i> 全部展开';
+                } else {
+                    
+                    detail.classList.remove('collapsed');
+                    header.classList.remove('collapsed');
+                    icon.className = 'fas fa-chevron-up toggle-icon';
+                    toggleBtn.innerHTML = '<i class="fas fa-compress-arrows-alt"></i> 全部折叠';
+                }
+            });
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('toggleAllBtn');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+                });
+                toggleBtn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

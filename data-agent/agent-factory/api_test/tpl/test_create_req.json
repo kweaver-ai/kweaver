@@ -1,0 +1,184 @@
+{
+  "name": "测试模板-20250613-002",
+  "profile": "这是一个API测试模板",
+  "key": "test-tpl-20250613-002",
+  "avatar_type": 1,
+  "avatar": "2",
+  "product_key": "1",
+  "config": {
+    "input": {
+      "fields": [
+        {
+          "name": "query",
+          "type": "string"
+        },
+        {
+          "name": "tmp_files",
+          "type": "file"
+        }
+      ],
+      "is_temp_zone_enabled": 1,
+      "temp_zone_config": {
+        "name": "临时上传区",
+        "tmp_file_use_type":"upload",
+        "max_file_count": 50,
+        "single_file_size_limit": 100,
+        "single_file_size_limit_unit": "MB",
+        "support_data_type": [
+          "file"
+        ],
+        "allowed_file_categories": [
+          "document",
+          "pdf",
+          "text"
+        ]
+      }
+    },
+    "system_prompt": "你是一个专业的客服助手，请用友好的语气回答用户的问题。根据提供的知识库内容，准确回答用户咨询。如果不确定，请明确告知用户。",
+    "dolphin": "/explore/(system_prompt=",
+    "is_dolphin_mode": 0,
+    "data_source": {
+      "doc": [
+        {
+          "ds_id": "0",
+          "fields": [
+            {
+              "name": "代码规范",
+              "path": "测试数据/代码规范",
+              "source": "gns://92EE2D87255142B78A6F1DFB6BBB836B/AEBB543FEA1A4FD9917594CA013FC671"
+            },
+            {
+              "name": "华控数据源",
+              "path": "测试数据/华控数据源",
+              "source": "gns://92EE2D87255142B78A6F1DFB6BBB836B/{{$string.uuid}}"
+            }
+          ]
+        }
+      ],
+      "kg": [
+        {
+          "kg_id": "129",
+          "fields": [
+            "regions",
+            "comments"
+          ],
+          "output_fields": [
+            "comments"
+          ],
+          "field_properties": {
+            "regions": [
+              "※vid",
+              "regions"
+            ],
+            "comments": [
+              "※vid",
+              "CONTENT",
+              "VOTES",
+              "COMMENT_TIME"
+            ]
+          }
+        }
+      ],
+      "advanced_config": {
+        "doc": {
+          "document_threshold": -5.5,
+          "retrieval_slices_num": 150,
+          "max_slice_per_cite": 16,
+          "rerank_topk": 15,
+          "slice_head_num": 0,
+          "slice_tail_num": 2,
+          "documents_num": 8,
+          "retrieval_max_length": 32000
+        },
+        "kg": {
+          "graph_rag_topk": 25,
+          "long_text_length": 256,
+          "reranker_sim_threshold": -5.5,
+          "text_match_entity_nums": 60,
+          "vector_match_entity_nums": 60,
+          "retrieval_max_length": 32000
+        }
+      }
+    },
+    "tools": [
+      {
+        "tool_id": "1901300419510927360",
+        "tool_type": "tool",
+        "tool_box_id": "1901300419502538752",
+        "tool_use_description": "使用Tavily API执行Web搜索并返回结果",
+        "tool_input": null,
+        "intervention": false
+      },
+      {
+        "tool_id": "tool-123",
+        "tool_type": "agent",
+        "tool_box_id": "box-456",
+        "tool_use_description": "用于查询订单状态的工具",
+        "tool_input": [
+          {
+            "enable": true,
+            "input_name": "order_id",
+            "input_type": "string",
+            "map_type": "var",
+            "map_value": "query"
+          }
+        ],
+        "intervention": false
+      }
+    ],
+    "llms": [
+      {
+        "is_default": true,
+        "llm_config": {
+          "id": "1901307417048780800",
+          "name": "aaron-model-dv3",
+          "model_type": "llm",
+          "temperature": 1,
+          "top_p": 1,
+          "top_k": 1,
+          "frequency_penalty": 0,
+          "presence_penalty": 0,
+          "max_tokens": 1000
+        }
+      },
+      {
+        "is_default": false,
+        "llm_config": {
+          "id": "1901307417048780801",
+          "name": "gpt-4",
+          "model_type": "llm",
+          "temperature": 0.5,
+          "top_p": 0.95,
+          "max_tokens": 2000,
+          "top_k": 1,
+          "frequency_penalty": 0,
+          "presence_penalty": 0
+        }
+      }
+    ],
+    "is_data_flow_set_enabled": 1,
+    "opening_remark_config": {
+      "type": "fixed",
+      "fixed_opening_remark": "您好！我是智能客服助手，很高兴为您服务。请问有什么可以帮助您的吗？"
+    },
+    "preset_questions": [
+      {
+        "question": "如何查询我的订单状态？"
+      },
+      {
+        "question": "如何申请退款？"
+      },
+      {
+        "question": "产品有哪些功能？"
+      }
+    ],
+    "output": {
+      "variables": {
+        "answer_var": "answer",
+        "doc_retrieval_var": "doc_retrieval_res",
+        "graph_retrieval_var": "graph_retrieval_res"
+      },
+      "default_format": "markdown"
+    }
+  }
+}

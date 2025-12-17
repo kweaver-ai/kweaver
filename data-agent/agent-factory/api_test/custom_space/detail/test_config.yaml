@@ -1,0 +1,218 @@
+name: "空间详情查询API测试（修复版）"
+description: "测试获取空间详情功能，修复了API行为适配问题"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个空间用于详情查询测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "详情测试空间-${random_string:6}"
+        key: "detail-test-${timestamp}"
+        profile: "专门用于详情查询测试的空间，创建时间: ${timestamp_ms}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "detail_test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 获取创建的空间详情"
+    description: "使用创建的空间ID查询详情，获取完整信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{detail_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{detail_test_space_id}}"
+          message: "返回的空间ID应该匹配"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含空间名称"
+        - type: "exists"
+          field: "body.key"
+          message: "响应应该包含空间key"
+        - type: "exists"
+          field: "body.profile"
+          message: "响应应该包含空间简介"
+        - type: "exists"
+          field: "body.created_at"
+          message: "响应应该包含创建时间"
+        - type: "exists"
+          field: "body.updated_at"
+          message: "响应应该包含更新时间"
+        - type: "contains"
+          field: "body.name"
+          value: "详情测试空间"
+          message: "空间名称应该包含'详情测试空间'"
+    variable_extraction:
+      - name: "detail_test_space_name"
+        source: "body"
+        path: "name"
+      - name: "detail_test_space_key"
+        source: "body"
+        path: "key"
+      - name: "detail_test_created_at"
+        source: "body"
+        path: "created_at"
+      - name: "detail_test_updated_at"
+        source: "body"
+        path: "updated_at"
+    timeout: "10s"
+    retry: 2
+
+  - name: "3. 验证数据一致性"
+    description: "再次查询同一空间，验证返回数据的一致性"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{detail_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Consistency-Test: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{detail_test_space_id}}"
+          message: "空间ID应该始终一致"
+        - type: "equals"
+          field: "body.name"
+          value: "{{detail_test_space_name}}"
+          message: "空间名称应该始终一致"
+        - type: "equals"
+          field: "body.key"
+          value: "{{detail_test_space_key}}"
+          message: "空间key应该始终一致"
+        - type: "equals"
+          field: "body.created_at"
+          value: "{{detail_test_created_at}}"
+          message: "创建时间应该始终一致"
+        - type: "equals"
+          field: "body.updated_at"
+          value: "{{detail_test_updated_at}}"
+          message: "更新时间应该始终一致"
+    timeout: "10s"
+    retry: 2
+
+  - name: "4. 测试无效ID - 随机ID"
+    description: "使用随机生成的无效ID测试错误处理"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-${random_string:12}-${timestamp}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "5. 测试无效ID - 空ID"
+    description: "使用空ID测试错误处理（实际会匹配列表API）"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "空ID会匹配列表API，应该返回entries字段"
+    timeout: "10s"
+    retry: 1
+
+  - name: "6. 性能测试 - 快速连续查询"
+    description: "快速连续查询同一空间，测试性能和稳定性"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{detail_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Performance-Test: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{detail_test_space_id}}"
+          message: "即使在快速查询下，空间ID也应该正确"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含空间名称"
+        - type: "exists"
+          field: "body.created_at"
+          message: "响应应该包含创建时间"
+    timeout: "10s"
+    retry: 1
+
+  - name: "7. 最终验证"
+    description: "最终验证所有数据的正确性"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{detail_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Final-Validation: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{detail_test_space_id}}"
+          message: "最终验证：空间ID应该正确"
+        - type: "equals"
+          field: "body.name"
+          value: "{{detail_test_space_name}}"
+          message: "最终验证：空间名称应该正确"
+        - type: "equals"
+          field: "body.key"
+          value: "{{detail_test_space_key}}"
+          message: "最终验证：空间key应该正确"
+        - type: "equals"
+          field: "body.created_at"
+          value: "{{detail_test_created_at}}"
+          message: "最终验证：创建时间应该保持不变"
+        - type: "type"
+          field: "body.profile"
+          value: "string"
+          message: "最终验证：简介应该是字符串类型"
+    timeout: "10s"
+    retry: 2 

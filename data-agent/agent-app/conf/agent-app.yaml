@@ -1,0 +1,104 @@
+
+# 这个文件只有本地调试用，打包是打不进去的，
+db:
+  user_name: anyshare
+  user_pwd: "***"
+  db_host: mariadb-mariadb-cluster.resource
+  db_port: 3330
+  db_host_read: mariadb-mariadb-cluster.resource
+  db_port_read: 3330
+  db_name: dip_data_agent
+  db_charset: utf8mb4
+  timeout: 10
+  read_timeout: 10
+  write_timeout: 10
+  max_open_conns: 30
+  max_open_read_conns: 30
+
+redis:
+  connect_type: "sentinel"
+  password: "***"
+  username: "root"
+
+  db: 3
+
+  # standalone 单机模式
+  host: ""
+  port: ""
+
+  # sentinel 模式配置
+  master_group_name: "mymaster"
+  sentinel_host: "proton-redis-proton-redis-sentinel.resource"
+  sentinel_port: "26379"
+  sentinel_username: "root"
+  sentinel_password: "***"
+
+  # master-slave 主从模式
+  master_host: ""
+  master_port: "6379"
+  slave_host: ""
+  slave_port: "6379"
+  
+# hydra 相关配置
+hydra:
+  user-mgnt:
+    host: XXX
+    port: 30980
+  hydra-public:
+    host: XXX
+    port: 4444
+  hydra-admin:
+    host: XXX
+    port: 34445
+project:
+  host: "0.0.0.0"
+  port: 30777
+  language: "zh-CN"
+  logger_level: 1
+
+  model_factory_host: mf-model-factory
+  model_factory_port: 9898
+
+  debug: true
+  debug_host: XXX
+#  debug_host: XXX
+
+agent_executor:
+  public_svc:
+    host: XXX
+    port: 30778
+    protocol: http
+  private_svc:
+    host: XXX
+    port: 30778
+    protocol: http
+  # 控制是否使用 v2 接口
+  # true: 使用 v2 接口 (agent_id, agent_config, agent_input)
+  # false: 使用 v1 接口 (id, config, input)
+  use_v2: false
+agent_factory:
+  public_svc:
+    host: XXX
+    port: 33020
+    protocol: http
+  private_svc:
+    host: XXX
+    port: 33020
+    protocol: http
+efast:
+  private_svc:
+    host: XXX
+    port: 9123
+    protocol: http
+  public_svc:
+    host: XXX
+    port: 9123
+    protocol: http
+docset:
+  public_svc:
+    host: XXX
+    port: 32596
+    protocol: http
+  private_svc:
+    host: XXX
+    port: 32597

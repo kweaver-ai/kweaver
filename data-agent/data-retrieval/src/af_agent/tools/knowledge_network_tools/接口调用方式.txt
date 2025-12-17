@@ -1,0 +1,263 @@
+
+python环境：conda activate xinference 
+
+
+
+
+
+
+
+
+接口1：对象检索
+
+curl --location --request POST 'http://192.168.232.11:13018/api/ontology-query/in/v1/knowledge-networks/kn_medical/object-types/disease' \
+--header 'X-HTTP-Method-Override: GET' \
+--header 'x-account-id: bdb78b62-6c48-11f0-af96-fa8dcc0a06b2' \
+--header 'x-account-type: user' \
+--header 'Content-Type: application/json' \
+--data-raw '
+{
+    "condition": {
+        "operation": "and",
+        "sub_conditions": [
+            {
+                "field": "disease_name",
+                "operation": "==",
+                "value": "发烧",
+                "value_from": "const"
+            }
+        ]
+    },
+    "need_total": true,
+    "limit": 10
+}'
+
+返回样例：
+{
+    "datas": [
+        {
+            "rate": "0.9",
+            "infection": "无传染性",
+            "disease_name": "上气道梗阻",
+            "money": null,
+            "disease_english_name": null,
+            "age": "儿童",
+            "treatment": "手术治疗、药物治疗",
+            "period": "2-4周",
+            "icd_id": null,
+            "disease_id": "disease_004790",
+            "insurance": "非医保疾病"
+        }
+    ],
+    "total_count": 1,
+    "search_after": [
+        "20251127_053214_01266_c5z3q",
+        "x0f36b2e9227c407199cfc97d063539ce",
+        "1"
+    ],
+    "overall_ms": 664
+}
+
+
+
+
+
+
+接口2：根据关系路径检索对象
+curl --location --request POST 'http://192.168.232.11:13018/api/ontology-query/in/v1/knowledge-networks/kn_medical/subgraph?query_type=relation_path' \
+--header 'X-HTTP-Method-Override: GET' \
+--header 'x-account-id: bdb78b62-6c48-11f0-af96-fa8dcc0a06b2' \
+--header 'x-account-type: user' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "relation_type_paths": [
+        {
+            "object_types": [
+                {
+                    "id": "disease",
+                    "condition": {
+                        "operation": "==",
+                        "field": "disease_name",
+                        "value": "上气道梗阻",
+                        "value_from": "const"
+                    },
+                    "limit": 10
+                },
+                {
+                    "id": "symptom",
+                    "limit": 10
+                }
+            ],
+            "relation_types": [
+                {
+                    "relation_type_id": "has_symptom",
+                    "source_object_type_id": "disease",
+                    "target_object_type_id": "symptom"
+                }
+            ],
+            "limit": 10
+        }
+    ]
+}'
+
+
+返回样例：
+{
+    "entries": [
+        {
+            "objects": {
+                "symptom-symptom_000547": {
+                    "id": "symptom-symptom_000547",
+                    "unique_identities": {
+                        "symptom_id": "symptom_000547"
+                    },
+                    "object_type_id": "symptom",
+                    "object_type_name": "症状",
+                    "display": "吞咽困难",
+                    "properties": {
+                        "symptom_id": "symptom_000547",
+                        "symptom_name": "吞咽困难"
+                    }
+                },
+                "symptom-symptom_000660": {
+                    "id": "symptom-symptom_000660",
+                    "unique_identities": {
+                        "symptom_id": "symptom_000660"
+                    },
+                    "object_type_id": "symptom",
+                    "object_type_name": "症状",
+                    "display": "气喘",
+                    "properties": {
+                        "symptom_id": "symptom_000660",
+                        "symptom_name": "气喘"
+                    }
+                },
+                "symptom-symptom_000837": {
+                    "id": "symptom-symptom_000837",
+                    "unique_identities": {
+                        "symptom_id": "symptom_000837"
+                    },
+                    "object_type_id": "symptom",
+                    "object_type_name": "症状",
+                    "display": "流涎",
+                    "properties": {
+                        "symptom_id": "symptom_000837",
+                        "symptom_name": "流涎"
+                    }
+                },
+                "disease-disease_004790": {
+                    "id": "disease-disease_004790",
+                    "unique_identities": {
+                        "disease_id": "disease_004790"
+                    },
+                    "object_type_id": "disease",
+                    "object_type_name": "疾病",
+                    "display": "上气道梗阻",
+                    "properties": {
+                        "insurance": "非医保疾病",
+                        "money": null,
+                        "disease_english_name": null,
+                        "treatment": "手术治疗、药物治疗",
+                        "age": "儿童",
+                        "infection": "无传染性",
+                        "period": "2-4周",
+                        "rate": "0.9",
+                        "disease_name": "上气道梗阻",
+                        "icd_id": null,
+                        "disease_id": "disease_004790"
+                    }
+                },
+                "symptom-symptom_000020": {
+                    "id": "symptom-symptom_000020",
+                    "unique_identities": {
+                        "symptom_id": "symptom_000020"
+                    },
+                    "object_type_id": "symptom",
+                    "object_type_name": "症状",
+                    "display": "呼吸困难",
+                    "properties": {
+                        "symptom_id": "symptom_000020",
+                        "symptom_name": "呼吸困难"
+                    }
+                },
+                "symptom-symptom_000028": {
+                    "id": "symptom-symptom_000028",
+                    "unique_identities": {
+                        "symptom_id": "symptom_000028"
+                    },
+                    "object_type_id": "symptom",
+                    "object_type_name": "症状",
+                    "display": "咳嗽",
+                    "properties": {
+                        "symptom_name": "咳嗽",
+                        "symptom_id": "symptom_000028"
+                    }
+                }
+            },
+            "relation_paths": [
+                {
+                    "relations": [
+                        {
+                            "relation_type_id": "has_symptom",
+                            "relation_type_name": "疾病症状",
+                            "source_object_id": "disease-disease_004790",
+                            "target_object_id": "symptom-symptom_000020"
+                        }
+                    ],
+                    "length": 1
+                },
+                {
+                    "relations": [
+                        {
+                            "relation_type_id": "has_symptom",
+                            "relation_type_name": "疾病症状",
+                            "source_object_id": "disease-disease_004790",
+                            "target_object_id": "symptom-symptom_000028"
+                        }
+                    ],
+                    "length": 1
+                },
+                {
+                    "relations": [
+                        {
+                            "relation_type_id": "has_symptom",
+                            "relation_type_name": "疾病症状",
+                            "source_object_id": "disease-disease_004790",
+                            "target_object_id": "symptom-symptom_000547"
+                        }
+                    ],
+                    "length": 1
+                },
+                {
+                    "relations": [
+                        {
+                            "relation_type_id": "has_symptom",
+                            "relation_type_name": "疾病症状",
+                            "source_object_id": "disease-disease_004790",
+                            "target_object_id": "symptom-symptom_000660"
+                        }
+                    ],
+                    "length": 1
+                },
+                {
+                    "relations": [
+                        {
+                            "relation_type_id": "has_symptom",
+                            "relation_type_name": "疾病症状",
+                            "source_object_id": "disease-disease_004790",
+                            "target_object_id": "symptom-symptom_000837"
+                        }
+                    ],
+                    "length": 1
+                }
+            ],
+            "search_after": [
+                "20251127_052730_01258_c5z3q",
+                "xf82bb16f1d7e404da81717f2f1057b1d",
+                "1"
+            ],
+            "current_path_number": 5,
+            "overall_ms": 0
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+Updated at: 2025年11月04日21:57:14
+Updated by: Git Hook (pre-commit)
+
+Latest Git Commit:
+Commit: 9d8d81058802d9d16ecc9a0d0eeed87a94124e5e (9d8d810)
+Author: Aaron <Aaron.li@aishu.cn>
+Date:   2025年11月03日01:02:42
+Message: aaron - [2025-11-03 01:02:26] - 重构日志系统：简化StructLogger接口并优化异常处理
+
+主要变更：
+1. 日志系统重构
+   - 移除 log_type 参数，简化所有日志方法接口（debug/info/warning/error/fatal）
+   - 移除 format_exception_value processor，统一使用 structlog 内置的 format_exc_info
+   - 优化文件日志 handler 级别设置，改为 NOTSET 由 Logger 统一控制
+   - 修复 console_formatter 中异常堆栈格式化逻辑，支持字符串和异常对象两种格式
+
+2. 异常处理优化
+   - agent_core_logic_v2: 使用 struct_logger.console_logger 替代旧的 StandLogger
+   - unknown_handler: 增加 ExceptionGroup 处理支持（Python 3.11+），提取实际异常进行记录
+   - 统一使用 exc_info 参数传递异常对象
+
+3. 启动日志优化
+   - boot.py: 使用 console_logger 替代全局 struct_logger，避免文件日志污染
+
+4. 清理工作
+   - 删除 .ai-rules/ 目录下的 AI 规则文件（product.md, structure.md, tech.md）
+   - 删除 app/utils/debugger.py 及其测试文件
+   - 优化 .gitignore 文件结构，增加分类注释和新的忽略规则

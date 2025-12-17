@@ -1,0 +1,25 @@
+services:
+  agent-factory_dev:
+    container_name: agent-factory_dev
+    image: acr.aishu.cn/public/golang:1.20.12-ubuntu22.04.20231012-1
+    stdin_open: true
+    tty: true
+    pull_policy: always
+    privileged: true
+    entrypoint: bash ./entrypoint.sh
+    ports:
+      - "30777:30777"
+    dns:
+      - 10.96.0.10
+      - XXX
+    volumes:
+      - type: bind
+        source: /root/.vscode-server
+        target: /root/.vscode-server
+      - type: bind
+        source: /root/.gitconfig
+        target: /root/.hostgitconfig
+      - type: bind
+        source: .
+        target: /root/agent-factory
+    working_dir: /root/agent-factory

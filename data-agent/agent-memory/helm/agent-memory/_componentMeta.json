@@ -1,0 +1,78 @@
+{
+  "conponentDefineType": "helm/service",
+  "name": "agent-memory",
+  "version": "1.0.0",
+  "configSchema": {
+    "title": "agent-memory",
+    "description": "组件配置定义",
+    "type": "object",
+    "properties": {
+      "resources": {
+        "type": "object",
+        "title": "容器资源控制",
+        "properties": {
+          "requests": {
+            "type": "object",
+            "description": "容器运行需要的最小资源分配",
+            "properties": {
+              "memory": {
+                "type": "string",
+                "title": "内存"
+              },
+              "cpu": {
+                "type": "string",
+                "title": "cpu"
+              }
+            }
+          },
+          "limits": {
+            "type": "object",
+            "description": "容器运行最大资源限制",
+            "properties": {
+              "memory": {
+                "type": "string",
+                "title": "内存"
+              },
+              "cpu": {
+                "type": "string",
+                "title": "cpu"
+              }
+            }
+          }
+        }
+      },
+      "replicaCount": {
+        "type": "number",
+        "title": "服务副本数"
+      },
+      "env": {
+        "type": "object",
+        "title": "环境变量",
+        "properties": {
+          "llm_model": {
+            "type": "string",
+            "title": "llm_model",
+            "description": "大模型名称, 用于记忆提取和记忆更新所必须的配置，对应模型工厂中注册的模型名称"
+          }
+        },
+        "required": [
+          "llm_model"
+        ]
+      }
+    }
+  },
+  "dependence": [
+    {
+      "name": "dip-da-dm-pre"
+    },
+    {
+      "name": "rds"
+    },
+    {
+      "name": "opensearch"
+    },
+    {
+      "name": "mf-model-api"
+    }
+  ]
+}

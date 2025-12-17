@@ -1,0 +1,150 @@
+name: "更新空间API测试"
+description: "测试更新空间功能"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个空间用于更新测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "待更新空间-${random_string:6}"
+        key: "update-test-${timestamp}"
+        profile: "专门用于更新测试的空间"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 基础信息更新"
+    description: "更新空间的基础信息"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "已更新空间-${random_string:6}"
+        profile: "这是更新后的空间简介，更新时间: ${timestamp_ms}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "3. 验证更新结果"
+    description: "验证空间信息已正确更新"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "空间ID应该存在"
+        - type: "exists"
+          field: "body.name"
+          message: "空间名称应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "已更新空间"
+          message: "空间名称应该包含'已更新空间'"
+        - type: "contains"
+          field: "body.profile"
+          value: "更新后的空间简介"
+          message: "简介应该包含更新信息"
+        - type: "exists"
+          field: "body.updated_at"
+          message: "应该有更新时间"
+    timeout: "10s"
+    retry: 2
+
+  - name: "4. 测试错误处理 - 无效ID"
+    description: "使用无效ID更新空间"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-id-${random_string:8}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "无效更新-${random_string:6}"
+        profile: "这个更新应该失败"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "5. 最终验证"
+    description: "最终验证空间状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "空间ID应该存在"
+        - type: "exists"
+          field: "body.name"
+          message: "空间名称应该存在"
+        - type: "exists"
+          field: "body.created_at"
+          message: "创建时间应该存在"
+        - type: "exists"
+          field: "body.updated_at"
+          message: "更新时间应该存在"
+    timeout: "10s"
+    retry: 2
+
+  - name: "6. 测试错误处理 - 空名称"
+    description: "使用空名称更新空间"
+    request:
+      method: "PUT" 
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: ""
+        profile: "名称不能为空测试"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1

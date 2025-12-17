@@ -1,0 +1,990 @@
+{
+    "agent_id": "01K7RHV2JKAJS517TGZGXFKPYZ",
+    "agent_config": {
+        "input": {
+            "fields": [
+                {
+                    "name": "query",
+                    "type": "string",
+                    "desc": ""
+                },
+                {
+                    "name": "history",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "tool",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "header",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "self_config",
+                    "type": "object",
+                    "desc": ""
+                }
+            ],
+            "rewrite": {
+                "enable": false,
+                "llm_config": {
+                    "id": "",
+                    "name": "test",
+                    "model_type": "llm",
+                    "temperature": 0.5,
+                    "top_p": 0.5,
+                    "top_k": 0,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                    "max_tokens": 1000
+                }
+            },
+            "augment": {
+                "enable": false,
+                "data_source": {
+                    "kg": []
+                }
+            },
+            "is_temp_zone_enabled": 0,
+            "temp_zone_config": null
+        },
+        "system_prompt": "",
+        "dolphin": "# @knowledge_item(input=$query, action=\"show_ds\") -> ki\r\n@text2metric(input=$query, action=\"show_ds\",flags='{\"debug\": true}') -> metricdata_dict\r\n@text2sql(input=$query, action=\"show_ds\",flags='{\"debug\": true}') -> viewdata_dict\r\n@_date() -> date\r\n\r\n'''\r\n角色定位：\r\n1. 你是一个数据分析的专家，能够完成数据分析任务\r\n2. 你能熟练进行数据分析任务的分解、决策并完成任务，你也可以和用户自然的交互\r\n3. 你要按照用户提问的分析维度进行汇总，如时间、品类等\r\n4. 你可以生成代码在沙箱中执行\r\n5. 你能够对你在数据详细的解读，并给出洞察\r\n\r\n重要原则：\r\n1. 严禁捏造工具结果、编造数据、模拟工具输出、严禁模拟代码的结果，一定按要求生成工具调用参数\r\n#  2. 请判断text2sql 或 text2metric 返回的数据是否可以作图，如果可以则调用json2plot工具作图\r\n3. 输出答案时，要输出工具的结果和一条数据样例，但是要在注释中，格式为 \\<!-- result_cache_key: XX, data_sample: YY --\\>, 后续工具会使用。后续的工具在使用时，务必要能正确使用\r\n# 4. 如果用户要画图，或者你判断需要画图一定要用 json2plot，不要生成代码画图，json2plot 的参数要生成一定要参考上一条的 `data_sample`, 不能有不存在的数据字段\r\n# 5. 不需要对显示 json2plot 工具的参数和输出，前端会展示图，展示完成后对结果进行分析、解读和提出下一步的而建议\r\n6. 输出你的步骤，并在调用工具前输出你的思考\r\n7. 数值计算必须写代码并执行\r\n8. 仔细分析上下文，识别用户的话题切换\r\n9. 如果工具执行错误，不要反复执行\r\n10. 优先使用 `text2metric` 工具来回答问题\r\n11. 每次会话先调用 knowledge_item 工具以增强 text2metric、text2sql 工具的效果\r\n12. 同环比问题直接交给`text2metric`工具处理，该工具擅长计算同环比数据\r\n13. 当用户问题提到“分别是”时，应该要分开计算，不要汇总\r\n\r\n# sandbox 工具执行代码注意事项:\r\n# 1. Python 代码的结果要从 stderr, stdout, return_code 来判断结果\r\n\r\n指标查询:\r\n1. 如果用户没有提到的情况下,默认情况下都需要进行汇总,比如获取一月的数据,step一定是月\r\n2. 注意按天、按月、按日查询时，一定要聚合\r\n\r\n# 相关知识条目已经获取: {$ki}\r\n\r\n视图数据: $viewdata_dict\r\n指标数据：$metricdata_dict\r\n\r\n不可逾越的底线：\r\n禁止一切猜测、假设的行为，你所有的数据必须来源于工具的返回和用户给你的数据\r\n\r\n'''-> sys_prompt\r\n\r\nf'注意当前时间是{$date}' >> sys_prompt\r\n\r\n/explore/(history=true, system_prompt=$sys_prompt,tools=[\"text2sql\",\"text2metric\",\"knowledge_item\",\"execute_code\"])\r\n用户的问题是：$query\r\n下面你将开始一步步思考，并一步步执行\r\n优先用指标工具text2metric回答\r\n-> final_answer",
+        "is_dolphin_mode": 1,
+        "pre_dolphin": [
+            {
+                "key": "context_organize",
+                "name": "上下文组织模块",
+                "value": "\n{\"query\": \"用户的问题为: \"+$query} -> context\n",
+                "enabled": false,
+                "edited": false
+            }
+        ],
+        "post_dolphin": [],
+        "data_source": {
+            "kg": [],
+            "doc": [],
+            "metric": [
+                {
+                    "metric_model_id": "190benchmark-quekou"
+                },
+                {
+                    "metric_model_id": "190benchmark-target"
+                },
+                {
+                    "metric_model_id": "190benchmark-dacheng"
+                },
+                {
+                    "metric_model_id": "190benchmark-sale"
+                }
+            ],
+            "kn_entry": [
+                {
+                    "kn_entry_id": "d319evuudirf3o0g1smg"
+                },
+                {
+                    "kn_entry_id": "d319evuudirf3o0g1skg"
+                },
+                {
+                    "kn_entry_id": "d319evuudirf3o0g1hvg"
+                }
+            ],
+            "knowledge_network": null,
+            "advanced_config": {
+                "kg": null,
+                "doc": null
+            }
+        },
+        "skills": {
+            "tools": [
+                {
+                    "tool_id": "83953f80-e3a5-4c6c-960c-2452fa038190",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "config",
+                            "input_type": "object",
+                            "input_desc": "工具配置参数",
+                            "children": [
+                                {
+                                    "input_name": "knowledge_item_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "知识条目个数限制，-1 代表不限制，默认 5",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "return_data_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "每个知识条目返回数据总量限制，-1 代表不限制",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "return_record_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "每个知识条目返回数据条数限制，-1 代表不限制",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "data_source",
+                            "input_type": "object",
+                            "input_desc": "数据源配置信息",
+                            "children": [
+                                {
+                                    "input_name": "base_url",
+                                    "input_type": "string",
+                                    "input_desc": "服务器地址",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "data_item_ids",
+                                    "input_type": "array",
+                                    "input_desc": "知识条目ID列表",
+                                    "map_type": "var",
+                                    "map_value": "self_config.data_source.kn_entry",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "token",
+                                    "input_type": "string",
+                                    "input_desc": "认证令牌",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "user_id",
+                                    "input_type": "string",
+                                    "input_desc": "用户ID",
+                                    "map_type": "var",
+                                    "map_value": "header.x-user",
+                                    "enable": true
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "input",
+                            "input_type": "string",
+                            "input_desc": "用户需要查询的文本",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                },
+                {
+                    "tool_id": "fd166ec2-7e51-4fc4-ad27-98eab5ba3f40",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "action",
+                            "input_type": "string",
+                            "input_desc": "工具行为类型",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "config",
+                            "input_type": "object",
+                            "input_desc": "工具配置参数",
+                            "children": [
+                                {
+                                    "input_name": "background",
+                                    "input_type": "string",
+                                    "input_desc": "背景信息",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "dimension_num_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "维度数量限制，-1表示不限制, 系统默认为 30",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "force_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "返回数据条数限制，-1表示不限制, 默认1000",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "get_desc_from_datasource",
+                                    "input_type": "boolean",
+                                    "input_desc": "是否从数据源获取描述",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "only_essential_dim",
+                                    "input_type": "boolean",
+                                    "input_desc": "是否只展示必要的维度",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "retry_times",
+                                    "input_type": "integer",
+                                    "input_desc": "重试次数",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "return_data_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "返回数据总量限制，-1表示不限制",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "return_record_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "返回数据条数限制，-1表示不限制",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "rewrite_query",
+                                    "input_type": "boolean",
+                                    "input_desc": "是否重写查询",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "session_id",
+                                    "input_type": "string",
+                                    "input_desc": "会话ID",
+                                    "map_type": "var",
+                                    "map_value": "self_config.conversation_id",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "session_type",
+                                    "input_type": "string",
+                                    "input_desc": "会话类型",
+                                    "map_type": "fixedValue",
+                                    "map_value": "in_memory",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "show_sql_graph",
+                                    "input_type": "boolean",
+                                    "input_desc": "是否显示SQL图",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "view_num_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "引用视图数量限制，-1表示不限制",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "data_source",
+                            "input_type": "object",
+                            "input_desc": "视图配置信息",
+                            "children": [
+                                {
+                                    "input_name": "base_url",
+                                    "input_type": "string",
+                                    "input_desc": "服务器地址",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "kg",
+                                    "input_type": "array",
+                                    "input_desc": "知识图谱配置参数，用于从知识图谱中获取数据源",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "token",
+                                    "input_type": "string",
+                                    "input_desc": "认证令牌",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "user_id",
+                                    "input_type": "string",
+                                    "input_desc": "用户ID",
+                                    "map_type": "var",
+                                    "map_value": "header.x-user",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "view_list",
+                                    "input_type": "array",
+                                    "input_desc": "逻辑视图ID列表",
+                                    "map_type": "fixedValue",
+                                    "map_value": "[\"d30gh7eudirf3o0g1hu0\"]",
+                                    "enable": true
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "infos",
+                            "input_type": "object",
+                            "input_desc": "额外的输入信息, 包含额外信息和知识增强信息",
+                            "children": [
+                                {
+                                    "input_name": "action",
+                                    "input_type": "string",
+                                    "input_desc": "工具行为类型",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "extra_info",
+                                    "input_type": "string",
+                                    "input_desc": "额外信息(非知识增强)",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "knowledge_enhanced_information",
+                                    "input_type": "object",
+                                    "input_desc": "知识增强信息",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "inner_llm",
+                            "input_type": "object",
+                            "input_desc": "内部语言模型配置",
+                            "map_type": "model",
+                            "map_value": {
+                                "id": "1950850444926521344",
+                                "name": "deepseek_v3",
+                                "temperature": 1,
+                                "top_p": 1,
+                                "max_tokens": 1000,
+                                "top_k": 1,
+                                "presence_penalty": 0,
+                                "frequency_penalty": 0
+                            },
+                            "enable": true
+                        },
+                        {
+                            "input_name": "input",
+                            "input_type": "string",
+                            "input_desc": "用户输入的自然语言查询",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "llm",
+                            "input_type": "object",
+                            "input_desc": "语言模型配置",
+                            "children": [
+                                {
+                                    "input_name": "max_tokens",
+                                    "input_type": "integer",
+                                    "input_desc": "最大生成令牌数",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "model_name",
+                                    "input_type": "string",
+                                    "input_desc": "模型名称",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "openai_api_base",
+                                    "input_type": "string",
+                                    "input_desc": "OpenAI API基础URL",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "openai_api_key",
+                                    "input_type": "string",
+                                    "input_desc": "OpenAI API密钥",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "temperature",
+                                    "input_type": "number",
+                                    "input_desc": "生成温度参数",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                },
+                {
+                    "tool_id": "8cb11e04-55fd-4552-9703-e40e352e0f59",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "server_url",
+                            "input_type": "string",
+                            "input_desc": "可选，沙箱服务器URL，默认使用配置文件中的 SANDBOX_URL",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "session_id",
+                            "input_type": "string",
+                            "input_desc": "沙箱会话ID",
+                            "map_type": "var",
+                            "map_value": "self_config.conversation_id",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                },
+                {
+                    "tool_id": "6e27284a-de52-4ccb-9b30-7f46d1769fcf",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "server_url",
+                            "input_type": "string",
+                            "input_desc": "可选，沙箱服务器URL，默认使用配置文件中的 SANDBOX_URL",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "session_id",
+                            "input_type": "string",
+                            "input_desc": "沙箱会话ID",
+                            "map_type": "var",
+                            "map_value": "self_config.conversation_id",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                },
+                {
+                    "tool_id": "5af5e897-ac98-4108-8b2f-c6036a182347",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "args",
+                            "input_type": "array",
+                            "input_desc": "代码执行参数",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "content",
+                            "input_type": "string",
+                            "input_desc": "要执行的 Python 代码内容",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "filename",
+                            "input_type": "string",
+                            "input_desc": "文件名，用于指定代码文件的名称",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "output_params",
+                            "input_type": "array",
+                            "input_desc": "输出参数列表，用于指定要返回的变量名",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "server_url",
+                            "input_type": "string",
+                            "input_desc": "可选，沙箱服务器URL，默认使用配置文件中的 SANDBOX_URL",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "session_id",
+                            "input_type": "string",
+                            "input_desc": "沙箱会话ID",
+                            "map_type": "var",
+                            "map_value": "self_config.conversation_id",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                },
+                {
+                    "tool_id": "4a8164ab-5e26-4b85-9490-a0101deda401",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "action",
+                            "input_type": "string",
+                            "input_desc": "操作类型：show_ds 显示数据源信息，query 执行查询（默认）",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "config",
+                            "input_type": "object",
+                            "input_desc": "工具配置参数",
+                            "children": [
+                                {
+                                    "input_name": "background",
+                                    "input_type": "string",
+                                    "input_desc": "背景信息",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "force_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "返回数据条数限制，-1表示不限制, 系统默认为 1000",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "get_desc_from_datasource",
+                                    "input_type": "boolean",
+                                    "input_desc": "是否从数据源获取描述",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "return_data_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "返回数据总量限制，-1表示不限制, 剩余的数据将通过缓存键获取, 系统默认为 5000",
+                                    "map_type": "fixedValue",
+                                    "map_value": "1000",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "return_record_limit",
+                                    "input_type": "integer",
+                                    "input_desc": "返回数据条数限制，-1表示不限制, 系统默认为 100",
+                                    "map_type": "fixedValue",
+                                    "map_value": "10",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "session_id",
+                                    "input_type": "string",
+                                    "input_desc": "会话ID",
+                                    "map_type": "var",
+                                    "map_value": "self_config.conversation_id",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "session_type",
+                                    "input_type": "string",
+                                    "input_desc": "会话类型",
+                                    "map_type": "fixedValue",
+                                    "map_value": "in_memory",
+                                    "enable": true
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "data_source",
+                            "input_type": "object",
+                            "input_desc": "数据源配置信息",
+                            "children": [
+                                {
+                                    "input_name": "base_url",
+                                    "input_type": "string",
+                                    "input_desc": "服务器地址",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "metric_list",
+                                    "input_type": "array",
+                                    "input_desc": "指标ID列表",
+                                    "map_type": "var",
+                                    "map_value": "self_config.data_source.metric",
+                                    "enable": true
+                                },
+                                {
+                                    "input_name": "token",
+                                    "input_type": "string",
+                                    "input_desc": "认证令牌",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "user_id",
+                                    "input_type": "string",
+                                    "input_desc": "用户ID",
+                                    "map_type": "var",
+                                    "map_value": "header.x-user",
+                                    "enable": true
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "infos",
+                            "input_type": "object",
+                            "input_desc": "额外的输入信息, 包含额外信息和知识增强信息",
+                            "children": [
+                                {
+                                    "input_name": "extra_info",
+                                    "input_type": "string",
+                                    "input_desc": "额外信息(非知识增强)",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "knowledge_enhanced_information",
+                                    "input_type": "object",
+                                    "input_desc": "知识增强信息",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "inner_llm",
+                            "input_type": "object",
+                            "input_desc": "内部语言模型配置",
+                            "map_type": "model",
+                            "map_value": {
+                                "id": "1950850444926521344",
+                                "name": "deepseek_v3",
+                                "temperature": 1,
+                                "top_p": 1,
+                                "max_tokens": 1000,
+                                "top_k": 1,
+                                "presence_penalty": 0,
+                                "frequency_penalty": 0
+                            },
+                            "enable": true
+                        },
+                        {
+                            "input_name": "input",
+                            "input_type": "string",
+                            "input_desc": "用户输入的自然语言查询",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "llm",
+                            "input_type": "object",
+                            "input_desc": "语言模型配置",
+                            "children": [
+                                {
+                                    "input_name": "max_tokens",
+                                    "input_type": "integer",
+                                    "input_desc": "最大生成令牌数",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "model_name",
+                                    "input_type": "string",
+                                    "input_desc": "模型名称",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "openai_api_base",
+                                    "input_type": "string",
+                                    "input_desc": "OpenAI API基础URL",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "openai_api_key",
+                                    "input_type": "string",
+                                    "input_desc": "OpenAI API密钥",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                },
+                                {
+                                    "input_name": "temperature",
+                                    "input_type": "number",
+                                    "input_desc": "生成温度参数",
+                                    "map_type": "auto",
+                                    "map_value": "",
+                                    "enable": false
+                                }
+                            ]
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                }
+            ],
+            "agents": [],
+            "mcps": []
+        },
+        "llms": [
+            {
+                "is_default": true,
+                "llm_config": {
+                    "id": "1950850444926521344",
+                    "name": "deepseek_v3",
+                    "model_type": "llm",
+                    "temperature": 1,
+                    "top_p": 1,
+                    "top_k": 1,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                    "max_tokens": 1000
+                }
+            }
+        ],
+        "is_data_flow_set_enabled": 0,
+        "opening_remark_config": null,
+        "preset_questions": [],
+        "output": {
+            "variables": {
+                "answer_var": "final_answer",
+                "doc_retrieval_var": "doc_retrieval_res",
+                "graph_retrieval_var": "graph_retrieval_res",
+                "related_questions_var": "related_questions",
+                "other_vars": null,
+                "middle_output_vars": null
+            },
+            "default_format": "markdown"
+        },
+        "built_in_can_edit_fields": null,
+        "memory": {
+            "is_enabled": false
+        },
+        "related_question": {
+            "is_enabled": false
+        },
+        "plan_mode": null,
+        "metadata": {
+            "config_version": "v1"
+        },
+        "agent_id": "01K7K51D6W47332PAPWNRZGNDA",
+        "conversation_id": "01K87EP8B5H0M1E3N7TJX86EMZ",
+        "session_id": "01K87EP8FJZ1J4A2AWTD81XZ6Y"
+    },
+    "agent_input": {
+        "confirm_plan": true,
+        "query": "目标渠道为电商去年2月l3系列为恬露护衣柔顺珠销量是多少?",
+        "history": [],
+        "tool": {
+            "session_id": "",
+            "tool_name": "",
+            "tool_args": null
+        }
+    },
+    "_options": {
+        "conversation_id": "01K84SM5RJJ25N9VFSCD8RP64A"
+    }
+}

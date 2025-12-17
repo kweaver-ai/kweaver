@@ -1,0 +1,172 @@
+replicaCount: 1
+
+nodeSelector: {}
+
+namespace: dip
+moduleName: agent-factory
+
+# 设置为dev则为开发模式.
+runMode: release
+
+enableSecurityContext: true
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+
+image:
+  registry: acr.aishu.cn
+  service:
+    repository: dip/agent-factory
+    tag: data-581755
+    pullPolicy: IfNotPresent
+
+service:
+  ingressclassname: "class-443"
+  agentFactory:
+    type: ClusterIP
+    port: 13020
+    nodePort: 31022
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /api/agent-factory/v1
+          - /api/agent-factory/v2
+          - /api/agent-factory/v3
+  type: ClusterIP
+  enableDualStack: false
+  port: 13020
+  language: zh-CN
+  loggerOutput: stdout
+  loggerLevel: info # 【详见：go.uber.org/zap@v1.27.0/zapcore/level.go】
+  businessTimeOffset: 0
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 60
+    failureThreshold: 10
+
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+  disable_pms_check: false
+
+depServices:
+  hydra:
+    userMgnt:
+      host: user-management-private
+      port: 30980
+    hydraPublic:
+      host: hydra-public
+      port: 4444
+    hydraAdmin:
+      host: hydra-admin
+      port: 4445
+  # 数据库连接配置
+  rds:
+    type: MYSQL
+    host: mariadb-mariadb-cluster.resource
+    port: 3330
+    hostRead: mariadb-mariadb-cluster.resource
+    portRead: 3330
+    user: anyshare
+    password: "***"
+    database: dip_data_agent
+    maxConnections: 30
+    maxReadConnections: 30
+    dbCharset: utf8mb4
+    timeout: 10
+    readTimeout: 10
+    writeTimeout: 10
+  opensearch:
+    read: "opensearch-read"
+    write: "opensearch-write"
+    host: "opensearch-master"
+    port: "9200"
+    user: "admin"
+    password: "***"
+  redis:
+    connectType: sentinel
+    connectInfo:
+      masterGroupName: mymaster
+      password: "***"
+      sentinelHost: proton-redis-proton-redis-sentinel.resource
+      sentinelPassword: "***"
+      sentinelPort: 26379
+      sentinelUsername: root
+      username: root
+      host: ""
+      port: ""
+      masterHost: ""
+      masterPort: 6379
+      slaveHost: ""
+      slavePort: 6379
+    db: 3
+    enableSSL: false
+    secretName: ""
+    caName: ""
+    certName: ""
+    keyName: ""
+  mq:
+    auth:
+      mechanism: PLAIN
+      password: "***"
+      username: anyrobot
+    connectorType: kafka
+    mqHost: kafka-headless.resource
+    mqLookupdHost: ""
+    mqLookupdPort: 0
+    mqPort: 9097
+    mqType: kafka
+    protocol: sasl_plaintext
+    tenant: default
+  modelFactory:
+    model_api_svc:
+      host: mf-model-api
+      port: 9898
+      protocol: http
+    model_manager_svc:
+      host: mf-model-manager
+      port: 9898
+      protocol: http
+    llm:
+      api_key: ""
+  ecoIndex:
+    private_svc:
+      host: ecoindex-private
+      port: 32130
+      protocol: http
+  datahubcentral:
+    private_svc:
+      host: datahubcentral-private
+      port: 9002
+      protocol: http
+  authorization:
+    private_svc:
+      host: authorization-private
+      port: 30920
+      protocol: http
+    public_svc:
+      host: authorization-public
+      port: 30920
+      protocol: http
+  agentFactory:
+    private_svc:
+      host: agent-factory
+      port: 13020
+      protocol: http
+  bizDomain:
+    private_svc:
+      host: business-system-service
+      port: 80
+      protocol: http
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 200Mi
+  limits:
+    cpu: 4
+    memory: 8Gi
+
+

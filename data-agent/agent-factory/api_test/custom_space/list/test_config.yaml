@@ -1,0 +1,128 @@
+name: "空间列表接口测试"
+description: "测试获取空间列表API的各种场景"
+tests:
+  - name: "获取空间列表 - 默认分页"
+    description: "测试获取空间列表的默认分页功能"
+    request:
+      method: "GET"
+      url: "http://127.0.0.1:13020/api/agent-factory/v3/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "总数应该大于等于0"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "type"
+          field: "body.total"
+          value: "number"
+          message: "total应该是数字类型"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取空间列表 - 指定分页参数"
+    description: "测试使用指定分页参数获取空间列表"
+    request:
+      method: "GET"
+      url: "http://127.0.0.1:13020/api/agent-factory/v3/custom-space"
+      headers:
+        Accept: "application/json"
+      params:
+        page: "1"
+        size: "5"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "less_than_or_equal"
+          field: "body.entries.length"
+          value: 5
+          message: "返回的条目数应该小于等于5"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取空间列表 - 大分页参数"
+    description: "测试使用较大的分页参数"
+    request:
+      method: "GET"
+      url: "http://127.0.0.1:13020/api/agent-factory/v3/custom-space"
+      headers:
+        Accept: "application/json"
+      params:
+        page: "1"
+        size: "50"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "less_than_or_equal"
+          field: "body.entries.length"
+          value: 50
+          message: "返回的条目数应该小于等于50"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取空间列表 - 验证响应字段结构"
+    description: "验证空间列表响应中每个条目的字段结构"
+    request:
+      method: "GET"
+      url: "http://127.0.0.1:13020/api/agent-factory/v3/custom-space"
+      headers:
+        Accept: "application/json"
+      params:
+        page: "1"
+        size: "1"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取空间列表 - 无效分页参数"
+    description: "测试使用无效的分页参数"
+    request:
+      method: "GET"
+      url: "http://127.0.0.1:13020/api/agent-factory/v3/custom-space"
+      headers:
+        Accept: "application/json"
+      params:
+        page: "0"
+        size: "0"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "equals"
+          field: "body.error_code"
+          value: "Public.BadRequest"
+          message: "错误代码应该是Public.BadRequest"
+    timeout: "10s"
+    retry: 1 

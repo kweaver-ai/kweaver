@@ -1,0 +1,1146 @@
+{
+    "d3fa06071b8445eb6ca9d7a68af76fb1": [
+        {
+            "src_vid": "d3fa06071b8445eb6ca9d7a68af76fb1",
+            "dst_vid": "5e6fbd09a4c2dd641669b7b1a5800f17",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "5e6fbd09a4c2dd641669b7b1a5800f17": [
+        {
+            "src_vid": "5e6fbd09a4c2dd641669b7b1a5800f17",
+            "dst_vid": "0d3ee3f7cf817471a2bcab294645d9a9",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "5e6fbd09a4c2dd641669b7b1a5800f17",
+            "dst_vid": "f45f8adde9e5744c05767d388b2dacf6",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "6e05cd1c5d49cabbc3133b961253d062": [
+        {
+            "src_vid": "6e05cd1c5d49cabbc3133b961253d062",
+            "dst_vid": "43c609f034cf7864b5884e5c800d7149",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "6e05cd1c5d49cabbc3133b961253d062",
+            "dst_vid": "721abdcf87ac1850e1b035b75c9f3235",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "43c609f034cf7864b5884e5c800d7149": [
+        {
+            "src_vid": "43c609f034cf7864b5884e5c800d7149",
+            "dst_vid": "25e8697c756f1e5b8cd5935870180169",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "43c609f034cf7864b5884e5c800d7149",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "28ca8200aa827a224888e2ea1268a3d5": [
+        {
+            "src_vid": "28ca8200aa827a224888e2ea1268a3d5",
+            "dst_vid": "ea0fb8e979822fc76ab730336f540c92",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "28ca8200aa827a224888e2ea1268a3d5",
+            "dst_vid": "d1eb30ce779a7ade18a4fa9644de153c",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "28ca8200aa827a224888e2ea1268a3d5",
+            "dst_vid": "0d09cd62c76b3a358664ad63548562fc",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "ea0fb8e979822fc76ab730336f540c92": [
+        {
+            "src_vid": "ea0fb8e979822fc76ab730336f540c92",
+            "dst_vid": "4e6d502b35ad360f7d4246448690dfc5",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "ea0fb8e979822fc76ab730336f540c92",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "34fd2ff14fca83d5e510bed36045bfd6": [
+        {
+            "src_vid": "34fd2ff14fca83d5e510bed36045bfd6",
+            "dst_vid": "4f65b57cc65ca8ecae79781d1e11447b",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "34fd2ff14fca83d5e510bed36045bfd6",
+            "dst_vid": "b626b950233a57de31a73375fff9b52f",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "34fd2ff14fca83d5e510bed36045bfd6",
+            "dst_vid": "1765c2092e23fe0c0952b08d4538d405",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "8a3e83d33fad496083692d1b087b0a58": [
+        {
+            "src_vid": "8a3e83d33fad496083692d1b087b0a58",
+            "dst_vid": "dccd5d7ebdfbb590156347417518b9fd",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "dccd5d7ebdfbb590156347417518b9fd": [
+        {
+            "src_vid": "dccd5d7ebdfbb590156347417518b9fd",
+            "dst_vid": "e93847607f1b339be9defd361f64c6dc",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "dccd5d7ebdfbb590156347417518b9fd",
+            "dst_vid": "8bf2ba79cccf2005c079deda5b60ea87",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "f8bda4d3fbe86c562792e2a8a7c0b9eb": [
+        {
+            "src_vid": "f8bda4d3fbe86c562792e2a8a7c0b9eb",
+            "dst_vid": "4b77aa2be533b7cf63603308cc847968",
+            "rel_type": "case_category_2_case_category_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "f8bda4d3fbe86c562792e2a8a7c0b9eb",
+            "dst_vid": "f11a3ec901b0bd116bda7bd7ec855e8e",
+            "rel_type": "case_category_2_case_category_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "f8bda4d3fbe86c562792e2a8a7c0b9eb",
+            "dst_vid": "2aae3c08301dfa9af9aab616f5ff63f0",
+            "rel_type": "case_category_2_case_category_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "f8bda4d3fbe86c562792e2a8a7c0b9eb",
+            "dst_vid": "2cd595e0540da2f21640ed7df8d0052e",
+            "rel_type": "case_category_2_case_category_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "81ed96ef81510fbaff2bc3c7caf8feea": [
+        {
+            "src_vid": "81ed96ef81510fbaff2bc3c7caf8feea",
+            "dst_vid": "96c25b31173a9265409676b997b58c16",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "96c25b31173a9265409676b997b58c16": [
+        {
+            "src_vid": "96c25b31173a9265409676b997b58c16",
+            "dst_vid": "34fd2ff14fca83d5e510bed36045bfd6",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "96c25b31173a9265409676b997b58c16",
+            "dst_vid": "cbc46bb900d3ed482830ab545efb191d",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "d4ebc453e66e546f935a795dc09e4b10": [
+        {
+            "src_vid": "d4ebc453e66e546f935a795dc09e4b10",
+            "dst_vid": "721abdcf87ac1850e1b035b75c9f3235",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "721abdcf87ac1850e1b035b75c9f3235": [
+        {
+            "src_vid": "721abdcf87ac1850e1b035b75c9f3235",
+            "dst_vid": "ab28769d329756563f89a373a9317b56",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "721abdcf87ac1850e1b035b75c9f3235",
+            "dst_vid": "b77c9eac4af20a9d183674184e2bfc9f",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "46381c28f8de3047c1d37d3f0a8c308a": [
+        {
+            "src_vid": "46381c28f8de3047c1d37d3f0a8c308a",
+            "dst_vid": "d216cc14026a1ced138c6e4b4d1990b3",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "d216cc14026a1ced138c6e4b4d1990b3": [
+        {
+            "src_vid": "d216cc14026a1ced138c6e4b4d1990b3",
+            "dst_vid": "51cde5f0c0f3d931046a5bbf949689e4",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "d216cc14026a1ced138c6e4b4d1990b3",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "032d1799c8f421f63389cff89412a0f5": [
+        {
+            "src_vid": "032d1799c8f421f63389cff89412a0f5",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "048ab7e67c36c6a802e4a5ab58ed2a69": [
+        {
+            "src_vid": "048ab7e67c36c6a802e4a5ab58ed2a69",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "16f696266ab7db3276d15c02e95cf571": [
+        {
+            "src_vid": "16f696266ab7db3276d15c02e95cf571",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "19caaa887876090e17d4088ef8f0e0b5": [
+        {
+            "src_vid": "19caaa887876090e17d4088ef8f0e0b5",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "2ab6698d5a885f39b34b0b1587e2acee": [
+        {
+            "src_vid": "2ab6698d5a885f39b34b0b1587e2acee",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "332e88a7b91acbd47d7f690d448ae357": [
+        {
+            "src_vid": "332e88a7b91acbd47d7f690d448ae357",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "361f7c1db9dc0d1da0b39d0d45ed5635": [
+        {
+            "src_vid": "361f7c1db9dc0d1da0b39d0d45ed5635",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "37395ad36688de09b6a9a88f217f337c": [
+        {
+            "src_vid": "37395ad36688de09b6a9a88f217f337c",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "3d1a79be08eab30ec69fe502c2c85d0a": [
+        {
+            "src_vid": "3d1a79be08eab30ec69fe502c2c85d0a",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "4a9ff478d352abe7fdeb533bcb747045": [
+        {
+            "src_vid": "4a9ff478d352abe7fdeb533bcb747045",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "4c81960c063119f7794351bda156b5e8": [
+        {
+            "src_vid": "4c81960c063119f7794351bda156b5e8",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "5928bf932700bcf7ff17f58e78160860": [
+        {
+            "src_vid": "5928bf932700bcf7ff17f58e78160860",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "635aa48041296f0c9950a60a3dba1089": [
+        {
+            "src_vid": "635aa48041296f0c9950a60a3dba1089",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "6aa25d51fdb2b73fddfb105c5f07a80c": [
+        {
+            "src_vid": "6aa25d51fdb2b73fddfb105c5f07a80c",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "79072f687295d5aaf0b2128c8f359e09": [
+        {
+            "src_vid": "79072f687295d5aaf0b2128c8f359e09",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "7970b692ecce378b2eeb3130fbea5bba": [
+        {
+            "src_vid": "7970b692ecce378b2eeb3130fbea5bba",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "80aa5d6b67b0bcc0a46047bc2c042a64": [
+        {
+            "src_vid": "80aa5d6b67b0bcc0a46047bc2c042a64",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "826409129e8b77af4840e53a51f62e69": [
+        {
+            "src_vid": "826409129e8b77af4840e53a51f62e69",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "8cdba1919fadd371479eb69e2b2a9241": [
+        {
+            "src_vid": "8cdba1919fadd371479eb69e2b2a9241",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "8f87bcd7c0c6b83579e82f78e54bbea1": [
+        {
+            "src_vid": "8f87bcd7c0c6b83579e82f78e54bbea1",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "8ff2c316e3de4d3e76ca58575140276a": [
+        {
+            "src_vid": "8ff2c316e3de4d3e76ca58575140276a",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "90a7206a021927fde56c2da38bb1ceca": [
+        {
+            "src_vid": "90a7206a021927fde56c2da38bb1ceca",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "90efa3ad30dd2aa650a994ec54bddb46": [
+        {
+            "src_vid": "90efa3ad30dd2aa650a994ec54bddb46",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "97a8f6c1992a8c3204356261f3d30556": [
+        {
+            "src_vid": "97a8f6c1992a8c3204356261f3d30556",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "ab87a5cb81f479758e27982e7b503f12": [
+        {
+            "src_vid": "ab87a5cb81f479758e27982e7b503f12",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "af0d8e8646a54250561eb08dc18c67e8": [
+        {
+            "src_vid": "af0d8e8646a54250561eb08dc18c67e8",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "bc8d8656727ec9e24269eca81b82a02d": [
+        {
+            "src_vid": "bc8d8656727ec9e24269eca81b82a02d",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "c0b1a83e5de5aabd26882352e1b6a1c7": [
+        {
+            "src_vid": "c0b1a83e5de5aabd26882352e1b6a1c7",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "de79520e52b3f0afd78a4a4c548e29ad": [
+        {
+            "src_vid": "de79520e52b3f0afd78a4a4c548e29ad",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "df4fee9e1be6321ead7dfa7a3c34ad26": [
+        {
+            "src_vid": "df4fee9e1be6321ead7dfa7a3c34ad26",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "e8143fd10c6e8860ad9a170c94eb4c3e": [
+        {
+            "src_vid": "e8143fd10c6e8860ad9a170c94eb4c3e",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "eca7415b6b31794acdf62f0f1fc456d9": [
+        {
+            "src_vid": "eca7415b6b31794acdf62f0f1fc456d9",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "f2355ee847e49046956be7d876a3b3a3": [
+        {
+            "src_vid": "f2355ee847e49046956be7d876a3b3a3",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "f5c17e046074e33e5b5c065b7a1787d2": [
+        {
+            "src_vid": "f5c17e046074e33e5b5c065b7a1787d2",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "d982221e087db3b6967dbf415b7573f7": [
+        {
+            "src_vid": "d982221e087db3b6967dbf415b7573f7",
+            "dst_vid": "a338a04575a11879f0e97f7794388564",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "a338a04575a11879f0e97f7794388564": [
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "15be2de3d4420bf23050ebeb70d910da",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "2867bcfb8547ba54b26709a62644bc69",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "6261611563b1e5de79f3e0551eb63452",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "6dd029b51bb8c0e1fa2f882d0c5910f2",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "8e884e7de187c7dcfffe1d5460f604b1",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "ab3ccfabbabdbca1cc8b30bb3a30f7be",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "f8e76f5ab825365f8579d4b857e9458e",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "ff422fc43d58d207e5007c9e10a17396",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a338a04575a11879f0e97f7794388564",
+            "dst_vid": "9deb82077d464ad7c3d68fa865ca326c",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "4bce4dfb4634a876c7b9e98aff6f7ee2": [
+        {
+            "src_vid": "4bce4dfb4634a876c7b9e98aff6f7ee2",
+            "dst_vid": "6e0f819c91617c5d16260ccf15fe8438",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "6e0f819c91617c5d16260ccf15fe8438": [
+        {
+            "src_vid": "6e0f819c91617c5d16260ccf15fe8438",
+            "dst_vid": "07a5f1fb39cd3cfc0cea95e1d333a355",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "6e0f819c91617c5d16260ccf15fe8438",
+            "dst_vid": "3df58284f83c53e5bdfe8126cb7b4723",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "6e0f819c91617c5d16260ccf15fe8438",
+            "dst_vid": "b05e90537a75cae94786f7457c40ae0d",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "c544ebc1cf6bb3ea9e1dee0c216bc7ca": [
+        {
+            "src_vid": "c544ebc1cf6bb3ea9e1dee0c216bc7ca",
+            "dst_vid": "a3533da3c943142ea1df7915b51de884",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "d7994fc3cd74729b18aa8b20ea721808": [
+        {
+            "src_vid": "d7994fc3cd74729b18aa8b20ea721808",
+            "dst_vid": "a3533da3c943142ea1df7915b51de884",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "d7994fc3cd74729b18aa8b20ea721808",
+            "dst_vid": "1d776b560e31255e4a00766d4538c0c1",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "a3533da3c943142ea1df7915b51de884": [
+        {
+            "src_vid": "a3533da3c943142ea1df7915b51de884",
+            "dst_vid": "7b75859592bd5bafc57ad24f9219697e",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "a3533da3c943142ea1df7915b51de884",
+            "dst_vid": "8bd0544e7eb1fa6d3dba7951811f64c3",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "9deb82077d464ad7c3d68fa865ca326c": [
+        {
+            "src_vid": "9deb82077d464ad7c3d68fa865ca326c",
+            "dst_vid": "87cd488000fc0a0fe646b2542a6720cf",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "9deb82077d464ad7c3d68fa865ca326c",
+            "dst_vid": "d1993d18463ff79e91ec03d1efe921b4",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "9deb82077d464ad7c3d68fa865ca326c",
+            "dst_vid": "f397e96fccc20f29682674572353d225",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "9deb82077d464ad7c3d68fa865ca326c",
+            "dst_vid": "a25f1edad1e737486b2297cb865064b4",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "9deb82077d464ad7c3d68fa865ca326c",
+            "dst_vid": "3e335f413784b16ac27523a159d0efa3",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "a89db85eb48c4b0317d719cc3a20229d": [
+        {
+            "src_vid": "a89db85eb48c4b0317d719cc3a20229d",
+            "dst_vid": "585eab02ab5107617d3dfdc547e6b3e6",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "585eab02ab5107617d3dfdc547e6b3e6": [
+        {
+            "src_vid": "585eab02ab5107617d3dfdc547e6b3e6",
+            "dst_vid": "07a33f349ec87a311c77e7fd28bdebe0",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "585eab02ab5107617d3dfdc547e6b3e6",
+            "dst_vid": "6e959140ec142998daaa7a36baa750c1",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "585eab02ab5107617d3dfdc547e6b3e6",
+            "dst_vid": "955ede4e0b9310d27881e7417f9d83c1",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "585eab02ab5107617d3dfdc547e6b3e6",
+            "dst_vid": "e0afc43ff019b5231ca26b98878a1692",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "585eab02ab5107617d3dfdc547e6b3e6",
+            "dst_vid": "71f25f238bed9fbe6e6f9b35a17dfcde",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "9c10bf278b54d60009bcb9f9da4ad2f2": [
+        {
+            "src_vid": "9c10bf278b54d60009bcb9f9da4ad2f2",
+            "dst_vid": "723f2688eb26e43434c4330d1f3fe660",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "9c10bf278b54d60009bcb9f9da4ad2f2",
+            "dst_vid": "ed2806b2e16330c44ce1672e4b487ea6",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "723f2688eb26e43434c4330d1f3fe660": [
+        {
+            "src_vid": "723f2688eb26e43434c4330d1f3fe660",
+            "dst_vid": "7997227b16392dc04fc388a7f0d2c8a6",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "723f2688eb26e43434c4330d1f3fe660",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "5eeef36d1c918eaa0dd8a60303f8c763": [
+        {
+            "src_vid": "5eeef36d1c918eaa0dd8a60303f8c763",
+            "dst_vid": "1d776b560e31255e4a00766d4538c0c1",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "1d776b560e31255e4a00766d4538c0c1": [
+        {
+            "src_vid": "1d776b560e31255e4a00766d4538c0c1",
+            "dst_vid": "6ec916a8de4a43bdec60b2ad77806389",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "1d776b560e31255e4a00766d4538c0c1",
+            "dst_vid": "8bd0544e7eb1fa6d3dba7951811f64c3",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "dcea4cbe65562f569bcc0665a2e554f2": [
+        {
+            "src_vid": "dcea4cbe65562f569bcc0665a2e554f2",
+            "dst_vid": "a2d8273837e1d6bd87db1a31cc7d30d7",
+            "rel_type": "case_category_2_case_category_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "7f910d09843d06f37ab07cdf611aa77d": [
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "144a64f0db0aaf2eb480be9bf199382b",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "32994799af72d509cac9965f9d43a04a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "3a2e05c635506788d8b61629a86035f9",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "c892ed787b362977682cb5f771b6fc39",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "ce1a4e86eea9ad1424c59e604e5bd600",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "c24ddda40c89435786798fa0366e1f0b",
+            "rel_type": "lawyer_2_district",
+            "rel_alias": "工作地点"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "2dc3daa8e83c68830aade7bea8d9aee5",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        },
+        {
+            "src_vid": "7f910d09843d06f37ab07cdf611aa77d",
+            "dst_vid": "9d3c06946189cd757b8831c4d4f214d7",
+            "rel_type": "lawyer_2_university_graduate",
+            "rel_alias": "毕业院校"
+        }
+    ],
+    "1b15bc26df7fa19f478faf565ce0b45e": [
+        {
+            "src_vid": "1b15bc26df7fa19f478faf565ce0b45e",
+            "dst_vid": "015791b1f27f37c7d4335ddf50fd7d6c",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "015791b1f27f37c7d4335ddf50fd7d6c": [
+        {
+            "src_vid": "015791b1f27f37c7d4335ddf50fd7d6c",
+            "dst_vid": "c2b529236d6891ea79e5985e28d49ae4",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "015791b1f27f37c7d4335ddf50fd7d6c",
+            "dst_vid": "367308985bcf748dea1bf67c312167e3",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "d1eb30ce779a7ade18a4fa9644de153c": [
+        {
+            "src_vid": "d1eb30ce779a7ade18a4fa9644de153c",
+            "dst_vid": "8825d7204eccdef0c92d46c304f2e5d3",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "d1eb30ce779a7ade18a4fa9644de153c",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "462e4abdfafb7d094ac50f4ddf06c8cc": [
+        {
+            "src_vid": "462e4abdfafb7d094ac50f4ddf06c8cc",
+            "dst_vid": "6fb77b4a52bef585974a714c398c24f3",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "e3ffe8da81feeaff0cf2e9ebb20ffcaa": [
+        {
+            "src_vid": "e3ffe8da81feeaff0cf2e9ebb20ffcaa",
+            "dst_vid": "6fb77b4a52bef585974a714c398c24f3",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "e3ffe8da81feeaff0cf2e9ebb20ffcaa",
+            "dst_vid": "3e6c9017cdb8b115fc14c80c47fa45b5",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        },
+        {
+            "src_vid": "e3ffe8da81feeaff0cf2e9ebb20ffcaa",
+            "dst_vid": "104f30397b15d66a487b5dbbcdda89d0",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "6fb77b4a52bef585974a714c398c24f3": [
+        {
+            "src_vid": "6fb77b4a52bef585974a714c398c24f3",
+            "dst_vid": "7ab8933b6651f49a47ea5d19efccd216",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "6fb77b4a52bef585974a714c398c24f3",
+            "dst_vid": "367308985bcf748dea1bf67c312167e3",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "38189d8a9c7a3a4205e2c12171155760": [
+        {
+            "src_vid": "38189d8a9c7a3a4205e2c12171155760",
+            "dst_vid": "a13475118535506c666aaf8f9ffc18b2",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "a13475118535506c666aaf8f9ffc18b2": [
+        {
+            "src_vid": "a13475118535506c666aaf8f9ffc18b2",
+            "dst_vid": "7ad6c53464a6649dc65a878c6900dfcc",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a13475118535506c666aaf8f9ffc18b2",
+            "dst_vid": "83451d593b62ec00de3a99a7fe61dcb9",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "a13475118535506c666aaf8f9ffc18b2",
+            "dst_vid": "a8507ef0d691c05525a82e38cade0fa9",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "ed2806b2e16330c44ce1672e4b487ea6": [
+        {
+            "src_vid": "ed2806b2e16330c44ce1672e4b487ea6",
+            "dst_vid": "8c5c5d88dc92816f0ec16ebed9951cf1",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "ed2806b2e16330c44ce1672e4b487ea6",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "44e1484638bd7d4c3aaab1ec5a865198": [
+        {
+            "src_vid": "44e1484638bd7d4c3aaab1ec5a865198",
+            "dst_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "rel_type": "customer_2_industry_belong_to",
+            "rel_alias": "所在行业"
+        }
+    ],
+    "53bb86e28ebb397b2ffe53c12f3149cc": [
+        {
+            "src_vid": "53bb86e28ebb397b2ffe53c12f3149cc",
+            "dst_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "7f77de58ffb906668a7a30d049e675ee": [
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "137a03eca91ad8834f9f955e1943f3cf",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "2ed831c5c10b6c06001aae499eee64e9",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "46a80bbdda70a1c77d64d3c120819ac4",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "70c3c0a3d558adf4b918d4bdc8c38f8e",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "72ea9bac09d0f452d7b084f9ced09f6c",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "74adbabbfd702ec566266dd449c378d6",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "860140c83084394b65df5bd88cee1a88",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "bde3a00f66655a058e19153454df9f16",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        },
+        {
+            "src_vid": "7f77de58ffb906668a7a30d049e675ee",
+            "dst_vid": "becbadcb30817fc91e5a220816bb7b78",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ],
+    "79a00a587544e0b4f4453ee28bdd2f37": [
+        {
+            "src_vid": "79a00a587544e0b4f4453ee28bdd2f37",
+            "dst_vid": "ab04ecd1fcbe675c022271e0366c0309",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "ab04ecd1fcbe675c022271e0366c0309": [
+        {
+            "src_vid": "ab04ecd1fcbe675c022271e0366c0309",
+            "dst_vid": "e93847607f1b339be9defd361f64c6dc",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        }
+    ],
+    "32044e07fc6fab254f1b101a477363a6": [
+        {
+            "src_vid": "32044e07fc6fab254f1b101a477363a6",
+            "dst_vid": "b49c0cab48db58078c07c9a91fdde381",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "b49c0cab48db58078c07c9a91fdde381": [
+        {
+            "src_vid": "b49c0cab48db58078c07c9a91fdde381",
+            "dst_vid": "dd32af8cb068536f8959be8f6040790d",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "b49c0cab48db58078c07c9a91fdde381",
+            "dst_vid": "645993883058ecbb66f759d15016f9a7",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "3e6c9017cdb8b115fc14c80c47fa45b5": [
+        {
+            "src_vid": "3e6c9017cdb8b115fc14c80c47fa45b5",
+            "dst_vid": "2994166c06ad93c6c2807f0cd2a62072",
+            "rel_type": "case_2_category_belong_to",
+            "rel_alias": "业务分类"
+        },
+        {
+            "src_vid": "3e6c9017cdb8b115fc14c80c47fa45b5",
+            "dst_vid": "7ab8933b6651f49a47ea5d19efccd216",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        }
+    ],
+    "104f30397b15d66a487b5dbbcdda89d0": [
+        {
+            "src_vid": "104f30397b15d66a487b5dbbcdda89d0",
+            "dst_vid": "d2c7de370625777ccfb3ca4656961e8a",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "104f30397b15d66a487b5dbbcdda89d0",
+            "dst_vid": "367308985bcf748dea1bf67c312167e3",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "212bdef416a80ac496358e55c9d6c199": [
+        {
+            "src_vid": "212bdef416a80ac496358e55c9d6c199",
+            "dst_vid": "31fcef30824acda508971165ff2cbcd0",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "31fcef30824acda508971165ff2cbcd0": [
+        {
+            "src_vid": "31fcef30824acda508971165ff2cbcd0",
+            "dst_vid": "929a37e6a8674beac5f0542044b91b96",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "31fcef30824acda508971165ff2cbcd0",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "d4b7500700e66f89b16e5ff0893e3479": [
+        {
+            "src_vid": "d4b7500700e66f89b16e5ff0893e3479",
+            "dst_vid": "ec793a42595e3c3f0aab9c2b1b3b059a",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "ec793a42595e3c3f0aab9c2b1b3b059a": [
+        {
+            "src_vid": "ec793a42595e3c3f0aab9c2b1b3b059a",
+            "dst_vid": "e2bf3238e99e959370b2fe479cf62be0",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "ec793a42595e3c3f0aab9c2b1b3b059a",
+            "dst_vid": "27689e019a8f069b55d76dfabf262f1c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "0d09cd62c76b3a358664ad63548562fc": [
+        {
+            "src_vid": "0d09cd62c76b3a358664ad63548562fc",
+            "dst_vid": "8645d5cd9b3ae4d2167aa5c562e826f2",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "0d09cd62c76b3a358664ad63548562fc",
+            "dst_vid": "12a43b3f91711601aa209261bfba1c8c",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "932180df4fd787ecf977715205c5814c": [
+        {
+            "src_vid": "932180df4fd787ecf977715205c5814c",
+            "dst_vid": "4b2c741a9216a2d7e0e4d0e6120112a9",
+            "rel_type": "lawyer_2_case_represente",
+            "rel_alias": "代理"
+        }
+    ],
+    "4b2c741a9216a2d7e0e4d0e6120112a9": [
+        {
+            "src_vid": "4b2c741a9216a2d7e0e4d0e6120112a9",
+            "dst_vid": "1e7b057a716a3e5a74ddee8a1e03e8ff",
+            "rel_type": "case_2_customer_relate",
+            "rel_alias": "关联客户"
+        },
+        {
+            "src_vid": "4b2c741a9216a2d7e0e4d0e6120112a9",
+            "dst_vid": "367308985bcf748dea1bf67c312167e3",
+            "rel_type": "case_2_performance_catetory",
+            "rel_alias": "业绩分类"
+        }
+    ],
+    "71f25f238bed9fbe6e6f9b35a17dfcde": [
+        {
+            "src_vid": "71f25f238bed9fbe6e6f9b35a17dfcde",
+            "dst_vid": "185568cd383a6f6863a1159a9cddb090",
+            "rel_type": "industry_2_industry_child",
+            "rel_alias": "下层分类"
+        }
+    ]
+}

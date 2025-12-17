@@ -1,0 +1,305 @@
+name: "个人空间Agent列表API测试"
+description: "测试个人空间Agent列表接口的各种场景，包括基础功能、分页、搜索、过滤和错误处理"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 获取个人空间Agent列表 - 基础测试"
+    description: "测试获取个人空间Agent列表的基础功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:8}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "type"
+          field: "body.total"
+          value: "number"
+          message: "total应该是数字类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "Agent总数应该大于等于0"
+    variable_extraction:
+      - name: "test_user_id"
+        source: "header"
+        path: "X-User-ID"
+    timeout: "2s"
+    retry: 0
+
+  - name: "2. 获取个人空间Agent列表 - 分页测试"
+    description: "测试使用分页参数获取Agent列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "${random_number:1-3}"
+        size: "${random_number:5-20}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "Agent总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "3. 获取个人空间Agent列表 - 名称搜索"
+    description: "测试按名称搜索Agent功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        name: "测试Agent-${random_string:4}"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "搜索结果总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "4. 获取个人空间Agent列表 - 发布状态过滤（草稿）"
+    description: "测试按发布状态过滤 - 草稿状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        publish_status: "draft"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "草稿Agent总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "5. 获取个人空间Agent列表 - 发布状态过滤（已发布）"
+    description: "测试按发布状态过滤 - 已发布状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        publish_status: "published"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "已发布Agent总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "6. 获取个人空间Agent列表 - Agent创建类型过滤"
+    description: "测试按Agent创建类型过滤功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        agent_created_type: "create"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "指定类型Agent总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "7. 测试错误处理 - 无效分页参数"
+    description: "测试使用无效分页参数获取Agent列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "0"
+        size: "0"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "2s"
+    retry: 0
+
+  - name: "8. 测试错误处理 - 无效的发布状态"
+    description: "测试无效的发布状态参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        publish_status: "invalid_status_${random_string:5}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.description"
+          value: "publish_status"
+          message: "错误描述应该提到publish_status参数"
+    timeout: "2s"
+    retry: 0
+
+  - name: "9. 测试错误处理 - 无效的Agent创建类型"
+    description: "测试无效的Agent创建类型参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        agent_created_type: "invalid_type_${random_string:5}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.description"
+          value: "agent_created_type"
+          message: "错误描述应该提到agent_created_type参数"
+    timeout: "2s"
+    retry: 0
+
+  - name: "10. 测试未登录用户访问"
+    description: "测试未提供用户ID时的错误处理"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        # 不提供 X-User-ID 头
+    expected:
+      status_code: 401
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.description"
+          value: "未登录"
+          message: "错误描述应该提示用户未登录"
+    timeout: "2s"
+    retry: 0

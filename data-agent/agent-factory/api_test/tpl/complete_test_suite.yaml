@@ -1,0 +1,393 @@
+name: "模板API完整测试套件"
+description: "包含所有模板API功能的完整测试：CRUD、发布管理、复制功能，使用高级功能"
+
+variables:
+  base_url: "http://127.0.0.1:13021"
+  api_prefix: "/api/agent-factory/internal/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试模板"
+    description: "创建一个用于测试的模板，使用动态变量"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Timestamp: "${timestamp}"
+      body:
+        name: "测试模板-${random_string:6}"
+        key: "test-tpl-${timestamp}"
+        profile: "这是一个用于完整测试的模板，创建时间: ${timestamp_ms}"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "gpt-3.5-turbo"
+            temperature: 0.7
+            max_tokens: 2000
+          prompt_config:
+            system_prompt: "你是一个智能助手，创建时间: ${timestamp}"
+            user_prompt_template: "用户问题: {question}"
+          tools:
+            - name: "search"
+              type: "web_search"
+              config:
+                api_key: "test-key-${random_string:8}"
+        metadata:
+          created_by: "${random_name:8}"
+          session_id: "${uuid}"
+          test_id: "${random_number:1000-9999}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "created_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 获取模板列表"
+    description: "获取模板列表，验证创建的模板存在"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "greater_than"
+          field: "body.total"
+          value: 0
+          message: "总数应该大于0"
+    timeout: "10s"
+    retry: 2
+
+  - name: "3. 获取创建的模板详情"
+    description: "使用提取的模板ID获取模板详情"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "测试模板"
+          message: "模板名称应该包含'测试模板'"
+        - type: "exists"
+          field: "body.config"
+          message: "响应应该包含配置信息"
+        - type: "exists"
+          field: "body.created_at"
+          message: "响应应该包含创建时间"
+    variable_extraction:
+      - name: "created_tpl_name"
+        source: "body"
+        path: "name"
+      - name: "created_tpl_key"
+        source: "body"
+        path: "key"
+    timeout: "10s"
+    retry: 2
+
+  - name: "4. 按Key获取模板详情"
+    description: "使用提取的模板Key获取模板详情"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/by-key/{{created_tpl_key}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的模板ID应该存在"
+        - type: "equals"
+          field: "body.key"
+          value: "{{created_tpl_key}}"
+          message: "模板Key应该匹配"
+    timeout: "10s"
+    retry: 2
+
+  - name: "5. 更新模板信息"
+    description: "更新模板的基本信息和配置，使用动态变量"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Update-By: "${random_name:10}"
+      body:
+        name: "{{created_tpl_name}} - 已更新 -${random_string:6}"
+        profile: "这是一个更新后的测试模板，更新时间: ${timestamp_ms}，更新者: ${random_name:8}"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "gpt-4"
+            temperature: 0.8
+            max_tokens: 3000
+          prompt_config:
+            system_prompt: "你是一个更新后的智能助手，更新时间: ${timestamp}"
+            user_prompt_template: "更新后的用户问题: {question}"
+          tools:
+            - name: "search"
+              type: "web_search"
+              config:
+                api_key: "updated-key-${random_string:8}"
+            - name: "calculator"
+              type: "math"
+              config:
+                precision: 2
+        metadata:
+          updated_by: "${random_name:8}"
+          update_time: "${timestamp}"
+          update_id: "${uuid}"
+          version: "${random_number:1-100}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "6. 验证更新结果"
+    description: "获取更新后的模板详情，验证更新是否成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.name"
+          value: "已更新"
+          message: "模板名称应该包含'已更新'"
+        - type: "contains"
+          field: "body.profile"
+          value: "更新后的测试模板"
+          message: "模板简介应该包含更新信息"
+        - type: "equals"
+          field: "body.config.model_config.model_name"
+          value: "gpt-4"
+          message: "模型名称应该已更新为gpt-4"
+    timeout: "10s"
+    retry: 2
+
+  - name: "7. 获取发布信息"
+    description: "获取模板的发布信息（分类列表）"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.categories"
+          message: "响应应该包含categories字段"
+        - type: "greater_than_or_equal"
+          field: "body.categories.length"
+          value: 0
+          message: "分类数组应该存在"
+    variable_extraction:
+      - name: "first_category_id"
+        source: "body"
+        path: "categories[0].id"
+        default: "category_001"
+    timeout: "10s"
+    retry: 2
+
+  - name: "8. 更新发布信息"
+    description: "更新模板的发布信息（分类）"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        category_id: "{{first_category_id}},category_002"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "9. 发布模板"
+    description: "发布模板到公开市场"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}/publish"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        version: "1.0.0"
+        release_note: "首次发布，测试时间: ${timestamp_ms}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "10. 复制模板"
+    description: "复制现有模板创建新模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "复制的模板-${random_string:6}"
+        key: "copied-tpl-${timestamp}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新模板ID"
+    variable_extraction:
+      - name: "copied_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "11. 验证复制的模板"
+    description: "获取复制的模板详情，验证复制是否成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{copied_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "复制的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "复制的模板"
+          message: "模板名称应该包含'复制的模板'"
+        - type: "exists"
+          field: "body.config"
+          message: "复制的模板应该包含配置信息"
+    timeout: "10s"
+    retry: 2
+
+  - name: "12. 取消发布模板"
+    description: "取消发布原模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}/unpublish"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body: {}
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "13. 测试错误处理 - 无效ID"
+    description: "使用无效ID获取模板详情"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/invalid-id-${random_string:8}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "14. 测试错误处理 - 无效Key"
+    description: "使用无效Key获取模板详情"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/by-key/invalid-key-${random_string:8}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "15. 清理测试数据 - 删除复制的模板"
+    description: "删除复制的模板进行清理"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{copied_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "16. 清理测试数据 - 删除原模板"
+    description: "删除原始测试模板进行清理"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2 

@@ -1,0 +1,76 @@
+{
+    "componentDefineType": "helm/service",
+    "name": "data-retrival",
+    "configSchema": {
+        "title": "data-retrieval",
+        "description": "data-retrieval服务配置项",
+        "type": "object",
+        "properties": {
+            "resources": {
+                "type": "object",
+                "title": "容器资源控制",
+                "properties": {
+                    "requests": {
+                        "type": "object",
+                        "description": "容器运行需要的最小资源分配",
+                        "properties": {
+                            "memory": {
+                                "type": "string",
+                                "title": "最低内存"
+                            },
+                            "cpu": {
+                                "type": "string",
+                                "title": "cpu"
+                            }
+                        }
+                    },
+                    "limits": {
+                        "type": "object",
+                        "description": "容器运行最大资源限制",
+                        "properties": {
+                            "memory": {
+                                "type": "string",
+                                "title": "内存"
+                            },
+                            "cpu": {
+                                "type": "string",
+                                "title": "cpu"
+                            }
+                        }
+                    },
+                    "rerank_llm_model": {
+                        "type": "object",
+                        "description": "graph rag召回重排模型",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": "输入模型名"
+                            }
+                        }
+                    }
+                }
+            },
+            "appConfig": {
+                "type": "object",
+                "title": "服务配置",
+                "properties": {
+                    "rerank_llm_model": {
+                        "type": "object",
+                        "description": "graph rag召回重排模型",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": "输入模型名"
+                            }
+                        }
+                    }
+                }
+            },
+            "replicaCount": {
+                "type": "number",
+                "title": "服务副本数"
+            }
+        }
+    },
+    "dependence": []
+}

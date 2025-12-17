@@ -1,0 +1,448 @@
+name: "空间资源管理完整测试"
+description: "测试空间资源的完整生命周期：创建空间、添加资源、获取资源、删除资源"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个空间用于资源管理测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        name: "资源管理测试空间-${random_string:6}"
+        key: "resource-mgmt-test-${timestamp}"
+        profile: "用于测试资源管理功能的空间"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 验证空间创建成功"
+    description: "确认空间已创建成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{test_space_id}}"
+          message: "返回的空间ID应该匹配"
+    timeout: "10s"
+
+  - name: "3. 获取空资源列表"
+    description: "获取新创建空间的资源列表，应该为空"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        
+        - type: "equals"
+          field: "body.total"
+          value: 0
+          message: "新空间的资源总数应该为0"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+    timeout: "10s"
+
+  - name: "4. 添加单个资源"
+    description: "向空间添加一个data_agent资源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "test-agent-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "5. 验证资源添加成功"
+    description: "获取资源列表验证添加是否成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 1
+          message: "资源总数应该为1"
+        - type: "equals"
+          field: "body.entries[0].resource_type"
+          value: "data_agent"
+          message: "资源类型应该为data_agent"
+        - type: "equals"
+          field: "body.entries[0].resource_id"
+          value: "test-agent-001"
+          message: "资源ID应该匹配"
+        - type: "exists"
+          field: "body.entries[0].id"
+          message: "资源应该有数据库ID"
+    variable_extraction:
+      - name: "resource_id_1"
+        source: "body"
+        path: "entries[0].id"
+    timeout: "10s"
+
+  - name: "6. 批量添加资源"
+    description: "批量添加多个不同类型的资源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "test-agent-002"
+          - resource_type: "data_agent"
+            resource_id: "test-agent-003"
+          - resource_type: "data_agent"
+            resource_id: "test-agent-004"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "7. 验证批量添加成功"
+    description: "验证批量添加的资源都已成功添加"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 4
+          message: "资源总数应该为4"
+        - type: "equals"
+          field: "body.entries.length"
+          value: 4
+          message: "返回的资源数量应该为4"
+    variable_extraction:
+      - name: "resource_id_2"
+        source: "body"
+        path: "entries[1].id"
+      - name: "resource_id_3"
+        source: "body"
+        path: "entries[2].id"
+    timeout: "10s"
+
+  - name: "8. 测试重复添加资源"
+    description: "尝试添加已存在的资源，应该成功但不重复"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "test-agent-001"
+          - resource_type: "data_agent"
+            resource_id: "test-agent-005"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "9. 验证去重功能"
+    description: "验证重复资源没有被重复添加"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 5
+          message: "资源总数应该为5（只添加了新资源）"
+    timeout: "10s"
+
+  - name: "10. 测试分页功能"
+    description: "测试资源列表的分页功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "3"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 5
+          message: "总数应该为5"
+        - type: "equals"
+          field: "body.entries.length"
+          value: 3
+          message: "第一页应该返回3个资源"
+    timeout: "10s"
+
+  - name: "11. 测试第二页分页"
+    description: "测试获取第二页资源"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "2"
+        size: "3"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 5
+          message: "总数应该为5"
+        - type: "equals"
+          field: "body.entries.length"
+          value: 2
+          message: "第二页应该返回2个资源"
+    timeout: "10s"
+
+  - name: "12. 删除单个资源"
+    description: "删除指定的资源"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources/{{resource_id_2}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 204
+    timeout: "10s"
+
+  - name: "13. 验证资源删除成功"
+    description: "验证资源已被成功删除"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 4
+          message: "删除后资源总数应该为4"
+    timeout: "10s"
+
+  - name: "14. 删除多个资源"
+    description: "连续删除多个资源"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources/{{resource_id_3}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 204
+    timeout: "10s"
+
+  - name: "15. 验证多次删除后的状态"
+    description: "验证多次删除后的资源状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 3
+          message: "删除后资源总数应该为3"
+    timeout: "10s"
+
+  - name: "16. 测试删除不存在的资源"
+    description: "尝试删除不存在的资源ID"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources/999999"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 500
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "17. 测试无效空间ID"
+    description: "使用无效的空间ID添加资源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-space-id/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "test-agent-999"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "18. 测试无效请求体"
+    description: "发送无效的请求体"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        resources: []
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "19. 测试无效资源类型"
+    description: "尝试添加无效的资源类型"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        resources:
+          - resource_type: "invalid_type"
+            resource_id: "test-resource-001"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "20. 最终清理 - 删除测试空间"
+    description: "删除测试用的空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 204
+    timeout: "10s" 

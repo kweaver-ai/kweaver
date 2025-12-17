@@ -1,0 +1,474 @@
+name: "创建模板API测试"
+description: "测试创建模板功能，使用正确的API格式"
+
+variables:
+  base_url: "http://127.0.0.1:13021"
+  api_prefix: "/api/agent-factory/internal/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 10
+  random_name_length: 8
+
+tests:
+  - name: "创建基础模板"
+    description: "创建一个基础的测试模板，使用正确的API格式"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Timestamp: "${timestamp}"
+        X-Test-Session: "${uuid}"
+      body:
+        name: "基础测试模板-${random_string:8}"
+        profile: "这是一个基础测试模板，创建时间: ${timestamp}"
+        key: "basic-tpl-${timestamp}"
+        avatar_type: 1
+        avatar: "2"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+            is_temp_zone_enabled: 0
+          system_prompt: "你是一个智能助手，请用友好的语气回答用户的问题。"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc: []
+            kg: []
+          tools: []
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 0.7
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 2000
+          is_data_flow_set_enabled: 1
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "您好！我是智能助手，很高兴为您服务。"
+          preset_questions:
+            - question: "你能帮我做什么？"
+          output:
+            variables:
+              answer_var: "answer"
+            default_format: "markdown"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "created_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "验证创建的模板详情"
+    description: "通过详情API验证创建的模板信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Verify-Tpl: "{{created_tpl_id}}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "基础测试模板"
+          message: "模板名称应该包含'基础测试模板'"
+        - type: "contains"
+          field: "body.key"
+          value: "basic-tpl"
+          message: "模板key应该包含'basic-tpl'"
+        - type: "exists"
+          field: "body.config"
+          message: "响应应该包含配置信息"
+        - type: "exists"
+          field: "body.created_at"
+          message: "响应应该包含创建时间"
+        - type: "exists"
+          field: "body.updated_at"
+          message: "响应应该包含更新时间"
+    variable_extraction:
+      - name: "created_tpl_name"
+        source: "body"
+        path: "name"
+      - name: "created_tpl_key"
+        source: "body"
+        path: "key"
+      - name: "creation_timestamp"
+        source: "body"
+        path: "created_at"
+    timeout: "10s"
+    retry: 2
+
+  - name: "创建带复杂配置的模板"
+    description: "创建包含复杂配置的模板，包含工具和数据源"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Parent-Tpl: "{{created_tpl_id}}"
+      body:
+        name: "复杂配置模板-${random_name:6}"
+        profile: "包含复杂配置的测试模板，父模板: {{created_tpl_name}}"
+        key: "complex-tpl-${timestamp}"
+        avatar_type: 1
+        avatar: "3"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+              - name: "tmp_files"
+                type: "file"
+            is_temp_zone_enabled: 1
+            temp_zone_config:
+              name: "临时上传区"
+              tmp_file_use_type: "upload"
+              max_file_count: 50
+              single_file_size_limit: 100
+              single_file_size_limit_unit: "MB"
+              support_data_type: ["file"]
+              allowed_file_categories: ["document", "pdf", "text"]
+          system_prompt: "你是一个高级智能助手，具有复杂的配置参数。根据提供的知识库内容，准确回答用户咨询。"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc:
+              - ds_id: "0"
+                fields:
+                  - name: "测试文档"
+                    path: "测试数据/测试文档"
+                    source: "gns://92EE2D87255142B78A6F1DFB6BBB836B/TEST123456"
+            kg:
+              - kg_id: "129"
+                fields: ["regions", "comments"]
+                output_fields: ["comments"]
+                field_properties:
+                  regions: ["※vid", "regions"]
+                  comments: ["※vid", "CONTENT", "VOTES", "COMMENT_TIME"]
+            advanced_config:
+              doc:
+                document_threshold: -5.5
+                retrieval_slices_num: 150
+                max_slice_per_cite: 16
+                rerank_topk: 15
+                slice_head_num: 0
+                slice_tail_num: 2
+                documents_num: 8
+                retrieval_max_length: 32000
+              kg:
+                graph_rag_topk: 25
+                long_text_length: 256
+                reranker_sim_threshold: -5.5
+                text_match_entity_nums: 60
+                vector_match_entity_nums: 60
+                retrieval_max_length: 32000
+          tools:
+            - tool_id: "1901300419510927360"
+              tool_type: "tool"
+              tool_box_id: "1901300419502538752"
+              tool_use_description: "使用Tavily API执行Web搜索并返回结果"
+              tool_input: null
+              intervention: false
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 1
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 1000
+            - is_default: false
+              llm_config:
+                id: "1901307417048780801"
+                name: "gpt-4"
+                model_type: "llm"
+                temperature: 0.5
+                top_p: 0.95
+                max_tokens: 2000
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+          is_data_flow_set_enabled: 1
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "您好！我是高级智能客服助手，很高兴为您服务。请问有什么可以帮助您的吗？"
+          preset_questions:
+            - question: "如何查询我的订单状态？"
+            - question: "如何申请退款？"
+            - question: "产品有哪些功能？"
+          output:
+            variables:
+              answer_var: "answer"
+              doc_retrieval_var: "doc_retrieval_res"
+              graph_retrieval_var: "graph_retrieval_res"
+            default_format: "markdown"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "complex_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "验证复杂模板详情"
+    description: "验证复杂配置模板的详情信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{complex_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Verify-Complex: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "复杂配置模板"
+          message: "模板名称应该包含'复杂配置模板'"
+        - type: "contains"
+          field: "body.profile"
+          value: "复杂配置"
+          message: "简介应该包含复杂配置信息"
+        - type: "exists"
+          field: "body.config"
+          message: "应该包含配置信息"
+        - type: "exists"
+          field: "body.config.data_source"
+          message: "应该包含数据源配置"
+    variable_extraction:
+      - name: "complex_tpl_name"
+        source: "body"
+        path: "name"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试错误处理 - 重复key"
+    description: "测试使用重复key创建模板的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "重复key测试-${random_string:6}"
+        key: "{{created_tpl_key}}"
+        profile: "测试重复key的错误处理"
+        avatar_type: 1
+        avatar: "2"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+            is_temp_zone_enabled: 0
+          system_prompt: "测试模板"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc: []
+            kg: []
+          tools: []
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 0.7
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 2000
+          is_data_flow_set_enabled: 1
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "测试开场白"
+          preset_questions: []
+          output:
+            variables:
+              answer_var: "answer"
+            default_format: "markdown"
+    expected:
+      status_code: 409
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.description"
+          value: "已存在"
+          message: "错误信息应该提到已存在"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试错误处理 - 缺少必需字段"
+    description: "测试缺少必需字段的错误处理"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "缺少字段测试-${random_string:6}"
+        # 故意不包含key和config字段
+        profile: "测试缺少必需字段的错误处理"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试最小配置模板"
+    description: "测试创建最小配置的模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "最小配置模板-${random_string:6}"
+        profile: "最小配置的测试模板"
+        key: "minimal-tpl-${timestamp}"
+        avatar_type: 1
+        avatar: "1"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+            is_temp_zone_enabled: 0
+          system_prompt: "你是一个简单的助手"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc: []
+            kg: []
+          tools: []
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 0.7
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 1000
+          is_data_flow_set_enabled: 0
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "你好"
+          preset_questions: []
+          output:
+            variables:
+              answer_var: "answer"
+            default_format: "text"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "minimal_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "清理测试数据 - 复杂模板"
+    description: "清理复杂配置测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{complex_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 500
+      assertions: []
+    timeout: "10s"
+    retry: 1
+
+  - name: "清理测试数据 - 最小模板"
+    description: "清理最小配置测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{minimal_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 500
+      assertions: []
+    timeout: "10s"
+    retry: 1
+
+  - name: "清理测试数据 - 基础模板"
+    description: "清理基础测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{created_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 500
+      assertions: []
+    timeout: "10s"
+    retry: 1 

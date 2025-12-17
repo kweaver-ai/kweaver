@@ -1,0 +1,155 @@
+# Common
+[AgentAPP.InvalidParameter.RequestBody]
+Description = "Invalid Request Body"
+Solution = "Please check whether the parameter is correct."
+ErrorLink = "None"
+
+[AgentAPP.InvalidRequestHeader.Authorization]
+Description = "Authorization Failed"
+Solution = "Please check the Http Header."
+ErrorLink = "None"
+
+[AgentAPP.InvalidRequestHeader.ContentType]
+Description = "Invalid ContentType"
+Solution = "Please check the Http Header."
+ErrorLink = "None"
+
+[AgentAPP.Forbidden.FilterField]
+Description = "The filter field '__id' and '__routing' is not allowed."
+Solution = "Please check whether the parameter is correct."
+ErrorLink = "None"
+
+[AgentAPP.Forbidden.PermissionDenied]
+Description = "Permission Denied"
+Solution = "Please check whether the permission is correct."
+ErrorLink = "None"
+
+[AgentAPP.InternalError]
+Description = "Internal Server Error"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.GetAgentFailed]
+Description = "Get Agent Configuration Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.CreateConversationFailed]
+Description = "Create Conversation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.GetConversationFailed]
+Description = "Get Conversation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.GetMaxIndexFailed]
+Description = "Get Maximum Index Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.GetHistoryFailed]
+Description = "Get Conversation History Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.CreateMessageFailed]
+Description = "Create Message Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.UpdateConversationFailed]
+Description = "Update Conversation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.GetMessageFailed]
+Description = "Get Message Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.UpdateMessageFailed]
+Description = "Update Message Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.CallAgentExecutorFailed]
+Description = "Agent Executor Invocation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.ModelExecption]
+Description = "LLM Invocation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.SkillExecption]
+Description = "Skill Invocation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.DolphinSDKExecption]
+Description = "Dolphin SDK Invocation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.ExecutorExecption]
+Description = "Agent Executor Invocation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.ResumeFailed]
+Description = "Resume Conversation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Agent.ConversationSessionInitFailed]
+Description = "Initialize Conversation Session Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Conversation.NotFound]
+Description = "The conversation does not exist."
+Solution = "Please check whether the parameter is correct."
+ErrorLink = "None"
+
+[AgentAPP.Conversation.DeleteFailed]
+Description = "Delete Conversation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Conversation.GetDetailFailed]
+Description = "Get Conversation Detail Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Conversation.InitFailed]
+Description = "Initialize Conversation Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Conversation.GetListFailed]
+Description = "Get Conversation List Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Temparea.RemoveFailed]
+Description = "Remove Temporary Area Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Temparea.GetFailed]
+Description = "Get Temporary Area Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Temparea.Createfailed]
+Description = "Create Temporary Area Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"
+
+[AgentAPP.Temparea.AppendFailed]
+Description = "Append File to Temporary Area Failed"
+Solution = "Please try this operation again, if the error occurs again, please submit work order or contact Technical Supports."
+ErrorLink = "None"

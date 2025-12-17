@@ -1,0 +1,369 @@
+name: "空间成员管理完整测试"
+description: "测试空间成员的完整生命周期：创建空间、添加成员、获取成员、删除成员"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个空间用于成员管理测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:6}"
+      body:
+        name: "成员管理测试空间-${random_string:6}"
+        key: "member-mgmt-test-${timestamp}"
+        profile: "用于测试成员管理功能的空间"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 验证空间创建成功"
+    description: "确认空间已创建成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{test_space_id}}"
+          message: "返回的空间ID应该匹配"
+    timeout: "10s"
+
+  - name: "3. 获取空成员列表"
+    description: "获取新创建空间的成员列表，应该为空"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        
+        - type: "equals"
+          field: "body.total"
+          value: 0
+          message: "新空间的成员总数应该为0"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+    timeout: "10s"
+
+  - name: "4. 添加单个成员"
+    description: "向空间添加一个用户成员"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "test-user-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "5. 验证成员添加成功"
+    description: "获取成员列表验证添加是否成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 1
+          message: "成员总数应该为1"
+        - type: "equals"
+          field: "body.entries[0].obj_type"
+          value: "user"
+          message: "成员类型应该为user"
+        - type: "equals"
+          field: "body.entries[0].obj_id"
+          value: "test-user-001"
+          message: "成员ID应该匹配"
+        - type: "exists"
+          field: "body.entries[0].id"
+          message: "成员应该有数据库ID"
+    variable_extraction:
+      - name: "member_id_1"
+        source: "body"
+        path: "entries[0].id"
+    timeout: "10s"
+
+  - name: "6. 批量添加成员"
+    description: "批量添加多个不同类型的成员"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "test-user-002"
+          - obj_type: "user"
+            obj_id: "test-user-003"
+          - obj_type: "dept"
+            obj_id: "test-dept-001"
+          - obj_type: "user_group"
+            obj_id: "test-group-001"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "7. 验证批量添加成功"
+    description: "验证批量添加的成员都已成功添加"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 5
+          message: "成员总数应该为5"
+        - type: "equals"
+          field: "body.entries.length"
+          value: 5
+          message: "返回的成员数量应该为5"
+    variable_extraction:
+      - name: "member_id_2"
+        source: "body"
+        path: "entries[1].id"
+      - name: "member_id_3"
+        source: "body"
+        path: "entries[2].id"
+    timeout: "10s"
+
+  - name: "8. 测试重复添加成员"
+    description: "尝试添加已存在的成员，应该成功但不重复"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "test-user-001"
+          - obj_type: "user"
+            obj_id: "test-user-004"
+    expected:
+      status_code: 201
+    timeout: "10s"
+
+  - name: "9. 验证去重功能"
+    description: "验证重复成员没有被重复添加"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 6
+          message: "成员总数应该为6（只添加了新成员）"
+    timeout: "10s"
+
+  - name: "10. 测试分页功能"
+    description: "测试成员列表的分页功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "3"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 6
+          message: "总数应该为6"
+        - type: "equals"
+          field: "body.entries.length"
+          value: 3
+          message: "第一页应该返回3个成员"
+    timeout: "10s"
+
+  - name: "11. 删除单个成员"
+    description: "删除指定的成员"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members/{{member_id_2}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 204
+    timeout: "10s"
+
+  - name: "12. 验证成员删除成功"
+    description: "验证成员已被成功删除"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      params:
+        page: "1"
+        size: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.total"
+          value: 5
+          message: "删除后成员总数应该为5"
+    timeout: "10s"
+
+  - name: "13. 测试删除不存在的成员"
+    description: "尝试删除不存在的成员ID"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members/999999"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 500
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "14. 测试无效空间ID"
+    description: "使用无效的空间ID添加成员"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-space-id/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "test-user-999"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "15. 测试无效请求体"
+    description: "发送无效的请求体"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+      body:
+        members: []
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+
+  - name: "16. 最终清理 - 删除测试空间"
+    description: "删除测试用的空间"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user"
+    expected:
+      status_code: 204
+    timeout: "10s" 

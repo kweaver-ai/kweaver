@@ -1,0 +1,66 @@
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+docs/
+*.md
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+.windsurf/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+pip-log.txt
+
+# Specs and planning (not needed in runtime image)
+specs/
+.spezify/
+
+# Logs
+log/
+*.log
+
+# Data directories (will be created in container)
+data/
+coverage_result/
+coverage.xml
+lint_report.xml
+
+# Build artifacts
+build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Test files
+.pytest_cache/
+test/
+tests/
+
+# LFS
+lfs/

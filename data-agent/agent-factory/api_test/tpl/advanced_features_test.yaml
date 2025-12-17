@@ -1,0 +1,344 @@
+name: "模板API高级功能测试"
+description: "专门测试动态变量、变量提取和链式测试等高级功能"
+
+variables:
+  base_url: "http://127.0.0.1:13021"
+  api_prefix: "/api/agent-factory/internal/v3"
+
+variable_config:
+  random_number_min: 100
+  random_number_max: 999
+  random_string_length: 6
+  random_name_length: 8
+
+tests:
+  - name: "1. 动态变量创建模板"
+    description: "使用各种动态变量创建模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Timestamp: "${timestamp}"
+        X-Random-Token: "${random_string:12}"
+      body:
+        name: "高级功能测试模板-${random_string:6}"
+        key: "advanced-test-tpl-${timestamp}"
+        profile: "动态变量测试模板，创建者: ${random_name:8}，时间: ${timestamp_ms}，随机数: ${random_number:100-999}"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "gpt-3.5-turbo"
+            temperature: "${random_number:1-10}/10"
+            max_tokens: "${random_number:1000-5000}"
+          prompt_config:
+            system_prompt: "你是一个智能助手，创建时间: ${timestamp}，会话ID: ${uuid}"
+            user_prompt_template: "用户问题: {question}，处理时间: ${timestamp_ms}"
+          tools:
+            - name: "search-${random_string:4}"
+              type: "web_search"
+              config:
+                api_key: "key-${random_string:8}"
+                timeout: "${random_number:5-30}"
+        metadata:
+          uuid: "${uuid}"
+          timestamp: "${timestamp}"
+          random_name: "${random_name:10}"
+          random_number: "${random_number:100-999}"
+          random_string: "${random_string:16}"
+          test_data:
+            session_id: "${uuid}"
+            created_at: "${timestamp_ms}"
+            version: "${random_number:1-10}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "test_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 变量提取验证"
+    description: "获取创建的模板详情并提取更多变量"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Verify-Tpl: "{{test_tpl_id}}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "高级功能测试模板"
+          message: "模板名称应该包含'高级功能测试模板'"
+        - type: "contains"
+          field: "body.profile"
+          value: "动态变量测试"
+          message: "简介应该包含动态变量信息"
+        - type: "exists"
+          field: "body.config"
+          message: "应该有配置信息"
+        - type: "exists"
+          field: "body.created_at"
+          message: "应该有创建时间"
+    variable_extraction:
+      - name: "tpl_name"
+        source: "body"
+        path: "name"
+      - name: "tpl_key"
+        source: "body"
+        path: "key"
+      - name: "tpl_profile"
+        source: "body"
+        path: "profile"
+      - name: "created_at"
+        source: "body"
+        path: "created_at"
+      - name: "model_name"
+        source: "body"
+        path: "config.model_config.model_name"
+    timeout: "10s"
+    retry: 2
+
+  - name: "3. 链式测试 - 使用提取的变量"
+    description: "使用前面提取的变量进行更新操作"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Original-Name: "{{tpl_name}}"
+        X-Update-Time: "${timestamp}"
+      body:
+        name: "{{tpl_name}} - 链式更新"
+        profile: "原简介: {{tpl_profile}}，更新时间: ${timestamp_ms}，更新者: ${random_name:6}"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "{{model_name}}"
+            temperature: 0.9
+            max_tokens: 4000
+          prompt_config:
+            system_prompt: "你是一个更新后的智能助手，原创建时间: {{created_at}}，更新时间: ${timestamp}"
+            user_prompt_template: "更新后的用户问题: {question}"
+          tools:
+            - name: "updated-search"
+              type: "web_search"
+              config:
+                api_key: "updated-key-${random_string:8}"
+        metadata:
+          original_name: "{{tpl_name}}"
+          original_key: "{{tpl_key}}"
+          original_created_at: "{{created_at}}"
+          update_info:
+            updated_by: "${random_name:8}"
+            update_time: "${timestamp}"
+            update_id: "${uuid}"
+            random_data: "${random_string:20}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "4. 验证链式更新结果"
+    description: "验证使用变量进行的更新是否成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Final-Check: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.name"
+          value: "链式更新"
+          message: "模板名称应该包含'链式更新'"
+        - type: "contains"
+          field: "body.profile"
+          value: "原简介"
+          message: "简介应该包含原简介信息"
+        - type: "contains"
+          field: "body.profile"
+          value: "更新时间"
+          message: "简介应该包含更新时间信息"
+        - type: "equals"
+          field: "body.config.model_config.temperature"
+          value: 0.9
+          message: "温度参数应该已更新"
+    timeout: "10s"
+    retry: 2
+
+  - name: "5. 动态参数测试"
+    description: "测试URL参数中的动态变量"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "dynamic_params"
+      params:
+        page: "${random_number:1-3}"
+        size: "${random_number:5-15}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "6. 复制模板与动态变量"
+    description: "使用动态变量复制模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/copy"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "动态复制-{{tpl_name}}-${random_string:4}"
+        key: "dynamic-copy-${timestamp}-${random_string:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含新模板ID"
+    variable_extraction:
+      - name: "copied_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "7. 验证复制结果"
+    description: "验证复制的模板信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{copied_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "复制的模板ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "动态复制"
+          message: "模板名称应该包含'动态复制'"
+        - type: "exists"
+          field: "body.config"
+          message: "复制的模板应该包含配置信息"
+    timeout: "10s"
+    retry: 2
+
+  - name: "8. 发布信息动态测试"
+    description: "测试发布信息API的动态功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Session: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.categories"
+          message: "响应应该包含categories字段"
+    variable_extraction:
+      - name: "category_count"
+        source: "body"
+        path: "categories.length"
+        default: "0"
+    timeout: "10s"
+    retry: 2
+
+  - name: "9. 错误处理与动态变量"
+    description: "在错误场景中使用动态变量"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Error-Test: "duplicate_key"
+      body:
+        name: "重复测试-${random_string:4}"
+        key: "{{tpl_key}}"
+        profile: "尝试使用重复key: {{tpl_key}}，时间: ${timestamp_ms}"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "gpt-3.5-turbo"
+            temperature: 0.7
+            max_tokens: 2000
+          prompt_config:
+            system_prompt: "测试重复key"
+            user_prompt_template: "问题: {question}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "10. 清理测试数据"
+    description: "清理创建的测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{copied_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "11. 清理原始测试模板"
+    description: "清理原始测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2 

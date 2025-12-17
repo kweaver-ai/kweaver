@@ -1,0 +1,12 @@
+.idea
+build
+tmp
+.vscode
+__debug*
+agent-factory.log
+coverage_report
+agent-factory
+!agent-factory/
+.claude/
+CLAUDE.md
+WARP.md

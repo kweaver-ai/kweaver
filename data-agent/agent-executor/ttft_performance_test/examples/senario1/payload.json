@@ -1,0 +1,136 @@
+{
+    "agent_id": "01K7GT1W7H3FKTG8GZD39TCEM8",
+    "agent_config": {
+        "input": {
+            "fields": [
+                {
+                    "name": "query",
+                    "type": "string",
+                    "desc": ""
+                },
+                {
+                    "name": "history",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "tool",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "header",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "self_config",
+                    "type": "object",
+                    "desc": ""
+                }
+            ],
+            "rewrite": {
+                "enable": false,
+                "llm_config": {
+                    "id": "",
+                    "name": "test",
+                    "model_type": "llm",
+                    "temperature": 0.5,
+                    "top_p": 0.5,
+                    "top_k": 0,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                    "max_tokens": 1000
+                }
+            },
+            "augment": {
+                "enable": false,
+                "data_source": {
+                    "kg": []
+                }
+            },
+            "is_temp_zone_enabled": 0,
+            "temp_zone_config": null
+        },
+        "system_prompt": "",
+        "dolphin": "",
+        "is_dolphin_mode": 0,
+        "pre_dolphin": [],
+        "post_dolphin": [],
+        "data_source": {
+            "kg": [],
+            "doc": [],
+            "metric": null,
+            "kn_entry": null,
+            "knowledge_network": [],
+            "advanced_config": {
+                "kg": null,
+                "doc": null
+            }
+        },
+        "skills": {
+            "tools": [],
+            "agents": [],
+            "mcps": []
+        },
+        "llms": [
+            {
+                "is_default": true,
+                "llm_config": {
+                    "id": "1950850444926521344",
+                    "name": "deepseek_v3",
+                    "model_type": "llm",
+                    "temperature": 1,
+                    "top_p": 1,
+                    "top_k": 1,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                    "max_tokens": 1000
+                }
+            }
+        ],
+        "is_data_flow_set_enabled": 0,
+        "opening_remark_config": null,
+        "preset_questions": [],
+        "output": {
+            "variables": {
+                "answer_var": "answer",
+                "doc_retrieval_var": "doc_retrieval_res",
+                "graph_retrieval_var": "graph_retrieval_res",
+                "related_questions_var": "related_questions",
+                "other_vars": null,
+                "middle_output_vars": null
+            },
+            "default_format": "markdown"
+        },
+        "built_in_can_edit_fields": null,
+        "memory": {
+            "is_enabled": false
+        },
+        "related_question": {
+            "is_enabled": false
+        },
+        "plan_mode": {
+            "is_enabled": false
+        },
+        "metadata": {
+            "config_version": "v1"
+        },
+        "agent_id": "01K7GT1W7H3FKTG8GZD39TCEM8",
+        "conversation_id": "01K858S6XK4CH01KBR85H4WAW3",
+        "session_id": "01K858S71734QF09E7YE3DWNG0"
+    },
+    "agent_input": {
+        "confirm_plan": true,
+        "query": "中国和美国贸易往来的历史影响",
+        "history": [],
+        "tool": {
+            "session_id": "",
+            "tool_name": "",
+            "tool_args": null
+        }
+    },
+    "_options": {
+        "conversation_id": "01K84SM5RJJ25N9VFSCD8RP64A"
+    }
+}

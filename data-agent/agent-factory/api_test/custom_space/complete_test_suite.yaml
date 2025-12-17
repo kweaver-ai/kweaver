@@ -1,0 +1,338 @@
+name: "空间API完整测试套件"
+description: "包含所有空间API功能的完整测试：CRUD、成员管理、资源管理，使用高级功能"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个用于测试的空间，使用动态变量"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Timestamp: "${timestamp}"
+      body:
+        name: "测试空间-${random_string:6}"
+        key: "test-space-${timestamp}"
+        profile: "这是一个用于完整测试的空间，创建时间: ${timestamp_ms}"
+        members:
+          - obj_type: "user"
+            obj_id: "test-user-${random_number:1000-9999}"
+          - obj_type: "dept"
+            obj_id: "test-dept-${random_number:100-999}"
+        resources:
+          - resource_type: "data_agent"
+            resource_id: "test-agent-${random_string:8}"
+        metadata:
+          created_by: "${random_name:8}"
+          session_id: "${uuid}"
+          test_id: "${random_number:1000-9999}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "created_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "2. 获取空间列表"
+    description: "获取空间列表，验证创建的空间存在"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "greater_than"
+          field: "body.total"
+          value: 0
+          message: "总数应该大于0"
+    timeout: "10s"
+    retry: 2
+
+  - name: "3. 获取创建的空间详情"
+    description: "使用提取的空间ID获取空间详情"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{created_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "返回的空间ID应该存在"
+        - type: "contains"
+          field: "body.name"
+          value: "测试空间"
+          message: "空间名称应该包含'测试空间'"
+        - type: "exists"
+          field: "body.created_at"
+          message: "响应应该包含创建时间"
+        - type: "exists"
+          field: "body.updated_at"
+          message: "响应应该包含更新时间"
+    variable_extraction:
+      - name: "created_space_name"
+        source: "body"
+        path: "name"
+      - name: "created_space_key"
+        source: "body"
+        path: "key"
+    timeout: "10s"
+    retry: 2
+
+  - name: "4. 获取空间详情 - 无效ID"
+    description: "使用无效ID获取空间详情"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-id-${random_string:8}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "5. 更新空间信息"
+    description: "更新空间的基本信息，使用动态变量"
+    request:
+      method: "PUT"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{created_space_id}}"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Update-By: "${random_name:10}"
+      body:
+        name: "{{created_space_name}} - 已更新 -${random_string:6}"
+        profile: "这是一个更新后的测试空间，更新时间: ${timestamp_ms}，更新者: ${random_name:8}"
+        metadata:
+          updated_by: "${random_name:8}"
+          update_time: "${timestamp}"
+          update_id: "${uuid}"
+          version: "${random_number:1-100}"
+    expected:
+      status_code: 204
+      assertions: []
+    variable_extraction:
+      - name: "update_timestamp"
+        source: "header"
+        path: "Date"
+        default: "${timestamp}"
+    timeout: "10s"
+    retry: 2
+
+  - name: "6. 验证更新结果"
+    description: "获取更新后的空间详情，验证更新是否成功"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{created_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body.name"
+          value: "已更新"
+          message: "空间名称应该包含'已更新'"
+        - type: "contains"
+          field: "body.profile"
+          value: "更新后的测试空间"
+          message: "空间简介应该包含更新信息"
+    timeout: "10s"
+    retry: 2
+
+  - name: "7. 获取空间成员"
+    description: "获取空间的成员列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{created_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Space-Name: "{{created_space_name}}"
+      params:
+        page: "1"
+        size: "${random_number:5-20}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "greater_equal"
+          field: "body.total"
+          value: 0
+          message: "成员总数应该大于等于0"
+    variable_extraction:
+      - name: "member_count"
+        source: "body"
+        path: "total"
+    timeout: "10s"
+    retry: 2
+
+  - name: "8. 获取空间资源"
+    description: "获取空间的资源列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{created_space_id}}/resources"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Member-Count: "{{member_count}}"
+      params:
+        page: "1"
+        size: "${random_number:10-50}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "greater_equal"
+          field: "body.total"
+          value: 0
+          message: "资源总数应该大于等于0"
+    variable_extraction:
+      - name: "resource_count"
+        source: "body"
+        path: "total"
+    timeout: "10s"
+    retry: 2
+
+  - name: "9. 测试分页功能"
+    description: "测试空间列表的分页功能，使用动态分页参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "${random_number:1-3}"
+        size: "${random_number:3-10}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "10. 测试错误处理 - 无效分页"
+    description: "测试使用无效的分页参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "0"
+        size: "0"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "11. 测试错误处理 - 缺少必需字段"
+    description: "测试创建空间时缺少必需字段"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        profile: "缺少名称的空间 - ${random_string:8}"
+        metadata:
+          test_type: "error_handling"
+          timestamp: "${timestamp}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "12. 创建第二个测试空间"
+    description: "创建另一个空间用于对比测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "对比测试空间-${random_string:4}"
+        key: "compare-space-${timestamp}"
+        profile: "用于对比测试的空间，原空间成员数: {{member_count}}，资源数: {{resource_count}}"
+        metadata:
+          reference_space_id: "{{created_space_id}}"
+          reference_space_name: "{{created_space_name}}"
+          created_by: "${random_name:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "second_space_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2 

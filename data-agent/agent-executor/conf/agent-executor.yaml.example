@@ -1,0 +1,173 @@
+# agent-executor v2版本配置文件示例
+# 本地开发时将此文件放在 ./conf/ 或 ./.local/conf/ 目录下
+# K8s部署时通过configmap-v2.yaml挂载到 /sysvol/conf/ 目录
+
+# 1. app相关
+app:
+  debug: false
+  host_ip: "0.0.0.0"
+  port: 30778
+  host_prefix: "/api/agent-executor/v1"
+  host_prefix_v2: "/api/agent-executor/v2"
+  rps_limit: 100
+  enable_system_log: false
+  log_level: "info"
+  enable_dolphin_agent_verbose: false
+  is_print_last_commit_info: false
+  log_conversation_session_init: false  # 是否记录 conversation-session/init 请求日志
+
+# 2. 结构化数据库相关
+rds:
+  host: "XXX"
+  port: 3330
+  dbname: "anydata"
+  user: "root"
+  password: "***"
+  db_type: ""
+
+# 3. redis数据库相关
+redis:
+  # 连接类型: standalone, sentinel, master-slave
+  cluster_mode: "master-slave"
+  
+  # standalone模式配置
+  host: "XXX"
+  port: "6379"
+  user: "root"
+  password: "***"
+  
+  # sentinel模式配置
+  sentinel_master: "mymaster"
+  sentinel_user: "root"
+  sentinel_password: "***"
+  
+  # master-slave模式配置
+  read_host: "XXX"
+  read_port: "6379"
+  read_user: "root"
+  read_password: "***"
+  write_host: "XXX"
+  write_port: "6379"
+  write_user: "root"
+  write_password: "***"
+
+# 4. 图数据库相关
+graphdb:
+  host: "XXX"
+  port: "9669"
+  type: "nebulaGraph"
+  read_only_user: "anydata"
+  read_only_password: "***"
+
+# 5. opensearch
+opensearch:
+  host: "XXX"
+  port: "9200"
+  user: "admin"
+  password: "***"
+
+# 6. 依赖的服务地址
+services:
+  mf_model_factory:
+    host: "XXX"
+    port: "9898"
+  mf_model_manager:
+    host: "XXX"
+    port: "9898"
+  mf_model_api:
+    host: "XXX"
+    port: "9898"
+  agent_app:
+    host: "XXX"
+    port: "30777"
+  agent_executor:
+    host: "localhost"
+    port: "30778"
+  agent_factory:
+    host: "XXX"
+    port: "13020"
+  agent_operator_integration:
+    host: "XXX"
+    port: "39000"
+  agent_memory:
+    host: "XXX"
+    port: "30790"
+  kn_data_query:
+    host: "XXX"
+    port: "6480"
+  kn_knowledge_data:
+    host: "XXX"
+    port: "6475"
+  dp_data_source:
+    host: "XXX"
+    port: "38098"
+  search_engine:
+    host: "XXX"
+    port: "6479"
+  ecosearch:
+    host: "XXX"
+    port: "32126"
+  ecoindex_public:
+    host: "XXX"
+    port: "32129"
+  ecoindex_private:
+    host: "XXX"
+    port: "32130"
+  docset_private:
+    host: "docset-private"
+    port: "32597"
+  datahub:
+    host: "datahubcentral-private"
+    port: ""
+
+# 依赖的外部接入的服务
+external_services:
+  emb_url: "http://XXX:8316/v1/embeddings"
+  embedding_dimension: 768
+  rerank_url: "http://XXX:8343/v1/reranker"
+
+# 7. 记忆相关
+memory:
+  limit: 50
+  threshold: 0.5
+  rerank_threshold: 0.1
+
+# 8. 文档问答相关
+document:
+  enable_sensitive_word_detection: false
+
+# 9. 本地开发模式
+local_dev:
+  is_skip_pms_check: false
+  is_use_outer_llm: false
+  is_mock_get_llm_config_resp: false
+  do_not_init_built_in_agent_and_tool: false
+  dolphin_agent_output_variables: null
+  enable_streaming_response_rate_limit: false
+  is_show_config_on_boot: false
+
+# 10. 外部LLM（非模型工厂）
+outer_llm:
+  api: ""
+  api_key: ""
+  model: ""
+  model_list: {}
+
+# 11. 一些特性控制
+features:
+  use_explore_block_v2: true
+  disable_dolphin_sdk_llm_cache: false
+  use_context_engineer_v2: false #注意：这个不支持executor run或debug的v1接口
+  enable_dolphin_agent_output_variables_ctrl: true
+
+# 12. o11y 相关
+o11y:
+  log_enabled: false
+  trace_enabled: false
+
+# 15. 对话日志相关配置
+dialog_logging:
+  enable_dialog_logging: true
+  use_single_log_file: false
+  single_profile_file_path: "./data/debug_logs/profile.log"
+  single_trajectory_file_path: "./data/debug_logs/trajectory.log"

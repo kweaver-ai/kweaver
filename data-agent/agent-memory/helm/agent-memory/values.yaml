@@ -1,0 +1,140 @@
+replicaCount: 1
+
+namespace: dip
+moduleName: agent-memory
+
+image:
+  registry: acr.aishu.cn
+  repository: dip/agent-memory
+  tag: 1.0.0
+  pullPolicy: IfNotPresent
+  name: agent-memory
+
+env:
+  llm_base_url: "http://mf-model-api:9898/api/private/mf-model-api/v1"
+  llm_model: "Tome-Max"
+
+  embedding_model_base_url: "http://mf-model-api:9898/api/private/mf-model-api/v1/small-model"
+  embedding_model_dims: 768
+
+service:
+  ingressclassname: "class-443"
+  agentMemory:
+    type: ClusterIP
+    port: 30790
+    nodePort: 30790
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /api/agent-memory/v1
+  enableDualStack: false
+  telemetry:
+    log:
+      enabled: false
+      endpoint: "http://127.0.0.1"
+    metric:
+      enabled: false
+      endpoint: "http://127.0.0.1"
+    trace:
+      enabled: false
+      endpoint: "http://127.0.0.1"
+
+resources:
+  requests:
+    cpu: 1
+    memory: 1Gi
+  limits:
+    cpu: 11
+    memory: 20Gi
+
+probe:
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 30790
+    initialDelaySeconds: 25
+    periodSeconds: 50
+    timeoutSeconds: 20
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 30790
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    httpGet:
+      path: /health
+      port: 30790
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+
+nodeSelector: { }
+
+depServices:
+  rds:
+    type: MYSQL
+    host: mariadb-mariadb-cluster.resource
+    port: 3330
+    hostRead: mariadb-mariadb-cluster.resource
+    portRead: 3330
+    user: anyshare
+    password: "***"
+    database: dip_data_agent
+    maxConnections: 30
+    maxReadConnections: 30
+    dbCharset: utf8mb4
+    timeout: 10
+    readTimeout: 10
+    writeTimeout: 10
+  redis:
+    connectType: sentinel
+    enableSSL: false
+    connectInfo:
+      sentinelHost: kg-redis-cluster-proton-redis-sentinel
+      sentinelPort: 26379
+      username: root
+      password: "***"
+      sentinelUsername: root
+      sentinelPassword: "***"
+      masterGroupName: mymaster
+      masterHost: xxx.dcs.huaweicloud.com
+      masterPort: 26379
+      slaveHost: xxx-readonly.dcs.huaweicloud.com
+      slavePort: 26379
+      host: ""
+      port: 26379
+    secretName: redis-ssl-secret
+    caName: ca.pem
+    certName: cert.pem
+    keyName: key.pem
+  llm_ad:
+    embeddingModel: "embedding"
+    embeddingUrl: ""
+    embeddingDimension: 768
+  rerank_svc:
+    rerank_url: ""
+    rerank_model: ""
+  opensearch:
+    read: "opensearch-read"
+    write: "opensearch-write"
+    host: "opensearch-master"
+    port: "9200"
+    user: "admin"
+    password: "***"
+  graphDatabase:
+    type: "nebulaGraph"
+    host: "kg-nebula-cluster-proton-nebula-graphd"
+    port: "9669"
+    user: "root"
+    password: "***"
+    readonlyuser: "anydata"
+    readonlypassword: "***"

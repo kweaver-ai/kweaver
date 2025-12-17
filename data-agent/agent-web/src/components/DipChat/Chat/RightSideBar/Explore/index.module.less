@@ -1,0 +1,24 @@
+.container {
+  height: 100%;
+  position: relative;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .45);
+  backdrop-filter: blur(20px);
+  //box-shadow: var(--dip-box-shadow);
+  box-shadow: 0 5px 16px -4px rgba(0,0,0,.05);
+  .lineWrapper {
+    //height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 12px 0;
+    .line {
+      width: 1px;
+      height: 66px;
+      border-left: 1px dashed var(--dip-text-color-25);
+    }
+  }
+  .item {
+    height: 400px;
+  }
+}

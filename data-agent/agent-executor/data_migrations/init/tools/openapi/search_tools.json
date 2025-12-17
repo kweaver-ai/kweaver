@@ -1,0 +1,371 @@
+{
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "http://agent-executor:30778",
+            "description": "服务器地址"
+        }
+    ],
+    "info": {
+        "title": "内置工具箱-搜索工具",
+        "description": "包含 图数据库问答、文档问答、智谱搜索 三个工具",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/agent-executor/v1/tools/graph_qa": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "graph_qa",
+                "description": "基于图数据库的问答\n\n- **query**: 查询问题\n- **props**: 查询的数据源范围和请求头\n\n返回问答结果",
+                "operationId": "graph_qa_api_agent_executor_v1_tools_graph_qa_post",
+                "parameters": [
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QARequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QAToolResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent-executor/v1/tools/doc_qa": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "doc_qa",
+                "description": "基于文档的问答\n\n- **query**: 查询问题\n- **props**: 查询的数据源范围和请求头\n\n返回问答结果",
+                "operationId": "doc_qa_api_agent_executor_v1_tools_doc_qa_post",
+                "parameters": [
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QARequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QAToolResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent-executor/v1/tools/zhipu_search_tool": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "zhipu_search_tool",
+                "description": "执行智谱搜索\n\n- **query**: 搜索查询词\n\n返回搜索结果内容",
+                "operationId": "zhipu_search_api_agent_executor_v1_tools_zhipu_search_tool_post",
+                "parameters": [
+                    {
+                        "name": "api_key",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "智谱API密钥",
+                            "title": "Api-Key"
+                        },
+                        "description": "智谱API密钥"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ZhipuSearchRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ZhipuSearchResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "QARequest": {
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "title": "Query",
+                        "description": "查询问题",
+                        "example": "什么是机器学习？"
+                    },
+                    "props": {
+                        "$ref": "#/components/schemas/QARequestProps"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "query", "props"
+                ],
+                "title": "QARequest",
+                "description": "文档问答请求"
+            },
+            "QARequestProps": {
+                "properties": {
+                    "data_source": {
+                        "type": "object",
+                        "title": "Data Source",
+                        "description": "数据源",
+                        "example": {
+                            "doc": [
+                              {
+                                "ds_id": "181",
+                                "fields": [
+                                  {
+                                    "name": "代码规范",
+                                    "path": "测试数据/代码规范",
+                                    "source": "gns://92EE2D87255142B78A6F1DFB6BBB836B/AEBB543FEA1A4FD9917594CA013FC671"
+                                  }
+                                ]
+                              }
+                            ],
+                            "kg": [
+                              {
+                                "kg_id": "129",
+                                "fields": ["regions", "comments"],
+                                "output_fields": ["comments"]
+                              }
+                            ],
+                            "advanced_config": {
+                              "doc": {
+                                "document_threshold": -5.5,
+                                "retrieval_slices_num": 150,
+                                "max_slice_per_cite": 16
+                              }
+                            }
+                          }
+                    },
+                    "headers": {
+                        "type": "object",
+                        "title": "Headers",
+                        "description": "请求头",
+                        "example":{
+                            "authorization": "Bearer xxxxx",
+                            "x-user": "user_id"
+                          }
+                    }
+                },
+                "type": "object",
+                "title": "GraphQARequest",
+                "description": "图数据库问答请求"
+            },
+            "QAToolResponse":{
+                "properties": {
+                    "result": {
+                        "type": "string",
+                        "title": "Text",
+                        "description": "回答内容"
+                    },
+                    "full_result": {
+                        "$ref": "#/components/schemas/QAResponse"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "result", "full_result"
+                ],
+                "title": "QAToolResponse",
+                "description": "问答响应"
+            },
+            "QAResponse": {
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "title": "Text",
+                        "description": "回答内容"
+                    },
+                    "references": {
+                        "items": {
+                                    "type": "object"
+                                },
+                                "type": "array",
+                        "title": "References",
+                        "description": "来源信息"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "text"
+                ],
+                "title": "QAResponse",
+                "description": "问答响应"
+            },
+            "ZhipuSearchRequest": {
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "title": "Query",
+                        "description": "搜索查询词",
+                        "example": "机器学习"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "query"
+                ],
+                "title": "ZhipuSearchRequest",
+                "description": "智谱搜索请求"
+            },
+            "ZhipuSearchResponse": {
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "title": "Content",
+                        "description": "搜索结果内容"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "content"
+                ],
+                "title": "ZhipuSearchResponse",
+                "description": "智谱搜索响应"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "Description": {
+                        "description": "错误描述",
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "ErrorCode": {
+                        "description": "错误码",
+                        "title": "Errorcode",
+                        "type": "string"
+                    },
+                    "ErrorDetails": {
+                        "description": "错误详情",
+                        "title": "Errordetails",
+                        "type": "string"
+                    },
+                    "ErrorLink": {
+                        "description": "错误链接",
+                        "title": "Errorlink",
+                        "type": "string"
+                    },
+                    "Solution": {
+                        "description": "解决方法",
+                        "title": "Solution",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "Description",
+                    "ErrorCode",
+                    "ErrorDetails",
+                    "ErrorLink",
+                    "Solution"
+                ],
+                "title": "ErrorResponse",
+                "type": "object"
+            }
+        }
+    }
+}

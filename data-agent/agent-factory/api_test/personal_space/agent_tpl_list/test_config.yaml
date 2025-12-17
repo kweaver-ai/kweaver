@@ -1,0 +1,396 @@
+name: "个人空间Agent模板列表API测试"
+description: "测试个人空间Agent模板列表接口的各种场景，包括基础功能、分页、搜索、过滤和错误处理"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 获取个人空间Agent模板列表 - 基础测试"
+    description: "测试获取个人空间Agent模板列表的基础功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "test-user-${random_string:8}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "type"
+          field: "body.total"
+          value: "number"
+          message: "total应该是数字类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "模板总数应该大于等于0"
+    variable_extraction:
+      - name: "test_user_id"
+        source: "header"
+        path: "X-User-ID"
+    timeout: "2s"
+    retry: 0
+
+  - name: "2. 获取个人空间Agent模板列表 - 分页测试"
+    description: "测试使用分页参数获取Agent模板列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "${random_number:1-3}"
+        size: "${random_number:5-20}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "模板总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "3. 获取个人空间Agent模板列表 - 名称搜索"
+    description: "测试按名称搜索模板功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        name: "测试模板-${random_string:4}"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "搜索结果总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "4. 获取个人空间Agent模板列表 - 发布状态过滤（未发布）"
+    description: "测试按发布状态过滤 - 未发布状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        publish_status: "unpublished"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "未发布模板总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "5. 获取个人空间Agent模板列表 - 发布状态过滤（已发布）"
+    description: "测试按发布状态过滤 - 已发布状态"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        publish_status: "published"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "已发布模板总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "6. 获取个人空间Agent模板列表 - 模板创建类型过滤"
+    description: "测试按模板创建类型过滤功能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        agent_tpl_created_type: "copy_from_agent"
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "指定类型模板总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "7. 测试错误处理 - 无效分页参数"
+    description: "测试使用无效分页参数获取模板列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "0"
+        size: "0"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "2s"
+    retry: 0
+
+  - name: "8. 测试错误处理 - 无效的发布状态"
+    description: "测试无效的发布状态参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        publish_status: "invalid_status_${random_string:5}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.error_details"
+          value: "publish_status is invalid"
+          message: "错误描述应该提到publish_status参数"
+    timeout: "2s"
+    retry: 0
+
+  - name: "9. 测试错误处理 - 无效的模板创建类型"
+    description: "测试无效的模板创建类型参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        agent_tpl_created_type: "invalid_type_${random_string:5}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "contains"
+          field: "body.error_details"
+          value: "agent_tpl_created_type is invalid"
+          message: "错误描述应该提到agent_tpl_created_type参数"
+    timeout: "2s"
+    retry: 0
+
+  - name: "10. 性能测试 - 大分页查询"
+    description: "测试大分页参数的性能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "1"
+        size: "100"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+    timeout: "2s"
+    retry: 0
+
+  - name: "11. 测试响应字段结构"
+    description: "验证响应中每个模板项的字段结构"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "1"
+        size: "1"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        # 如果有数据，验证字段结构
+        - type: "exists"
+          field: "body.entries[0].id"
+          message: "模板项应该包含id字段"
+          optional: true
+        - type: "exists"
+          field: "body.entries[0].name"
+          message: "模板项应该包含name字段"
+          optional: true
+        - type: "exists"
+          field: "body.entries[0].publish_status"
+          message: "模板项应该包含publish_status字段"
+          optional: true
+        - type: "exists"
+          field: "body.entries[0].agent_tpl_created_type"
+          message: "模板项应该包含agent_tpl_created_type字段"
+          optional: true
+        - type: "exists"
+          field: "body.entries[0].created_by"
+          message: "模板项应该包含created_by字段"
+          optional: true
+        - type: "exists"
+          field: "body.entries[0].created_at"
+          message: "模板项应该包含created_at字段"
+          optional: true
+    timeout: "2s"
+    retry: 0
+
+  - name: "12. 最终验证"
+    description: "最终验证个人空间Agent模板列表API的稳定性"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/personal-space/agent-tpl-list"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-User-ID: "{{test_user_id}}"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "最终验证：响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "最终验证：响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "最终验证：entries应该是数组类型"
+        - type: "type"
+          field: "body.total"
+          value: "number"
+          message: "最终验证：total应该是数字类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "最终验证：模板总数应该大于等于0"
+    timeout: "2s"
+    retry: 0

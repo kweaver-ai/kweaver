@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.moduleName }}-dependant-configmap
+    namespace: {{ .Values.namespace }}
+data:
+    mdlconfig.json: |
+        {
+            "services": {
+                {{- with .Values.depServices.mq }}
+                "kafka": {
+                    "mqType": "{{ .mqType }}",
+                    "namespace": "",
+                    "service": "{{ .mqHost }}",
+                    "ports": {
+                        "default": {{ .mqPort }}
+                    },
+                    "protocol": "{{ .protocol }}",
+                    "username": "{{ .auth.username }}",
+                    "password": "{{ .auth.password }}",
+                    "tenant": "{{ .tenant }}",
+                    "encryptionType": "{{ .encryptionType }}"
+                }
+              {{- end }}
+            }
+        }
+
+    dm_svc.conf: |
+        TIME_ZON=(480)
+        LANGUAGE=(cn)
+        DM=({{ .Values.depServices.rds.host }})
+        [DM]
+        LOGIN_MODE=(1)

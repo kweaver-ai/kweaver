@@ -1,0 +1,527 @@
+openapi: 3.0.0
+info:
+  title: agent API
+  description: ""
+  version: 1.0.0
+paths:
+  /api/agent-app/v1/app/{app_key}/api/chat/completion:
+    post:
+      summary: 对话
+      tags:
+        - 对话
+      parameters:
+        - in: path
+          name: app_key
+          required: true
+          schema:
+            type: string
+          description: agent app key(通用agent传入 agent id，超级助手传入固定字符串:super_assistant)
+        - in: header
+          name: authorization
+          schema:
+            type: string
+          required: true
+          description: 授权token
+          example: Bearer 1234567890
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+components:
+  schemas:
+    AgentInfo:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          description: Agent ID
+        agent_name:
+          type: string
+          description: Agent Name
+        agent_status:
+          type: string
+          description: Agent Status
+        agent_version:
+          type: string
+          description: Agent Version
+    Content:
+      type: object
+      properties:
+        text:
+          type: string
+        temp_files:
+          type: array
+          items:
+            $ref: "#/components/schemas/TempFile"
+        final_answer:
+          $ref: "#/components/schemas/FinalAnswer"
+        middle_answer:
+          type: array
+          items:
+            $ref: "#/components/schemas/MiddleAnswer"
+    FinalAnswer:
+      type: object
+      description: 最终结果
+      properties:
+        query:
+          type: string
+        answer:
+          $ref: "#/components/schemas/Answer"
+        temp_files:
+          type: array
+          items:
+            $ref: "#/components/schemas/TempFile"
+        thinking:
+          type: string
+        skill_process:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillsProcessItem"
+    SkillsProcessItem:
+      type: object
+      description: 技能处理结果
+      properties:
+        agent_name:
+          type: string
+        text:
+          type: string
+        cites:
+          type: object
+          nullable: true
+        status:
+          type: string
+        type:
+          type: string
+        thinking:
+          type: string
+        input_message:
+          type: object
+          nullable: true
+        interrupted:
+          type: boolean
+        related_queries:
+          type: array
+          items:
+            $ref: "#/components/schemas/RelatedQuestion"
+    RelatedQuestion:
+      type: object
+      description: 相关查询
+      properties:
+        query:
+          type: string
+    MiddleAnswer:
+      type: object
+      properties:
+        doc_retrieval:
+          type: string
+          description: 文档召回结果
+        graph_retrieval:
+          type: string
+          description: 图谱召回结果
+        middle_output_vars:
+          description: 中间结果
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    Answer:
+      type: object
+      properties:
+        text:
+          type: string
+        cites:
+          type: object
+          nullable: true
+        ask:
+          type: object
+          nullable: true
+    TempFile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+    ChatResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          description: 会话ID
+        user_message_id:
+          type: string
+          description: 用户消息ID
+        assistant_message_id:
+          type: string
+          description: 助手消息ID
+        message:
+          $ref: "#/components/schemas/Message"
+        status:
+          type: string
+          description: 状态
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 消息ID
+        conversation_id:
+          type: string
+          description: 会话ID
+        role:
+          type: string
+          description: 角色 user, assistant
+        content:
+          $ref: "#/components/schemas/Content"
+        content_type:
+          type: string
+          description: 内容类型
+        status:
+          type: string
+          description: 消息状态
+        reply_id:
+          type: string
+          description: 回复ID,用于关联问答消息
+        agent_info:
+          $ref: "#/components/schemas/AgentInfo"
+        index:
+          type: integer
+          description: 消息下标,用于标记消息在整个会话中的位置、顺序，比如基于 index 正序在前端按照时间线展示对话消息
+    ChatRequest:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          description: agent ID
+        agent_version:
+          type: string
+          description: agent_version
+        stream:
+          type: boolean
+          description: 是否流式返回
+        inc_stream:
+          type: boolean
+          description: 是否增量流式返回
+        conversation_id:
+          type: string
+          description: 会话ID
+        temporary_area_id:
+          type: string
+          description: 临时区域ID
+        temp_files:
+          type: array
+          description: 临时文件
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: 文档ID
+              type:
+                type: string
+                description: 类型(doc)
+              name:
+                type: string
+                description: 文档名称
+        query:
+          type: string
+          description: 用户提问问题
+        custom_querys:
+          type: object
+          description: 自定义输入变量，map[string]any
+        tool:
+          type: object
+          description: 中断处理，如果是中断操作，tool 不为空
+          $ref: "#/components/schemas/tool"
+        interrupted_assistant_message_id:
+          type: string
+          description: 中断的助手信息ID
+        chat_mode:
+          type: string
+          description: 聊天模式，deep_thinking 深度思考，normal 正常
+        confirm_plan:
+          type: boolean
+          description: 默认为true， 在中断处理中告诉agent-app下次是否要弹出“确认计划”提示
+        regenerate_user_message_id:
+          type: string
+          description: 编辑问题时，用户消息ID，不可以同时传入regenerate_assistant_message_id
+        regenerate_assistant_message_id:
+          type: string
+          description: 重新生成时，助手消息ID，不可以同时传入regenerate_user_message_id
+        history:
+          type: array
+          description: 历史消息
+          items:
+            type: object
+            $ref: "#/components/schemas/LLMHistory"
+        llm_config:
+          type: object
+          description: llm配置
+          $ref: "#/components/schemas/LlmConfig"
+        data_source:
+          type: object
+          description: 数据源
+          $ref: "#/components/schemas/RetrieverDataSource"
+      required:
+        - query
+        - agent_id
+        - agent_version
+        - stream
+    LLMHistory:
+      type: object
+      description: 历史上下文
+      properties:
+        role:
+          type: string
+          description: 角色
+        content:
+          type: string
+          description: 内容
+    LlmConfig:
+      type: object
+      required:
+        - name
+        - max_tokens
+      properties:
+        id:
+          type: string
+          description: 模型ID
+        name:
+          type: string
+          description: 模型名
+        model_type:
+          type: string
+          description: 模型类型
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: 温度参数
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Top-p参数
+        top_k:
+          type: integer
+          minimum: 0
+          description: Top-k参数
+        frequency_penalty:
+          type: number
+          minimum: -2
+          maximum: 2
+          description: 频率惩罚
+        presence_penalty:
+          type: number
+          minimum: -2
+          maximum: 2
+          description: 存在惩罚
+        max_tokens:
+          type: integer
+          minimum: 0
+          description: 最大token数
+    RetrieverDataSource:
+      type: object
+      properties:
+        kg:
+          type: array
+          items:
+            $ref: "#/components/schemas/KgSource"
+          description: 图谱类型数据源
+        doc:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocSource"
+          description: 文档类型数据源
+        advanced_config:
+          $ref: "#/components/schemas/RetrieverAdvancedConfig"
+          description: 召回高级配置
+    RetrieverAdvancedConfig:
+      type: object
+      properties:
+        kg:
+          $ref: "#/components/schemas/KGAdvancedConfig"
+          description: 图谱高级配置
+        doc:
+          $ref: "#/components/schemas/DocAdvancedConfig"
+          description: 文档高级配置
+    KGAdvancedConfig:
+      type: object
+      required:
+        - text_match_entity_nums
+        - vector_match_entity_nums
+        - graph_rag_topk
+        - long_text_length
+        - reranker_sim_threshold
+        - retrieval_max_length
+      properties:
+        text_match_entity_nums:
+          type: integer
+          minimum: 40
+          maximum: 100
+          description: 文本匹配召回实体数量
+        vector_match_entity_nums:
+          type: integer
+          minimum: 40
+          maximum: 100
+          description: 向量匹配召回实体数量
+        graph_rag_topk:
+          type: integer
+          minimum: 10
+          maximum: 100
+          description: 重排序后保留参考信息数量
+        long_text_length:
+          type: integer
+          minimum: 50
+          description: 长文本长度
+        reranker_sim_threshold:
+          type: number
+          minimum: -10
+          maximum: 10
+          description: 图谱rerank bge相似度过滤阈值
+        retrieval_max_length:
+          type: integer
+          description: 召回文档最大长度
+    DocAdvancedConfig:
+      type: object
+      required:
+        - retrieval_slices_num
+        - max_slice_per_cite
+        - rerank_topk
+        - slice_head_num
+        - slice_tail_num
+        - documents_num
+        - document_threshold
+        - retrieval_max_length
+      properties:
+        retrieval_slices_num:
+          type: integer
+          minimum: 50
+          maximum: 200
+          description: 召回切片数
+        max_slice_per_cite:
+          type: integer
+          minimum: 5
+          maximum: 20
+          description: 每篇文档最大保留切片数
+        rerank_topk:
+          type: integer
+          minimum: 10
+          maximum: 30
+          description: 重排序后保留切片数
+        slice_head_num:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: 获取上文切片数
+        slice_tail_num:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: 获取下文切片数
+        documents_num:
+          type: integer
+          minimum: 4
+          maximum: 10
+          description: 来源文档数量
+        document_threshold:
+          type: number
+          minimum: -10
+          maximum: 10
+          description: 文档ranker bge相似度阈值
+        retrieval_max_length:
+          type: integer
+          description: 召回文档最大长度
+    KgSource:
+      type: object
+      required:
+        - kg_id
+        - fields
+      properties:
+        kg_id:
+          type: string
+          description: 图谱ID
+        fields:
+          type: array
+          items:
+            type: string
+          description: 实体类范围
+        field_properties:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: 实体属性列表
+        output_fields:
+          type: array
+          items:
+            type: string
+      description: 结果范围
+    DocSource:
+      type: object
+      required:
+        - ds_id
+        - fields
+      properties:
+        ds_id:
+          type: string
+          description: 数据源ID
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocSourceField"
+          description: 数据源范围列表
+        datasets:
+          type: array
+          items:
+            type: string
+          description: 数据集列表
+    DocSourceField:
+      type: object
+      required:
+        - name
+        - path
+        - source
+      properties:
+        name:
+          type: string
+          description: 字段名称
+        path:
+          type: string
+          description: 字段路径
+        source:
+          type: string
+          description: 字段来源
+    tool:
+      type: object
+      description: 工具调用信息
+      properties:
+        session_id:
+          type: string
+        tool_name:
+          type: string
+        tool_args:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+              type:
+                type: string
+security:
+  - ApiKeyAuth: []

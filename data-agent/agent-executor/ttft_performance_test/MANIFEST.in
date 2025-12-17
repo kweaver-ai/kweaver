@@ -1,0 +1,22 @@
+include README.md
+include LICENSE
+include requirements.txt
+include CHANGELOG.md
+recursive-include ttft_tester *.py
+recursive-include examples *.yaml *.json *.sh
+recursive-include docs *.md
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+prune tests
+prune .venv
+prune .git
+prune .pytest_cache
+prune .mypy_cache
+prune build
+prune dist
+prune *.egg-info
+prune results
+prune .coverage
+prune htmlcov
+prune .tox
+prune .nox

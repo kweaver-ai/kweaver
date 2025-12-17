@@ -1,0 +1,87 @@
+{
+    "componentDefineType": "helm/service",
+    "name": "agent-factory",
+    "version": "1.0.0",
+    "configSchema": {
+        "title": "agent-factory",
+        "description": "组件配置定义",
+        "type": "object",
+        "properties": {
+            "resources": {
+                "type": "object",
+                "title": "容器资源控制",
+                "properties": {
+                    "requests": {
+                        "type": "object",
+                        "description": "容器运行需要的最小资源分配",
+                        "properties": {
+                            "memory": {
+                                "type": "string",
+                                "title": "内存"
+                            },
+                            "cpu": {
+                                "type": "string",
+                                "title": "cpu"
+                            }
+                        }
+                    },
+                    "limits": {
+                        "type": "object",
+                        "description": "容器运行最大资源限制",
+                        "properties": {
+                            "memory": {
+                                "type": "string",
+                                "title": "内存"
+                            },
+                            "cpu": {
+                                "type": "string",
+                                "title": "cpu"
+                            }
+                        }
+                    }
+                }
+            },
+            "replicaCount": {
+                "type": "number",
+                "title": "服务副本数"
+            },
+            "depServices": {
+                "type": "object",
+                "title": "依赖服务",
+                "properties": {
+                    "modelFactory": {
+                        "type": "object",
+                        "title": "模型管理配置",
+                        "properties": {
+                            "llm": {
+                                "type": "object",
+                                "title": "LLM配置",
+                                "properties": {
+                                    "default_model_name": {
+                                        "type": "string",
+                                        "title": "默认模型名称",
+                                        "description": "默认模型名称, 用于创建/编辑 Agent 配置时 AI 生成功能使用的模型"
+                                    }
+                                },
+                                "required": [
+                                    "default_model_name"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "dependence": [
+        {
+            "name": "rds"
+        },
+        {
+            "name": "dip-da-dm-pre"
+        },
+        {
+            "name": "authorization"
+        }
+    ]
+}

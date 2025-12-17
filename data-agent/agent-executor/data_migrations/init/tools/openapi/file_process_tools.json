@@ -1,0 +1,558 @@
+{
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "http://agent-executor:30778",
+            "description": "服务器地址"
+        }
+    ],
+    "info": {
+        "title": "内置工具箱-文件处理工具",
+        "description": "包含 获取文件切片、获取文件完整内容、智能文件处理策略、获取文件下载URL 四个工具",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/agent-executor/v1/tools/search_file_snippets": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "search_file_snippets",
+                "description": "从文件中搜索与用户问题相关的片段\n\n- **query**: 用户问题（如\"如何预定会议室\"）\n- **file_infos**: 文件信息列表\n- **llm**: 大模型配置（可选）\n\n返回与用户问题相关的文件片段内容",
+                "operationId": "search_file_snippets_api_agent_executor_v1_tools_search_file_snippets_post",
+                "parameters": [
+                    {
+                        "name": "x-user",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户ID",
+                            "title": "Userid"
+                        },
+                        "description": "用户ID"
+                    },
+                    {
+                        "name": "token",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户令牌",
+                            "title": "Token"
+                        },
+                        "description": "用户令牌"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SearchFileSnippetsRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent-executor/v1/tools/get_file_full_content": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "get_file_full_content",
+                "description": "获取文件的完整内容，支持长文本处理策略\n\n- **file_infos**: 文件信息列表\n- **strategy**: 处理策略（\"truncate\"截断 或 \"chunk\"分块总结）\n- **llm**: 大模型配置（用于分块总结）\n\n返回文件的完整内容或总结内容",
+                "operationId": "get_file_full_content_api_agent_executor_v1_tools_get_file_full_content_post",
+                "parameters": [
+                    {
+                        "name": "x-user",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户ID",
+                            "title": "Userid"
+                        },
+                        "description": "用户ID"
+                    },
+                    {
+                        "name": "token",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户令牌",
+                            "title": "Token"
+                        },
+                        "description": "用户令牌"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GetFileFullContentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent-executor/v1/tools/process_file_intelligent": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "process_file_intelligent",
+                "description": "智能文件处理策略，自动选择召回或全文策略\n\n- **query**: 用户查询（如\"总结这份报告的主要内容\"）\n- **file_infos**: 文件信息列表\n- **llm**: 大模型配置（用于意图识别和分块总结）\n\n根据查询意图自动选择处理策略，返回处理结果",
+                "operationId": "process_file_intelligent_api_agent_executor_v1_tools_process_file_intelligent_post",
+                "parameters": [
+                    {
+                        "name": "x-user",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户ID",
+                            "title": "Userid"
+                        },
+                        "description": "用户ID"
+                    },
+                    {
+                        "name": "token",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户令牌",
+                            "title": "Token"
+                        },
+                        "description": "用户令牌"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProcessFileIntelligentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent-executor/v1/tools/get_file_download_url": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "get_file_download_url",
+                "description": "获取文件的下载URL链接\n\n- **file_infos**: 文件信息列表\n\n返回每个文件的下载URL，其他人可以通过这些URL获取文件内容",
+                "operationId": "get_file_download_url_api_agent_executor_v1_tools_get_file_download_url_post",
+                "parameters": [
+                    {
+                        "name": "x-user",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户ID",
+                            "title": "Userid"
+                        },
+                        "description": "用户ID"
+                    },
+                    {
+                        "name": "token",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "用户令牌",
+                            "title": "Token"
+                        },
+                        "description": "用户令牌"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GetFileDownloadUrlRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetFileDownloadUrlResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "FileInfo": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name",
+                        "description": "文件名",
+                        "example": "document.pdf"
+                    },
+                    "id": {
+                        "type": "string",
+                        "title": "Id",
+                        "description": "文件ID",
+                        "example": "file_123"
+                    }
+                },
+                "additionalProperties": true,
+                "type": "object",
+                "required": [
+                    "name",
+                    "id"
+                ],
+                "title": "FileInfo",
+                "description": "文件信息"
+            },
+            "FileUrlInfo": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name",
+                        "description": "文件名"
+                    },
+                    "id": {
+                        "type": "string",
+                        "title": "Id",
+                        "description": "文件ID"
+                    },
+                    "url": {
+                        "type": "string",
+                        "title": "Url",
+                        "description": "下载URL"
+                    },
+                    "error": {
+                        "type": "string",
+                        "title": "Error",
+                        "description": "错误信息"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "id"
+                ],
+                "title": "FileUrlInfo",
+                "description": "文件URL信息"
+            },
+            "GetFileDownloadUrlRequest": {
+                "properties": {
+                    "file_infos": {
+                        "items": {
+                            "$ref": "#/components/schemas/FileInfo"
+                        },
+                        "type": "array",
+                        "title": "File Infos",
+                        "description": "文件信息列表"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "file_infos"
+                ],
+                "title": "GetFileDownloadUrlRequest",
+                "description": "获取文件下载URL请求"
+            },
+            "GetFileDownloadUrlResponse": {
+                "properties": {
+                    "file_urls": {
+                        "items": {
+                            "$ref": "#/components/schemas/FileUrlInfo"
+                        },
+                        "type": "array",
+                        "title": "File Urls",
+                        "description": "文件URL信息列表"
+                    },
+                    "total_count": {
+                        "type": "integer",
+                        "title": "Total Count",
+                        "description": "总文件数量"
+                    },
+                    "success_count": {
+                        "type": "integer",
+                        "title": "Success Count",
+                        "description": "成功获取URL的文件数量"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "file_urls",
+                    "total_count",
+                    "success_count"
+                ],
+                "title": "GetFileDownloadUrlResponse",
+                "description": "获取文件下载URL响应"
+            },
+            "GetFileFullContentRequest": {
+                "properties": {
+                    "file_infos": {
+                        "items": {
+                            "$ref": "#/components/schemas/FileInfo"
+                        },
+                        "type": "array",
+                        "title": "File Infos",
+                        "description": "文件信息列表"
+                    },
+                    "strategy": {
+                        "type": "string",
+                        "title": "Strategy",
+                        "description": "处理策略",
+                        "default": "chunk",
+                        "example": "chunk"
+                    },
+                    "llm": {
+                        "type": "object",
+                        "title": "Llm",
+                        "description": "大模型配置",
+                        "default": {}
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "file_infos"
+                ],
+                "title": "GetFileFullContentRequest",
+                "description": "获取文件完整内容请求"
+            },
+            "ProcessFileIntelligentRequest": {
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "title": "Query",
+                        "description": "用户查询",
+                        "example": "总结这份报告的主要内容"
+                    },
+                    "file_infos": {
+                        "items": {
+                            "$ref": "#/components/schemas/FileInfo"
+                        },
+                        "type": "array",
+                        "title": "File Infos",
+                        "description": "文件信息列表"
+                    },
+                    "llm": {
+                        "type": "object",
+                        "title": "Llm",
+                        "description": "大模型配置",
+                        "default": {}
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "query",
+                    "file_infos"
+                ],
+                "title": "ProcessFileIntelligentRequest",
+                "description": "智能文件处理请求"
+            },
+            "SearchFileSnippetsRequest": {
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "title": "Query",
+                        "description": "搜索查询",
+                        "example": "如何预定会议室"
+                    },
+                    "file_infos": {
+                        "items": {
+                            "$ref": "#/components/schemas/FileInfo"
+                        },
+                        "type": "array",
+                        "title": "File Infos",
+                        "description": "文件信息列表"
+                    },
+                    "llm": {
+                        "type": "object",
+                        "title": "Llm",
+                        "description": "大模型配置",
+                        "default": {}
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "query",
+                    "file_infos"
+                ],
+                "title": "SearchFileSnippetsRequest",
+                "description": "搜索文件片段请求"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "Description": {
+                        "description": "错误描述",
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "ErrorCode": {
+                        "description": "错误码",
+                        "title": "Errorcode",
+                        "type": "string"
+                    },
+                    "ErrorDetails": {
+                        "description": "错误详情",
+                        "title": "Errordetails",
+                        "type": "string"
+                    },
+                    "ErrorLink": {
+                        "description": "错误链接",
+                        "title": "Errorlink",
+                        "type": "string"
+                    },
+                    "Solution": {
+                        "description": "解决方法",
+                        "title": "Solution",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "Description",
+                    "ErrorCode",
+                    "ErrorDetails",
+                    "ErrorLink",
+                    "Solution"
+                ],
+                "title": "ErrorResponse",
+                "type": "object"
+            }
+        }
+    }
+}

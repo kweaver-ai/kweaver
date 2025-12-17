@@ -1,0 +1,67 @@
+kubectl port-forward svc/app-manager -n anyshare --address=0.0.0.0 6477:6477 >/dev/dull &
+
+kubectl port-forward svc/mariadb-mariadb-cluster -n resource --address=0.0.0.0 3330:3330 >/dev/null &
+
+kubectl port-forward svc/kg-builder -n anyshare --address=0.0.0.0 6475:6475 >/dev/dull &
+
+kubectl port-forward svc/kg-builder -n anyshare --address=0.0.0.0 6485:6485 >/dev/dull &
+
+kubectl port-forward svc/kg-builder -n anyshare --address=0.0.0.0 6488:6488 >/dev/dull &
+
+kubectl port-forward svc/kbqa-intent -n anyshare --address=0.0.0.0 6486:6486 >/dev/dull &
+
+kubectl port-forward svc/kg-data-auth -n anyshare --address=0.0.0.0 7000:7000 > /dev/null&
+
+kubectl port-forward service/kg-user-rbac -n anyshare --address 0.0.0.0 6900:6900>/dev/null &
+
+kubectl port-forward -nresource service/opensearch-master --address 0.0.0.0 9200:9200 >/dev/null &
+
+kubectl port-forward -nanyshare service/kn-search-engine --address 0.0.0.0 6479:6479 >/dev/null &
+
+kubectl port-forward svc/mongodb-mongodb  -n resource --address=0.0.0.0 28000:28000 > /dev/null &
+//svc指服务，服务配置pod
+kubectl port-forward pod/mongodb-mongodb-2 -n resource --address=0.0.0.0 28000:28000 > /dev/null &
+
+kubectl port-forward svc/kg-engine-server -n anyshare --address=0.0.0.0 6480:6480 > /dev/null &
+
+kubectl  port-forward svc/proton-redis-proton-redis --address 0.0.0.0 -n resource 6379:6379 > /dev/null &
+kubectl port-forward service/nebula-graphd-svc --address 0.0.0.0 -nresource 9669:9669 > /dev/null &
+kubectl port-forward svc/mf-model-manager -n dip --address 0.0.0.0 9898:9898 > /dev/null &
+kubectl port-forward -nresource service/opensearch-master --address 0.0.0.0 9200:9200 >/dev/null &
+
+
+kubectl port-forward svc/mf-model-factory -n anyshare --address 0.0.0.0 9898:9898 > /dev/null &
+
+
+
+kubectl port-forward svc/agent-factory -n anyshare --address 0.0.0.0 30777:30777> /dev/null &
+
+kubectl port-forward svc/agent-app -n anyshare --address 0.0.0.0 30778:30778> /dev/null &
+
+
+firewall-cmd --add-port=30778/tcp
+firewall-cmd --add-port=30777/tcp
+firewall-cmd --add-port=9898/tcp
+firewall-cmd --add-port=9669/tcp
+firewall-cmd --add-port=6666/tcp
+firewall-cmd --add-port=6667/tcp
+firewall-cmd --add-port=6479/tcp
+firewall-cmd --add-port=6486/tcp
+firewall-cmd --add-port=6489/tcp
+firewall-cmd --add-port=28000/tcp
+firewall-cmd --add-port=6900/tcp
+firewall-cmd --add-port=7000/tcp
+firewall-cmd --add-port=6475/tcp
+firewall-cmd --add-port=6485/tcp
+firewall-cmd --add-port=6488/tcp
+firewall-cmd --add-port=6477/tcp
+firewall-cmd --add-port=3330/tcp
+firewall-cmd --add-port=9200/tcp
+firewall-cmd --add-port=6480/tcp
+firewall-cmd --add-port=9669/tcp
+firewall-cmd --add-port=6379/tcp
+firewall-cmd --add-port=3306/tcp
+firewall-cmd --add-port=8000/tcp
+firewall-cmd --add-port=5601/tcp
+firewall-cmd --add-port=7777/tcp
+firewall-cmd --add-port=9100/tcp

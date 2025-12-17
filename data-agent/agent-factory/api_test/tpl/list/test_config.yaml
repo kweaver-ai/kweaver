@@ -1,0 +1,402 @@
+name: "模板列表API测试"
+description: "测试模板列表功能，包括分页、排序和过滤"
+
+variables:
+  base_url: "http://127.0.0.1:13021"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "创建测试模板1"
+    description: "创建第一个测试模板用于列表测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "列表测试模板1-${random_string:6}"
+        key: "list-test-1-${timestamp}"
+        profile: "用于列表测试的第一个模板"
+        avatar_type: 1
+        avatar: "2"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+            is_temp_zone_enabled: 0
+          system_prompt: "你是测试模板1"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc: []
+            kg: []
+          tools: []
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 0.7
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 2000
+          is_data_flow_set_enabled: 1
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "您好！我是测试模板1。"
+          preset_questions: []
+          output:
+            variables:
+              answer_var: "answer"
+            default_format: "markdown"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "test_tpl_1_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "创建测试模板2"
+    description: "创建第二个测试模板用于列表测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "列表测试模板2-${random_string:6}"
+        key: "list-test-2-${timestamp}"
+        profile: "用于列表测试的第二个模板"
+        avatar_type: 1
+        avatar: "3"
+        product_key: "1"
+        config:
+          input:
+            fields:
+              - name: "query"
+                type: "string"
+            is_temp_zone_enabled: 0
+          system_prompt: "你是测试模板2"
+          dolphin: "/explore/(system_prompt="
+          is_dolphin_mode: 0
+          data_source:
+            doc: []
+            kg: []
+          tools: []
+          llms:
+            - is_default: true
+              llm_config:
+                id: "1901307417048780800"
+                name: "aaron-model-dv3"
+                model_type: "llm"
+                temperature: 0.8
+                top_p: 1
+                top_k: 1
+                frequency_penalty: 0
+                presence_penalty: 0
+                max_tokens: 3000
+          is_data_flow_set_enabled: 1
+          opening_remark_config:
+            type: "fixed"
+            fixed_opening_remark: "您好！我是测试模板2。"
+          preset_questions: []
+          output:
+            variables:
+              answer_var: "answer"
+            default_format: "markdown"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "test_tpl_2_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "获取默认模板列表"
+    description: "获取默认分页的模板列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 2
+          message: "总数应该至少为2（包含我们创建的模板）"
+    variable_extraction:
+      - name: "total_count"
+        source: "body"
+        path: "total"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取指定分页的模板列表"
+    description: "使用指定的分页参数获取模板列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "5"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "less_than_or_equal"
+          field: "body.entries.length"
+          value: 5
+          message: "返回的条目数不应超过5"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试大分页参数"
+    description: "测试较大的分页参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "50"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证列表项字段结构"
+    description: "验证列表中每个模板项的字段结构"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries[0].id"
+          message: "列表项应该包含id字段"
+        - type: "exists"
+          field: "body.entries[0].name"
+          message: "列表项应该包含name字段"
+        - type: "exists"
+          field: "body.entries[0].key"
+          message: "列表项应该包含key字段"
+        - type: "exists"
+          field: "body.entries[0].profile"
+          message: "列表项应该包含profile字段"
+        - type: "exists"
+          field: "body.entries[0].created_at"
+          message: "列表项应该包含created_at字段"
+        - type: "exists"
+          field: "body.entries[0].updated_at"
+          message: "列表项应该包含updated_at字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试无效分页参数 - 负数页码"
+    description: "测试使用负数页码的错误处理"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "-1"
+        size: "10"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试无效分页参数 - 零页面大小"
+    description: "测试使用零页面大小的错误处理"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "0"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试超大分页参数"
+    description: "测试超大的分页参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "1001"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码（页面大小过大）"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试动态分页参数"
+    description: "使用动态变量测试分页参数"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Dynamic-Test: "true"
+      params:
+        page: "${random_number:1-3}"
+        size: "${random_number:5-20}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证创建的模板在列表中"
+    description: "验证我们创建的模板出现在列表中"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "100"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 2
+          message: "总数应该至少包含我们创建的2个模板"
+    timeout: "10s"
+    retry: 2
+
+  - name: "清理测试数据 - 删除模板1"
+    description: "删除第一个测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_1_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "清理测试数据 - 删除模板2"
+    description: "删除第二个测试模板"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_2_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证删除后的列表"
+    description: "验证删除模板后列表的变化"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "响应应该包含total字段"
+    timeout: "10s"
+    retry: 2 

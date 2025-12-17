@@ -1,0 +1,303 @@
+name: "模板发布信息API测试"
+description: "测试模板发布信息功能，包括获取分类列表和更新发布信息"
+
+variables:
+  base_url: "http://127.0.0.1:13021"
+  api_prefix: "/api/agent-factory/internal/v3"
+
+variable_config:
+  random_number_min: 1000
+  random_number_max: 9999
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "创建测试模板"
+    description: "创建一个用于发布信息测试的模板"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "发布信息测试模板-${random_string:6}"
+        key: "publish-info-test-${timestamp}"
+        profile: "用于发布信息测试的模板"
+        config:
+          agent_type: "chat"
+          model_config:
+            model_name: "gpt-3.5-turbo"
+            temperature: 0.7
+            max_tokens: 2000
+          prompt_config:
+            system_prompt: "你是一个用于发布测试的智能助手"
+            user_prompt_template: "用户问题: {question}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含模板ID"
+    variable_extraction:
+      - name: "test_tpl_id"
+        source: "body"
+        path: "id"
+    timeout: "15s"
+    retry: 2
+
+  - name: "获取发布信息 - 分类列表"
+    description: "获取模板的发布信息，主要是分类列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "publish_info"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.categories"
+          message: "响应应该包含categories字段"
+        - type: "greater_than_or_equal"
+          field: "body.categories.length"
+          value: 0
+          message: "分类数组应该存在（可能为空）"
+    variable_extraction:
+      - name: "categories_count"
+        source: "body"
+        path: "categories.length"
+        default: "0"
+      - name: "first_category_id"
+        source: "body"
+        path: "categories[0].id"
+        default: "category_001"
+      - name: "first_category_name"
+        source: "body"
+        path: "categories[0].name"
+        default: "默认分类"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证分类数据结构"
+    description: "验证分类数据的结构（如果存在分类）"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.categories"
+          message: "响应应该包含categories字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "更新发布信息 - 单个分类"
+    description: "更新模板的发布信息，指定单个分类"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Update-Type: "single_category"
+      body:
+        category_id: "{{first_category_id}}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "更新发布信息 - 多个分类"
+    description: "更新模板的发布信息，指定多个分类"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Update-Type: "multiple_categories"
+      body:
+        category_id: "category_001,category_002,category_003"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "更新发布信息 - 使用动态分类"
+    description: "使用动态变量更新发布信息"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Update-Type: "dynamic_categories"
+        X-Session: "${uuid}"
+      body:
+        category_id: "{{first_category_id}},category_004"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2
+
+  - name: "测试错误处理 - 无效模板ID"
+    description: "使用无效模板ID获取发布信息"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/invalid-tpl-${random_string:8}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试错误处理 - 无效分类ID"
+    description: "使用无效分类ID更新发布信息"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        category_id: "invalid-category-${random_string:8}"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试错误处理 - 空分类ID"
+    description: "使用空分类ID更新发布信息"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        category_id: ""
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "测试错误处理 - 缺少请求体"
+    description: "更新发布信息时缺少请求体"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body: {}
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "10s"
+    retry: 1
+
+  - name: "验证分类服务集成"
+    description: "通过分类API验证分类服务的集成"
+    request:
+      method: "GET"
+      url: "{{base_url}}/api/agent-factory/v3/category"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "分类API应该返回entries字段"
+    variable_extraction:
+      - name: "category_api_count"
+        source: "body"
+        path: "entries.length"
+        default: "0"
+    timeout: "10s"
+    retry: 2
+
+  - name: "对比发布信息与分类API"
+    description: "对比发布信息API和分类API的数据一致性"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Compare-Test: "true"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.categories"
+          message: "响应应该包含categories字段"
+    timeout: "10s"
+    retry: 2
+
+  - name: "性能测试 - 多次获取发布信息"
+    description: "测试多次获取发布信息的性能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}/publish-info"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+        X-Performance-Test: "iteration-${random_number:1-100}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.categories"
+          message: "响应应该包含categories字段"
+    timeout: "5s"
+    retry: 1
+
+  - name: "清理测试数据"
+    description: "删除测试模板进行清理"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/agent-tpl/{{test_tpl_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+      assertions: []
+    timeout: "10s"
+    retry: 2 

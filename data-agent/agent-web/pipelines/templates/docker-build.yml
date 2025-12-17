@@ -1,0 +1,85 @@
+parameters:
+  - name: name
+    default: ''
+  - name: displayName
+    default: ''
+  - name: pool
+    default: ''
+  - name: harborUrl
+    default: ''
+  - name: condition
+    default: ''
+  - name: arch
+    default: ''
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    condition: ${{ parameters.condition }}
+    pool:
+      name: ${{ parameters.pool }}
+    workspace:
+      clean: all
+    variables:
+      VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.VERSION']]
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    steps:
+      - checkout: none
+
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: $(chartName)
+          downloadPath: $(Build.SourcesDirectory)
+
+      - script: |
+          set -e
+
+          CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):$(CURRENT_TAG).${{ parameters.arch }}"
+          LATEST_IMAGE="$(imageRegistry)/$(imageRepository):$(LATEST_TAG).${{ parameters.arch }}"
+          echo CURRENT_IMAGE: $CURRENT_IMAGE
+          echo LATEST_IMAGE: $LATEST_IMAGE
+
+          cd $(chartName)
+          docker build --pull --no-cache --tag $CURRENT_IMAGE .
+
+          set +x
+          echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+          set +x
+          echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+
+        name: BuildImageTask
+        displayName: '镜像构建'
+
+      - template: scan-image-step.yml@templatesAlias
+        parameters:
+          imageName: $(BuildImageTask.CURRENT_IMAGE)
+          exitCode: 1
+          scanTimeout: 10m
+
+      - task: Docker@2
+        displayName: 登录容器仓库
+        inputs:
+          containerRegistry: 'ACRDockerRegistry'
+          command: 'login'
+
+      - task: Bash@3
+        displayName: 推送镜像
+        inputs:
+          targetType: inline
+          script: |
+            #!/usr/bin/env bash
+            set -ex
+            docker tag $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+            docker push $(BuildImageTask.CURRENT_IMAGE)
+            docker push $(BuildImageTask.LATEST_IMAGE)
+            docker rmi $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+
+      - task: Post-Bash@3
+        inputs:
+          targetType: inline
+          script: |
+            rm -rf $(Build.SourcesDirectory)
+            ls -lah $(Agent.BuildDirectory)

@@ -1,0 +1,10 @@
+.idea
+build
+tmp
+.vscode
+__debug*
+agent-app.log
+coverage_report
+src/domain/service/agentsvc/example
+agent-app
+CLAUDE.md

@@ -1,0 +1,178 @@
+{
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "http://agent-executor:30778",
+            "description": "服务器地址"
+        }
+    ],
+    "info": {
+        "title": "内置工具箱-数据处理工具",
+        "description": "包含 通过工具、检查工具 两个工具",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/agent-executor/v1/tools/pass": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "pass",
+                "description": "通过工具，用于测试或占位\n\n返回通过消息",
+                "operationId": "pass_tool_api_agent_executor_v1_tools_pass_post",
+                "parameters": [
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent-executor/v1/tools/check": {
+            "post": {
+                "tags": [
+                    "internal-tools"
+                ],
+                "summary": "check",
+                "description": "检查工具\n\n- **value**: 检查值\n- **field**: 检查字段\n\n返回检查结果",
+                "operationId": "check_api_agent_executor_v1_tools_check_post",
+                "parameters": [
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CheckRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CheckRequest": {
+                "properties": {
+                    "value": {
+                        "title": "Value",
+                        "description": "检查值",
+                        "example": "test_value"
+                    },
+                    "field": {
+                        "type": "string",
+                        "title": "Field",
+                        "description": "检查字段",
+                        "example": "test_field"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "value",
+                    "field"
+                ],
+                "title": "CheckRequest",
+                "description": "检查工具请求"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "Description": {
+                        "description": "错误描述",
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "ErrorCode": {
+                        "description": "错误码",
+                        "title": "Errorcode",
+                        "type": "string"
+                    },
+                    "ErrorDetails": {
+                        "description": "错误详情",
+                        "title": "Errordetails",
+                        "type": "string"
+                    },
+                    "ErrorLink": {
+                        "description": "错误链接",
+                        "title": "Errorlink",
+                        "type": "string"
+                    },
+                    "Solution": {
+                        "description": "解决方法",
+                        "title": "Solution",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "Description",
+                    "ErrorCode",
+                    "ErrorDetails",
+                    "ErrorLink",
+                    "Solution"
+                ],
+                "title": "ErrorResponse",
+                "type": "object"
+            }
+        }
+    }
+}

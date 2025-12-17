@@ -1,0 +1,332 @@
+{
+    "agent_id": "01K7K85AE39AWMNZY1WY9SM3GZ",
+    "agent_config": {
+        "input": {
+            "fields": [
+                {
+                    "name": "query",
+                    "type": "string",
+                    "desc": ""
+                },
+                {
+                    "name": "history",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "tool",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "header",
+                    "type": "object",
+                    "desc": ""
+                },
+                {
+                    "name": "self_config",
+                    "type": "object",
+                    "desc": ""
+                }
+            ],
+            "rewrite": {
+                "enable": false,
+                "llm_config": {
+                    "id": "",
+                    "name": "test",
+                    "model_type": "llm",
+                    "temperature": 0.5,
+                    "top_p": 0.5,
+                    "top_k": 0,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                    "max_tokens": 1000
+                }
+            },
+            "augment": {
+                "enable": false,
+                "data_source": {
+                    "kg": []
+                }
+            },
+            "is_temp_zone_enabled": 0,
+            "temp_zone_config": null
+        },
+        "system_prompt": "",
+        "dolphin": "/explore/(history=true,tools=[\"execute_code\"])\r\n用户的问题是：$query\r\n下面你将开始一步步思考，并一步步执行\r\n-> final_answer",
+        "is_dolphin_mode": 1,
+        "pre_dolphin": [
+            {
+                "key": "graph_retrieve",
+                "name": "业务知识网络召回模块",
+                "value": "\n/judge/(tools=[\"graph_qa\"], history=True)判断【$query】是否需要到业务知识网络中召回，如果不需要召回，则直接返回“不需要业务知识网络召回”，否则执行工具对【$query】进行召回 -> graph_retrieval_res\n",
+                "enabled": false,
+                "edited": false
+            },
+            {
+                "key": "context_organize",
+                "name": "上下文组织模块",
+                "value": "\n{\"query\": \"用户的问题为: \"+$query} -> context\n",
+                "enabled": false,
+                "edited": false
+            }
+        ],
+        "post_dolphin": [],
+        "data_source": {
+            "kg": [
+                {
+                    "kg_id": "1",
+                    "fields": [
+                        "Supply_Chain",
+                        "t_sales",
+                        "sale_exe"
+                    ],
+                    "field_properties": {
+                        "Supply_Chain": [
+                            "实体vid",
+                            "area_2_province"
+                        ],
+                        "sale_exe": [
+                            "实体vid",
+                            "area_1_region"
+                        ],
+                        "t_sales": [
+                            "实体vid",
+                            "area_1_region"
+                        ]
+                    },
+                    "output_fields": []
+                }
+            ],
+            "doc": [],
+            "metric": [
+                {
+                    "metric_model_id": "190benchmark-quekou"
+                },
+                {
+                    "metric_model_id": "190benchmark-target"
+                },
+                {
+                    "metric_model_id": "190benchmark-dacheng"
+                },
+                {
+                    "metric_model_id": "190benchmark-sale"
+                }
+            ],
+            "kn_entry": [
+                {
+                    "kn_entry_id": "d319evuudirf3o0g1smg"
+                },
+                {
+                    "kn_entry_id": "d319evuudirf3o0g1skg"
+                },
+                {
+                    "kn_entry_id": "d319evuudirf3o0g1hvg"
+                }
+            ],
+            "knowledge_network": null,
+            "advanced_config": {
+                "kg": {
+                    "text_match_entity_nums": 60,
+                    "vector_match_entity_nums": 60,
+                    "graph_rag_topk": 25,
+                    "long_text_length": 256,
+                    "reranker_sim_threshold": -5.5,
+                    "retrieval_max_length": 12288
+                },
+                "doc": null
+            }
+        },
+        "skills": {
+            "tools": [
+                {
+                    "tool_id": "6e27284a-de52-4ccb-9b30-7f46d1769fcf",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "server_url",
+                            "input_type": "string",
+                            "input_desc": "可选，沙箱服务器URL，默认使用配置文件中的 SANDBOX_URL",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "session_id",
+                            "input_type": "string",
+                            "input_desc": "沙箱会话ID",
+                            "map_type": "var",
+                            "map_value": "self_config.conversation_id",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                },
+                {
+                    "tool_id": "5af5e897-ac98-4108-8b2f-c6036a182347",
+                    "tool_box_id": "e4db78a8-1bc0-431d-8e51-6b01a0dd326c",
+                    "tool_input": [
+                        {
+                            "input_name": "stream",
+                            "input_type": "boolean",
+                            "input_desc": "是否流式返回",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "mode",
+                            "input_type": "string",
+                            "input_desc": "请求模式",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "args",
+                            "input_type": "array",
+                            "input_desc": "代码执行参数",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "content",
+                            "input_type": "string",
+                            "input_desc": "要执行的 Python 代码内容",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "filename",
+                            "input_type": "string",
+                            "input_desc": "文件名，用于指定代码文件的名称",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "output_params",
+                            "input_type": "array",
+                            "input_desc": "输出参数列表，用于指定要返回的变量名",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "server_url",
+                            "input_type": "string",
+                            "input_desc": "可选，沙箱服务器URL，默认使用配置文件中的 SANDBOX_URL",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        },
+                        {
+                            "input_name": "session_id",
+                            "input_type": "string",
+                            "input_desc": "沙箱会话ID",
+                            "map_type": "var",
+                            "map_value": "self_config.conversation_id",
+                            "enable": true
+                        },
+                        {
+                            "input_name": "timeout",
+                            "input_type": "number",
+                            "input_desc": "超时时间",
+                            "map_type": "auto",
+                            "map_value": "",
+                            "enable": false
+                        }
+                    ],
+                    "intervention": false,
+                    "result_process_strategies": null
+                }
+            ],
+            "agents": [],
+            "mcps": []
+        },
+        "llms": [
+            {
+                "is_default": true,
+                "llm_config": {
+                    "id": "1950850444926521344",
+                    "name": "deepseek_v3",
+                    "model_type": "llm",
+                    "temperature": 1,
+                    "top_p": 1,
+                    "top_k": 1,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                    "max_tokens": 1000
+                }
+            }
+        ],
+        "is_data_flow_set_enabled": 0,
+        "opening_remark_config": null,
+        "preset_questions": [],
+        "output": {
+            "variables": {
+                "answer_var": "final_answer",
+                "doc_retrieval_var": "doc_retrieval_res",
+                "graph_retrieval_var": "graph_retrieval_res",
+                "related_questions_var": "related_questions",
+                "other_vars": null,
+                "middle_output_vars": null
+            },
+            "default_format": "markdown"
+        },
+        "built_in_can_edit_fields": null,
+        "memory": {
+            "is_enabled": false
+        },
+        "related_question": {
+            "is_enabled": false
+        },
+        "plan_mode": null,
+        "metadata": {
+            "config_version": "v1"
+        },
+        "agent_id": "01K7K85AE39AWMNZY1WY9SM3GZ",
+        "conversation_id": "01K87WHRFJXPG52WB4XVJTVC9E",
+        "session_id": "01K87WHRHNQRWNFZ2JS7MSW5E2"
+    },
+    "agent_input": {
+        "confirm_plan": true,
+        "query": "写代码计算斐波拉数${__Random(1,99,)}位",
+        "history": [],
+        "tool": {
+            "session_id": "",
+            "tool_name": "",
+            "tool_args": null
+        }
+    },
+    "_options": {
+        "conversation_id": "01K84SM5RJJ25N9VFSCD8RP64A"
+    }
+}

@@ -1,0 +1,229 @@
+name: "单个头像获取API测试"
+description: "测试获取指定ID的内置头像功能，验证SVG格式和缓存设置"
+
+variables:
+  base_url: "http://127.0.0.1:13022"
+  api_prefix: "/api/agent-factory/v3"
+
+tests:
+  - name: "获取ID为1的头像(播放图标)"
+    description: "获取播放图标头像，验证SVG格式"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/1"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Avatar-ID: "1"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "image/svg+xml"
+          message: "Content-Type应该是image/svg+xml"
+        - type: "contains"
+          field: "headers.cache-control"
+          value: "public, max-age=86400"
+          message: "应该设置1天的缓存"
+        - type: "exists"
+          field: "headers.last-modified"
+          message: "应该包含Last-Modified头"
+        - type: "contains"
+          field: "body"
+          value: "<svg"
+          message: "响应体应该包含SVG标签"
+        - type: "contains"
+          field: "body"
+          value: "width=\"64\""
+          message: "SVG宽度应该是64"
+        - type: "contains"
+          field: "body"
+          value: "height=\"64\""
+          message: "SVG高度应该是64"
+        - type: "contains"
+          field: "body"
+          value: "fill=\"#4F7EFF\""
+          message: "应该包含蓝色背景"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取ID为7的头像(机器人图标)"
+    description: "获取机器人图标头像，验证复杂SVG结构"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/7"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Avatar-ID: "7"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "image/svg+xml"
+          message: "Content-Type应该是image/svg+xml"
+        - type: "contains"
+          field: "body"
+          value: "<svg"
+          message: "响应体应该包含SVG标签"
+        - type: "contains"
+          field: "body"
+          value: "<rect"
+          message: "机器人图标应该包含矩形元素"
+        - type: "contains"
+          field: "body"
+          value: "<circle"
+          message: "机器人图标应该包含圆形元素"
+        - type: "contains"
+          field: "body"
+          value: "fill=\"white\""
+          message: "应该包含白色元素"
+    timeout: "10s"
+    retry: 2
+
+  - name: "获取ID为20的头像(书签图标)"
+    description: "获取书签图标头像，验证边界值"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/20"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Avatar-ID: "20"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "image/svg+xml"
+          message: "Content-Type应该是image/svg+xml"
+        - type: "contains"
+          field: "body"
+          value: "<svg"
+          message: "响应体应该包含SVG标签"
+        - type: "contains"
+          field: "body"
+          value: "</svg>"
+          message: "SVG应该正确闭合"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证所有有效头像ID"
+    description: "循环测试所有有效的头像ID(1-20)"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/5"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Avatar-ID: "5"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "headers.content-type"
+          value: "image/svg+xml"
+          message: "Content-Type应该是image/svg+xml"
+        - type: "contains"
+          field: "body"
+          value: "<svg"
+          message: "响应体应该包含SVG标签"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证SVG格式完整性"
+    description: "验证返回的SVG格式是否完整和有效"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/3"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "svg-validation"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body"
+          value: "xmlns=\"http://www.w3.org/2000/svg\""
+          message: "SVG应该包含正确的命名空间"
+        - type: "contains"
+          field: "body"
+          value: "viewBox=\"0 0 64 64\""
+          message: "SVG应该有正确的viewBox"
+        - type: "regex"
+          field: "body"
+          value: "<svg[^>]*>.*</svg>"
+          message: "SVG结构应该完整"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证缓存头设置"
+    description: "验证头像的缓存相关HTTP头设置"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/6"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "cache-validation"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "headers.cache-control"
+          value: "public"
+          message: "缓存控制应该设置为public"
+        - type: "contains"
+          field: "headers.cache-control"
+          value: "max-age=86400"
+          message: "缓存时间应该设置为1天(86400秒)"
+        - type: "exists"
+          field: "headers.last-modified"
+          message: "应该包含Last-Modified头"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证响应大小"
+    description: "验证头像文件大小是否合理"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/8"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "size-validation"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "headers.content-length"
+          message: "应该包含Content-Length头"
+        - type: "range"
+          field: "headers.content-length"
+          min: 100
+          max: 2000
+          message: "SVG文件大小应该在合理范围内(100-2000字节)"
+    timeout: "10s"
+    retry: 2
+
+  - name: "验证响应时间性能"
+    description: "验证单个头像获取的响应时间"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/agent/avatar/built-in/9"
+      headers:
+        Accept: "image/svg+xml"
+        X-Request-ID: "${uuid}"
+        X-Test-Type: "performance"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "contains"
+          field: "body"
+          value: "<svg"
+          message: "响应体应该包含SVG标签"
+    timeout: "3s"
+    retry: 1 

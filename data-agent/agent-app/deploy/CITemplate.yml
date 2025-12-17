@@ -1,0 +1,131 @@
+parameters:
+  - name: imageJobName
+    default: ""
+  - name: pool
+    default: ""
+  - name: agent
+    default: ""
+  - name: CPU_ARCH
+    default: ""
+  - name: container
+    default: ""
+  - name: UTReportName
+    default: ""
+  - name: LintReportName
+    default: ""
+jobs:
+  - job: "${{parameters.CPU_ARCH}}_build"
+    displayName: "${{parameters.CPU_ARCH}}-build"
+    container: ${{parameters.container}}
+    pool:
+      name: ${{parameters.pool}}
+      demands:
+        - agent.name -equals ${{parameters.agent}}
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+        fetchDepth: 1
+      - script: |
+          set -ex
+          # 配置git config
+          git config --global url."ssh://devops.aishu.cn:22/AISHUDevOps/".insteadOf "https://devops.aishu.cn/AISHUDevOps/"
+          echo "machine devops.aishu.cn login dashuai.wang password $(System.AccessToken)" > /root/.netrc
+          cat /root/.netrc
+          export NETRC=/root/.netrc
+
+          go env -w GO111MODULE=on
+          go env -w CGO_ENABLED=0
+          go env -w GOOS=linux
+          go env -w GOARCH=${{parameters.CPU_ARCH}}
+          unset GOPRIVATE
+          unset GOPROXY
+          go env -w GONOSUMDB=github.com,golang.org
+          go env -w GOPROXY=http://XXX:18005
+          go env -w GOPRIVATE=devops.aishu.cn
+          go install -mod readonly go.uber.org/mock/mockgen@latest
+          go generate ./...
+          go mod tidy
+          mkdir coverage_report
+          go install go.uber.org/mock/mockgen@latest
+          go test -v -coverprofile=coverage_report/cover.out  ./... 2>&1 | go-junit-report > coverage_report/$(UTReportName)
+          gocov convert coverage_report/cover.out | gocov-xml > coverage_report/$(CoverageReportName)
+          go build -o agent-app ./main.go
+        displayName: go build
+        condition: succeeded()
+
+      # - script: |
+      #     set -ex
+      #     golangci-lint run --config .golangci.yml --out-format junit-xml ./... > coverage_report/$(LintReportName)
+      #   continueOnError: false
+      #   displayName: Check Code
+
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)
+          contents: |
+            coverage_report/**
+          targetFolder: $(Build.BinariesDirectory)
+        condition: succeeded()
+        displayName: Copy Files
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)
+          contents: |
+            agent-app
+            Dockerfile
+            infra/agent_tool_template/*
+          targetFolder: $(Build.BinariesDirectory)
+        condition: succeeded()
+        displayName: Copy File
+      - task: PublishBuildArtifacts@1
+        displayName: Publish build binary files and DockerFile To Artifacts
+        condition: succeeded()
+        inputs:
+          PathtoPublish: $(Build.BinariesDirectory)
+          ArtifactName: ${{parameters.CPU_ARCH}}
+          publishLocation: "Container"
+      - script: |
+          rm -rf $(Build.SourcesDirectory)
+        displayName: Remove Source
+        condition: always()
+  - job: "${{parameters.imageJobName}}"
+    displayName: "${{parameters.CPU_ARCH}}-build-image"
+    dependsOn: ${{parameters.CPU_ARCH}}_build
+    pool:
+      name: ${{parameters.pool}}
+    workspace:
+      clean: all
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@0
+        displayName: Download build binary files and DockerFile From Artifacts
+        inputs:
+          buildType: "current"
+          downloadType: "single"
+          artifactName: ${{parameters.CPU_ARCH}}
+          downloadPath: $(Build.SourcesDirectory)
+
+      - task: Docker@2
+        displayName: Login To Hub
+        inputs:
+          containerRegistry: "acr.aishu.cn"
+          command: "login"
+
+      - script: |
+          set -ex
+          cd $(Build.SourcesDirectory)/${{parameters.CPU_ARCH}}
+          chmod +x ./agent-app
+          imageUri=$(harborUrl)/$(imageName):$(parametersTag)
+          docker build -t ${imageUri}_${{parameters.CPU_ARCH}} --no-cache -f ./Dockerfile .
+          docker tag ${imageUri}_${{parameters.CPU_ARCH}} ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+          docker push ${imageUri}_${{parameters.CPU_ARCH}}
+          docker push ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+          docker rmi ${imageUri}_${{parameters.CPU_ARCH}} ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+        displayName: Build Image
+        condition: succeeded()
+
+      - script: |
+          rm -rf $(Build.SourcesDirectory)
+        displayName: Remove Source
+        condition: always()

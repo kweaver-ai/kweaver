@@ -1,0 +1,325 @@
+name: "空间成员接口测试（修复版）"
+description: "测试获取空间成员API的各种场景，修复了API行为适配问题"
+
+variables:
+  base_url: "http://127.0.0.1:13020"
+  api_prefix: "/api/agent-factory/v3"
+
+variable_config:
+  random_number_min: 1
+  random_number_max: 100
+  random_string_length: 8
+  random_name_length: 6
+
+tests:
+  - name: "1. 创建测试空间"
+    description: "创建一个空间用于成员测试"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        name: "成员测试空间-${random_string:6}"
+        key: "member-test-space-${timestamp}"
+        profile: "这是一个专门用于成员测试的空间，创建时间: ${timestamp_ms}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.id"
+          message: "响应应该包含空间ID"
+    variable_extraction:
+      - name: "member_test_space_id"
+        source: "body"
+        path: "id"
+    timeout: "2s"
+    retry: 0
+
+  - name: "2. 验证空间存在"
+    description: "确认空间已创建成功，可以被查询到"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "equals"
+          field: "body.id"
+          value: "{{member_test_space_id}}"
+          message: "返回的空间ID应该匹配"
+        - type: "exists"
+          field: "body.name"
+          message: "响应应该包含空间名称"
+        - type: "contains"
+          field: "body.name"
+          value: "成员测试空间"
+          message: "空间名称应该包含'成员测试空间'"
+    timeout: "2s"
+    retry: 0
+
+  - name: "3. 获取空间成员 - 有效ID"
+    description: "测试获取存在空间的成员列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "成员总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "4. 获取空间成员 - 分页参数"
+    description: "测试使用分页参数获取空间成员"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "${random_number:1-3}"
+        size: "${random_number:5-20}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+        - type: "greater_than_or_equal"
+          field: "body.total"
+          value: 0
+          message: "成员总数应该大于等于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "5. 获取空间成员 - 无效ID"
+    description: "测试获取不存在空间的成员列表"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/invalid-space-id-${random_string:10}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "2s"
+    retry: 0
+
+  - name: "6. 测试错误处理 - 无效分页参数"
+    description: "测试使用无效分页参数获取空间成员"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "0"
+        size: "0"
+    expected:
+      status_code: 400
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+    timeout: "2s"
+    retry: 0
+
+  - name: "7. 性能测试 - 大分页查询"
+    description: "测试大分页参数的性能"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "100"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "entries应该是数组类型"
+    timeout: "2s"
+    retry: 0
+
+  - name: "8. 添加空间成员"
+    description: "测试向空间添加新成员"
+    request:
+      method: "POST"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        Content-Type: "application/json"
+        X-Request-ID: "${uuid}"
+      body:
+        members:
+          - obj_type: "user"
+            obj_id: "test-user-${random_string:8}"
+          - obj_type: "dept"
+            obj_id: "test-dept-${random_string:6}"
+    expected:
+      status_code: 201
+      assertions:
+        - type: "exists"
+          field: "body.success"
+          message: "响应应该包含success字段"
+        - type: "type"
+          field: "body.success"
+          value: "array"
+          message: "success应该是数组类型"
+        - type: "exists"
+          field: "body.failed"
+          message: "响应应该包含failed字段"
+    variable_extraction:
+      - name: "added_member_assoc_id"
+        source: "body"
+        path: "success[0].assoc_id"
+    timeout: "2s"
+    retry: 0
+
+  - name: "9. 验证成员已添加"
+    description: "验证成员已成功添加到空间"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        - type: "greater_than"
+          field: "body.total"
+          value: 0
+          message: "成员总数应该大于0"
+    timeout: "2s"
+    retry: 0
+
+  - name: "10. 删除空间成员"
+    description: "测试删除空间成员"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members/{{added_member_assoc_id}}"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 204
+    timeout: "2s"
+    retry: 0
+
+  - name: "11. 验证成员已删除"
+    description: "验证成员已从空间中删除"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "响应应该包含entries字段"
+        
+    timeout: "2s"
+    retry: 0
+
+  - name: "12. 测试删除不存在的成员"
+    description: "测试删除不存在的成员关联ID"
+    request:
+      method: "DELETE"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members/999999"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+    expected:
+      status_code: 404
+      assertions:
+        - type: "exists"
+          field: "body.error_code"
+          message: "应该返回错误代码"
+        - type: "equals"
+          field: "body.error_code"
+          value: "AgentFactory.CustomSpaceMember.NotFound"
+          message: "应该返回不存在的错误代码"
+        - type: "contains"
+          field: "body.error_details"
+          value: "成员不存在"
+          message: "错误详情应该提示成员不存在"
+    timeout: "2s"
+    retry: 0
+
+  - name: "13. 最终验证"
+    description: "最终验证空间成员API的稳定性"
+    request:
+      method: "GET"
+      url: "{{base_url}}{{api_prefix}}/custom-space/{{member_test_space_id}}/members"
+      headers:
+        Accept: "application/json"
+        X-Request-ID: "${uuid}"
+      params:
+        page: "1"
+        size: "10"
+    expected:
+      status_code: 200
+      assertions:
+        - type: "exists"
+          field: "body.entries"
+          message: "最终验证：响应应该包含entries字段"
+        - type: "exists"
+          field: "body.total"
+          message: "最终验证：响应应该包含total字段"
+        - type: "type"
+          field: "body.entries"
+          value: "array"
+          message: "最终验证：entries应该是数组类型"
+        - type: "type"
+          field: "body.total"
+          value: "number"
+          message: "最终验证：total应该是数字类型"
+    timeout: "2s"
+    retry: 0

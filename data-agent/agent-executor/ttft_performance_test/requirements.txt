@@ -1,0 +1,15 @@
+# Core dependencies - using only Python standard library for maximum compatibility
+# No external dependencies required for basic functionality
+
+# Optional dependencies for enhanced features:
+# pyyaml>=6.0           # For YAML configuration files
+# matplotlib>=3.5.0     # For advanced chart generation
+# pandas>=1.3.0        # For advanced data analysis
+aiohttp>=3.8.0       # For better HTTP client performance
+
+# Development dependencies (install with pip install -e ".[dev]")
+# pytest>=7.0.0        # Testing framework
+# pytest-cov>=4.0.0    # Coverage reporting
+# black>=22.0.0        # Code formatting
+# flake8>=5.0.0        # Linting
+# mypy>=0.991          # Type checking

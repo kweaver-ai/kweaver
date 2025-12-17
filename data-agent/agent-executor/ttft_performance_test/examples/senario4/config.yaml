@@ -1,0 +1,36 @@
+# Example configuration for TTFT Performance Testing
+
+# API Configuration
+api:
+  base_url: "http://XXX:30778"
+  endpoint: "/api/agent-executor/v2/agent/run"
+  timeout: 300
+  headers:
+    x-user: "bdb78b62-6c48-11f0-af96-fa8dcc0a06b2"
+    x-visitor-type: "user"
+    Content-Type: "application/json"
+    Accept: "text/event-stream"
+  payload_template: "examples/senario4/payload.json"  # Optional custom payload template
+
+# Test Parameters
+test:
+  concurrency: 1
+  iterations: 20
+  delay_between_requests: 0.0
+  delay_between_batches: 2.0
+  max_failures: 10
+  queries:
+    - "写代码计算斐波拉数${__Random(1,99,)}位"
+
+# Report Configuration
+report:
+  output_dir: "./results"
+  formats: ["json", "txt"]
+  include_charts: true
+  chart_types: ["time_series", "distribution"]
+  timestamp_format: "%Y%m%d_%H%M%S"
+
+# Logging
+logging:
+  level: "INFO"
+  file: "ttft_tester.log"

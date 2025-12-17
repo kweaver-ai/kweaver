@@ -1,0 +1,23 @@
+.var-element {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 3px;
+  //padding: 0 12px;
+  line-height: 20px;
+  height: 22px;
+  display: inline-block;
+  margin: 0 4px;
+
+  &-error {
+    background: var(--ad-error-color);
+    color: #fff;
+    position: relative;
+  }
+
+  &-text {
+    display: inline-block;
+
+    &-editable {
+      outline: none;
+    }
+  }
+}

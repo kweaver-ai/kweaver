@@ -1,0 +1,49 @@
+.chatContainer {
+  .planContainer {
+    overflow: hidden;
+    border-radius: 12px;
+    padding: 16px;
+    background: rgba(18, 110, 227, 0.06);
+    backdrop-filter: blur(20px);
+
+    .footer {
+
+    }
+
+    .sign {
+      background: rgba(0, 0, 0, .06);
+      height: 32px;
+      padding: 0 12px;
+    }
+  }
+}
+
+.exploreContainer {
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 5px 16px -4px rgba(0, 0, 0, .15);
+
+  .planContainer {
+    overflow: hidden;
+    //border-radius: 20px;
+    //padding: 24px;
+    //background: rgba(18, 110, 227, 0.06);
+    //backdrop-filter: blur(20px);
+    .footer {
+
+    }
+
+    .sign {
+      background: rgba(0, 0, 0, .06);
+      height: 32px;
+      padding: 0 12px;
+    }
+
+    :global {
+      .plan-item {
+        background: rgba(var(--dip-primary-color-rgb), 0.04);
+      }
+    }
+  }
+}

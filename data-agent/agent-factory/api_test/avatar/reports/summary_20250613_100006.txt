@@ -1,0 +1,33 @@
+头像API测试综合报告
+==================================================
+生成时间: 2025-06-13 10:00:06
+
+模块: 完整测试套件
+  总计: 15
+  通过: 3
+  失败: 12
+  报告: /Users/Zhuanz/Work/as/dip_ws_agent/agent-factory_agent/api_test/reports/report_完整测试套件_20250613_095906.html
+
+模块: list
+  总计: 5
+  通过: 2
+  失败: 3
+  报告: /Users/Zhuanz/Work/as/dip_ws_agent/agent-factory_agent/api_test/avatar/reports/report_list_20250613_095915.html
+
+模块: detail
+  总计: 8
+  通过: 1
+  失败: 7
+  报告: /Users/Zhuanz/Work/as/dip_ws_agent/agent-factory_agent/api_test/avatar/reports/report_detail_20250613_095936.html
+
+模块: error_handling
+  总计: 12
+  通过: 2
+  失败: 10
+  报告: /Users/Zhuanz/Work/as/dip_ws_agent/agent-factory_agent/api_test/avatar/reports/report_error_handling_20250613_100006.html
+
+--------------------------------------------------
+总计: 40
+通过: 8
+失败: 32
+成功率: 20.0%

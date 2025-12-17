@@ -1,0 +1,2170 @@
+{
+    "graph_schema_and_synonyms": {
+        "graph_name": {
+            "16": {
+                "space_name": "ubf9f258a45a611efa52e0eb36619d58b-27",
+                "kg_name": "律所知识图谱_金城同达"
+            }
+        },
+        "graph_alias": {
+            "ubf9f258a45a611efa52e0eb36619d58b-27": {
+                "entity_types": {
+                    "performance_catetory": {
+                        "entity_id": "entity-ecde5312-2caf-4bd6-be04-021e7069d786",
+                        "name": "performance_catetory",
+                        "description": "",
+                        "alias": "业绩分类",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "name"
+                        ],
+                        "vector_generation": [],
+                        "properties": [
+                            {
+                                "name": "id",
+                                "description": "",
+                                "alias": "编号",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "业绩分类",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 1399.9949172839506,
+                        "y": 412.4930555555555,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(80,160,106,1)",
+                        "stroke_color": "rgba(80,160,106,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(80,160,106,1)"
+                    },
+                    "person": {
+                        "entity_id": 43,
+                        "name": "person",
+                        "description": "",
+                        "alias": "人员",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "title",
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "id"
+                        ],
+                        "vector_generation": [
+                            "title",
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "id",
+                                "description": "",
+                                "alias": "ID",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "title",
+                                "description": "",
+                                "alias": "职位",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "姓名",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 832.1851851851852,
+                        "y": 788.986111111111,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(25,117,255,1)",
+                        "stroke_color": "rgba(25,117,255,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(25,117,255,1)"
+                    },
+                    "university": {
+                        "entity_id": 29,
+                        "name": "university",
+                        "description": "",
+                        "alias": "高校",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "code",
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "code",
+                            "name"
+                        ],
+                        "vector_generation": [
+                            "code",
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "code",
+                                "description": "",
+                                "alias": "编码",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "名称",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 1047.5899855967077,
+                        "y": 134.36209588477362,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(236,1,245,1)",
+                        "stroke_color": "rgba(217,112,76,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(236,1,245,1)"
+                    },
+                    "document": {
+                        "entity_id": 18,
+                        "name": "document",
+                        "description": "",
+                        "alias": "文档",
+                        "synonym": [],
+                        "default_tag": "doc_id",
+                        "properties_index": [
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "doc_id"
+                        ],
+                        "vector_generation": [
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "文件名",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "doc_id",
+                                "description": "",
+                                "alias": "文档ID",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 1242.9795074074073,
+                        "y": 658.9550148148147,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(240,227,79,1)",
+                        "stroke_color": "rgba(240,227,79,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(240,227,79,1)"
+                    },
+                    "industry": {
+                        "entity_id": 17,
+                        "name": "industry",
+                        "description": "",
+                        "alias": "行业",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "level",
+                            "description",
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "id"
+                        ],
+                        "vector_generation": [
+                            "level",
+                            "description",
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "level",
+                                "description": "",
+                                "alias": "层级",
+                                "data_type": "integer"
+                            },
+                            {
+                                "name": "description",
+                                "description": "",
+                                "alias": "描述",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "名称",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "id",
+                                "description": "",
+                                "alias": "ID",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 723.3209876543209,
+                        "y": 563.5401234567902,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(216,112,122,1)",
+                        "stroke_color": "rgba(216,112,122,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(216,112,122,1)"
+                    },
+                    "court": {
+                        "entity_id": 10,
+                        "name": "court",
+                        "description": "",
+                        "alias": "法院",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "name"
+                        ],
+                        "vector_generation": [
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "法院名称",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 1299.9949172839506,
+                        "y": 304.96473827160486,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(92,83,155,1)",
+                        "stroke_color": "rgba(92,83,155,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(92,83,155,1)"
+                    },
+                    "lawyer": {
+                        "entity_id": 5,
+                        "name": "lawyer",
+                        "description": "",
+                        "alias": "律师",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "lang",
+                            "honor",
+                            "paper",
+                            "socialStatus",
+                            "performance",
+                            "case_num",
+                            "description",
+                            "phone",
+                            "email",
+                            "title",
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "id"
+                        ],
+                        "vector_generation": [
+                            "lang",
+                            "honor",
+                            "paper",
+                            "socialStatus",
+                            "performance",
+                            "case_num",
+                            "description",
+                            "phone",
+                            "email",
+                            "title",
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "lang",
+                                "description": "",
+                                "alias": "语言",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "honor",
+                                "description": "",
+                                "alias": "荣誉",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "paper",
+                                "description": "",
+                                "alias": "著作论文",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "socialStatus",
+                                "description": "",
+                                "alias": "社会职务",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "performance",
+                                "description": "",
+                                "alias": "代表业绩",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "case_num",
+                                "description": "",
+                                "alias": "案件数量",
+                                "data_type": "integer"
+                            },
+                            {
+                                "name": "image",
+                                "description": "",
+                                "alias": "照片",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "description",
+                                "description": "",
+                                "alias": "描述",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "phone",
+                                "description": "",
+                                "alias": "电话",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "email",
+                                "description": "",
+                                "alias": "邮箱",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "title",
+                                "description": "",
+                                "alias": "职位",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "姓名",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "id",
+                                "description": "",
+                                "alias": "ID",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 874.3121471427082,
+                        "y": 234.7469519549893,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(123,186,160,1)",
+                        "stroke_color": "rgba(123,186,160,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(123,186,160,1)"
+                    },
+                    "district": {
+                        "entity_id": 4,
+                        "name": "district",
+                        "description": "",
+                        "alias": "地区",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "code"
+                        ],
+                        "vector_generation": [
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "名称",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "level",
+                                "description": "",
+                                "alias": "层级",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "code",
+                                "description": "",
+                                "alias": "区划代码",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 1068,
+                        "y": 5.75,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(55,133,4,1)",
+                        "stroke_color": "rgba(54,131,3,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(55,133,4,1)"
+                    },
+                    "case": {
+                        "entity_id": 3,
+                        "name": "case",
+                        "description": "",
+                        "alias": "案件",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "closed_at",
+                            "created_at",
+                            "status",
+                            "amount",
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "id"
+                        ],
+                        "vector_generation": [
+                            "closed_at",
+                            "created_at",
+                            "status",
+                            "amount",
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "gns",
+                                "description": "",
+                                "alias": "文件夹路径",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "closed_at",
+                                "description": "",
+                                "alias": "结案时间",
+                                "data_type": "date"
+                            },
+                            {
+                                "name": "created_at",
+                                "description": "",
+                                "alias": "创建时间",
+                                "data_type": "date"
+                            },
+                            {
+                                "name": "status",
+                                "description": "",
+                                "alias": "状态",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "amount",
+                                "description": "",
+                                "alias": "标的额",
+                                "data_type": "float"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "名称",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "id",
+                                "description": "",
+                                "alias": "id",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 1114,
+                        "y": 381.9475308641976,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(237,71,58,1)",
+                        "stroke_color": "rgba(237,71,58,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(237,71,58,1)"
+                    },
+                    "case_category": {
+                        "entity_id": 2,
+                        "name": "case_category",
+                        "description": "",
+                        "alias": "业务分类",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "id"
+                        ],
+                        "vector_generation": [
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "level",
+                                "description": "",
+                                "alias": "层级",
+                                "data_type": "integer"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "名称",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "id",
+                                "description": "",
+                                "alias": "ID",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 719.2580651604939,
+                        "y": 433.68127004938265,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(222,235,14,1)",
+                        "stroke_color": "rgba(208,237,73,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(222,235,14,1)"
+                    },
+                    "customer": {
+                        "entity_id": 1,
+                        "name": "customer",
+                        "description": "",
+                        "alias": "客户",
+                        "synonym": [],
+                        "default_tag": "name",
+                        "properties_index": [
+                            "customer_cate",
+                            "name"
+                        ],
+                        "search_prop": "name",
+                        "primary_key": [
+                            "customer_cate",
+                            "name"
+                        ],
+                        "vector_generation": [
+                            "customer_cate",
+                            "name"
+                        ],
+                        "properties": [
+                            {
+                                "name": "customer_cate",
+                                "description": "",
+                                "alias": "客户类型",
+                                "data_type": "string"
+                            },
+                            {
+                                "name": "name",
+                                "description": "",
+                                "alias": "名称",
+                                "data_type": "string"
+                            }
+                        ],
+                        "x": 886.8875586765378,
+                        "y": 538.7745323400106,
+                        "icon": "empty",
+                        "shape": "circle",
+                        "size": "0.5x",
+                        "fill_color": "rgba(112,61,4,1)",
+                        "stroke_color": "rgba(123,67,4,1)",
+                        "text_color": "rgba(0,0,0,1)",
+                        "text_position": "top",
+                        "text_width": 15,
+                        "index_default_switch": false,
+                        "text_type": "adaptive",
+                        "source_type": "manual",
+                        "model": "",
+                        "task_id": "",
+                        "icon_color": "#ffffff",
+                        "colour": "rgba(112,61,4,1)"
+                    }
+                },
+                "property_names": {
+                    "performance_catetory": {
+                        "id": "编号",
+                        "name": "业绩分类"
+                    },
+                    "person": {
+                        "id": "ID",
+                        "title": "职位",
+                        "name": "姓名"
+                    },
+                    "university": {
+                        "code": "编码",
+                        "name": "名称"
+                    },
+                    "document": {
+                        "name": "文件名",
+                        "doc_id": "文档ID"
+                    },
+                    "industry": {
+                        "level": "层级",
+                        "description": "描述",
+                        "name": "名称",
+                        "id": "ID"
+                    },
+                    "court": {
+                        "name": "法院名称"
+                    },
+                    "lawyer": {
+                        "lang": "语言",
+                        "honor": "荣誉",
+                        "paper": "著作论文",
+                        "socialStatus": "社会职务",
+                        "performance": "代表业绩",
+                        "case_num": "案件数量",
+                        "image": "照片",
+                        "description": "描述",
+                        "phone": "电话",
+                        "email": "邮箱",
+                        "title": "职位",
+                        "name": "姓名",
+                        "id": "ID"
+                    },
+                    "district": {
+                        "name": "名称",
+                        "level": "层级",
+                        "code": "区划代码"
+                    },
+                    "case": {
+                        "gns": "文件夹路径",
+                        "closed_at": "结案时间",
+                        "created_at": "创建时间",
+                        "status": "状态",
+                        "amount": "标的额",
+                        "name": "名称",
+                        "id": "id"
+                    },
+                    "case_category": {
+                        "level": "层级",
+                        "name": "名称",
+                        "id": "ID"
+                    },
+                    "customer": {
+                        "customer_cate": "客户类型",
+                        "name": "名称"
+                    }
+                },
+                "property_types": {
+                    "performance_catetory": {
+                        "id": "string",
+                        "name": "string"
+                    },
+                    "person": {
+                        "id": "string",
+                        "title": "string",
+                        "name": "string"
+                    },
+                    "university": {
+                        "code": "string",
+                        "name": "string"
+                    },
+                    "document": {
+                        "name": "string",
+                        "doc_id": "string"
+                    },
+                    "industry": {
+                        "level": "integer",
+                        "description": "string",
+                        "name": "string",
+                        "id": "string"
+                    },
+                    "court": {
+                        "name": "string"
+                    },
+                    "lawyer": {
+                        "lang": "string",
+                        "honor": "string",
+                        "paper": "string",
+                        "socialStatus": "string",
+                        "performance": "string",
+                        "case_num": "integer",
+                        "image": "string",
+                        "description": "string",
+                        "phone": "string",
+                        "email": "string",
+                        "title": "string",
+                        "name": "string",
+                        "id": "string"
+                    },
+                    "district": {
+                        "name": "string",
+                        "level": "string",
+                        "code": "string"
+                    },
+                    "case": {
+                        "gns": "string",
+                        "closed_at": "date",
+                        "created_at": "date",
+                        "status": "string",
+                        "amount": "float",
+                        "name": "string",
+                        "id": "string"
+                    },
+                    "case_category": {
+                        "level": "integer",
+                        "name": "string",
+                        "id": "string"
+                    },
+                    "customer": {
+                        "customer_cate": "string",
+                        "name": "string"
+                    }
+                },
+                "edge_types": {
+                    "case_2_performance_catetory": {
+                        "edge_id": "edge-b7611c5e-04af-455a-97d9-7d151a713211",
+                        "name": "case_2_performance_catetory",
+                        "description": "",
+                        "alias": "业绩分类",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "case",
+                            "case_2_performance_catetory",
+                            "performance_catetory"
+                        ],
+                        "colour": "rgba(237,71,58,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "lawyer_2_district": {
+                        "edge_id": "edge-a71328b7-6c65-4b37-9812-e73239fcb2fb",
+                        "name": "lawyer_2_district",
+                        "description": "",
+                        "alias": "工作地点",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "lawyer",
+                            "lawyer_2_district",
+                            "district"
+                        ],
+                        "colour": "rgba(123,186,160,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "case_category_2_case_category_child": {
+                        "edge_id": 95,
+                        "name": "case_category_2_case_category_child",
+                        "description": "",
+                        "alias": "下层分类",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "case_category",
+                            "case_category_2_case_category_child",
+                            "case_category"
+                        ],
+                        "colour": "rgba(236,183,99,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "customer_2_person_contact": {
+                        "edge_id": 45,
+                        "name": "customer_2_person_contact",
+                        "description": "",
+                        "alias": "联系人",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "customer",
+                            "customer_2_person_contact",
+                            "person"
+                        ],
+                        "colour": "rgba(227,150,64,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "court_2_case_judge": {
+                        "edge_id": 41,
+                        "name": "court_2_case_judge",
+                        "description": "",
+                        "alias": "审判",
+                        "properties_index": [
+                            "trail_level"
+                        ],
+                        "default_tag": "trail_level",
+                        "properties": [
+                            {
+                                "name": "trail_level",
+                                "description": "",
+                                "alias": "审级",
+                                "data_type": "string"
+                            }
+                        ],
+                        "relations": [
+                            "court",
+                            "court_2_case_judge",
+                            "case"
+                        ],
+                        "colour": "rgba(92,83,155,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "customer_2_industry_belong_to": {
+                        "edge_id": 39,
+                        "name": "customer_2_industry_belong_to",
+                        "description": "",
+                        "alias": "所在行业",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "customer",
+                            "customer_2_industry_belong_to",
+                            "industry"
+                        ],
+                        "colour": "rgba(227,150,64,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "industry_2_industry_child": {
+                        "edge_id": 37,
+                        "name": "industry_2_industry_child",
+                        "description": "",
+                        "alias": "下层分类",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "industry",
+                            "industry_2_industry_child",
+                            "industry"
+                        ],
+                        "colour": "rgba(216,112,122,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "case_2_category_belong_to": {
+                        "edge_id": 36,
+                        "name": "case_2_category_belong_to",
+                        "description": "",
+                        "alias": "业务分类",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "case",
+                            "case_2_category_belong_to",
+                            "case_category"
+                        ],
+                        "colour": "rgba(215,112,161,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "court_2_district_located_at": {
+                        "edge_id": 32,
+                        "name": "court_2_district_located_at",
+                        "description": "",
+                        "alias": "所在地区",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "court",
+                            "court_2_district_located_at",
+                            "district"
+                        ],
+                        "colour": "rgba(92,83,155,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "lawyer_2_university_graduate": {
+                        "edge_id": 30,
+                        "name": "lawyer_2_university_graduate",
+                        "description": "",
+                        "alias": "毕业院校",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "lawyer",
+                            "lawyer_2_university_graduate",
+                            "university"
+                        ],
+                        "colour": "rgba(123,186,160,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "case_2_customer_relate": {
+                        "edge_id": 24,
+                        "name": "case_2_customer_relate",
+                        "description": "",
+                        "alias": "关联客户",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "case",
+                            "case_2_customer_relate",
+                            "customer"
+                        ],
+                        "colour": "rgba(215,112,161,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "lawyer_2_case_represente": {
+                        "edge_id": 23,
+                        "name": "lawyer_2_case_represente",
+                        "description": "",
+                        "alias": "代理",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "lawyer",
+                            "lawyer_2_case_represente",
+                            "case"
+                        ],
+                        "colour": "rgba(123,186,160,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "document_2_case_contract": {
+                        "edge_id": 22,
+                        "name": "document_2_case_contract",
+                        "description": "",
+                        "alias": "合同",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "document",
+                            "document_2_case_contract",
+                            "case"
+                        ],
+                        "colour": "rgba(240,227,79,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "document_2_case_judgment": {
+                        "edge_id": 21,
+                        "name": "document_2_case_judgment",
+                        "description": "",
+                        "alias": "判决书",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "document",
+                            "document_2_case_judgment",
+                            "case"
+                        ],
+                        "colour": "rgba(240,227,79,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    },
+                    "district_2_district_child": {
+                        "edge_id": 8,
+                        "name": "district_2_district_child",
+                        "description": "",
+                        "alias": "下级分类",
+                        "properties_index": [],
+                        "default_tag": "",
+                        "properties": [],
+                        "relations": [
+                            "district",
+                            "district_2_district_child",
+                            "district"
+                        ],
+                        "colour": "rgba(145,192,115,1)",
+                        "shape": "line",
+                        "width": "0.25x",
+                        "source_type": "manual",
+                        "index_default_switch": false,
+                        "model": ""
+                    }
+                }
+            }
+        },
+        "entity_name": {
+            "ubf9f258a45a611efa52e0eb36619d58b-27": {
+                "performance_catetory": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "person": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "university": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "document": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "industry": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "court": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "lawyer": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "district": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "case": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "case_category": {
+                    "std": "name",
+                    "synonyms": {}
+                },
+                "customer": {
+                    "std": "name",
+                    "synonyms": {}
+                }
+            }
+        },
+        "selected_v2e": {
+            "ubf9f258a45a611efa52e0eb36619d58b-27": {
+                "case": [
+                    "case_2_performance_catetory",
+                    "court_2_case_judge",
+                    "case_2_category_belong_to",
+                    "case_2_customer_relate",
+                    "lawyer_2_case_represente",
+                    "document_2_case_contract",
+                    "document_2_case_judgment"
+                ],
+                "district": [
+                    "lawyer_2_district",
+                    "court_2_district_located_at"
+                ],
+                "case_category": [
+                    "case_category_2_case_category_child",
+                    "case_category_2_case_category_child",
+                    "case_2_category_belong_to"
+                ],
+                "customer": [
+                    "customer_2_person_contact",
+                    "customer_2_industry_belong_to",
+                    "case_2_customer_relate"
+                ],
+                "court": [
+                    "court_2_case_judge",
+                    "court_2_district_located_at"
+                ],
+                "industry": [
+                    "customer_2_industry_belong_to",
+                    "industry_2_industry_child",
+                    "industry_2_industry_child"
+                ]
+            }
+        },
+        "schema": {
+            "ubf9f258a45a611efa52e0eb36619d58b-27": {
+                "entity": {
+                    "performance_catetory": {
+                        "alias": "业绩分类",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "person": {
+                        "alias": "人员",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "university": {
+                        "alias": "高校",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "document": {
+                        "alias": "文档",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "industry": {
+                        "alias": "行业",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "court": {
+                        "alias": "法院",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "lawyer": {
+                        "alias": "律师",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "district": {
+                        "alias": "地区",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "case": {
+                        "alias": "案件",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "case_category": {
+                        "alias": "业务分类",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    },
+                    "customer": {
+                        "alias": "客户",
+                        "std_name_prop": "name",
+                        "syn_name_props": []
+                    }
+                },
+                "relation": {
+                    "case_2_performance_catetory": {
+                        "alias": "业绩分类",
+                        "src": "案件",
+                        "dst": "业绩分类"
+                    },
+                    "lawyer_2_district": {
+                        "alias": "工作地点",
+                        "src": "律师",
+                        "dst": "地区"
+                    },
+                    "case_category_2_case_category_child": {
+                        "alias": "下层分类",
+                        "src": "业务分类",
+                        "dst": "业务分类"
+                    },
+                    "customer_2_person_contact": {
+                        "alias": "联系人",
+                        "src": "客户",
+                        "dst": "人员"
+                    },
+                    "court_2_case_judge": {
+                        "alias": "审判",
+                        "src": "法院",
+                        "dst": "案件"
+                    },
+                    "customer_2_industry_belong_to": {
+                        "alias": "所在行业",
+                        "src": "客户",
+                        "dst": "行业"
+                    },
+                    "industry_2_industry_child": {
+                        "alias": "下层分类",
+                        "src": "行业",
+                        "dst": "行业"
+                    },
+                    "case_2_category_belong_to": {
+                        "alias": "业务分类",
+                        "src": "案件",
+                        "dst": "业务分类"
+                    },
+                    "court_2_district_located_at": {
+                        "alias": "所在地区",
+                        "src": "法院",
+                        "dst": "地区"
+                    },
+                    "lawyer_2_university_graduate": {
+                        "alias": "毕业院校",
+                        "src": "律师",
+                        "dst": "高校"
+                    },
+                    "case_2_customer_relate": {
+                        "alias": "关联客户",
+                        "src": "案件",
+                        "dst": "客户"
+                    },
+                    "lawyer_2_case_represente": {
+                        "alias": "代理",
+                        "src": "律师",
+                        "dst": "案件"
+                    },
+                    "document_2_case_contract": {
+                        "alias": "合同",
+                        "src": "文档",
+                        "dst": "案件"
+                    },
+                    "document_2_case_judgment": {
+                        "alias": "判决书",
+                        "src": "文档",
+                        "dst": "案件"
+                    },
+                    "district_2_district_child": {
+                        "alias": "下级分类",
+                        "src": "地区",
+                        "dst": "地区"
+                    }
+                }
+            }
+        },
+        "space2ent2fields": {
+            "ubf9f258a45a611efa52e0eb36619d58b-27": {
+                "industry": [
+                    "name"
+                ],
+                "court": [
+                    "name"
+                ],
+                "district": [
+                    "name"
+                ],
+                "case": [
+                    "name"
+                ],
+                "case_category": [
+                    "name"
+                ],
+                "customer": [
+                    "name"
+                ]
+            }
+        },
+        "selected_kg_os_fields": [
+            "name"
+        ],
+        "selected_kg_os_indexes": [
+            "ubf9f258a45a611efa52e0eb36619d58b-27_*"
+        ],
+        "selected_graph_entities": {
+            "ubf9f258a45a611efa52e0eb36619d58b-27": [
+                "industry",
+                "court",
+                "district",
+                "case",
+                "case_category",
+                "customer"
+            ]
+        }
+    },
+    "answers": [
+        {
+            "subgraph": {
+                "nodes": [
+                    {
+                        "id": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "tags": [
+                            "district"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "district",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "名称",
+                                        "value": "杭州市",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "level",
+                                        "alias": "层级",
+                                        "value": "2",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "code",
+                                        "alias": "区划代码",
+                                        "value": "330100000000",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "district",
+                        "color": "rgba(55,133,4,1)",
+                        "icon": "empty",
+                        "alias": "地区",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州市",
+                            "alias": "名称"
+                        },
+                        "ask_property": null
+                    },
+                    {
+                        "id": "fcad1c6fea40a8d1765078669b34e6fc",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "浙江省杭州市中级人民法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "浙江省杭州市中级人民法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": null
+                    },
+                    {
+                        "id": "e373b18847f43fd4f1a298c6408c39da",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "杭州铁路运输法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州铁路运输法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": null
+                    },
+                    {
+                        "id": "4a43a08d70aafa5ee3fe812e026702a8",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "杭州互联网法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州互联网法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": null
+                    }
+                ],
+                "edges": [
+                    {
+                        "source": "fcad1c6fea40a8d1765078669b34e6fc",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"fcad1c6fea40a8d1765078669b34e6fc\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    },
+                    {
+                        "source": "e373b18847f43fd4f1a298c6408c39da",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"e373b18847f43fd4f1a298c6408c39da\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    },
+                    {
+                        "source": "4a43a08d70aafa5ee3fe812e026702a8",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"4a43a08d70aafa5ee3fe812e026702a8\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    }
+                ],
+                "paths": [
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "fcad1c6fea40a8d1765078669b34e6fc"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"fcad1c6fea40a8d1765078669b34e6fc\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    },
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "e373b18847f43fd4f1a298c6408c39da"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"e373b18847f43fd4f1a298c6408c39da\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    },
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "4a43a08d70aafa5ee3fe812e026702a8"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"4a43a08d70aafa5ee3fe812e026702a8\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    }
+                ]
+            },
+            "score": 0.85,
+            "kg_id": "16",
+            "kg_name": "律所知识图谱_金城同达",
+            "space": "ubf9f258a45a611efa52e0eb36619d58b-27",
+            "ans_found": true,
+            "answer": "所在地区杭州市的法院：浙江省杭州市中级人民法院，杭州铁路运输法院，杭州互联网法院。"
+        },
+        {
+            "subgraph": {
+                "nodes": [
+                    {
+                        "id": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "tags": [
+                            "district"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "district",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "名称",
+                                        "value": "杭州市",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "level",
+                                        "alias": "层级",
+                                        "value": "2",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "code",
+                                        "alias": "区划代码",
+                                        "value": "330100000000",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "district",
+                        "color": "rgba(55,133,4,1)",
+                        "icon": "empty",
+                        "alias": "地区",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州市",
+                            "alias": "名称"
+                        },
+                        "ask_property": null
+                    },
+                    {
+                        "id": "fcad1c6fea40a8d1765078669b34e6fc",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "浙江省杭州市中级人民法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "浙江省杭州市中级人民法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": null
+                    }
+                ],
+                "edges": [
+                    {
+                        "source": "fcad1c6fea40a8d1765078669b34e6fc",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"fcad1c6fea40a8d1765078669b34e6fc\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    }
+                ],
+                "paths": [
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "fcad1c6fea40a8d1765078669b34e6fc"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"fcad1c6fea40a8d1765078669b34e6fc\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    }
+                ]
+            },
+            "score": 0.85,
+            "kg_id": "16",
+            "kg_name": "律所知识图谱_金城同达",
+            "space": "ubf9f258a45a611efa52e0eb36619d58b-27",
+            "ans_found": true,
+            "answer": "所在地区杭州市的浙江省杭州市中级人民法院：法院名称是浙江省杭州市中级人民法院。"
+        },
+        {
+            "subgraph": {
+                "nodes": [
+                    {
+                        "id": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "tags": [
+                            "district"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "district",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "名称",
+                                        "value": "杭州市",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "level",
+                                        "alias": "层级",
+                                        "value": "2",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "code",
+                                        "alias": "区划代码",
+                                        "value": "330100000000",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "district",
+                        "color": "rgba(55,133,4,1)",
+                        "icon": "empty",
+                        "alias": "地区",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州市",
+                            "alias": "名称"
+                        },
+                        "ask_property": null
+                    },
+                    {
+                        "id": "4a43a08d70aafa5ee3fe812e026702a8",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "杭州互联网法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州互联网法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": null
+                    }
+                ],
+                "edges": [
+                    {
+                        "source": "4a43a08d70aafa5ee3fe812e026702a8",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"4a43a08d70aafa5ee3fe812e026702a8\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    }
+                ],
+                "paths": [
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "4a43a08d70aafa5ee3fe812e026702a8"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"4a43a08d70aafa5ee3fe812e026702a8\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    }
+                ]
+            },
+            "score": 0.84,
+            "kg_id": "16",
+            "kg_name": "律所知识图谱_金城同达",
+            "space": "ubf9f258a45a611efa52e0eb36619d58b-27",
+            "ans_found": true,
+            "answer": "所在地区杭州市的杭州互联网法院：法院名称是杭州互联网法院。"
+        },
+        {
+            "subgraph": {
+                "nodes": [
+                    {
+                        "id": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "tags": [
+                            "district"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "district",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "名称",
+                                        "value": "杭州市",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "level",
+                                        "alias": "层级",
+                                        "value": "2",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "code",
+                                        "alias": "区划代码",
+                                        "value": "330100000000",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "district",
+                        "color": "rgba(55,133,4,1)",
+                        "icon": "empty",
+                        "alias": "地区",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州市",
+                            "alias": "名称"
+                        },
+                        "ask_property": null
+                    },
+                    {
+                        "id": "e373b18847f43fd4f1a298c6408c39da",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "杭州铁路运输法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州铁路运输法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": {
+                            "name": "name",
+                            "value": "杭州铁路运输法院",
+                            "alias": "法院名称"
+                        }
+                    },
+                    {
+                        "id": "4a43a08d70aafa5ee3fe812e026702a8",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "杭州互联网法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州互联网法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": {
+                            "name": "name",
+                            "value": "杭州互联网法院",
+                            "alias": "法院名称"
+                        }
+                    },
+                    {
+                        "id": "fcad1c6fea40a8d1765078669b34e6fc",
+                        "tags": [
+                            "court"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "court",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "法院名称",
+                                        "value": "浙江省杭州市中级人民法院",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "court",
+                        "color": "rgba(92,83,155,1)",
+                        "icon": "empty",
+                        "alias": "法院",
+                        "default_property": {
+                            "name": "name",
+                            "value": "浙江省杭州市中级人民法院",
+                            "alias": "法院名称"
+                        },
+                        "ask_property": {
+                            "name": "name",
+                            "value": "浙江省杭州市中级人民法院",
+                            "alias": "法院名称"
+                        }
+                    }
+                ],
+                "edges": [
+                    {
+                        "source": "e373b18847f43fd4f1a298c6408c39da",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"e373b18847f43fd4f1a298c6408c39da\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    },
+                    {
+                        "source": "4a43a08d70aafa5ee3fe812e026702a8",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"4a43a08d70aafa5ee3fe812e026702a8\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    },
+                    {
+                        "source": "fcad1c6fea40a8d1765078669b34e6fc",
+                        "target": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "class_name": "court_2_district_located_at",
+                        "id": "court_2_district_located_at:\"fcad1c6fea40a8d1765078669b34e6fc\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\"",
+                        "properties": [],
+                        "default_property": null,
+                        "type": "edge",
+                        "color": "rgba(92,83,155,1)",
+                        "alias": "所在地区"
+                    }
+                ],
+                "paths": [
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "e373b18847f43fd4f1a298c6408c39da"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"e373b18847f43fd4f1a298c6408c39da\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    },
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "4a43a08d70aafa5ee3fe812e026702a8"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"4a43a08d70aafa5ee3fe812e026702a8\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    },
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                            "fcad1c6fea40a8d1765078669b34e6fc"
+                        ],
+                        "edges": [
+                            "court_2_district_located_at:\"fcad1c6fea40a8d1765078669b34e6fc\"->\"7ff96c48f0468ec93a3d2ece7b0d67a4\""
+                        ]
+                    }
+                ]
+            },
+            "score": 0.83,
+            "kg_id": "16",
+            "kg_name": "律所知识图谱_金城同达",
+            "space": "ubf9f258a45a611efa52e0eb36619d58b-27",
+            "ans_found": true,
+            "answer": "所在地区杭州市的法院法院名称：杭州铁路运输法院，杭州互联网法院，浙江省杭州市中级人民法院。"
+        },
+        {
+            "subgraph": {
+                "nodes": [
+                    {
+                        "id": "7ff96c48f0468ec93a3d2ece7b0d67a4",
+                        "tags": [
+                            "district"
+                        ],
+                        "properties": [
+                            {
+                                "tag": "district",
+                                "props": [
+                                    {
+                                        "name": "name",
+                                        "alias": "名称",
+                                        "value": "杭州市",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "level",
+                                        "alias": "层级",
+                                        "value": "2",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    },
+                                    {
+                                        "name": "code",
+                                        "alias": "区划代码",
+                                        "value": "330100000000",
+                                        "type": "string",
+                                        "disabled": false,
+                                        "checked": false
+                                    }
+                                ]
+                            }
+                        ],
+                        "class_name": "district",
+                        "color": "rgba(55,133,4,1)",
+                        "icon": "empty",
+                        "alias": "地区",
+                        "default_property": {
+                            "name": "name",
+                            "value": "杭州市",
+                            "alias": "名称"
+                        },
+                        "ask_property": {
+                            "name": "code",
+                            "value": "330100000000",
+                            "alias": "区划代码"
+                        }
+                    }
+                ],
+                "edges": [],
+                "paths": [
+                    {
+                        "nodes": [
+                            "7ff96c48f0468ec93a3d2ece7b0d67a4"
+                        ],
+                        "edges": []
+                    }
+                ]
+            },
+            "score": 0.83,
+            "kg_id": "16",
+            "kg_name": "律所知识图谱_金城同达",
+            "space": "ubf9f258a45a611efa52e0eb36619d58b-27",
+            "ans_found": true,
+            "answer": "杭州市区划代码：330100000000。"
+        }
+    ],
+    "embed_model_error": false,
+    "answer_list": [
+        "浙江省杭州市中级人民法院",
+        "杭州铁路运输法院",
+        "杭州互联网法院"
+    ],
+    "openai_auth_error": 0,
+    "openai_err_type": ""
+}

@@ -1,0 +1,151 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-post-install-job
+  labels:
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}
+    version: {{ .Chart.Version }}
+  annotations:
+    # 注意，如果没有下面的这个注释的话，当前的这个Job就会被当成release的一部分
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ .Chart.Name }}
+        version: {{ .Chart.Version }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command:
+            - "sh"
+            - "-c"
+            - >
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-customspace &&
+              curl -f -H "Content-Type:application/json" -X PUT -d '
+              [
+                {
+                  "name": "dataagent",
+                  "parent": "root",
+                  "orderIndex": 1000,
+                  "app": {
+                    "textZHCN": "Data Agent",
+                    "textZHTW": "Data Agent",
+                    "textENUS": "Data Agent",
+                    "type": "group"
+                  },
+                  "subapp": {
+                    "children": {
+                    }
+                  }
+                },
+                {
+                  "name": "agent-web-space",
+                  "parent": "dataagent",
+                  "orderIndex": 1000,
+                  "app": {
+                    "textZHCN": "开发",
+                    "textZHTW": "開發",
+                    "textENUS": "Development",
+                    "icon": "//ip:port/agent-web/public/icons/development.svg",
+                    "type": "directory",
+                    "isDefaultOpen": true
+                  },
+                  "subapp": {
+                    "children": {
+                    }
+                  }
+                },
+                {
+                  "name": "agent-web-all",
+                  "parent": "dataagent",
+                  "orderIndex": 2000,
+                  "app": {
+                    "textZHCN": "广场",
+                    "textZHTW": "廣場",
+                    "textENUS": "Square",
+                    "icon": "//ip:port/agent-web/public/icons/square.svg",
+                    "type": "directory",
+                    "isDefaultOpen": true
+                  },
+                  "subapp": {
+                    "children": {
+                    }
+                  }
+                },
+                {
+                  "name": "agent-web-dataagent",
+                  "parent": "agent-web-all",
+                  "orderIndex": 1000,
+                  "app": {
+                    "textZHCN": "Data Agent",
+                    "textZHTW": "Data Agent",
+                    "textENUS": "Data Agent",
+                    "icon": "//ip:port/agent-web/public/icons/data-agent.svg",
+                    "type": "directory"
+                  },
+                  "subapp": {
+                    "entry": "//ip:port/agent-web/data-agent.html",
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                },
+                {
+                  "name": "agent-web-agenttemplate",
+                  "parent": "agent-web-all",
+                  "orderIndex": 2000,
+                  "app": {
+                    "textZHCN": "模板",
+                    "textZHTW": "模板",
+                    "textENUS": "Template",
+                    "icon": "//ip:port/agent-web/public/icons/agent-template.svg",
+                    "type": "directory"
+                  },
+                  "subapp": {
+                    "entry": "//ip:port/agent-web/agent-template.html",
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                },
+                {
+                  "name": "agent-web-api",
+                  "parent": "agent-web-all",
+                  "orderIndex": 3000,
+                  "app": {
+                    "textZHCN": "API",
+                    "textZHTW": "API",
+                    "textENUS": "API",
+                    "icon": "//ip:port/agent-web/public/icons/api.svg",
+                    "type": "directory"
+                  },
+                  "subapp": {
+                    "entry": "//ip:port/agent-web/api.html",
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                },
+                {
+                  "name": "agent-web-myagents",
+                  "parent": "agent-web-space",
+                  "orderIndex": 1000,
+                  "app": {
+                    "textZHCN": "Data Agent",
+                    "textZHTW": "Data Agent",
+                    "textENUS": "Data Agent",
+                    "icon": "//ip:port/agent-web/public/icons/data-agent.svg",
+                    "type": "directory"
+                  },
+                  "subapp": {
+                    "entry": "//ip:port/agent-web/my-agents.html",
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                }
+              ]' http://studio-web-service:8877/api/workstation/v1/webapp

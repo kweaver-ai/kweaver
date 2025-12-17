@@ -1,0 +1,115 @@
+parameters:
+  - name: imageJobName
+    default: ''
+  - name: pool
+    default: ''
+  - name: CPU_ARCH
+    default: ''
+  - name: container
+    default: ''
+
+jobs:
+#  - job: "${{parameters.CPU_ARCH}}_build"
+#    displayName: "${{parameters.CPU_ARCH}}-build"
+#    container: ${{parameters.container}}
+#    pool:
+#      name: ${{parameters.pool}}
+#    workspace:
+#      clean: all
+#    steps:
+#      - checkout: self
+#        fetchDepth: 1
+#      - script: |
+#          set -ex
+#          echo "start installing requirements.txt"
+#          pip3 install --upgrade --no-cache-dir -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
+#          echo "start installing proton_rds"
+#          wget ftp://ftp-ad.aishu.cn/models/proton_dm/proton_rds_py_133.tar.gz
+#          tar xvf proton_rds_py_133.tar.gz
+#          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib
+#          cd proton_rds
+#          python3 setup.py install
+#          cd ..
+#          echo "start installing tlogging"
+#          wget ftp://ftp-ad.aishu.cn/models/ar_tlogging/tlogging-2.4.0-py3-none-any.whl
+#          pip3 install tlogging-2.4.0-py3-none-any.whl -i https://mirrors.aliyun.com/pypi/simple/
+#          echo "start installing CognitionSearchEngine"
+#          wget ftp://ftp-ad.aishu.cn/packages/CognitionSearchEngineSDK/DATA-561266/CognitionSearchEngine-0.0.2-py3-none-any.whl
+#          pip3 install CognitionSearchEngine-0.0.2-py3-none-any.whl -i https://mirrors.aliyun.com/pypi/simple/
+#          echo "start installing pyinstaller"
+#          pip3 install --upgrade pyinstaller -i https://mirrors.aliyun.com/pypi/simple/
+#        displayName: install requirements
+#        condition: succeeded()
+##      - script: |
+##          pyinstaller --collect-all opentelemetry -D -y --workpath ./build --distpath ./dist --paths . --name $(imageName) main.py
+##          mv $(Build.SourcesDirectory)/dist $(Build.BinariesDirectory)
+##          cp $(Build.SourcesDirectory)/resource $(Build.BinariesDirectory)/dist
+##          cp -r /usr/local/lib/python3.9/site-packages/opentelemetry_sdk-1.22.0.dist-info/ $(Build.BinariesDirectory)/dist/$(imageName)/
+##          cp $(Build.SourcesDirectory)/Dockerfile $(Build.BinariesDirectory)/dist
+##        displayName: run pyinstaller
+##        condition: succeeded()
+#      - script: |
+#          cp -r . $(Build.BinariesDirectory)
+#          displayName:
+#      - task: PublishBuildArtifacts@1
+#        displayName: Publish build binary files and DockerFile To Artifacts
+#        condition: succeeded()
+#        inputs:
+#          PathtoPublish: $(Build.BinariesDirectory)
+#          ArtifactName: ${{parameters.CPU_ARCH}}
+#          publishLocation: 'Container'
+#      - script: |
+#          rm -rf $(Build.SourcesDirectory)
+#        displayName: Remove Source
+#        condition: always()
+  - job: "${{parameters.imageJobName}}"
+    displayName: "${{parameters.CPU_ARCH}}-build-image"
+#    dependsOn: ${{parameters.CPU_ARCH}}_build
+    pool:
+      name: ${{parameters.pool}}
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+        fetchDepth: 1
+#      - task: DownloadBuildArtifacts@0
+#        displayName: Download build binary files and DockerFile From Artifacts
+#        inputs:
+#          buildType: 'current'
+#          downloadType: 'single'
+#          artifactName: ${{parameters.CPU_ARCH}}
+#          downloadPath: $(Build.SourcesDirectory)
+
+      - task: Docker@2
+        displayName: Login To Hub
+        inputs:
+          containerRegistry: "acr.aishu.cn"
+          command: "login"
+
+#      - script: |
+#          set -ex
+#          cd $(Build.SourcesDirectory)/${{parameters.CPU_ARCH}}/dist
+#          chmod +x ./$(imageName)/$(imageName)
+#          imageUri=$(harborUrl)/$(imageName):$(branchNameLower)
+#          docker build -t ${imageUri}_${{parameters.CPU_ARCH}} --no-cache -f ./Dockerfile .
+#          docker tag ${imageUri}_${{parameters.CPU_ARCH}} ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+#          docker push ${imageUri}_${{parameters.CPU_ARCH}}
+#          docker push ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+#          docker rmi ${imageUri}_${{parameters.CPU_ARCH}} ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+#        displayName: Build Image
+#        condition: succeeded()
+
+      - bash: |
+          imageUri=$(harborUrl)/$(imageName):$(branchNameLower)
+          docker build -t ${imageUri}_${{parameters.CPU_ARCH}} --no-cache -f ./Dockerfile .
+          docker tag ${imageUri}_${{parameters.CPU_ARCH}} ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+          docker push ${imageUri}_${{parameters.CPU_ARCH}}
+          docker push ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+          docker rmi ${imageUri}_${{parameters.CPU_ARCH}} ${imageUri}_${{parameters.CPU_ARCH}}-$(Build.BuildNumber)
+        displayName: Build Image
+        condition: succeeded()
+
+      - script: |
+          rm -rf $(Build.SourcesDirectory)
+        displayName: Remove Source
+        condition: always()

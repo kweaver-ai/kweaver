@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: javax.enterprise.concurrent:javax.enterprise.concurrent-api:1.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../../../Repositories/repository/javax/enterprise/concurrent/javax.enterprise.concurrent-api/1.0/javax.enterprise.concurrent-api-1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/../../../../../Repositories/repository/javax/enterprise/concurrent/javax.enterprise.concurrent-api/1.0/javax.enterprise.concurrent-api-1.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../../../../Repositories/repository/javax/enterprise/concurrent/javax.enterprise.concurrent-api/1.0/javax.enterprise.concurrent-api-1.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

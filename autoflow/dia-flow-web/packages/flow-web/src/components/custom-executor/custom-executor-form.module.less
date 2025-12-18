@@ -1,0 +1,54 @@
+.Form {
+    overflow: visible;
+    width: 650px;
+    max-width: 100%;
+    padding-right: 100px;
+
+    :global(.@{ant-prefix}-form-item-label) {
+        width: 80px;
+        overflow: visible;
+    }
+
+    :global(.@{ant-prefix}-form-item-required::before) {
+        position: absolute;
+        left: -8px;
+    }
+}
+
+.UserSelect {
+    .UserSelectDescription {
+        line-height: 30px;
+    }
+
+    .UserSelectMain {
+        position: relative;
+    }
+
+    .UserSelectWrapper {
+        border: 1px solid #d3d4db;
+        border-radius: 4px;
+        padding: 3px;
+        min-height: 96px;
+    }
+
+    .UserSelectButton {
+        position: absolute;
+        top: 0;
+        left: calc(100% + 8px);
+    }
+}
+
+.Status {
+    &[data-status="enabled"] {
+        color: #52c41b;
+    }
+    &[data-status="disabled"] {
+        color: #979797;
+    }
+}
+
+.Placeholder {
+    color: rgba(0, 0, 0, 0.298);
+    margin: 0 8px;
+    line-height: 22px;
+}

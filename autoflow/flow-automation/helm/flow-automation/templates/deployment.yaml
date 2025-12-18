@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flow-automation.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "flow-automation.fullname" . }}
+{{ include "flow-automation.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "flow-automation.fullname" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "flow-automation.fullname" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      dnsConfig:
+        options:
+          - name: single-request-open
+          - name: use-vc
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ template "flow-automation.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - name: private
+              containerPort: {{ add 2 .Values.service.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.service.prefix }}/health/ready
+              port: http
+            initialDelaySeconds: {{ .Values.service.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.readinessProbe.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.service.prefix }}/health/alive
+              port: http
+            initialDelaySeconds: {{ .Values.service.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.livenessProbe.failureThreshold }}
+          volumeMounts:
+            - name: {{ include "flow-automation.fullname" . }}-ca
+              mountPath: /opt/ssl
+            - name: service-access
+              mountPath: /conf/service-access
+            - mountPath: /tmp
+              name: tmp-volume
+            - mountPath: /opt/osslog
+              name: log-volume
+            - mountPath: /conf/flow_o11y_data.yaml
+              name: flow-o11y-data-yaml
+              subPath: flow_o11y_data.yaml
+            - mountPath: {{ .Values.actionConfigYaml }}
+              name: action-config-yaml
+              subPath: action_config.yaml
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- if .Values.service.logger}}
+            - name: LOGOUT
+              value: {{ .Values.service.logger }}
+          {{- end}}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: {{ include "flow-automation.fullname" . }}
+            - secretRef:
+                name: {{ include "flow-automation.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+        - name: {{ include "flow-automation.fullname" . }}-ca
+          secret:
+            secretName: {{ include "flow-automation.fullname" . }}-ca
+        - name: service-access
+          secret:
+            secretName: cms-release-config-service-access
+        - name: pythonlib
+          hostPath:
+            path: /sysvol/coderunner/pythonlib
+            type: DirectoryOrCreate
+        - name: tmp-volume
+          emptyDir: {}
+        - name: log-volume
+          emptyDir: {}
+        - name: flow-o11y-data-yaml
+          configMap:
+            name: {{ include "flow-automation.fullname" . }}
+            items:
+              - key: flow_o11y_data.yaml
+                path: flow_o11y_data.yaml
+        - name: action-config-yaml
+          configMap:
+            name: {{ include "flow-automation.fullname" . }}
+            items:
+              - key: ACTION_CONFIG
+                path: action_config.yaml

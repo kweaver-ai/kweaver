@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flow-audit-config
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: flow-audit-config
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: flow-audit-config
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: service-access
+          secret:
+            secretName: cms-release-config-service-access
+        - name: tmp-logs
+          emptyDir: {}
+      containers:
+        - name: flow-audit-config
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /conf/service-access
+              name: service-access
+            - mountPath: /tmp
+              name: tmp-logs
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: flow-audit-config-config
+          ports:
+            - name: public-port
+              containerPort: 9800
+          startupProbe:
+            httpGet:
+              path: /api/workflow-rest/actuator/health/liveness
+              port: public-port
+            initialDelaySeconds: {{ .Values.service.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.startupProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /api/workflow-rest/actuator/health/readiness
+              port: public-port
+            initialDelaySeconds: {{ .Values.service.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.readinessProbe.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: /api/workflow-rest/actuator/health/liveness
+              port: public-port
+            initialDelaySeconds: {{ .Values.service.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.livenessProbe.failureThreshold }}

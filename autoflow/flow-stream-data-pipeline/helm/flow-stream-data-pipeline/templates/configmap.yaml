@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.moduleName }}-configmap
+  namespace: {{ .Values.namespace }}
+data:
+  pipeline-config.yaml: |
+    server:
+      {{- range $key, $val := .Values.config.server }}
+      {{- if eq $key "topics"}}
+      {{ $key }}: {{ $val | toJson }}
+      {{- else }}
+      {{ $key }}: {{ $val }}
+      {{- end }}
+      {{- end }}
+    log:
+      {{- range $key, $val := .Values.config.log }}
+      {{ $key }}: {{ $val }}
+      {{- end }}
+    kafka:
+      {{- range $key, $val := .Values.config.kafka }}
+      {{ $key }}: {{ $val }}
+      {{- end }}
+    {{- with .Values.depServices.mq }}
+    mq:
+      mqType: {{ .mqType }}
+      mqHost: {{ .mqHost }}
+      mqPort: {{ .mqPort }}
+      mechanism: {{ .auth.mechanism }}
+      username: {{ .auth.username }}
+      password: {{ .auth.password }}
+    {{- end }} 

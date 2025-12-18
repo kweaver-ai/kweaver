@@ -1,0 +1,261 @@
+.EditorLTR {
+  text-align: left;
+}
+
+.EditorRTL {
+  text-align: right;
+}
+
+.EditorContainer {
+  margin: 8px;
+  border-radius: 2px;
+  color: #000;
+  position: relative;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: left;
+  background: rgba(145, 151, 166, 0.14);
+}
+
+.EditorInner {
+  position: relative;
+}
+
+.EditorInput {
+  min-height: 150px;
+  resize: none;
+  font-size: 13px;
+  caret-color: rgb(5, 5, 5);
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 8px;
+  caret-color: #444;
+}
+
+.EditorPlaceholder {
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 8px;
+  left: 8px;
+  font-size: 13px;
+  user-select: none;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.EditorTextBold {
+  font-weight: bold;
+}
+
+.EditorTextItalic {
+  font-style: italic;
+}
+
+.EditorTextUnderline {
+  text-decoration: underline;
+}
+
+.EditorTextStrikethrough {
+  text-decoration: line-through;
+}
+
+.EditorTextUnderlineStrikethrough {
+  text-decoration: underline line-through;
+}
+
+.EditorTextCode {
+  background-color: rgb(240, 242, 245);
+  padding: 1px 0.25rem;
+  font-family: Menlo, Consolas, Monaco, monospace;
+  font-size: 94%;
+}
+
+.EditorLink {
+  color: rgb(33, 111, 219);
+  text-decoration: none;
+}
+
+.EditorCode {
+  background-color: rgb(240, 242, 245);
+  font-family: Menlo, Consolas, Monaco, monospace;
+  display: block;
+  padding: 8px 8px 8px 52px;
+  line-height: 1.53;
+  font-size: 13px;
+  margin: 0;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  tab-size: 2;
+  /* white-space: pre; */
+  overflow-x: auto;
+  position: relative;
+}
+
+.EditorCode:before {
+  content: attr(data-gutter);
+  position: absolute;
+  background-color: #eee;
+  left: 0;
+  top: 0;
+  border-right: 1px solid #ccc;
+  padding: 8px;
+  color: #777;
+  white-space: pre-wrap;
+  text-align: right;
+  min-width: 25px;
+}
+.EditorCode:after {
+  content: attr(data-highlight-language);
+  top: 0;
+  right: 3px;
+  padding: 3px;
+  font-size: 10px;
+  text-transform: uppercase;
+  position: absolute;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.EditorTokenComment {
+  color: slategray;
+}
+
+.EditorTokenPunctuation {
+  color: #999;
+}
+
+.EditorTokenProperty {
+  color: #905;
+}
+
+.EditorTokenSelector {
+  color: #690;
+}
+
+.EditorTokenOperator {
+  color: #9a6e3a;
+}
+
+.EditorTokenAttr {
+  color: #07a;
+}
+
+.EditorTokenVariable {
+  color: #e90;
+}
+
+.EditorTokenFunction {
+  color: #dd4a68;
+}
+
+.EditorParagraph {
+  margin: 0;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.EditorParagraph:last-child {
+  margin-bottom: 0;
+}
+
+.EditorHeadingH1 {
+  font-size: 13px;
+  color: rgb(5, 5, 5);
+  font-weight: 400;
+  margin: 0;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.EditorHeadingH2 {
+  font-size: 13px;
+  color: rgb(101, 103, 107);
+  font-weight: 700;
+  margin: 0;
+  margin-top: 10px;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.EditorQuote {
+  margin: 0;
+  margin-left: 20px;
+  font-size: 13px;
+  color: rgb(101, 103, 107);
+  border-left-color: rgb(206, 208, 212);
+  border-left-width: 4px;
+  border-left-style: solid;
+  padding-left: 16px;
+}
+
+.EditorListOl {
+  padding: 0;
+  margin: 0;
+  margin-left: 16px;
+}
+
+.EditorListUl {
+  padding: 0;
+  margin: 0;
+  margin-left: 16px;
+}
+
+.EditorListitem {
+  margin: 8px 32px 8px 32px;
+}
+
+.EditorNestedListitem {
+  list-style-type: none;
+}
+
+pre::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: #999;
+}
+
+.EditorFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 8px 8px;
+}
+
+.AssistantChatHeader {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 4px 0;
+
+  .Tag {
+    max-width: 120px;
+    margin-right: 0;
+    position: relative;
+    align-items: center;
+    height: 22px;
+    display: inline-flex;
+
+    &[data-closable] {
+      padding-right: 20px;
+    }
+
+    .Text {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    :global(.@{ant-prefix}-tag-close-icon) {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}

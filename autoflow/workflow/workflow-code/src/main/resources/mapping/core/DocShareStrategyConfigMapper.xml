@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.doc.dao.DocShareStrategyConfigMapper">
+	<!-- 获取审核策略高级配置 -->
+	<select id="listDocShareStrategyConfig" resultType="com.aishu.wf.core.doc.model.DocShareStrategyConfig">
+		SELECT f_id as id, f_proc_def_id as procDefId, f_act_def_id as actDefId, f_name as name, f_value as value
+		FROM t_wf_doc_share_strategy_config 
+		WHERE f_name LIKE CONCAT(#{name}, '%');
+	</select>	
+
+	<delete id="deleteDocShareStrategyConfig">
+		DELETE FROM t_wf_doc_share_strategy_config WHERE f_proc_def_id = #{procDefId} AND f_act_def_id = #{actDefId}
+	</delete>
+</mapper>

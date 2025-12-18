@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.drools:drools-core:5.5.0.Final">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../../../Repositories/repository/org/drools/drools-core/5.5.0.Final/drools-core-5.5.0.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/../../../../../Repositories/repository/org/drools/drools-core/5.5.0.Final/drools-core-5.5.0.Final-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../../../../Repositories/repository/org/drools/drools-core/5.5.0.Final/drools-core-5.5.0.Final-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

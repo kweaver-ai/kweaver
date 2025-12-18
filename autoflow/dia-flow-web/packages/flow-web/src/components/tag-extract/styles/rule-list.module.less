@@ -1,0 +1,366 @@
+.container {
+    position: relative;
+    padding: 20px 32px;
+    height: 100%;
+
+    .title {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .description {
+        margin-top: 8px;
+        color: #999;
+    }
+
+    .operation-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+    }
+
+    .content {
+        position: relative;
+
+        .rule-table {
+            height: 316px;
+
+            .name-wrapper {
+                display: flex;
+                align-items: center;
+
+                .icon {
+                    margin-right: 8px;
+                    font-size: 16px;
+                }
+            }
+
+            .ops-btn {
+                color: #333;
+                .icon {
+                    font-size: 16px;
+                }
+            }
+
+            // 加载中图标居中
+            :global(.@{ant-prefix}-spin-nested-loading) {
+                height: 100%;
+            }
+
+            /* 排序对应列背景色 */
+            :global(
+                    .@{ant-prefix}-table-thead
+                        th.@{ant-prefix}-table-column-has-sorters
+                ):hover,
+            :global(.@{ant-prefix}-table-column-sort) {
+                background: transparent;
+            }
+
+            :global(
+                    .@{ant-prefix}-table-thead
+                        th.@{ant-prefix}-table-column-sort
+                ) {
+                background: inherit;
+            }
+
+            /* 排序图标靠左 */
+            :global(.@{ant-prefix}-table-column-sorters),
+            :global(.@{ant-prefix}-table-filter-column) {
+                padding: 0;
+                justify-content: flex-start;
+            }
+
+            :global(
+                    .@{ant-prefix}-table-column-sorters
+                        .@{ant-prefix}-table-column-title
+                ),
+            :global(
+                    .@{ant-prefix}-table-filter-column
+                        .@{ant-prefix}-table-column-title
+                ) {
+                flex: none;
+            }
+
+            /* 表格为空时隐藏滚动条 */
+            :global(.@{ant-prefix}-table-body) {
+                overflow-y: auto !important;
+                min-height: 200px;
+            }
+
+            :global(.@{ant-prefix}-table-thead > tr > th) {
+                background-color: #fff;
+            }
+
+            :global(.@{ant-prefix}-table-cell .@{iconfont-css-prefix}) {
+                line-height: 1;
+            }
+
+            :global(.@{ant-prefix}-table-cell-scrollbar) {
+                box-shadow: none;
+            }
+
+            &
+                :global(.@{ant-prefix}-table-empty)
+                :global(.@{ant-prefix}-table-tbody)
+                > tr
+                > td {
+                border-bottom: none;
+            }
+
+            tr,
+            td,
+            th {
+                vertical-align: middle;
+            }
+
+            :global(.@{ant-prefix}-table-selection-column) {
+                position: absolute;
+                visibility: hidden;
+            }
+
+            :global(.@{ant-prefix}-table-selection-col) {
+                width: 0;
+            }
+        }
+    }
+}
+// 新建标签规则
+.newButton {
+    padding: 0 8px;
+
+    .newButtonIcon {
+        color: #fff;
+        font-size: 16px;
+        border-radius: 4px;
+    }
+
+    .newButton-content {
+        display: inline-flex;
+        align-items: center;
+        padding-left: 10px;
+    }
+
+    .arrow-icon {
+        font-size: 8px;
+        padding-left: 8px;
+    }
+}
+
+// 搜索框
+.searchInput {
+    border-radius: 4px;
+    border-color: #fff;
+    width: 200px;
+    height: 30px;
+    background: rgba(145, 151, 169, 0.16);
+
+    .search-icon {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.55);
+    }
+
+    &:hover {
+        border: 1px solid rgba(119, 158, 234, 1);
+    }
+
+    :global(.@{ant-prefix}-input-prefix) {
+        margin-right: 8px;
+    }
+
+    :global(.@{ant-prefix}-input) {
+        background: rgba(145, 151, 169, 0);
+    }
+
+    &:global(.@{ant-prefix}-input-affix-wrapper-focused) {
+        box-shadow: 0 0 0 2px rgba(119, 158, 234, 0.35);
+        border: 1px solid rgba(119, 158, 234, 1);
+    }
+
+    :global(.@{ant-prefix}-input-affix-wrapper > input.@{ant-prefix}-input) {
+        background-color: rgba(145, 151, 169, 0);
+    }
+}
+
+.content {
+    .rule-table {
+        .ops-btn {
+            font-size: 16px;
+        }
+    }
+}
+
+.drawer {
+    .drawer-title {
+        font-size: 15px;
+        font-weight: bold;
+        user-select: none;
+    }
+
+    .form {
+        .tagRule-tags {
+            pointer-events: none;
+
+            :global(.@{ant-prefix}-select-selection-overflow-item) {
+                pointer-events: all;
+            }
+
+            :global(.@{ant-prefix}-select-selector):hover {
+                border-color: rgb(217, 217, 217);
+            }
+        }
+
+        .phrases {
+            margin-bottom: 0;
+        }
+
+        .input:global(.@{ant-prefix}-input-status-error):not(
+                :global(.@{ant-prefix}-input-disabled)
+            ):not(
+                :global(.@{ant-prefix}-input-borderless):global(
+                        .@{ant-prefix}-input
+                    )
+            ) {
+            border-color: #ff7875;
+        }
+
+        :global(.@{ant-prefix}-form-item-label)
+            > :global(label.@{ant-prefix}-form-item-required) {
+            &:not(:global(.@{ant-prefix}-form-item-required-mark-optional)) {
+                &::before {
+                    display: none;
+                }
+                &::after {
+                    display: inline-block;
+                    margin-left: 4px;
+                    color: rgb(255, 77, 79);
+                    font-size: 13px;
+                    font-family: SimSun, sans-serif;
+                    line-height: 1;
+                    content: "*";
+                }
+            }
+        }
+
+        .input:global(.@{ant-prefix}-input-status-error):not(
+                :global(.@{ant-prefix}-input-disabled)
+            ):not(
+                :global(.@{ant-prefix}-input-borderless):global(
+                        .@{ant-prefix}-input:focus
+                    )
+            ),
+        .input:global(.@{ant-prefix}-input-status-error):not(
+                :global(.@{ant-prefix}-input-disabled)
+            ):not(
+                :global(.@{ant-prefix}-input-borderless):global(
+                        .@{ant-prefix}-input-focused
+                    )
+            ),
+        .input:global(.@{ant-prefix}-input-status-error):not(
+                :global(.@{ant-prefix}-input-disabled)
+            ):not(
+                :global(.@{ant-prefix}-input-borderless):global(
+                        .@{ant-prefix}-input:hover
+                    )
+            ) {
+            border-color: #ff7875;
+            box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+        }
+
+        .input:global(.@{ant-prefix}-input):focus,
+        .input:global(.@{ant-prefix}-input-focused) {
+            border-color: #779eea;
+            box-shadow: 0 0 0 2px rgb(119 158 234 / 35%);
+        }
+
+        .input:global(.@{ant-prefix}-input):hover {
+            border: 1px solid #779eea;
+        }
+
+        :global(.@{ant-prefix}-form-item-explain-error) {
+            margin-top: 4px;
+            color: #ff4d4f;
+            font-size: 12px;
+            min-height: 20px;
+        }
+    }
+
+    .description {
+        margin-top: 4px;
+        color: #999;
+    }
+
+    .drawer-footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .footer-btn-ok[disabled],
+    .footer-btn-ok[disabled]:active,
+    .footer-btn-ok[disabled]:focus,
+    .footer-btn-ok[disabled]:hover {
+        color: #fff;
+        -webkit-text-fill-color: #fff;
+        border-color: transparent;
+        border-radius: 4px;
+        background: rgba(101, 177, 252, 0.5);
+        text-shadow: none;
+        box-shadow: none;
+        cursor: default;
+    }
+
+    // 抽屉
+    :global(.@{ant-prefix}-drawer-close) {
+        position: absolute;
+        right: 0px;
+    }
+
+    :global(.@{ant-prefix}-drawer-title) {
+        color: rgba(0, 0, 0, 0.85);
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 24px;
+        letter-spacing: 0px;
+        text-align: left;
+    }
+
+    :global(.@{ant-prefix}-drawer-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-body) {
+        padding: 8px 32px 20px;
+    }
+
+    :global(.@{ant-prefix}-drawer-footer) {
+        padding: 20px 32px;
+        border-top: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-close) {
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        top: 0;
+        right: 0;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 16px;
+        color: #7f8391;
+        text-align: center;
+        border-radius: 0px;
+        border-color: transparent;
+        transition: none;
+
+        &:hover {
+            color: #ffffff;
+            background-color: rgba(255, 103, 109, 0.7);
+        }
+        &:active {
+            background-color: #ff677d;
+            color: #ffffff;
+        }
+    }
+}

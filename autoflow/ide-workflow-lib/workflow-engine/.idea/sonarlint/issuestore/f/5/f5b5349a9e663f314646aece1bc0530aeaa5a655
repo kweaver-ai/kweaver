@@ -1,0 +1,9 @@
+
+o
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 48 to the 15 allowed.(ÂšÏ98ìÙ‚0
+^	java:S125Õ"<This block of commented-out lines of code should be removed.(ÇœÂøÿÿÿÿ8üÙ‚0
+Y	java:S125…"<This block of commented-out lines of code should be removed.(áÊ‘8Ú‚0
+Y	java:S125•"<This block of commented-out lines of code should be removed.(Ëç´ş8„Ú‚0
+{	java:S135®"YReduce the total number of break and continue statements in this loop to use at most one.(ÄÈÜüÿÿÿÿ8—Ú‚0
+a
+java:S1155Ø">Use isEmpty() to check whether the collection is empty or not.(é˜Ë†ıÿÿÿÿ8™Ú‚0

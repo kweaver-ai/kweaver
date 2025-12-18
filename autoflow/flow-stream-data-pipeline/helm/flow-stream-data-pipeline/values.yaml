@@ -1,0 +1,105 @@
+namespace: dip
+moduleName: flow-stream-data-pipeline
+
+serviceAccount: flow-stream-data-pipeline-service-account
+
+#环境变量：语言/时区
+env:
+  timezone: Asia/Shanghai
+  language: en_US.UTF-8
+
+#节点选择器
+nodeSelector: {}
+
+image:
+  registry: acr.aishu.cn
+  repository: dip/flow-stream-data-pipeline
+  tag: tag
+  pullPolicy: Always
+
+service:
+  streamDataPipeline:
+    type: ClusterIP
+    port: 13012
+    nodePort: 30012
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /api/flow-stream-data-pipeline/v1
+
+#反亲和性设置
+antiAffinity:
+  enabled: true
+  rule: "soft" # hard, soft
+    
+config:
+  server:
+    runMode: release
+    httpPort: 13012
+    language: zh-CN
+    readTimeOut: 120
+    writeTimeOut: 120
+    retryIntervalMs: 3000           # kafka生产、消费、opensearch的bulk请求失败重试的等待时间
+    flushMiB: 5
+    flushItems: 10000
+    flushIntervalSec: 3
+    failureThreshold: 10
+    packagePoolSize: 40
+    monitorIntervalSec: 10
+    watchWorkersIntervalMin: 5     # 自动恢复异常任务
+    watchDeployInterval: 10         # 检查任务 deploy 资源
+    cpuMax: 8         
+    memoryMax: 8192   # MiB
+    maxPipelineCount: 100
+  log:
+    logLevel: info
+    developMode: false
+    maxAge: 100
+    maxBackups: 20
+    maxSize: 100
+  kafka:
+    sessionTimeoutMs: 45000               # 组管理协议用来监测消费者是否失效的超时时间
+    socketTimeoutMs: 60000                # 消费者拉取消息的超时时间
+    maxPollIntervalMs: 300000             # 两次 poll操作之间的间隔
+    heartbeatIntervalMs: 10000            # 消费者向coordinator发送心跳包的间隔时间
+    transactionTimeoutMs: 60000           # 事务操作超时时间
+    retentionTime: 7d                     # day or hour, example: 7d, 8h
+    retentionSize: -1                    # GiB
+    autoOffsetReset: earliest             # 可选值 latest, earliest
+    adminClientRequestTimeoutMs: 30000    # 获取源集群 topics 的超时时间
+    adminClientOperationTimeoutMs: 60000  # 向目标集群创建 topic 的超时时间
+    retries: 5                            # 生产者重试次数
+    retryBackoffMs: 500                   # 生产者每次重试之间的间隔
+
+depServices:
+  rds:
+    type: MariaDB
+    host: mariadb-mariadb-master.resource
+    port: 3330
+    user: root
+    password: eisoo.com123
+  mq:
+    auth:
+      mechanism: PLAIN
+      password: eisoo.com123
+      username: anyrobot
+    mqHost: kafka-headless.resource.svc.cluster.local.
+    mqPort: 9097
+    mqType: kafka
+    protocol: sasl_plaintext
+    tenant: default
+  opensearch:
+    host: opensearch-master.resource
+    port: 9200
+    protocol: http
+    user: admin
+    password: eisoo.com123
+
+resources:
+  requests:
+    cpu: 0
+    memory: 0Gi
+  limits:
+    cpu: 4
+    memory: 32Gi

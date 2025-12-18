@@ -1,0 +1,35 @@
+// 关键词组
+.keyphrase {
+    width: 100%;
+
+    .tag {
+        padding: 2px 8px;
+        margin-top: 2px;
+        margin-bottom: 0 !important;
+        font-size: 13px;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        background: rgb(235, 237, 239);
+        border: none;
+        cursor: default;
+    }
+
+    :global(.@{ant-prefix}-select-selection-overflow) {
+        height: 90px;
+        overflow: auto;
+        align-content: flex-start;
+    }
+    :global(.@{ant-prefix}-select-selection-placeholder) {
+        top: 16%;
+    }
+}
+
+.keyphrase-en {
+    :global(.@{ant-prefix}-select-selection-placeholder) {
+        top: 24%;
+        white-space: wrap;
+    }
+}

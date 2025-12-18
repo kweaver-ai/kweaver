@@ -1,0 +1,125 @@
+parameters:
+  - name: name
+    default: ''
+  - name: pool
+    default: ''
+  - name: containerName
+    default: ''
+  - name: registry
+    default: ''
+  - name: imageRepository
+    default: ''
+  - name: artifactName
+    default: ''
+  - name: dependencyArtifact
+    default: ''
+  - name: arch
+    default: ''
+  - name: buildImageJobName
+    default: ''
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    container: ${{ parameters.containerName }}
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+      - template: go_build_pre.yml
+      - task: DownloadBuildArtifacts@0
+        displayName: Download code from artifacts
+        inputs:
+          artifactName: ${{parameters.dependencyArtifact}}
+          downloadPath: $(Build.SourcesDirectory)
+      # 执行构建命令
+      - script: |
+          echo "start"
+          mkdir API
+          mv  $(Build.SourcesDirectory)/${{parameters.dependencyArtifact}}/API/* ./API
+          mkdir $(Build.SourcesDirectory)/${{parameters.dependencyArtifact}}/report
+          ls
+        condition: succeeded()
+        displayName: 'Copy Source'
+      - script: |
+          pwd
+          mv API/ThriftAPI/thrift-arm API/ThriftAPI/thrift
+          cd API/ThriftAPI && ls
+        condition: and(succeeded(), eq('${{ parameters.name }}' ,'DockerJobARM_Build'))
+        displayName: 'Rename API IN ARM'
+      - script: |
+          bash -x ./init_tapi.sh
+          rm -rf ./API
+          cd ./tapi && ls
+        condition: succeeded()
+        displayName: 'Bash -x init_tapi.sh'
+      # 执行构建命令
+      - script: |
+          echo "start"
+          echo machine devops.aishu.cn login $(AZURE_USER) password $(AZURE_TOKEN) > /root/.netrc
+          go env -w GOPROXY=https://goproxy.aishu.cn,direct
+          go env -w GOSUMDB=off
+          go build -o automation main.go
+        condition: succeeded()
+        displayName: 'Build'
+      - task: CopyFiles@2
+        inputs:
+          # 这里填需要放到镜像中的路径，一行一个
+          contents: |
+            automation
+            schema/**
+            resource/**
+          targetFolder: $(Build.BinariesDirectory)
+      - task: PublishBuildArtifacts@1
+        inputs:
+          # 由于Pipeline机制，不同的job可能会在不同的workspace执行，所以需要通过artifact在job间传递文件
+          pathToPublish: $(Build.BinariesDirectory)
+          artifactName: ${{parameters.artifactName}}
+      - script: |
+          pwd
+          rm -rf ./**
+          rm -rf $(Build.BinariesDirectory)/**/
+          ls
+        displayName: 'Remove Source'
+        condition: always()
+  - job: ${{ parameters.buildImageJobName }}
+    displayName: ${{ parameters.buildImageJobName }}
+    dependsOn: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          artifactName: ${{parameters.artifactName}}
+          downloadPath: $(Build.BinariesDirectory)
+      - script: |
+          set -ex
+          
+          CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):${CURRENT_TAG}.${{ parameters.arch }}"
+          LATEST_IMAGE="$(imageRegistry)/$(imageRepository):${LATEST_TAG}.${{ parameters.arch }}"
+          docker build -f ./Dockerfile -t $LATEST_IMAGE $(Build.BinariesDirectory)/${{parameters.artifactName}}
+          docker tag $LATEST_IMAGE $CURRENT_IMAGE
+          
+          set +x
+          echo "##vso[task.setvariable variable=BuildAgentName;isOutput=true]$(Agent.Name)"
+          set +x
+          echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+          set +x
+          echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+        name: getAgentName
+        displayName: 'Build'
+      - script: |
+          rm -rf $(Build.SourcesDirectory)/**
+          ls
+        displayName: 'Remove Source'
+        condition: always()
+      - script: |
+          CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):${CURRENT_TAG}.${{ parameters.arch }}"
+          LATEST_IMAGE="$(imageRegistry)/$(imageRepository):${LATEST_TAG}.${{ parameters.arch }}"
+          docker rmi -f $CURRENT_IMAGE
+          docker rmi -f $LATEST_IMAGE
+          docker images
+        displayName: "Clearn Image"
+        condition: failed()

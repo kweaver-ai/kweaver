@@ -1,0 +1,10 @@
+{
+    "emptyMessage": "必填欄位",
+    "EAdmin": "以管理員身份執行",
+    "EAdminDescription": "自動以管理員身份執行相關操作",
+    "EAQuota": "設置用戶配額空間",
+    "EAQuotaDescription": "自動給用戶設置配額空間",
+    "setQuota.user": "目標使用者",
+    "setQuota.quota": "擴容大小",
+    "input.placeholder": "請輸入"
+}

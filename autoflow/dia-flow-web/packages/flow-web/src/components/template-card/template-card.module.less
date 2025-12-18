@@ -1,0 +1,76 @@
+// 模板
+.template-card {
+    display: block;
+    margin: 0 8px 8px 0;
+    border-radius: 4px;
+    background: #fff;
+    border: 1px solid #e4e6ed;
+    cursor: default;
+    max-height: 170px;
+
+    @media screen and (min-width: 960px) {
+        width: calc(33.3333% - 8px);
+    }
+
+    @media screen and (min-width: 660px) and (max-width: 960px) {
+        width: calc(50% - 8px);
+    }
+
+    @media screen and (max-width: 660px) {
+        width: calc(100% - 8px);
+    }
+
+    .template-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .header-title {
+            color: #000;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 24px;
+        }
+    }
+
+    .template-card-content {
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+    }
+
+    .template-card-footer {
+        margin-top: 24px;
+
+        .card-btn {
+            width: 100%;
+        }
+    }
+
+    .card-btn {
+        border-radius: 4px;
+        transition: none;
+    }
+
+    &:hover {
+        border-color: #126ee3;
+
+        & .card-btn {
+            background-color: #126ee3;
+            border-color: transparent;
+            color: #fff;
+        }
+
+        & .card-btn:hover {
+            background-color: #3a8ff0;
+        }
+
+        & .card-btn:active {
+            background-color: #064fbd;
+        }
+    }
+
+    :global(.@{ant-prefix}-card-body) {
+        padding: 16px 24px;
+    }
+}

@@ -1,0 +1,132 @@
+.template-list {
+    .tab-name {
+        font-size: 14px;
+        border-right: 1px solid rgba(0, 0, 0, 0.6);
+        padding-right: 12px;
+        height: 12px;
+        line-height: 12px;
+        display: inline-block;
+    }
+
+    .last-tab {
+        border-right-color: transparent;
+    }
+
+    :global(.@{ant-prefix}-tabs-nav) {
+        margin: 0 32px 16px;
+    }
+
+    &.template-page :global(.@{ant-prefix}-tabs-nav) {
+        margin: 24px 32px 16px;
+    }
+
+    .searchInput {
+        border-radius: 4px;
+        border-color: #fff;
+        width: 200px;
+        height: 30px;
+        background: rgba(145, 151, 169, 0.16);
+
+        .search-icon {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.55);
+        }
+
+        &:hover {
+            border: 1px solid rgba(119, 158, 234, 1);
+        }
+
+        :global(.@{ant-prefix}-input-prefix) {
+            margin-right: 8px;
+        }
+
+        :global(.@{ant-prefix}-input) {
+            background: rgba(145, 151, 169, 0);
+        }
+
+        &:global(.@{ant-prefix}-input-affix-wrapper-focused) {
+            box-shadow: 0 0 0 2px rgba(119, 158, 234, 0.35);
+            border: 1px solid rgba(119, 158, 234, 1);
+        }
+
+        :global(
+                .@{ant-prefix}-input-affix-wrapper > input.@{ant-prefix}-input
+            ) {
+            background-color: rgba(145, 151, 169, 0);
+        }
+    }
+
+    // 覆盖tabs样式
+    :global(
+            .@{ant-prefix}-tabs-top
+                > .@{ant-prefix}-tabs-nav
+                .@{ant-prefix}-tabs-ink-bar
+        ),
+    :global(
+            .@{ant-prefix}-tabs-bottom
+                > .@{ant-prefix}-tabs-nav
+                .@{ant-prefix}-tabs-ink-bar
+        ),
+    :global(
+            .@{ant-prefix}-tabs-top
+                > div
+                > .@{ant-prefix}-tabs-nav
+                .@{ant-prefix}-tabs-ink-bar
+        ),
+    :global(
+            .@{ant-prefix}-tabs-bottom
+                > div
+                > .@{ant-prefix}-tabs-nav
+                .@{ant-prefix}-tabs-ink-bar
+        ) {
+        height: 0;
+    }
+
+    :global(.@{ant-prefix}-tabs-tab + .@{ant-prefix}-tabs-tab) {
+        margin: 0 0 0 12px;
+    }
+
+    :global(.@{ant-prefix}-tabs-tab) {
+        padding-top: 0;
+    }
+
+    :global(
+            .@{ant-prefix}-tabs-tab.@{ant-prefix}-tabs-tab-active
+                .@{ant-prefix}-tabs-tab-btn
+        ) {
+        text-shadow: none;
+    }
+
+    :global(.@{ant-prefix}-tabs-nav .@{ant-prefix}-tabs-tab) {
+        margin-right: 0;
+        padding-bottom: 0;
+    }
+
+    :global(.@{ant-prefix}-tabs) {
+        color: rgba(0, 0, 0, 0.6);
+        height: 100%;
+    }
+
+    :global(.@{ant-prefix}-tabs-content) {
+        height: 100%;
+    }
+
+    :global(.@{ant-prefix}-tabs-top > .@{ant-prefix}-tabs-nav)::before {
+        border-color: transparent;
+    }
+
+    :global(.@{ant-prefix}-tabs-dropdown-menu-item) {
+        .tab-name {
+            border-right: transparent;
+        }
+    }
+
+    :global(.@{ant-prefix}-tabs-content-holder) {
+        overflow: auto;
+    }
+
+    &.max-1960 :global(.@{ant-prefix}-row) > div {
+        width: 20% !important;
+        max-width: 20% !important;
+    }
+}

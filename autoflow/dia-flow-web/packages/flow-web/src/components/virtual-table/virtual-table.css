@@ -1,0 +1,21 @@
+.virtual-table .ant-table-container:before,
+.virtual-table .ant-table-container:after {
+    display: none;
+}
+.virtual-table-cell {
+    box-sizing: border-box;
+    padding: 8px 0;
+    /* border-bottom: 1px solid #e8e8e8; */
+    background: #fff;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+[data-theme="dark"] .virtual-table-cell {
+    box-sizing: border-box;
+    padding: 8px 0;
+    border-bottom: 1px solid #303030;
+    background: #141414;
+}

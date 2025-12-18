@@ -1,0 +1,63 @@
+.container {
+    margin: 8px 32px 0;
+    border-radius: 4px;
+    background: #fff;
+    user-select: none;
+
+    .content {
+        padding: 24px 24px 0;
+
+        .title {
+            margin-bottom: 24px;
+            align-items: center;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            width: 100%;
+
+            .statItem {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                margin-right: 20px;
+                padding: 12px 32px 6px 32px;
+                border-radius: 4px;
+                background: rgba(246, 246, 247, 1);
+
+                &:last-child {
+                    margin-right: 0;
+                }
+            }
+
+            .stat-label {
+                font-size: 13px;
+                line-height: 22px;
+                color: rgba(0, 0, 0, 0.55);
+            }
+
+            .count {
+                font-size: 36px;
+                font-weight: bold;
+                color: #000;
+            }
+
+            .committed .count {
+                color: #52c41b;
+            }
+
+            .uncommitted .count {
+                color: #ff4d4f;
+            }
+        }
+    }
+}

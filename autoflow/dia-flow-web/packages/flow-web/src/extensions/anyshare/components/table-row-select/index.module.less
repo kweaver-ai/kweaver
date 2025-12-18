@@ -1,0 +1,38 @@
+.margin-bottom-8 {
+    margin-bottom: 8px;
+}
+
+.dropdown {
+    .label {
+        font-size: 13px;
+    }
+    .description {
+        margin-top: 4px;
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.55);
+    }
+
+    :global(.@{ant-prefix}-cascader-menus) {
+        :global(.@{ant-prefix}-cascader-menu):first-child {
+            width: 132px;
+            max-width: 132px;
+        }
+
+        :global(.@{ant-prefix}-cascader-menu) {
+            height: 240px;
+        }
+    }
+
+    :global(.@{ant-prefix}-cascader-menu-item-active):not(
+            :global(.@{ant-prefix}-cascader-menu-item-disabled)
+        ),
+    :global(.@{ant-prefix}-cascader-menu-item-active):not(
+            :global(.@{ant-prefix}-cascader-menu-item-disabled)
+        ):hover {
+        background-color: rgb(232, 241, 251);
+    }
+}
+
+.emptyTip {
+    color: rgb(255, 77, 79);
+}

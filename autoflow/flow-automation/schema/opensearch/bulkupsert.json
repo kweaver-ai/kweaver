@@ -1,0 +1,61 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "批量写入 OpenSearch",
+    "description": "",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+        },
+        "title": {
+            "type": "string"
+        },
+        "operator": {
+            "type": "string",
+            "pattern": "^@.*",
+            "maxLength": 255
+        },
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "base_type": {
+                    "type": "string"
+                },
+                "data_type": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "documents": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "object"
+                        },
+                        {
+                            "type": "array"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "base_type",
+                "data_type",
+                "category",
+                "documents"
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "operator",
+        "parameters"
+    ],
+    "additionalProperties": false
+}

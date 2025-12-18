@@ -1,0 +1,151 @@
+.template-flows {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    h2 {
+        margin-bottom: 16px;
+    }
+
+    :global {
+        .ant-table-wrapper {
+            flex: 1;
+            overflow: auto;
+
+            .ant-table {
+                height: 100%;
+            }
+
+            .ant-table-body {
+                height: calc(100vh - 300px);
+                overflow-y: auto;
+            }
+        }
+    }
+
+    .tips-text {
+        color: red;
+    }
+}
+
+.footer-buttons {
+    position: absolute;
+    bottom: 24px;
+    height: 30px;
+    width: calc(100% - 48px);
+    display: flex;
+    justify-content: space-between;
+}
+
+.required-mark {
+    color: red;
+}
+
+.create-mode-icon {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+}
+.template-flows-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+.flow-trigger-icon {
+    margin: 0 8px;
+    width: 20px;
+    height: 20px;
+}
+
+.create-mode-title {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #0000008c;
+    font-size: 13px;
+    line-height: 22px;
+    letter-spacing: 0px;
+    text-align: left;
+  }
+  
+  .create-mode-options {
+    width: 100%;
+  }
+  
+  .create-mode-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    background: #ffffff;
+    border: 1px solid #e6eaf0;
+  
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  
+    .create-mode-icon {
+      margin-right: 16px;
+      font-size: 16px;
+      color: #1890ff;
+      margin-top: 4px;
+    }
+  
+    .create-mode-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+  
+      .title {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.85);
+        font-weight: 500;
+      }
+  
+      .description {
+        opacity: 0.3;
+        color: #000000;
+        font-size: 12px;
+        line-height: normal;
+        letter-spacing: 0px;
+        text-align: left;
+      }
+    }
+  }
+
+.flows-action-button {
+  &:hover {
+    cursor: pointer;
+    background-color: rgb(234, 233,237);
+  }
+}
+
+.data-studio-drawer {
+  :global {
+    .@{ant-prefix}-drawer-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .@{ant-prefix}-drawer-close {
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}
+
+.template-flows-table {
+  :global {
+    .@{ant-prefix}-table-thead > tr > th {
+      height: 40px;
+      border-radius: 2px;
+      background: #F6F7FC;
+    }
+  }
+}
+    

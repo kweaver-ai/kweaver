@@ -1,0 +1,54 @@
+.label {
+    padding: 3px 8px 3px 0;
+    white-space: nowrap;
+    display: inline-flex;
+    min-width: 160px;
+}
+
+.custom-rule {
+    .custom-rule-item {
+        position: relative;
+        margin: 0;
+        width: 120px;
+        height: 30px;
+    }
+}
+// dataSource
+.data-source-form {
+    .dataSource {
+        :global(.@{ant-prefix}-select-selection-placeholder) {
+            color: #000;
+        }
+    }
+
+    :global(.@{ant-prefix}-form-item) {
+        margin-bottom: 8px;
+    }
+    :global(.@{ant-prefix}-form-item):last-child {
+        margin-bottom: 0px;
+    }
+
+    :global(.@{ant-prefix}-form-item-label)
+        > :global(label.@{ant-prefix}-form-item-required) {
+        &:not(:global(.@{ant-prefix}-form-item-required-mark-optional)) {
+            &::before {
+                display: none;
+            }
+            &::after {
+                display: inline-block;
+                margin-left: 4px;
+                color: rgb(255, 77, 79);
+                font-size: 13px;
+                font-family: inherit;
+                line-height: 1;
+                content: "*";
+            }
+        }
+    }
+}
+
+.dataSourceConfigLabel {
+    .dataSourceConfigDescription {
+        color: rgba(0, 0, 0, 0.55);
+    }
+}

@@ -1,0 +1,83 @@
+.label {
+    padding: 3px 8px 3px 0;
+    white-space: nowrap;
+    display: inline-flex;
+    min-width: 160px;
+}
+
+.FieldInput {
+    background: rgba(220, 234, 249, 0.298);
+    padding: 36px 16px 24px;
+
+    .removeButton {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 12px;
+        height: 12px;
+        font-size: 12px;
+    }
+}
+
+.form-list {
+    :global(.@{ant-prefix}-form-item) {
+        margin-bottom: 16px;
+    }
+}
+
+.select-types-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    .select-types-label {
+        color: rgba(0, 0, 0, 1);
+        font-size: 13px;
+        line-height: 24px;
+    }
+
+    .removeButton {
+        font-size: 13px;
+    }
+}
+
+.select-types {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    .type-item {
+        flex-direction: column;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 16px;
+        margin-right: 28px;
+        width: 60px;
+        cursor: pointer;
+    }
+
+    .type-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+    }
+
+    .type-icon {
+        font-size: 50px;
+        color: #fff;
+    }
+
+    .type-label {
+        margin-top: 8px;
+        width: 82px;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        word-break: break-word;
+        text-align: center;
+    }
+}

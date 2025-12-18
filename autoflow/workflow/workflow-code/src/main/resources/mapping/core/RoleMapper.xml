@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.engine.identity.dao.RoleQueryDao">
+
+	<resultMap id="RM_WFRole" type="com.aishu.wf.core.engine.identity.model.Role">
+        <result property="roleId" column="role_id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleType" column="role_type"/>
+        <result property="roleSort" column="role_sort"/>
+        <result property="roleAppId" column="role_app_id"/>
+        <result property="roleStatus" column="role_status"/>
+        <result property="roleCreateTime" column="role_create_time"/>
+        <result property="roleCreator" column="role_creator"/>
+        <result property="remark" column="remark"/>
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="columns">
+	    <![CDATA[
+		r.role_id,r.role_name,r.role_type,r.role_sort,r.role_app_id,r.role_status,r.role_create_time,r.role_creator,r.remark
+	    ]]>
+	</sql>
+
+	<select id="findDeptAuditorRuleRolePage" resultType="com.aishu.wf.core.engine.identity.model.Role">
+		select <include refid="columns" />
+		from t_wf_role r
+		where 1=1
+		<if test="id != null and id != ''">
+			and r.role_id = #{id}
+		</if>
+		<if test="name != null and name != ''">
+			and r.role_name = #{name}
+		</if>
+		<if test="roleCreator != null and roleCreator != ''">
+			and r.role_creator = #{roleCreator}
+		</if>
+		<if test="tenantId != null and tenantId != ''">
+			and r.role_app_id = #{tenantId}
+		</if>
+		<if test="names != null and names.length > 0">
+			and
+			<foreach item="item" collection="names" separator="or" open="(" close=")" index="">
+				r.role_name like concat('%', #{item} , '%')
+			</foreach>
+		</if>
+		<if test="auditors != null and auditors.length > 0">
+			and
+			<foreach item="item" collection="auditors" separator="or" open="(" close=")" index="">
+				exists (select ur.role_id from t_wf_user2role ur where ur.role_id=r.role_id and ur.user_name like CONCAT('%',#{item},'%'))
+			</foreach>
+		</if>
+		<if test="template != null and template != ''">
+			and r.template = #{template}
+		</if>
+		order by r.role_create_time desc
+	</select>
+
+	<select id="findRoleByUser" resultMap="RM_WFRole">
+		select <include refid="columns" />
+		  from t_wf_role r,t_wf_user2role ur,t_wf_user u
+		  where r.role_id=ur.role_id and ur.user_id=u.user_id
+		  and ur.user_id=#{userId}
+	</select>
+
+	<select id="isUserInRole" resultType="boolean">
+		select count(*)>0
+		from t_wf_role r,t_wf_user2role ur,t_wf_user u
+		 where r.role_id=ur.role_id and ur.user_id=u.user_id
+		 and r.role_id=#{roleId} and ur.user_id=#{userId}
+	</select>
+
+	<select id="findRoleByUserCode" resultMap="RM_WFRole">
+    	select <include refid="columns" />
+		  from t_wf_role r,t_wf_user2role ur,t_wf_user u
+		  where r.role_id=ur.role_id and ur.user_id=u.user_id
+		  and ur.user_code=#{userCode}
+	</select>
+
+</mapper>
+

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aishu.doc.audit.dao.DocAuditMessageDao">
+
+    <resultMap id="MessageReceiversMap" type="com.aishu.doc.audit.model.dto.DocAuditMessageWithReceiversDTO">
+        <id property="id" column="id" />
+        <result property="procInstId" column="proc_inst_id" />
+        <result property="chan" column="chan" />
+        <result property="payload" column="payload" />
+        <result property="extMessageId" column="ext_message_id" />
+        <collection property="receivers" ofType="com.aishu.doc.audit.model.DocAuditMessageReceiverModel">
+            <result property="id" column="message_receiver_id" />
+            <result property="messageId" column="message_id" />
+            <result property="receiverId" column="receiver_id" />
+            <result property="handlerId" column="handler_id" />
+            <result property="auditStatus" column="audit_status" />
+        </collection>
+    </resultMap>
+
+    <select id="selectRemindAuditorMessages" resultMap="MessageReceiversMap">
+        select t1.*, t2.id as message_receiver_id, t2.message_id, t2.receiver_id, t2.handler_id, t2.audit_status 
+        from t_wf_doc_audit_message t1
+        left join t_wf_doc_audit_message_receiver t2
+        on t1.id=t2.message_id
+        where t1.proc_inst_id=#{procInstId}     
+        and t2.audit_status in ('', 'pending')
+        and t2.receiver_id in
+
+		<foreach collection="auditorIds" item="auditorId" open="(" separator="," close=")">
+			#{auditorId}
+		</foreach>
+    </select>
+</mapper>

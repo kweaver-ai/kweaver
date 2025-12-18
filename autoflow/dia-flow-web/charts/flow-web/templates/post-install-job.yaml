@@ -1,0 +1,123 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-post-install-job
+  labels:
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}
+    version: {{ .Chart.AppVersion }}
+  annotations:
+    # 注意，如果没有下面的这个注释的话，当前的这个Job就会被当成release的一部分
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ .Chart.Name }}
+        version: {{ .Chart.AppVersion }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command:
+            - "sh"
+            - "-c"
+            - >
+              curl -H "Content-Type:application/json" -X PUT -d '
+              [{
+                "name": "data-processing",
+                "parent": "dataflow",
+                "orderIndex": 1,
+                "app": {
+                  "textZHCN": "数据流",
+                  "textZHTW": "数据流",
+                  "textENUS": "Dataflow",
+                  "icon": "//ip:port/flow-web/data-stream.svg"
+                },
+                "subapp": {
+                  "entry": "//ip:port/flow-web/dataStudio.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              },
+              {
+                "name": "workflow",
+                "parent": "dataflow",
+                "orderIndex": 2,
+                "app": {
+                  "textZHCN": "工作流",
+                  "textZHTW": "工作流",
+                  "textENUS": "Workflow",
+                  "icon": "//ip:port/flow-web/workflow.svg"
+                },
+                "subapp": {
+                  "entry": "//ip:port/flow-web/workflow.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              },
+              {
+                "name": "dataflow",
+                "parent": "root",
+                "orderIndex": 2000,
+                "app": {
+                  "textZHCN": "Autoflow",
+                  "textZHTW": "Autoflow",
+                  "textENUS": "Autoflow",
+                  "icon": "//ip:port/flow-web/data-stream.svg"
+                },
+                "subapp": {"children": {}}
+              },
+              {
+                "name": "operator-flow-detail",
+                "parent": "plugins",
+                "orderIndex": 0,
+                "app": {
+                  "textZHCN": "算子编排日志",
+                  "textZHTW": "算子编排日志",
+                  "textENUS": "算子编排日志",
+                  "icon": ""
+                },
+                "subapp": {
+                  "entry": "//ip:port/flow-web/operatorFlowDetail.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              },
+              {
+                "name": "automation",
+                "parent": "plugins",
+                "orderIndex": 0,
+                "app": {
+                  "textZHCN": "自定义",
+                  "textZHTW": "自定义",
+                  "textENUS": "自定义",
+                  "icon": ""
+                },
+                "subapp": {
+                  "entry": "//ip:port/flow-web/plugin.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              },
+              {
+                "name": "flow-web-operator",
+                "parent": "plugins",
+                "orderIndex": 0,
+                "app": {
+                  "textZHCN": "算子编排",
+                  "textZHTW": "算子编排",
+                  "textENUS": "算子编排",
+                  "icon": ""
+                },
+                "subapp": {
+                  "entry": "//ip:port/flow-web/operatorFlow.html",
+                  "activeRule": "/",
+                  "baseRouter": ""
+                }
+              }]' http://studio-web-service:8877/api/workstation/v1/webapp

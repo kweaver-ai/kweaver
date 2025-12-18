@@ -1,0 +1,24 @@
+steps:
+- task: DownloadSecureFile@1
+  name: sshKey
+  inputs:
+    secureFile: 'die_ssh_key'
+- script: |
+    # 添加SSH KEY
+    echo Installing $(sshKey.secureFilePath) to ssh key...
+    rm -rf /root/.ssh
+    mkdir -p /root/.ssh
+    chown root:root $(sshKey.secureFilePath)
+    chmod 600 $(sshKey.secureFilePath)
+    cp $(sshKey.secureFilePath) /root/.ssh/id_rsa
+    ssh-keyscan -t rsa devops.aishu.cn>> ~/.ssh/known_hosts
+    # 配置go env 和 git config
+    go env -w GOPRIVATE=devops.aishu.cn
+    go env -w GOPROXY=https://goproxy.aishu.cn,direct
+    git config --global url."ssh://devops.aishu.cn:22/AISHUDevOps/".insteadOf "https://devops.aishu.cn/AISHUDevOps/"
+    echo machine devops.aishu.cn login $(AZURE_USER) password $(AZURE_TOKEN) >> /root/.netrc
+    export NETRC=/root/.netrc
+    export GO111MODULE=on
+    export CGO_ENABLED=1
+  condition: succeeded()
+  displayName: 'Set SSHkey'

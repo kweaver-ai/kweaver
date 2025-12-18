@@ -1,0 +1,81 @@
+parameters:
+  - name: name
+    default: ''
+  - name: pool
+    default: ''
+  - name: chartName
+    default: ''
+  - name: registry
+    default: ''
+  - name: imageRepository
+    default: ''
+  - name: imageWConfRepository
+    default: ''
+  - name: yqImage
+    default: ''
+  - name: latestTag
+    type: object
+    default: []
+  - name: currentTag
+    default: ''
+  - name: commitId
+    default: ''
+
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+      - task: Bash@3
+        displayName: Chart构建
+        inputs:
+          targetType: inline
+          script: |
+            #!/usr/bin/env
+            set -ex
+
+            chartCurrentTag=$(echo '${{parameters.currentTag}}' | sed 's/${{parameters.commitId}}/git+${{parameters.commitId}}/g')
+            chartLatestTag=$(echo '${{parameters.latestTag[0]}}' | sed 's/${{parameters.commitId}}/git+${{parameters.commitId}}/g')
+
+            chmod 777 -R $(pwd)/helm
+            docker run --rm \
+                  -v $(pwd)/helm:/chart \
+                  --entrypoint='' \
+                  ${{parameters.yqImage}} sh -c "
+              set -ex
+              
+              yq eval -i '.image.registry = \"${{parameters.registry}}\"' /chart/${{parameters.chartName}}/values.yaml
+              yq eval -i '.image.repository = \"${{parameters.imageRepository}}\"' /chart/${{parameters.chartName}}/values.yaml
+              yq eval -i '.image.tag = \"${{parameters.latestTag[0]}}\"' /chart/${{parameters.chartName}}/values.yaml
+              if [ -n "${{parameters.latestTag[1]}}" ]; then
+                yq eval -i '.image.workflowconfig.repository = \"${{ parameters.imageWConfRepository }}\"' /chart/${{parameters.chartName}}/values.yaml
+                yq eval -i '.image.workflowconfig.wctag = \"${{parameters.latestTag[1]}}\"' /chart/${{parameters.chartName}}/values.yaml
+              fi
+
+              yq eval -i '.name = \"${{parameters.chartName}}\"' /chart/${{parameters.chartName}}/Chart.yaml
+              yq eval -i '.appVersion = \"${{parameters.currentTag}}\"' /chart/${{parameters.chartName}}/Chart.yaml
+              sed -i 's/\"version\": .*/\"version\": \"$chartCurrentTag\",/g' /chart/${{parameters.chartName}}/_componentMeta.json
+
+              yq eval -i '.version = \"$chartCurrentTag\"' /chart/${{parameters.chartName}}/Chart.yaml
+              cd /chart && tar -czf ${{parameters.chartName}}-$chartCurrentTag.tar.gz ${{parameters.chartName}}
+
+              yq eval -i '.version = \"$chartLatestTag\"' /chart/${{parameters.chartName}}/Chart.yaml
+              cd /chart && tar -czf ${{parameters.chartName}}-$chartLatestTag.tar.gz ${{parameters.chartName}}
+              "
+
+            cd helm
+            curlOptions="-s -u $(registry.username):$(registry.password) -H \"Content-Type:multipart/form-data\""
+            curl ${curlOptions} -F "chart=@${{parameters.chartName}}-$chartCurrentTag.tar.gz;type=application/x-compressed-tar" -X POST "$(chartRepo)"
+            curl ${curlOptions} -F "chart=@${{parameters.chartName}}-$chartLatestTag.tar.gz;type=application/x-compressed-tar" -X POST "$(chartRepo)"
+
+      - task: Post-Bash@3
+        inputs:
+          targetType: inline
+          script: |
+            rm -rf $(Build.SourcesDirectory)/**
+            ls -lah $(Agent.BuildDirectory)

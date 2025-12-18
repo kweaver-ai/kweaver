@@ -1,0 +1,10 @@
+{
+    "emptyMessage": "此项不允许为空",
+    "EAdmin": "以管理员身份执行",
+    "EAdminDescription": "自动以管理员身份执行相关操作",
+    "EAQuota": "设置用户配额空间",
+    "EAQuotaDescription": "自动给用户设置配额空间",
+    "setQuota.user": "目标用户",
+    "setQuota.quota": "扩容大小",
+    "input.placeholder": "请输入"
+}

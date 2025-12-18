@@ -1,0 +1,59 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.serviceAccount }}-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount }}
+    namespace: {{ .Values.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Values.serviceAccount }}-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.serviceAccount }}-cluster-role
+  labels:
+    module: "{{.Values.moduleName}}"
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+
+
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.serviceAccount }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    module: "{{.Values.moduleName}}"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flow-stream-data-pipeline-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: flow-stream-data-pipeline-service-account
+    namespace: {{ .Values.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: flow-stream-data-pipeline-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: flow-stream-data-pipeline-cluster-role
+  labels:
+    module: "{{.Values.moduleName}}"
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get","list","watch"]

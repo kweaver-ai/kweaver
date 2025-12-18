@@ -1,0 +1,96 @@
+parameters:
+  - name: name
+    default: ''
+  - name: displayName
+    default: ''
+  - name: pool
+    default: ''
+  - name: containerName
+    default: ''
+  - name: artifactName
+    default: ''
+  - name: downloadPerparePath
+    default: ''
+  - name: dependOn
+    default: ''
+
+jobs:
+  - job: X86PublishUTReports
+    displayName: ${{ parameters.name }}
+    dependsOn: ${{parameters.dependOn}}
+    condition: succeeded()
+    pool:
+      name: ${{ parameters.pool }}
+    container: ${{ parameters.containerName }}
+    workspace:
+      clean: all
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: ${{ parameters.artifactName }}
+          downloadPath:  ${{ parameters.downloadPerparePath }}
+        displayName: Download binaryFileX86Artifact
+
+      - task: PublishTestResults@2
+        displayName: Publish Lint Report
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '$(Build.SourcesDirectory)/${{ parameters.artifactName }}/report/${{variables.LintReportName}}'
+          testRunTitle: 'Lint'
+          failTaskOnFailedTests: false
+      - task: BuildQualityChecks@8
+        displayName: Quality Gate Lint
+        inputs:
+          checkWarnings: true
+          warningFailOption: 'fixed'
+          warningThreshold: '10'
+          showStatistics: false
+          evaluateTaskWarnings: false
+          evaluateFileWarnings: true
+          warningFilesFolder: '$(Build.SourcesDirectory)/${{ parameters.artifactName }}'
+          warningFiles: '**/${{variables.LintReportName}}'
+          warningFileFilters: '/^.+<\/failure>.*?$/'
+          warningFilesArtifact: '${{ parameters.artifactName }}'
+
+      - task: PublishTestResults@2        # 发布单元测试报告
+        displayName: Publish UT Report
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: $(Build.SourcesDirectory)/${{ parameters.artifactName }}/report/$(UTReportName)
+          testRunTitle: 'UT'
+          failTaskOnFailedTests: true
+      - task: BuildQualityChecks@8        # 设置UT质量卡点
+        displayName: Quality Gate UT
+        inputs:
+          checkWarnings: true
+          warningFailOption: 'fixed'
+          warningThreshold: '10'
+          showStatistics: false
+          evaluateTaskWarnings: false
+          evaluateFileWarnings: true
+          warningFilesFolder: '$(Build.SourcesDirectory)/${{ parameters.artifactName }}'
+          warningFiles: '**/${{variables.UTReportName}}'
+          warningFileFilters: '/^.+<\/failure>.*?$/'
+          warningFilesArtifact: '${{ parameters.artifactName }}'
+
+      - task: PublishCodeCoverageResults@1 # 发布代码覆盖率报告
+        displayName: Publish Coverage Report
+        inputs:
+          codeCoverageTool: 'Cobertura'
+          summaryFileLocation: $(Build.SourcesDirectory)/${{ parameters.artifactName }}/report/$(CoverageReportName)
+      - task: BuildQualityChecks@8         # 代码覆盖率质量卡点
+        displayName: Quality Gate Coverage
+        inputs:
+          coverageType: 'lines'
+          coverageFailOption: 'fixed'
+          checkCoverage: true
+          coverageThreshold: '40.0'
+
+      - script: |
+          cd $(Build.BinariesDirectory) && rm -rf ./**
+          cd $(Build.SourcesDirectory) && rm -rf ./**
+        condition: always()
+        displayName: Remove Resource

@@ -1,0 +1,68 @@
+.attachement {
+  margin-bottom: 24px;
+  position: relative;
+  padding: 12px 16px 8px 16px;
+  background: rgba(220, 234, 249, 0.3);
+  border-radius: 4px;
+
+  .title {
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+
+  .media-type-radio-group {
+    max-width: 100%;
+
+    :global {
+      .FLOW_WEB-ant-radio-wrapper {
+        display: flex;
+      }
+
+      .FLOW_WEB-ant-radio-wrapper > span:last-child {
+        overflow: hidden;
+      }
+    }
+  }
+
+  .media-type-radio {
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+
+    .label {
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    .disabled-color {
+      color: #bfbfbf !important;
+    }
+
+    .description {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.45);
+      margin-left: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .switch {
+    height: 16px;
+    line-height: 16px;
+
+    :global {
+      .FLOW_WEB-ant-switch-handle {
+        top: -1px !important;
+      }
+    }
+  }
+
+  .switch-label {
+    margin-left: 8px;
+    display: inline-block;
+    height: 22px;
+    vertical-align: middle;
+    color: rgba(0, 0, 0, 0.85);
+  }
+}

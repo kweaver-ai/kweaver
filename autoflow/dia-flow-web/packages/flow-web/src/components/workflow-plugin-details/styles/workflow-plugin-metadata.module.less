@@ -1,0 +1,66 @@
+.modal {
+    .content {
+        margin: 0 -32px;
+        padding: 0 32px;
+        height: 100%;
+        overflow: auto;
+    }
+
+    :global(.@{ant-prefix}-modal-title) {
+        font-size: 15px;
+        font-weight: bold;
+    }
+    :global(.@{ant-prefix}-modal-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        padding: 0 32px 20px;
+        height: 432px;
+    }
+}
+.description {
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.template-name {
+    height: 24px;
+    line-height: 24px;
+    font-weight: bold;
+}
+
+.form {
+    :global(.@{ant-prefix}-form-item) {
+        margin-bottom: 8px;
+    }
+
+    :global(.@{ant-prefix}-form-item-label) {
+        padding: 0;
+        height: 30px;
+        line-height: 30px;
+    }
+}
+
+.label-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 88px;
+    height: 30px;
+
+    .label {
+        flex-grow: 1;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+}
+
+.suffix-description {
+    margin-bottom: 12px;
+    height: 24px;
+    line-height: 24px;
+    font-weight: bold;
+}

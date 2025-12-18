@@ -1,0 +1,39 @@
+
+X
+java:S1659~"BDeclare "docId" and all following declarations on a separate line.(ÝÓÊÖ
+Y
+java:S1117ä"=Rename "execution" which hides the field declared at line 88.(•íðÂÿÿÿÿÿ
+R	java:S125ÿ"<This block of commented-out lines of code should be removed.(ƒ¶Ï•
+C
+java:S1125”"'Remove the unnecessary boolean literal.(‚ôÃÊûÿÿÿÿ
+i
+java:S3776¢"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(Âà±ï
+R	java:S125«"<This block of commented-out lines of code should be removed.(ŸõÚÄ
+R	java:S125¹"<This block of commented-out lines of code should be removed.(ŸõÚÄ
+W	java:S125æ"<This block of commented-out lines of code should be removed.(Ž™Þªüÿÿÿÿ
+n
+java:S3776ã"RRefactor this method to reduce its Cognitive Complexity from 33 to the 15 allowed.(òÄá¯øÿÿÿÿ
+^
+java:S1117ä"BRename "taskDefinition" which hides the field declared at line 95.(ûþßÿÿÿÿÿ
+Y
+java:S1117é"=Rename "execution" which hides the field declared at line 88.(•íðÂÿÿÿÿÿ
+Y
+java:S1117À	"=Rename "execution" which hides the field declared at line 88.(•íðÂÿÿÿÿÿ
+F
+java:S1066–"/Merge this if statement with the enclosing one.(·Ýªô
+F
+java:S1066õ"/Merge this if statement with the enclosing one.(ò®ÿè
+F
+java:S1066"/Merge this if statement with the enclosing one.(ò®ÿè
+F
+java:S1066¨"/Merge this if statement with the enclosing one.(ò®ÿè
+„
+java:S1488—"hImmediately return this expression instead of assigning it to the temporary variable "variableInstance".(ÞÝŸñøÿÿÿÿ
+X
+java:S1596ë"<Replace "Collections.EMPTY_MAP" by "Collections.emptyMap()".(•Âß„ýÿÿÿÿ
+N
+java:S2589õ"7Remove this expression which always evaluates to "true"(ò®ÿè
+N
+java:S2589¨"7Remove this expression which always evaluates to "true"(ò®ÿè
+N
+java:S2589"7Remove this expression which always evaluates to "true"(ò®ÿè

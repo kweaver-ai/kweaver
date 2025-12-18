@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aishu.doc.audit.dao.InternalGroupDao">
+    
+    <insert id="insertInternalGroup" parameterType="com.aishu.doc.audit.model.InternalGroupModel">
+		INSERT INTO t_wf_internal_group
+		(f_id, f_apply_id, f_apply_user_id, f_group_id, f_expired_at, f_created_at)
+		VALUES(#{id}, #{applyID}, #{applyUserID}, #{groupID}, #{expiredAt}, #{createdAt})
+	</insert>
+
+	<update id="updateInternalGroup">
+		update t_wf_internal_group set f_expired_at=#{expired_at} where f_apply_id=#{apply_id}
+	</update>
+
+	<select id="selectInternalGroupByApplyID" resultType="com.aishu.doc.audit.model.InternalGroupModel">
+		select f_id as id, f_apply_id as applyID, f_apply_user_id as applyUserID, f_group_id as groupID, f_expired_at as expiredAt, f_created_at as createdAt
+		from t_wf_internal_group 
+		where f_apply_id=#{apply_id}
+	</select>
+
+	<delete id="deleteInternalGroupByapplyID" parameterType="int">
+		delete from t_wf_internal_group WHERE f_apply_id=#{apply_id}
+	</delete>
+
+</mapper>

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.activiti.engine.impl.persistence.entity.HistoricVariableInstanceEntity">
+
+  <!-- HISTORIC PROCESS VARIABLE INSERT -->
+  
+  <insert id="insertHistoricVariableInstance" parameterType="org.activiti.engine.impl.persistence.entity.HistoricVariableInstanceEntity">
+    insert into ${prefix}t_wf_hi_varinst (id_, proc_inst_id_, execution_id_, task_id_, name_, rev_, var_type_, bytearray_id_, double_, long_ , text_, text2_, create_time_, last_updated_time_)
+    values (
+      #{id, jdbcType=VARCHAR},
+      #{processInstanceId, jdbcType=VARCHAR},
+      #{executionId, jdbcType=VARCHAR},
+      #{taskId, jdbcType=VARCHAR},
+      #{variableName, jdbcType=VARCHAR},
+      #{revision, jdbcType=VARCHAR},
+      #{variableType, jdbcType=VARCHAR},
+      #{byteArrayRef, typeHandler=ByteArrayRefTypeHandler},
+      #{doubleValue, jdbcType=DOUBLE},
+      #{longValue, jdbcType=BIGINT},
+      #{textValue, jdbcType=VARCHAR},
+      #{textValue2, jdbcType=VARCHAR},
+      #{createTime, jdbcType=TIMESTAMP},
+      #{lastUpdatedTime, jdbcType=TIMESTAMP}
+    )
+  </insert>
+
+  <insert id="bulkInsertHistoricVariableInstance" parameterType="java.util.List">
+    insert into ${prefix}t_wf_hi_varinst (id_, proc_inst_id_, execution_id_, task_id_, name_, rev_, var_type_, bytearray_id_, double_, long_ , text_, text2_, create_time_, last_updated_time_)
+    values 
+      <foreach collection="list" item="historicVariable" index="index" separator=",">
+        (#{historicVariable.id, jdbcType=VARCHAR},
+         #{historicVariable.processInstanceId, jdbcType=VARCHAR},
+         #{historicVariable.executionId, jdbcType=VARCHAR},
+         #{historicVariable.taskId, jdbcType=VARCHAR},
+         #{historicVariable.variableName, jdbcType=VARCHAR},
+         #{historicVariable.revision, jdbcType=VARCHAR},
+         #{historicVariable.variableType, jdbcType=VARCHAR},
+         #{historicVariable.byteArrayRef, typeHandler=ByteArrayRefTypeHandler},
+         #{historicVariable.doubleValue, jdbcType=DOUBLE},
+         #{historicVariable.longValue, jdbcType=BIGINT},
+         #{historicVariable.textValue, jdbcType=VARCHAR},
+         #{historicVariable.textValue2, jdbcType=VARCHAR},
+         #{historicVariable.createTime, jdbcType=TIMESTAMP},
+         #{historicVariable.lastUpdatedTime, jdbcType=TIMESTAMP})
+       </foreach>
+  </insert>
+
+  <insert id="bulkInsertHistoricVariableInstance_oracle" parameterType="java.util.List">
+    INSERT ALL 
+      <foreach collection="list" item="historicVariable" index="index">
+      INTO ${prefix}t_wf_hi_varinst (id_, proc_inst_id_, execution_id_, task_id_, name_, rev_,
+      var_type_, bytearray_id_, double_, long_ , text_, text2_, create_time_, last_updated_time_) VALUES
+          (#{historicVariable.id, jdbcType=VARCHAR},
+           #{historicVariable.processInstanceId, jdbcType=VARCHAR},
+           #{historicVariable.executionId, jdbcType=VARCHAR},
+           #{historicVariable.taskId, jdbcType=VARCHAR},
+           #{historicVariable.variableName, jdbcType=VARCHAR},
+           #{historicVariable.revision, jdbcType=VARCHAR},
+           #{historicVariable.variableType, jdbcType=VARCHAR},
+           #{historicVariable.byteArrayRef, typeHandler=ByteArrayRefTypeHandler},
+           #{historicVariable.doubleValue, jdbcType=DOUBLE},
+           #{historicVariable.longValue, jdbcType=BIGINT},
+           #{historicVariable.textValue, jdbcType=VARCHAR},
+           #{historicVariable.textValue2, jdbcType=VARCHAR},
+           #{historicVariable.createTime, jdbcType=TIMESTAMP},
+           #{historicVariable.lastUpdatedTime, jdbcType=TIMESTAMP})
+       </foreach>
+    SELECT * FROM dual
+  </insert>
+
+  <!-- HISTORIC PROCESS VARIABLE UPDATE -->
+  
+  <update id="updateHistoricVariableInstance" parameterType="org.activiti.engine.impl.persistence.entity.HistoricVariableInstanceEntity">
+    update ${prefix}t_wf_hi_varinst set
+      rev_ = #{revisionNext, jdbcType=INTEGER},
+      bytearray_id_ = #{byteArrayRef, typeHandler=ByteArrayRefTypeHandler},
+      double_ = #{doubleValue, jdbcType=DOUBLE},
+      long_ = #{longValue, jdbcType=BIGINT},
+      text_ = #{textValue, jdbcType=VARCHAR},
+      text2_ = #{textValue2, jdbcType=VARCHAR},
+      var_type_ = #{variableType, jdbcType=VARCHAR},
+      last_updated_time_ = #{lastUpdatedTime, jdbcType=TIMESTAMP}
+    where id_ = #{id, jdbcType=VARCHAR}
+      and rev_ = #{revision, jdbcType=INTEGER}
+  </update>
+  
+  <!-- HISTORIC PROCESS VARIABLE DELETE -->
+
+  <delete id="deleteHistoricVariableInstance" parameterType="org.activiti.engine.impl.persistence.entity.HistoricVariableInstanceEntity">
+    delete from ${prefix}t_wf_hi_varinst where id_ = #{id} and rev_ = #{revision}
+  </delete>
+  
+  <delete id="bulkDeleteHistoricVariableInstance" parameterType="java.util.Collection">
+    delete from ${prefix}t_wf_hi_varinst where
+    <foreach item="variable" collection="list" index="index" separator=" or ">
+        id_ = #{variable.id, jdbcType=VARCHAR}
+    </foreach>
+  </delete>
+  
+  <!-- HISTORIC PROCESS VARIABLE RESULTMAP -->
+  <resultMap id="historicProcessVariableResultMap" type="org.activiti.engine.impl.persistence.entity.HistoricVariableInstanceEntity">
+    <id property="id" column="id_" jdbcType="VARCHAR" />
+    <result property="processInstanceId" column="proc_inst_id_" jdbcType="VARCHAR" />
+    <result property="executionId" column="execution_id_" jdbcType="VARCHAR" />
+    <result property="taskId" column="task_id_" jdbcType="VARCHAR" />
+    <result property="name" column="name_" javaType="String" jdbcType="VARCHAR" />
+    <result property="revision" column="rev_" jdbcType="INTEGER" />
+    <result property="variableType" column="var_type_" javaType="org.activiti.engine.impl.variable.VariableType" jdbcType="VARCHAR"/>
+    <result property="byteArrayRef" column="bytearray_id_" typeHandler="ByteArrayRefTypeHandler"/>
+    <result property="doubleValue" column="double_" jdbcType="DOUBLE" />
+    <result property="textValue" column="text_" jdbcType="VARCHAR" />
+    <result property="textValue2" column="text2_" jdbcType="VARCHAR" />
+    <result property="longValue" column="long_" jdbcType="BIGINT" />
+    <result property="createTime" column="create_time_" jdbcType="TIMESTAMP" />
+    <result property="lastUpdatedTime" column="last_updated_time_" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <!-- HISTORIC VARIABLE SELECT -->
+
+  <select id="selectHistoricVariableInstanceByQueryCriteria" parameterType="org.activiti.engine.impl.HistoricVariableInstanceQueryImpl" resultMap="historicProcessVariableResultMap">
+  	${limitBefore}
+    select RES.* ${limitBetween}
+    <include refid="selectHistoricVariableInstanceByQueryCriteriaSql"/>
+    ${orderBy}
+    ${limitAfter}
+  </select>
+  
+  <select id="selectHistoricVariableInstanceCountByQueryCriteria" parameterType="org.activiti.engine.impl.HistoricVariableInstanceQueryImpl" resultType="long">
+    select count(RES.id_)
+    <include refid="selectHistoricVariableInstanceByQueryCriteriaSql"/>
+  </select>
+  
+  <sql id="selectHistoricVariableInstanceByQueryCriteriaSql">
+    from ${prefix}t_wf_hi_varinst RES
+    <where>
+      <if test="id != null">
+        RES.id_ = #{id}
+      </if>
+      <if test="processInstanceId != null">
+        and RES.proc_inst_id_ = #{processInstanceId}
+      </if>
+      <if test="executionId != null">
+        and RES.execution_id_ = #{executionId}
+      </if>
+      <if test="executionIds != null and !executionIds.isEmpty()">
+          and RES.execution_id_ in
+          <foreach item="item" index="index" collection="executionIds" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+      </if>
+      <if test="taskId != null">
+        and RES.task_id_ = #{taskId}
+      </if>
+      <if test="taskIds != null and !taskIds.isEmpty()">
+          and RES.task_id_ in
+          <foreach item="item" index="index" collection="taskIds" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+      </if>
+      <if test="excludeTaskRelated">
+        and RES.task_id_ is NULL
+      </if>
+      <if test="variableName != null">
+        and RES.name_ = #{variableName}
+      </if>
+      <if test="variableNameLike != null">
+        and RES.name_ like #{variableNameLike}${wildcardEscapeClause}
+      </if>
+      
+      <!-- PLEASE NOTE: If you change anything have a look into the Execution, the same query object is used there! -->
+      <if test="queryVariableValue != null" >
+        <if test="!queryVariableValue.type.equals('null')">
+        <!-- When operator is not-equals or type of value is null, type doesn't matter! -->
+          and RES.var_type_ = #{queryVariableValue.type}
+        </if>
+        <if test="queryVariableValue.textValue != null &amp;&amp; queryVariableValue.longValue == null &amp;&amp; queryVariableValue.doubleValue == null">
+        and RES.text_
+        <choose>
+          <when test="queryVariableValue.operator.equals('LIKE') || queryVariableValue.operator.equals('LIKE_IGNORE_CASE')">LIKE</when>
+          <otherwise><include refid="executionVariableOperator" /></otherwise>
+        </choose>
+          #{queryVariableValue.textValue}
+          <choose>
+            <when test="queryVariableValue.operator.equals('LIKE') || queryVariableValue.operator.equals('LIKE_IGNORE_CASE')">${wildcardEscapeClause}</when>
+          </choose>
+        </if>
+        <if test="queryVariableValue.textValue2 != null">
+        and RES.text2_
+        <choose>
+          <when test="queryVariableValue.operator.equals('LIKE') || queryVariableValue.operator.equals('LIKE_IGNORE_CASE')">LIKE</when>
+          <otherwise><include refid="executionVariableOperator" /></otherwise>
+        </choose>
+          #{queryVariableValue.textValue2}
+          <choose>
+            <when test="queryVariableValue.operator.equals('LIKE') || queryVariableValue.operator.equals('LIKE_IGNORE_CASE')">${wildcardEscapeClause}</when>
+          </choose>
+        </if>
+        <if test="queryVariableValue.longValue != null">
+        and RES.long_
+        <include refid="executionVariableOperator" />
+        #{queryVariableValue.longValue}
+        </if>
+        <if test="queryVariableValue.doubleValue != null">
+        and RES.double_
+        <include refid="executionVariableOperator" />
+        #{queryVariableValue.doubleValue}
+        </if>
+        <!-- Null variable type -->
+        <if test="queryVariableValue.textValue == null &amp;&amp; queryVariableValue.textValue2 == null &amp;&amp; queryVariableValue.longValue == null &amp;&amp; queryVariableValue.doubleValue == null">
+          <choose>
+          <when test="queryVariableValue.operator.equals('NOT_EQUALS')">
+            and (RES.text_ is not null or RES.text2_ is not null or RES.long_ is not null or RES.double_ is not null or RES.bytearray_id_ is not null)
+          </when>
+          <otherwise>
+        and RES.text_ is null and RES.text2_ is null and RES.long_ is null and RES.double_ is null and RES.bytearray_id_ is null
+          </otherwise>
+        </choose>
+        </if>
+      </if>
+    </where>
+  </sql>
+
+  <sql id="executionVariableOperator">
+    <choose>
+      <when test="queryVariableValue.operator.equals('EQUALS')">=</when>
+      <when test="queryVariableValue.operator.equals('NOT_EQUALS')">&lt;&gt;</when>
+      <when test="queryVariableValue.operator.equals('GREATER_THAN')">&gt;</when>
+      <when test="queryVariableValue.operator.equals('GREATER_THAN_OR_EQUAL')">&gt;=</when>
+      <when test="queryVariableValue.operator.equals('LESS_THAN')">&lt;</when>
+      <when test="queryVariableValue.operator.equals('LESS_THAN_OR_EQUAL')">&lt;=</when>
+   </choose>
+  </sql>
+  
+  <select id="selectHistoricVariableInstanceByVariableInstanceId" resultMap="historicProcessVariableResultMap">
+    select * from ${prefix}t_wf_hi_varinst where id_ = #{variableinstanceid}
+  </select>
+
+  <select id="selectHistoricVariableInstanceByNativeQuery" parameterType="java.util.Map" resultMap="historicProcessVariableResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBefore}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectHistoricVariableInstanceByNativeQuery_mssql_or_db2" parameterType="java.util.Map" resultMap="historicProcessVariableResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBeforeNativeQuery}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectHistoricVariableInstanceCountByNativeQuery" parameterType="java.util.Map" resultType="long">
+    ${sql}
+  </select>
+  
+</mapper>

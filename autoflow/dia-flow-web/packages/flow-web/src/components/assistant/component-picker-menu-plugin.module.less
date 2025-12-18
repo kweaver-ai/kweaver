@@ -1,0 +1,41 @@
+.MenuContainer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.Menu {
+  position: absolute;
+  padding: 4px 0;
+  text-align: left;
+  list-style: none;
+  list-style-type: none;
+  background-color: #fff;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  transform: translateZ(0);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.MenuList {
+  margin: 0;
+}
+
+.MenuItem {
+  padding: 5px 12px;
+  color: #000;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 22px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+
+  &.MenuItemSelected {
+    background-color: #eee;
+  }
+}

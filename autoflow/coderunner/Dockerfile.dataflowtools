@@ -1,0 +1,19 @@
+FROM acr.aishu.cn/public/ubuntu:22.04.20251014
+
+WORKDIR /opt
+
+ADD dataflowtools/dist dist
+
+RUN apt-get update -y && \
+    apt-get install -y pandoc texlive-latex-base texlive-xetex texlive-lang-chinese fonts-noto-cjk && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    rm -rf /usr/share/texlive/texmf-dist/doc && \
+    rm -rf /usr/share/texlive/texmf-dist/source && \
+    groupadd -g 5000 -f coderunner && \
+    useradd coderunner -u 5000 -g 5000 -m -s /bin/bash && \
+    chown -R coderunner:coderunner /opt && \
+    chmod +x /opt/dist/dataflowtools/dataflowtools
+
+USER coderunner
+
+CMD ["/bin/bash", "-c", "cd dist/dataflowtools && ./dataflowtools"]

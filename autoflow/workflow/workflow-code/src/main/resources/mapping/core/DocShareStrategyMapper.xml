@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.doc.dao.DocShareStrategyMapper">
+
+	<!-- 审核策略查询列 -->
+	<sql id="DocShareStrategyColumns">
+	    <![CDATA[
+		t1.id,t1.strategy_type,t1.proc_def_id,t1.proc_def_name,t1.act_def_id,t1.act_def_name,t1.audit_model,t1.doc_id,t1.doc_name,t1.doc_type,t1.rule_type,t1.rule_id,t1.level_type,t1.no_auditor_type,t1.create_user_id,t1.create_user_name,t1.create_time
+	    ]]>
+	</sql>
+
+	<!--  查询审核策略 -->
+	<select id="findDocShareStrategyPage" resultType="com.aishu.wf.core.doc.model.DocShareStrategy">
+		select <include refid="DocShareStrategyColumns" />
+		from t_wf_doc_share_strategy t1
+		where 1=1
+		<if test="proc_def_id != null and proc_def_id != ''">
+			and t1.proc_def_id=#{proc_def_id}
+		</if>
+		<if test="doc_names != null and doc_names.length > 0">
+			and
+			<foreach item="item" collection="doc_names" separator="or" open="(" close=")" index="">
+				t1.doc_name like concat('%', #{item} , '%')
+			</foreach>
+		</if>
+		<if test="doc_type != null and doc_type != ''">
+			and t1.doc_type =#{doc_type}
+		</if>
+		<if test="auditors != null and auditors.length > 0">
+			and
+			<foreach item="item" collection="auditors" separator="or" open="(" close=")" index="">
+				exists (select t2.audit_strategy_id from t_wf_doc_share_strategy_auditor t2 where t2.audit_strategy_id=t1.id and t2.user_name like CONCAT('%',#{item},'%'))
+			</foreach>
+		</if>
+        order by case when t1.doc_id != 'all_user_doc_lib' and t1.doc_id != 'all_department_doc_lib' and t1.doc_id != 'all_custom_doc_lib' then 1 else 0 end, t1.create_time desc
+	</select>
+
+	<select id="findDocShareStrategyDocId" resultType="java.util.Map">
+		select doc_id as docId, doc_name as docName from t_wf_doc_share_strategy where proc_def_id = #{procDefId}
+	</select>
+
+
+	<!--  删除审核策略的审核员 -->
+	<delete id="deleteDocShareStrategyAuditor">
+		DELETE t1
+		FROM
+			t_wf_doc_share_strategy_auditor t1,
+			t_wf_doc_share_strategy t2
+		WHERE
+			t1.audit_strategy_id = t2.id
+			AND t2.proc_def_id = #{procDefId}
+	</delete>
+</mapper>

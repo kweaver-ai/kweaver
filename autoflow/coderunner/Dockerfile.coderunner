@@ -1,0 +1,27 @@
+FROM acr.aishu.cn/dip/python:3.9.13-ubuntu22.04.20251014-1
+
+WORKDIR /opt
+
+ADD coderunner coderunner
+COPY deps deps
+COPY init_site_packages.sh init_site_packages.sh
+
+RUN groupadd -g 5000 -f coderunner && \
+    useradd coderunner -u 5000 -g 5000 -m -s /bin/bash && \
+    chown -R coderunner:coderunner /opt && \
+    pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip3 install deps/* && \
+    cd coderunner && \
+    pip3 install -r requirements.txt && \
+    rm -rf /opt/coderunner/deps && rm -rf /opt/coderunner/requirements.txt
+
+RUN cp -r /usr/local /usr/local.bk && \
+    cp init_site_packages.sh /opt/coderunner/ && \
+    chown coderunner:coderunner /opt/coderunner/init_site_packages.sh && \
+    chmod +x /opt/coderunner/init_site_packages.sh
+
+WORKDIR /opt/coderunner
+
+USER coderunner
+
+CMD ["/bin/bash", "-c", "python3 ./src/main.py"]

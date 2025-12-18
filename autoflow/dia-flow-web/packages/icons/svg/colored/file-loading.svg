@@ -1,0 +1,16 @@
+
+<svg width="37px" height="21px" viewBox="0 0 37 21" version="1.1">
+    <title>loading</title>
+    <desc>Created with Sketch.</desc>
+    <g id="界面设计" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="搜索结果" transform="translate(-2168.000000, -4696.000000)" fill="#E5E4E9" fill-rule="nonzero">
+            <g id="编组" transform="translate(2168.000000, 4696.000000)">
+                <polygon id="路径" points="0.285714286 0 0.285714286 20.5714286 4.28571429 20.5714286 4.28571429 0"></polygon>
+                <polygon id="路径" points="8.42857143 -6.57252031e-14 8.42857143 20.5714286 12.4285714 20.5714286 12.4285714 -6.57252031e-14"></polygon>
+                <polygon id="路径" points="17 0 17 20.5714286 21 20.5714286 21 0"></polygon>
+                <polygon id="路径" points="25 0 25 20.5714286 29 20.5714286 29 0"></polygon>
+                <polygon id="路径" points="33 0 33 20.5714286 37 20.5714286 37 0"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

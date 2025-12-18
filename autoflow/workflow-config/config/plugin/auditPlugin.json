@@ -1,0 +1,427 @@
+{
+    "front_plugin_info": [
+        {
+            "audit_type": "sync",
+            "entry": "/console/widget/shareweb-plugins/docsyncplugin.html",
+            "entry-mobile": "/console/widget/shareweb-plugins/docsyncplugin-mobile.html",
+            "name": "shareweb-plugins-docsyncplugin",
+            "category_belong": "control",
+            "label": {
+                "zh-cn": "文档域同步",
+                "zh-tw": "文件網域同步",
+                "en-us": "Doc Domain Sync"
+            }
+        },
+        {
+            "audit_type": "security_classification_approval",
+            "entry": "/anyshare/widget/securitylevel/index.html",
+            "entry-mobile": "/anyshare/widget/webmicroapps/securityLevelMobileComponent.html",
+            "name": "securitylevel",
+            "category_belong": "control",
+            "label": {
+                "zh-cn": "定密",
+                "zh-tw": "定密",
+                "en-us": "Security Setting"
+            }
+        },
+        {
+            "audit_type": "flow",
+            "entry": "/applet/app/file-transfer/flowPlugin.html",
+            "name": "file-transfer-flowPlugin",
+            "category_belong": "client",
+            "resubmit": {
+                "command": "sponsorflow"
+            },
+            "label": {
+                "zh-cn": "文档流转/文档收集",
+                "zh-tw": "文件流轉/文件收集",
+                "en-us": "Doc Relay/File Collector"
+            }
+        },
+        {
+            "audit_type": "af-data-catalog-publish",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "any-fabric-front-end-publish",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "数据资源目录发布",
+                "zh-tw": "數據資源目錄發佈",
+                "en-us": "data catalog publish"
+            }
+        },
+        {
+            "audit_type": "af-data-catalog-online",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "any-fabric-front-end-online",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "数据资源目录上线",
+                "zh-tw": "數據資源目錄上綫",
+                "en-us": "data catalog online"
+            }
+        },
+        {
+            "audit_type": "af-data-catalog-offline",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "any-fabric-front-end-offline",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "数据资源目录下线",
+                "zh-tw": "數據資源目錄下綫",
+                "en-us": "data catalog offline"
+            }
+        },
+        {
+            "audit_type": "af-data-view-online",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-view-online",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "逻辑视图上线",
+                "zh-tw": "邏輯視圖上綫",
+                "en-us": "data view online"
+            }
+        },
+        {
+            "audit_type": "af-data-view-offline",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-view-offline",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "逻辑视图下线",
+                "zh-tw": "邏輯視圖下綫",
+                "en-us": "data view offline"
+            }
+        },
+        {
+            "audit_type": "af-data-application-publish",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-application-publish",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "接口发布",
+                "zh-tw": "接口發佈",
+                "en-us": "application publish"
+            }
+        },
+        {
+            "audit_type": "af-data-application-change",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-application-change",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "接口变更",
+                "zh-tw": "接口變更",
+                "en-us": "application change"
+            }
+        },
+        {
+            "audit_type": "af-data-application-online",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-application-online",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "接口上线",
+                "zh-tw": "接口上綫",
+                "en-us": "application online"
+            }
+        },
+        {
+            "audit_type": "af-data-application-offline",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-application-offline",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "接口下线",
+                "zh-tw": "接口下綫",
+                "en-us": "application offline"
+            }
+        },
+        {
+            "audit_type": "af_demand_analysis_confirm",
+            "entry": "/anyfabric/dmdAudit.html",
+            "name": "af_demand_analysis_confirm",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "数据需求方案",
+                "zh-tw": "數據需求方案",
+                "en-us": "Data Requirement Plan"
+            }
+        },
+        {
+            "audit_type": "af-data-permission-request",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-permission-request",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "资源权限",
+                "zh-tw": "資源權限",
+                "en-us": "asset permission"
+            }
+        },
+        {
+            "audit_type": "af-basic-bigdata-create-category-label",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-basic-bigdata-create-category-label",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务标签分类发布",
+                "zh-tw": "業務標籤分類發佈",
+                "en-us": "business label category publish"
+            }
+        },
+        {
+            "audit_type": "af-basic-bigdata-update-category-label",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-basic-bigdata-update-category-label",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务标签分类变更",
+                "zh-tw": "業務標籤分類變更",
+                "en-us": "business label category update"
+            }
+        },
+        {
+            "audit_type": "af-basic-bigdata-delete-category-label",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-basic-bigdata-delete-category-label",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务标签分类删除",
+                "zh-tw": "業務標籤分類刪除",
+                "en-us": "business label category delete"
+            }
+        },
+        {
+            "audit_type": "af-basic-bigdata-auth-category-label",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-basic-bigdata-auth-category-label",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务标签授权",
+                "zh-tw": "業務標籤授權",
+                "en-us": "business label auth"
+            }
+        },
+        {
+            "audit_type": "af-bg-publish-business-area",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-bg-publish-business-area",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务领域发布",
+                "zh-tw": "業務領域發佈",
+                "en-us": "business area publish"
+            }
+        },
+        {
+            "audit_type": "af-bg-delete-business-area",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-bg-delete-business-area",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务领域删除",
+                "zh-tw": "業務領域刪除",
+                "en-us": "business area delete"
+            }
+        },
+        {
+            "audit_type": "af-bg-publish-main-business",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-bg-publish-main-business",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "主干业务发布",
+                "zh-tw": "主幹業務發佈",
+                "en-us": "main business publish"
+            }
+        },
+        {
+            "audit_type": "af-bg-publish-business-diagnosis",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-bg-publish-business-diagnosis",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "业务诊断发布",
+                "zh-tw": "業務診斷發佈",
+                "en-us": "business diagnosis publish"
+            }
+        },
+        {
+            "audit_type": "af-data-push-audit",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-data-push-audit",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "数据推送",
+                "zh-tw": "數據推送",
+                "en-us": "data push"
+            }
+        },
+        {
+            "audit_type": "af-file-resource-publish",
+            "entry": "/anyfabric/dataOperationAudit.html",
+            "name": "af-file-resource-publish",
+            "category_belong": "af_workflow",
+            "tenant_id": "af_workflow",
+            "label": {
+                "zh-cn": "文件资源",
+                "zh-tw": "文件資源",
+                "en-us": "file resource"
+            }
+        },
+        {
+            "audit_type": "automation",
+            "entry": "/flow-web/plugin.html",
+            "name": "automation",
+            "category_belong": "automation",
+            "label": {
+                "zh-cn": "自定义",
+                "zh-tw": "自訂",
+                "en-us": "Custom"
+            }
+        },
+        {
+            "audit_type": ["realname", "perm", "owner", "inherit", "anonymous"],
+            "entry": "/anyshare/widget/webmicroapps/shareDetailsList.html",
+            "entry-mobile": "/anyshare/widget/webmicroapps/shareDetailsMobile.html",
+            "name": "perm",
+            "category_belong": "control",
+            "label": {
+                "realname": {
+                    "zh-cn": "共享给指定用户",
+                    "zh-tw": "共享給指定使用者",
+                    "en-us": "Share with users"
+                },
+                "anonymous": {
+                    "zh-cn": "共享给任意用户",
+                    "zh-tw": "共用給任意使用者",
+                    "en-us": "Share with anyone"
+                }
+            },
+            "secret_label": {
+                "zh-cn": "内部授权",
+                "zh-tw": "內部授權",
+                "en-us": "Share with users"
+            }
+        },
+        {
+            "audit_type": "security_policy_upload",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "上传审核",
+                "zh-tw": "上傳核准",
+                "en-us": "Upload"
+            }
+        },
+        {
+            "audit_type": "security_policy_perm",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "权限",
+                "zh-tw": "權限",
+                "en-us": "Permission"
+            }
+        },
+        {
+            "audit_type": "security_policy_delete",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "删除",
+                "zh-tw": "刪除",
+                "en-us": "Delete"
+            }
+        },
+        {
+            "audit_type": "security_policy_rename",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "重命名",
+                "zh-tw": "重命名",
+                "en-us": "Rename"
+            }
+        },
+        {
+            "audit_type": "security_policy_copy",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "复制",
+                "zh-tw": "複製",
+                "en-us": "Copy"
+            }
+        },
+        {
+            "audit_type": "security_policy_move",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "移动",
+                "zh-tw": "移動",
+                "en-us": "Move"
+            }
+        },
+        {
+            "audit_type": "security_policy_modify_folder_property",
+            "entry": "/applet/app/content-automation-new/plugin.html",
+            "name": "content-automation-plugin",
+            "category_belong": "security_policy",
+            "label": {
+                "zh-cn": "修改属性审核",
+                "zh-tw": "修改屬性核准",
+                "en-us": "Modify properties"
+            }
+        },
+        {
+            "audit_type": "wikidoc_publish",
+            "entry": "/knowledge-center/component/auditWikiDocInfo.html",
+            "name": "wikidoc-publish-plugin",
+            "category_belong": "kc",
+            "label": {
+                "zh-cn": "知识发布",
+                "zh-tw": "知識發佈",
+                "en-us": "knowledge publish"
+            }
+        }
+    ],
+    "auditor_plugin_info": [
+        {
+            "key": "af_data_owner_audit",
+            "label": {
+                "zh-cn": "数据Owner审核",
+                "zh-tw": "数据Owner审核",
+                "en-us": "Data Owner Auditor"
+            }
+        }
+    ]
+}

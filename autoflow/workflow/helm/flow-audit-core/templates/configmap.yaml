@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flow-audit-core-config
+  namespace: {{ .Values.namespace }}
+data:
+  SPRING_PROFILES_ACTIVE: as_test
+  spring.datasource.username: {{ .Values.depServices.rds.user | quote }}
+  spring.datasource.password: {{ .Values.depServices.rds.password | quote }}
+  DATABASE: {{ include "rds.realDatabase" . | quote }}
+  HOST_IP: {{ .Values.depServices.rds.host | quote }}
+  PORT: {{ .Values.depServices.rds.port | quote }}
+  DB_TYPE: {{ .Values.depServices.rds.type | quote }}
+  redis.connectType: {{ .Values.depServices.redis.connectType }}
+  {{- if .Values.depServices.redis.connectInfo }}
+  redis.standalone.host: {{ include "redis.standalone.host" . }}
+  redis.standalone.port: {{ include "redis.standalone.port" . }}
+  redis.standalone.username: {{ include "redis.standalone.username" . }}
+  redis.standalone.password: {{ include "redis.standalone.password" . }}
+  redis.masterSlave.masterHost: {{ include "redis.masterSlave.masterHost" . }}
+  redis.masterSlave.masterPort: {{ include "redis.masterSlave.masterPort" . }}
+  redis.masterSlave.slaveHost: {{ include "redis.masterSlave.slaveHost" . }}
+  redis.masterSlave.slavePort: {{ include "redis.masterSlave.slavePort" . }}
+  redis.masterSlave.username: {{ include "redis.masterSlave.username" . }}
+  redis.masterSlave.password: {{ include "redis.masterSlave.password" . }}
+  redis.sentinel.sentinelHost: {{ include "redis.sentinel.sentinelHost" . }}
+  redis.sentinel.sentinelPort: {{ include "redis.sentinel.sentinelPort" . }}
+  redis.sentinel.masterGroupName: {{ include "redis.sentinel.masterGroupName" . }}
+  redis.sentinel.username: {{ include "redis.sentinel.username" . }}
+  redis.sentinel.password: {{ include "redis.sentinel.password" . }}
+  redis.sentinel.sentinelUsername: {{ include "redis.sentinel.sentinelUsername" . }}
+  redis.sentinel.sentinelPassword: {{ include "redis.sentinel.sentinelPassword" . }}
+  {{- end }}
+  MQ_TYPE: {{ .Values.depServices.mq.mqType | quote }}
+  MQ_HOST: {{ .Values.depServices.mq.mqHost | quote }}
+  MQ_PORT: {{ .Values.depServices.mq.mqPort | quote }}
+  MQ_LOOKUPD_HOST: {{ .Values.depServices.mq.mqLookupdHost | quote }}
+  MQ_LOOKUPD_PORT: {{ .Values.depServices.mq.mqLookupdPort | quote }}
+  {{- if and .Values.depServices.mq.auth (not (eq (printf "%s" .Values.depServices.mq.auth) "{}")) }}
+  MQ_AUTH_USERNAME: {{ .Values.depServices.mq.auth.username | quote }}
+  MQ_AUTH_PASSWORD: {{ .Values.depServices.mq.auth.password | quote }}
+  MQ_AUTH_MECHANISM: {{ .Values.depServices.mq.auth.mechanism | quote }}
+  {{- else }}
+  MQ_AUTH_USERNAME: ""
+  MQ_AUTH_PASSWORD: ""
+  MQ_AUTH_MECHANISM: ""
+  {{- end }}
+  user.management.host: {{ index .Values "depServices" "user-management" "privateHost" }}
+  user.management.port: {{ index .Values "depServices" "user-management" "privatePort" | quote }}
+  eacp.host: {{ .Values.depServices.eacp.privateHttpHost | quote }}
+  eacp.port: {{ .Values.depServices.eacp.privateHttpPort | quote }}
+  eacp_thrift.host: {{ .Values.depServices.log.host | quote }}
+  eacp_thrift.port: {{ .Values.depServices.log.port | quote }}
+  evfs.thrift.host: {{ .Values.depServices.efast.evfsThriftHost | quote }}
+  evfs.thrift.port: {{ .Values.depServices.efast.evfsThriftPort | quote }}
+  hydra_admin_host: {{ .Values.depServices.hydra.administrativeHost | quote }}
+  hydra_admin_port: {{ .Values.depServices.hydra.administrativePort | quote }}
+  hydra_admin_prefix: {{ .Values.depServices.hydra.administrativePrefix | quote }}
+  efast.host: {{ .Values.depServices.efast.privateHttpHost | quote }}
+  efast.port: {{ .Values.depServices.efast.privateHttpPort | quote }}
+  docset.host: {{ .Values.depServices.docset.privateHost | quote }}
+  docset.port: {{ .Values.depServices.docset.privatePort | quote }}
+  sharemgnt_host: {{ .Values.depServices.sharemgnt.host | quote }}
+  sharemgnt_port: {{ .Values.depServices.sharemgnt.port | quote }}
+  language: {{ .Values.service.language | quote }}
+  LANGUAGE: {{ .Values.service.language | quote }}
+  deploy_service_host: {{ index .Values "depServices" "deploy-service" "HttpHost" }}
+  deploy_service_port: {{ index .Values "depServices" "deploy-service" "HttpPort" | quote }}
+  document_host: {{ .Values.depServices.document.privateHost | quote }}
+  document_port: {{ .Values.depServices.document.privatePort | quote }}
+  appstore_host: {{ index .Values "depServices" "appstore-public" "host" | quote }}
+  appstore_port: {{ index .Values "depServices" "appstore-public" "port" | quote }}
+  docshare_public_host: {{ index .Values "depServices" "doc-share" "publicHost" }}
+  docshare_public_port: {{ index .Values "depServices" "doc-share" "publicPort" | quote }}
+  personalconfig_private_host: {{ index .Values "depServices" "personal-config-private" "privateHost" }}
+  personalconfig_private_port: {{ index .Values "depServices" "personal-config-private" "privatePort" | quote }}
+  module.version: {{ .Values.service.moduleVersion | quote }}
+  docshare_private_host: {{ index .Values "depServices" "doc-share" "privateHost" }}
+  docshare_private_port: {{ index .Values "depServices" "doc-share" "privatePort" | quote }}
+  message_private_host: {{ index .Values "depServices" "message" "privateHost" }}
+  message_private_port: {{ index .Values "depServices" "message" "privatePort" | quote }}
+  kc_mc_private_host: {{ .Values.depServices.kc.privateHost | quote }}
+  kc_mc_private_port: {{ .Values.depServices.kc.privatePort | quote }} 

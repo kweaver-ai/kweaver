@@ -1,0 +1,20 @@
+<svg viewBox="0 0 64 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none">
+        <g transform="translate(1 8)">
+            <ellipse cx="31" cy="40.5" fill="#F1F2F4" rx="31" ry="7.5" />
+            <path d="M13 0h24.19L46 6.87V39a3 3 0 01-3 3H13a3 3 0 01-3-3V3a3 3 0 013-3z" fill="#FFF" />
+            <path d="M37 1v7h8z" fill="#F1F2F4" />
+            <path
+                d="M44.5 7.6l-7.83-6.1H13c-.83 0-1.5.67-1.5 1.5v36c0 .83.67 1.5 1.5 1.5h30c.83 0 1.5-.67 1.5-1.5V7.6zM13 0h24.19L46 6.87V39a3 3 0 01-3 3H13a3 3 0 01-3-3V3a3 3 0 013-3z"
+                fill="#CFD1DB" />
+            <path d="M46 7.25v1.5h-9.75V1h1.5v6.25z" fill="#CFD1DB" />
+            <path d="M17 15h15v2H17zM17 9h15v2H17zM17 21h9v2h-9zM17 27h9v7h-9z" fill="#F1F2F4" />
+        </g>
+        <g transform="rotate(-45 60.33 -21.68)">
+            <circle cx="7.75" cy="7.75" fill="#FAFAFA" r="7.75" />
+            <path d="M7.75 16.26a8.5 8.5 0 110-17.01 8.5 8.5 0 010 17zm0-1.5a7 7 0 100-14.01 7 7 0 000 14z"
+                fill="#CFD1DB" />
+            <rect fill="#CFD1DB" height="8.88" rx="1.39" width="2.77" x="5.62" y="15" />
+        </g>
+    </g>
+</svg>

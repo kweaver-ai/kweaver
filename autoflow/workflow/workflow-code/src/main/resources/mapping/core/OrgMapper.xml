@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.engine.identity.dao.OrgQueryDao">
+	<resultMap id="RM_WFOrg" type="com.aishu.wf.core.engine.identity.model.Org">
+        <result property="orgId" column="org_id"/>
+        <result property="orgName" column="org_name"/>
+        <result property="orgFullName" column="org_full_name"/>
+        <result property="orgFullPathName" column="org_full_path_name"/>
+        <result property="orgFullPathId" column="org_full_path_id"/>
+        <result property="orgParentId" column="org_parent_id"/>
+        <result property="orgType" column="org_type"/>
+        <result property="orgLevel" column="org_level"/>
+        <result property="orgAreaType" column="org_area_type"/>
+        <result property="orgSort" column="org_sort"/>
+        <result property="orgPrincipal" column="org_principal"/>
+        <result property="orgStatus" column="org_status"/>
+        <result property="orgBranchLeader" column="org_branch_leader"/>
+        <result property="companyId" column="company_id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="deptId" column="dept_id"/>
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="columns">
+	    <![CDATA[
+		o.company_id,o.company_name,o.dept_name,o.dept_id,o.org_id,o.org_name,org_full_name,org_full_path_name,org_full_path_id,org_parent_id,org_type,org_level,org_area_type,org_sort,org_work_phone,org_work_address,org_principal,org_status,org_create_time,org_branch_leader,o.remark
+	    ]]>
+	</sql>
+
+
+ 	<select id="findParentOrgTree" resultMap="RM_WFOrg">
+    	select <include refid="columns" />
+		from t_wf_org o
+		<where>
+    	 org_status='QY' and   FIND_IN_SET(org_id, getOrgParentLst(#{orgId}))
+		 <if test="@Ognl@isNotEmpty(orgLevel)">
+				and org_level = #{orgLevel}
+			</if>
+	       <if test="@Ognl@isNotEmpty(orgAreaType)">
+				and org_area_type = #{orgAreaType}
+			</if>
+			<if test="@Ognl@isNotEmpty(orgType)">
+				and org_type = #{orgType}
+			</if>
+		</where>
+    </select>
+
+    <select id="findFullPath" resultMap="RM_WFOrg">
+        select <include refid="columns" />
+        from t_wf_org o where FIND_IN_SET(org_id, getOrgParentLst(#{orgId}));
+    </select>
+    
+
+	<select id="findOrgByIds" resultMap="RM_WFOrg">
+    	select <include refid="columns" />
+		from t_wf_org o where org_status='QY' and org_id in
+		<foreach item="orgId" collection="orgIds" open="(" separator="," close=")">
+         #{orgId,jdbcType=VARCHAR}
+        </foreach> order by org_sort
+    </select>
+    
+</mapper>
+

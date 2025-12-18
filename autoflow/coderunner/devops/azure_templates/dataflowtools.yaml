@@ -1,0 +1,124 @@
+parameters:
+  - name: name
+    default: ''
+  - name: pool
+    default: ''
+  - name: containerName
+    default: ''
+  - name: registry
+    default: ''
+  - name: imageRepository
+    default: ''
+  - name: artifactName
+    default: ''
+  - name: dependencyArtifact
+    default: ''
+  - name: arch
+    default: ''
+  - name: buildImageJobName
+    default: ''
+  - name: timeoutInMinutes
+    default: 75
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    container: ${{ parameters.containerName }}
+    workspace:
+      clean: all
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    steps:
+      - checkout: self
+      - task: DownloadBuildArtifacts@0
+        displayName: Download code from artifacts
+        inputs:
+          buildType: "current"
+          downloadType: "single"
+          artifactName: ${{parameters.dependencyArtifact}}
+          downloadPath: "$(Build.SourcesDirectory)"
+
+      # 执行构建命令
+      - script: |
+          set -ex
+          ls -l
+          pip3 install --index-url https://repo.huaweicloud.com/repository/pypi/simple/ --trusted-host repo.huaweicloud.com ./deps/*
+
+          cd $(Build.SourcesDirectory)/DependencyRepo
+          pip3 install --index-url https://repo.huaweicloud.com/repository/pypi/simple/ --trusted-host repo.huaweicloud.com ./proton-mq-python
+
+          cd $(Build.SourcesDirectory)/dataflowtools
+          pip3 install --index-url https://repo.huaweicloud.com/repository/pypi/simple/ --trusted-host repo.huaweicloud.com -r requirements.txt
+          
+          pyinstaller -y --workpath build --distpath dist \
+              --name dataflowtools \
+              --add-data="$(pwd)/src/schema/*:src/schema" \
+              --hidden-import=pymysql \
+              --hidden-import=dmPython \
+              src/main.py
+        condition: succeeded()
+        displayName: "Build"
+      - task: CopyFiles@2
+        inputs:
+          # sourceFolder: $(Build.SourcesDirectory)/dataflowtools
+          # 这里填需要放到镜像中的路径，一行一个
+          contents: |
+            dataflowtools/dist/**
+            Dockerfile.dataflowtools
+          targetFolder: $(Build.BinariesDirectory)
+      - task: PublishBuildArtifacts@1
+        inputs:
+          # 由于Pipeline机制，不同的job可能会在不同的workspace执行，所以需要通过artifact在job间传递文件
+          pathToPublish: $(Build.BinariesDirectory)
+          artifactName: ${{parameters.artifactName}}
+      - script: |
+          rm -rf ./**
+          rm -rf $(Build.BinariesDirectory)/**/
+          ls
+        displayName: "Remove Source"
+        condition: always()
+  - job: ${{ parameters.buildImageJobName }}
+    displayName: ${{ parameters.buildImageJobName }}
+    dependsOn: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    steps:
+      # 主意修改对应的变量，下面的 image.registry 以及 image.repository.backend 均来自变量组 global-config
+      # 可以每个服务建立一个变量组管理这类公用变量
+      - checkout: none
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          artifactName: ${{parameters.artifactName}}
+          downloadPath: $(Build.BinariesDirectory)
+      - script: |
+          set -ex
+          
+          CURRENT_IMAGE="$(imageRegistry)/$(imageDFTRepository):$(CURRENT_TAG).${{ parameters.arch }}"
+          LATEST_IMAGE="$(imageRegistry)/$(imageDFTRepository):$(LATEST_TAG).${{ parameters.arch }}"
+
+          cd $(Build.BinariesDirectory)/${{parameters.artifactName}}
+          docker build -f ./Dockerfile.dataflowtools -t $LATEST_IMAGE .
+          docker tag $LATEST_IMAGE $CURRENT_IMAGE
+
+          set +x
+          echo "##vso[task.setvariable variable=BuildAgentName;isOutput=true]$(Agent.Name)"
+          echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+          echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+
+        name: getAgentName
+        displayName: "Build"
+      - script: |
+          ls
+          rm -rf ./**
+          rm -rf $(Build.ArtifactStagingDirectory)/**/
+        displayName: "Remove Source"
+        condition: always()
+      - script: |
+          CURRENT_IMAGE="$(imageRegistry)/$(imageDFTRepository):$(CURRENT_TAG).${{ parameters.arch }}"
+          LATEST_IMAGE="$(imageRegistry)/$(imageDFTRepository):$(LATEST_TAG).${{ parameters.arch }}"
+          docker rmi -f $CURRENT_IMAGE
+          docker rmi -f $LATEST_IMAGE
+          docker images
+        displayName: "Clearn Image"
+        condition: failed()

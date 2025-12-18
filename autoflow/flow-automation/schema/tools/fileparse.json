@@ -1,0 +1,83 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "File parse",
+    "description": "",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+        },
+        "title": {
+            "type": "string"
+        },
+        "operator": {
+            "type": "string",
+            "pattern": "^@.*",
+            "maxLength": 255
+        },
+        "parameters": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "source_type": {
+                            "type": "string",
+                            "const": "docid"
+                        },
+                        "docid": {
+                            "type": "string"
+                        },
+                        "version": {
+                            "type": "string"
+                        },
+                        "slice_vector": {
+                            "type": "string",
+                            "enum": ["none", "slice", "slice_vector"]
+                        },
+                        "model": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "docid"
+                    ]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "source_type": {
+                            "type": "string",
+                            "const": "url"
+                        },
+                        "url": {
+                            "type": "string"
+                        },
+                        "filename": {
+                            "type": "string"
+                        },
+                        "slice_vector": {
+                            "type": "string",
+                            "enum": ["none", "slice", "slice_vector"]
+                        },
+                        "model": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "source_type",
+                        "url",
+                        "filename"
+                    ]
+                }
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "operator",
+        "parameters"
+    ],
+    "additionalProperties": false
+}

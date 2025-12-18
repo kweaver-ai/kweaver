@@ -1,0 +1,17 @@
+parameters:
+  - name: jobName
+    default: ''
+
+jobs:
+  - job: ${{ parameters.jobName }}
+    displayName: '静态检查'
+    pool:
+      name: $(build.x86Pool)
+    steps:
+      - checkout: self
+        fetchDepth: 1
+
+      - script: |
+          rm -rf ./**
+        displayName: 'remove source'
+        condition: always()

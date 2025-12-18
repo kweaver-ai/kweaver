@@ -1,0 +1,90 @@
+.card {
+    position: relative;
+    box-shadow: 0 2px 9px 1px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+
+    &:hover {
+        border-color: rgba(0, 0, 0, 0.3);
+    }
+
+    :global(.@{ant-prefix}-card-body) {
+        padding: 24px 0 0;
+    }
+
+    .card-content {
+        margin: 0 24px;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-description {
+        margin: 24px 24px 0;
+
+        .title {
+            color: rgba(16, 26, 64, 1);
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 24px;
+        }
+
+        .description {
+            margin-top: 4px;
+            color: rgba(177, 181, 201, 1);
+            font-size: 12px;
+            line-height: 20px;
+            letter-spacing: 0px;
+        }
+    }
+
+    .card-footer {
+        margin-top: 28px;
+        padding: 8px 16px 8px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 36px;
+        background: rgba(246, 249, 253, 1);
+        cursor: pointer;
+
+        .content-text {
+            width: calc(100% - 32px);
+            line-height: 20px;
+
+            .description {
+                color: #5a638c;
+                font-size: 10px;
+            }
+        }
+
+        .arrow {
+            font-size: 13px;
+            color: rgba(68, 68, 68, 1);
+        }
+    }
+}
+
+// 卡片节点内容
+.card-content-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #e4e6ed;
+    padding: 5px;
+
+    .box-img {
+        font-size: 24px;
+    }
+
+    &.more-img {
+        border-color: transparent;
+    }
+}
+
+.card-content-arrow {
+    padding: 0 12px;
+
+    .arrow-img {
+        font-size: 12px;
+    }
+}

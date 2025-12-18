@@ -1,0 +1,180 @@
+stages:
+  - stage: InitVariable
+    displayName: 初始化
+    jobs:
+      - job: InitVariable
+        pool: anydata-centos7.7-x86_64
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+          - bash: |
+              set -ex
+              VERSION=`cat $(folder)/VERSION`
+
+              gitCommit="$(git rev-parse --short HEAD 2>/dev/null)"
+
+              # 处理分支名称，将/替换为-
+              # 从refs/heads/feature/12345中提取feature/12345，然后将/替换为-
+              BRANCH_NAME=$(echo $(Build.SourceBranch) | sed 's#refs/heads/##' | tr '/' '-')
+              CURRENT_TAG="${VERSION}-${BRANCH_NAME}.${gitCommit}.$(Build.BuildId)"
+              LATEST_TAG="${VERSION}-${BRANCH_NAME}.${gitCommit}"
+              # if [ $(isMisson) = True ]; then
+              #     CURRENT_TAG="${VERSION}.${gitCommit}.$(Build.BuildId)"
+              #     LATEST_TAG="${VERSION}.${gitCommit}"
+              # fi
+
+              set +x
+              echo "##vso[task.setvariable variable=VERSION;isoutput=true]$VERSION"
+              set +x
+              echo "##vso[task.setvariable variable=CURRENT_TAG;isoutput=true]$CURRENT_TAG"
+              set +x
+              echo "##vso[task.setvariable variable=LATEST_TAG;isoutput=true]$LATEST_TAG"
+              set +x
+              echo "##vso[task.setvariable variable=COMMIT_ID;isoutput=true]$gitCommit"
+
+            name: MyOutputVar
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  - template: ./compile.yml
+    parameters:
+      name: BuildService
+      displayName: 代码打包
+
+  - stage: BuildImage
+    displayName: 镜像构建
+    dependsOn:
+      - InitVariable
+      - BuildService
+    jobs:
+      - template: ./docker-build.yml
+        parameters:
+          name: DockerJobX86
+          displayName: '镜像构建 amd64'
+          pool: $(amd64Pool)
+          harborUrl: $(imageRegistry)
+          arch: amd64
+          condition: succeeded()
+
+      - template: ./docker-build.yml
+        parameters:
+          name: DockerJobARM
+          displayName: '镜像构建 arm64'
+          pool: $(arm64Pool)
+          harborUrl: $(imageRegistry)
+          arch: arm64
+          condition: succeeded()
+
+  - stage: MakeManifest
+    displayName: 制作多架构镜像
+    dependsOn:
+      - InitVariable
+      - BuildImage
+    variables:
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    jobs:
+      - job: MakeManifest
+        displayName: 制作多架构镜像
+        workspace:
+          clean: all
+        pool:
+          name: $(amd64Pool)
+        steps:
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              containerRegistry: ACRDockerRegistry
+              command: login
+
+          - task: Bash@3
+            displayName: 制作多架构镜像
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):$(CURRENT_TAG)"
+                LATEST_IMAGE="$(imageRegistry)/$(imageRepository):$(LATEST_TAG)"
+
+                docker manifest create --amend ${CURRENT_IMAGE} ${CURRENT_IMAGE}.amd64 ${CURRENT_IMAGE}.arm64
+                docker manifest create --amend ${LATEST_IMAGE} ${LATEST_IMAGE}.amd64 ${LATEST_IMAGE}.arm64
+
+                docker manifest push -p ${CURRENT_IMAGE}
+                docker manifest push -p ${LATEST_IMAGE}
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  - stage: ChartPush
+    displayName: Chart构建
+    dependsOn:
+      - InitVariable
+    variables:
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+      COMMIT_ID: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.COMMIT_ID']]
+    jobs:
+      - job: ChartPush
+        displayName: Chart构建
+        workspace:
+          clean: all
+        pool:
+          name: $(amd64Pool)
+        steps:
+          - checkout: self
+          - task: Bash@3
+            displayName: Chart构建
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env
+                set -ex
+
+                chartCurrentTag=$(echo '$(CURRENT_TAG)' | sed 's/$(COMMIT_ID)/git+$(COMMIT_ID)/g')
+                chartLatestTag=$(echo '$(LATEST_TAG)' | sed 's/$(COMMIT_ID)/git+$(COMMIT_ID)/g')
+
+                chmod 777 -R $(pwd)/charts
+                docker run --rm \
+                      -v $(pwd)/charts:/chart \
+                      --entrypoint='' \
+                      $(yqImage) sh -c "
+                  set -ex
+
+                  yq eval -i '.image.registry = \"$(imageRegistry)\"' /chart/$(chartName)/values.yaml
+                  yq eval -i '.image.repository = \"$(imageRepository)\"' /chart/$(chartName)/values.yaml
+                  yq eval -i '.image.tag = \"$(LATEST_TAG)\"' /chart/$(chartName)/values.yaml
+
+                  yq eval -i '.name = \"$(chartName)\"' /chart/$(chartName)/Chart.yaml
+                  yq eval -i '.appVersion = \"$(CURRENT_TAG)\"' /chart/$(chartName)/Chart.yaml
+                  sed -i 's/\"version\": .*/\"version\": \"$chartCurrentTag\",/g' /chart/$(chartName)/_componentMeta.json
+
+                  yq eval -i '.version = \"$chartCurrentTag\"' /chart/$(chartName)/Chart.yaml
+                  cd /chart && tar -czf $(chartName)-$chartCurrentTag.tar.gz $(chartName)
+
+                  yq eval -i '.version = \"$chartLatestTag\"' /chart/$(chartName)/Chart.yaml
+                  cd /chart && tar -czf $(chartName)-$chartLatestTag.tar.gz $(chartName)
+                  "
+
+                cd charts
+                curlOptions="-s -u $(registry.username):$(registry.password) -H \"Content-Type:multipart/form-data\""
+                curl ${curlOptions} -F "chart=@$(chartName)-$chartCurrentTag.tar.gz;type=application/x-compressed-tar" -X POST "$(chartRepo)"
+                curl ${curlOptions} -F "chart=@$(chartName)-$chartLatestTag.tar.gz;type=application/x-compressed-tar" -X POST "$(chartRepo)"
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)

@@ -1,0 +1,439 @@
+package mgnt
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"regexp"
+	"sort"
+	"strings"
+	"time"
+
+	"maps"
+
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
+	aerr "devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/errors"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/mod"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/utils"
+	ierr "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/errors"
+	commonLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/log"
+	traceLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/log"
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/trace"
+)
+
+// LoopParam 循环节点步骤参数
+type LoopParam struct {
+	LoopTaskID string
+	Index      int
+	LoopItems  []any
+	StepMap    map[string]string
+}
+
+// GenerateTaskResults 动态生成任务执行结果
+func (m *mgnt) GenerateTaskResults(ctx context.Context, dagID, dagInsID string, page, limit int64) (int64, []*entity.TaskInstance, error) {
+	var (
+		err      error
+		allTasks []*entity.TaskInstance
+	)
+	ctx, span := trace.StartInternalSpan(ctx)
+	defer func() { trace.TelemetrySpanEnd(span, err) }()
+	log := traceLog.WithContext(ctx)
+
+	dagIns, err := m.mongo.GetDagInstance(ctx, dagInsID)
+	if err != nil {
+		log.Warnf("[logic.GenerateTaskResults] GetDagInstance err, detail: %s", err.Error())
+		return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.DescKeyErrorDepencyService, nil)
+	}
+
+	err = dagIns.LoadExtData(ctx)
+	if err != nil {
+		log.Warnf("[logic.GenerateTaskResults] LoadExtData err, detail: %s", err.Error())
+		return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.InternalError, err.Error())
+	}
+
+	dag, err := m.mongo.GetDagWithOptionalVersion(ctx, dagID, dagIns.VersionID)
+	if err != nil {
+		log.Warnf("[logic.GenerateTaskResults] GetDagWithOptionalVersion err, detail: %s", err.Error())
+		return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.DescKeyErrorDepencyService, nil)
+	}
+
+	contents, exist := m.memoryCache.Get(dagInsID)
+	if exist {
+		err = json.Unmarshal([]byte(contents), &allTasks)
+		if err != nil {
+			log.Warnf("[logic.GenerateTaskResults] Unmarshal err, detail: %s", err.Error())
+			return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.DescKeyErrorDepencyService, nil)
+		}
+	} else {
+		for _, task := range dag.Tasks {
+			if task.ActionName == common.InternalReturnOpt {
+				allTasks = append(allTasks, m.createBaseTaskInstance(task, dagIns))
+				break
+			}
+			// 循环节点内的step信息不会在任务执行前初始化好，需要动态生成
+			if task.ActionName == common.Loop {
+				isRetrun, tasks := m.generateLoopTaskResults(task, dagIns)
+				allTasks = append(allTasks, tasks...)
+				if isRetrun {
+					break
+				}
+			} else {
+				baseTask := m.createBaseTaskInstance(task, dagIns)
+				allTasks = append(allTasks, baseTask)
+			}
+		}
+
+		sort.SliceStable(allTasks, func(i, j int) bool {
+			return allTasks[i].LastModifiedAt < allTasks[j].LastModifiedAt
+		})
+
+		m.memoryCache.Set(dagInsID, allTasks, time.Minute*5)
+	}
+
+	total := int64(len(allTasks))
+
+	if limit == -1 {
+		return total, allTasks, nil
+	}
+
+	start, end := page*limit, (page+1)*limit
+	if start > total {
+		start = total
+	}
+
+	if end > total {
+		end = total
+	}
+
+	allTasks = allTasks[start:end]
+
+	return total, allTasks, nil
+}
+
+// generateLoopTaskResults 生成循环节点结果
+func (m *mgnt) generateLoopTaskResults(task entity.Task, dagIns *entity.DagInstance) (bool, []*entity.TaskInstance) {
+	allTasks := make([]*entity.TaskInstance, 0)
+	mode := task.Params["mode"].(string)
+	iterations, loopParam := 0, &LoopParam{LoopTaskID: task.ID, Index: 0, StepMap: make(map[string]string)}
+	switch mode {
+	case "limit":
+		switch v := task.Params["limit"].(type) {
+		case int32:
+			iterations = int(v)
+		case int64:
+			iterations = int(v)
+		case int8:
+			iterations = int(v)
+		case int:
+			iterations = v
+		case float64:
+			iterations = int(v)
+		}
+	case "array":
+		loopTaskIns := m.createBaseTaskInstance(task, dagIns)
+		if v, ok := loopTaskIns.Params["array"].([]any); ok {
+			iterations = len(v)
+			loopParam.LoopItems = v
+		} else {
+			commonLog.NewLogger().Warnln("[logic.generateLoopTaskResults] parse loop params failed, not array")
+		}
+	}
+
+	var loopOutputs map[string]any
+	for i := range iterations {
+		loopParam.Index = i
+		// loop 节点循环结果, 生成副本数据防止原数据被破坏
+		b, _ := json.Marshal(task)
+		var taskCopy entity.Task
+		_ = json.Unmarshal(b, &taskCopy)
+
+		if i > 0 {
+			taskCopy.ID = fmt.Sprintf("%s_i%d", task.ID, i)
+		}
+		baseTask := m.createBaseTaskInstance(taskCopy, dagIns)
+
+		// 循环节点输出结果不全，手动补全
+		result, ok := baseTask.Results.(map[string]any)
+		if ok {
+			if loopOutputs == nil && result["outputs"] != nil {
+				loopOutputs = result["outputs"].(map[string]any)
+			}
+
+			switch mode {
+			case "limit":
+				result["index"] = i
+			case "array":
+				content := baseTask.Params["array"].([]any)
+				result["index"] = i
+				result["value"] = content[i]
+			}
+
+			if i == iterations-1 && loopOutputs != nil {
+				result["outputs"] = loopOutputs
+			} else {
+				delete(result, "outputs")
+			}
+			baseTask.Results = result
+		}
+		allTasks = append(allTasks, baseTask)
+
+		// loop内部step创建
+		for _, step := range task.Steps {
+			if step.Operator == common.BranchOpt {
+				breanchTaskID := fmt.Sprintf("%s_i%v_s%v", task.ID, i, step.ID)
+				isReturn, tasks := m.generateBranchTaskResults(breanchTaskID, step, dagIns, loopParam, false)
+				allTasks = append(allTasks, tasks...)
+				if isReturn {
+					return true, allTasks
+				}
+			} else {
+				loopTask := entity.Task{
+					ID:         fmt.Sprintf("%s_i%v_s%v", task.ID, i, step.ID),
+					Name:       step.Title,
+					ActionName: step.Operator,
+					Params:     m.renderLoopBranchParams(step.Parameters, loopParam, dagIns),
+				}
+				loopParam.StepMap[step.ID] = loopTask.ID
+				allTasks = append(allTasks, m.createBaseTaskInstance(loopTask, dagIns))
+				if step.Operator == common.InternalReturnOpt {
+					return true, allTasks
+				}
+			}
+		}
+	}
+
+	return false, allTasks
+}
+
+// generateBranchTaskResults 生成分支任务结果
+func (m *mgnt) generateBranchTaskResults(taskID string, step entity.Step, dagIns *entity.DagInstance, loopParam *LoopParam, isSkip bool) (bool, []*entity.TaskInstance) {
+	var tasks []*entity.TaskInstance
+
+	// 分支节点
+	breanchTask := createIterationBranchTaskInstance(taskID, step, dagIns, isSkip)
+	tasks = append(tasks, breanchTask)
+
+	for branchIndex, branch := range step.Branches {
+		branch := utils.DeepCopy(branch)
+		for _, branchStep := range branch.Steps {
+			prechecks := entity.PreChecks{}
+			for idx, con := range branch.Conditions {
+				conMap := map[string]any{}
+				for i, v := range con {
+					conMap[fmt.Sprintf("%v", i)] = map[string]any{
+						"a": v.Parameter.A,
+						"b": v.Parameter.B,
+					}
+				}
+				conMap = m.renderLoopBranchParams(conMap, loopParam, dagIns)
+				for i := range len(conMap) {
+					key := fmt.Sprintf("%v", i)
+					con[i].Parameter = entity.TaskConditionParameter{
+						A: conMap[key].(map[string]any)["a"],
+						B: conMap[key].(map[string]any)["b"],
+					}
+				}
+
+				check := &entity.Check{
+					Conditions: con,
+					Act:        entity.ActiveActionSkip,
+				}
+				prechecks[fmt.Sprintf("%s_%v", taskID, idx)] = check
+			}
+			task := entity.Task{
+				Name:       branchStep.Title,
+				ActionName: branchStep.Operator,
+				Params:     m.renderLoopBranchParams(branchStep.Parameters, loopParam, dagIns),
+				PreChecks:  prechecks,
+			}
+
+			if branchStep.Operator == common.InternalReturnOpt {
+				tasks = append(tasks, m.createBaseTaskInstance(task, dagIns))
+				return true, tasks
+			}
+			if branchStep.Operator == common.BranchOpt {
+				isSkip = tasks[len(tasks)-1].Status == entity.TaskInstanceStatusSkipped
+				branchTaskID := buildBranchTaskID(dagIns.Mode, branchIndex, loopParam.Index, branchStep.ID, taskID)
+				isReturn, subTasks := m.generateBranchTaskResults(branchTaskID, branchStep, dagIns, loopParam, isSkip)
+				tasks = append(tasks, subTasks...)
+				if isReturn {
+					return true, tasks
+				}
+			} else {
+				task.ID = buildBranchTaskID(dagIns.Mode, branchIndex, loopParam.Index, branchStep.ID, taskID)
+				loopParam.StepMap[branchStep.ID] = task.ID
+				branchStepTask := m.createBaseTaskInstance(task, dagIns)
+				tasks = append(tasks, branchStepTask)
+			}
+		}
+	}
+
+	return false, tasks
+}
+
+// createBaseTaskInstance 创建节点实例
+func (m *mgnt) createBaseTaskInstance(task entity.Task, dagIns *entity.DagInstance) *entity.TaskInstance {
+	b, _ := json.Marshal(task)
+	var taskCopy entity.Task
+	_ = json.Unmarshal(b, &taskCopy)
+
+	taskIns := &entity.TaskInstance{
+		TaskID:             taskCopy.ID,
+		DagInsID:           dagIns.ID,
+		Name:               taskCopy.Name,
+		ActionName:         taskCopy.ActionName,
+		Params:             taskCopy.Params,
+		Status:             entity.TaskInstanceStatusSuccess,
+		PreChecks:          taskCopy.PreChecks,
+		Results:            extractTaskResults(taskCopy.ID, dagIns),
+		LastModifiedAt:     dagIns.EndedAt * 1e9,
+		RelatedDagInstance: dagIns,
+	}
+	taskIns.Initial()
+	taskIns.CreatedAt = dagIns.CreatedAt
+	taskIns.UpdatedAt = dagIns.EndedAt
+	taskIns.DoPreCheck(dagIns)
+	if taskIns.Status == entity.TaskInstanceStatusSkipped {
+		taskIns.LastModifiedAt = time.Now().AddDate(200, 0, 0).UnixNano()
+	}
+
+	m.renderParamsV2(taskIns)
+	if taskCopy.ActionName == common.InternalReturnOpt {
+		taskIns.Results = taskIns.Params
+	}
+	// 组合算子结束节点无输出
+	if dagIns.DagType == common.DagTypeComboOperator && taskCopy.ActionName == common.InternalReturnOpt {
+		taskIns.Params = nil
+	}
+	return taskIns
+}
+
+// createIterationBranchTaskInstance 创建迭代分支节点
+func createIterationBranchTaskInstance(taskID string, step entity.Step, dagIns *entity.DagInstance, isSkip bool) *entity.TaskInstance {
+	taskIns := &entity.TaskInstance{
+		TaskID:         taskID,
+		Name:           step.Title,
+		ActionName:     step.Operator,
+		Status:         entity.TaskInstanceStatusSuccess,
+		LastModifiedAt: dagIns.EndedAt * 1e9,
+	}
+	taskIns.Initial()
+	taskIns.CreatedAt = dagIns.CreatedAt
+	taskIns.UpdatedAt = dagIns.EndedAt
+	if isSkip {
+		taskIns.Status = entity.TaskInstanceStatusSkipped
+	}
+
+	return taskIns
+}
+
+// extractTaskResults 根据运行模式提取任务结果
+func extractTaskResults(taskID string, dagIns *entity.DagInstance) any {
+	shareData := parseShareData(dagIns)
+	taskKey := fmt.Sprintf("__%v", taskID)
+	vars, _ := shareData.Get(taskKey)
+	return vars
+}
+
+func parseShareData(dagIns *entity.DagInstance) *entity.ShareData {
+	var shareData = &entity.ShareData{}
+	switch dagIns.Mode {
+	case entity.DagInstanceModeVM:
+		data := map[string]any{}
+		_ = json.Unmarshal([]byte(dagIns.Dump), &data)
+		shareData.Dict = data["env"].(map[string]any)
+	default:
+		shareData = dagIns.ShareData
+	}
+
+	return shareData
+}
+
+// buildBranchTaskID 构建分支任务ID
+func buildBranchTaskID(mode entity.DagInstanceMode, branchIndex, iter int, branchStepID, taskID string) string {
+	if mode == entity.DagInstanceModeVM {
+		loopTaskID := taskID
+		if idx := strings.Index(taskID, "_i"); idx != -1 {
+			loopTaskID = taskID[:idx]
+		}
+		return fmt.Sprintf("%s_i%v_s%v", loopTaskID, iter, branchStepID)
+	}
+
+	// 统一处理非VM模式
+	return fmt.Sprintf("%s_%v_%v", taskID, branchIndex, branchStepID)
+}
+
+// renderLoopBranchParams 渲染引用循环节点Value和Index节点入参
+func (m *mgnt) renderLoopBranchParams(params map[string]any, loopParam *LoopParam, dagIns *entity.DagInstance) map[string]any {
+	b, _ := json.Marshal(params)
+	jsonStr := string(b)
+
+	loopOutputPattern := `{{__(\d+)\.([^}]+)}}`
+	loopOutputRe := regexp.MustCompile(loopOutputPattern)
+	// 处理循环内节点输出结果变量引用
+	loopOutputMatches := loopOutputRe.FindAllStringSubmatch(jsonStr, -1)
+	if len(loopOutputMatches) > 0 {
+		for _, match := range loopOutputMatches {
+			if len(match) >= 3 {
+				loopOutputKey := match[2]
+				if v, ok := loopParam.StepMap[match[1]]; ok {
+					loopOutputKey = fmt.Sprintf("{{__%v.%v}}", v, loopOutputKey)
+					jsonStr = strings.ReplaceAll(jsonStr, match[0], loopOutputKey)
+				}
+			}
+		}
+	}
+
+	copyParams := make(map[string]any)
+	_ = json.Unmarshal([]byte(jsonStr), &copyParams)
+
+	vmIns := vm.NewVM()
+	vmIns.AddGlobals(mod.NewGlobals(dagIns))
+
+	g := vm.NewGenerator(vmIns)
+
+	err := g.GenerateValue(copyParams)
+	if err != nil {
+		commonLog.NewLogger().Warnf("[logic.renderLoopBranchParams] GenerateValue failed, detail: %v", err.Error())
+		return params
+	}
+
+	vmIns.LoadInstructions(g.Instructions)
+
+	env := parseShareData(dagIns).GetAll()
+
+	vmIns.Env = env
+
+	pattern := `{{__(\d+)\.(value|index)}}`
+	re := regexp.MustCompile(pattern)
+	matches := re.FindAllString(jsonStr, -1)
+	if len(matches) > 0 {
+		var arrVal any
+		if loopParam.Index < len(loopParam.LoopItems) {
+			arrVal = loopParam.LoopItems[loopParam.Index]
+		} else {
+			arrVal = ""
+		}
+		vmIns.Env["__"+loopParam.LoopTaskID] = map[string]any{
+			"value": arrVal,
+			"index": loopParam.Index,
+		}
+	}
+
+	vmIns.Run()
+
+	_, ret, err := vmIns.Result()
+
+	if err != nil {
+		commonLog.NewLogger().Warnf("[logic.renderLoopBranchParams] vmIns.Result failed, detail: %v", err.Error())
+		return params
+	}
+
+	if resultMap, ok := ret.(map[string]interface{}); ok {
+		maps.Copy(copyParams, resultMap)
+	}
+
+	return copyParams
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.engine.identity.dao.User2roleDao">
+	<resultMap id="RM_User2role" type="com.aishu.wf.core.engine.identity.model.User2role">
+        <result property="roleId" column="role_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="remark" column="remark"/>
+         <result property="userCode" column="user_code"/>
+        <result property="userName" column="user_name"/>
+         <result property="orgId" column="org_id"/>
+         <result property="orgName" column="org_name"/>
+	</resultMap>
+	
+    <select id="getUser2roleList" resultMap="RM_User2role">
+		SELECT ur.role_id,
+			   ur.user_id,
+			   ur.remark,
+			   ur.user_name,
+			   ur.org_name,
+			   ur.org_id,
+			   ur.user_code
+		FROM t_wf_user2role ur,
+			 t_wf_user u,
+			 t_wf_org c,
+			 t_wf_org o
+		where ur.role_id = #{roleId}
+		  and ur.user_id = u.user_id
+		  and u.company_id = c.org_id
+		  and u.org_id = o.org_id
+		order by c.org_sort, o.org_sort, u.user_sort
+	</select>
+
+	<select id="getUser2roleListByOrgs" resultMap="RM_User2role">
+		SELECT
+			ur.role_id,
+			ur.user_id,
+			ur.remark,
+			ur.user_name,
+			ur.org_name,
+			ur.org_id,
+			ur.user_code
+		from t_wf_user2role ur
+		where ur.role_id = #{roleId}
+		and ur.org_id in
+			<foreach collection="orgIdList" index="index" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		order by field( org_id,
+			<foreach collection="orgIdList" index="index" item="item" separator="," close=")">
+				#{item}
+			</foreach>
+	</select>
+
+
+</mapper>
+

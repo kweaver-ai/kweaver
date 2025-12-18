@@ -1,0 +1,160 @@
+parameters:
+  - name: displayName
+    default: ''
+  - name: name
+    default: ''
+
+stages:
+  - stage: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    jobs:
+      - job: InstallAndCheck
+        displayName: '安装依赖 & 代码检查 & 编译'
+        pool:
+          name: $(amd64Pool)
+        container: node
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+            fetchDepth: 1
+
+          - script: |
+              set -e
+              echo "start"
+              pnpm install --no-frozen-lockfile --registry http://repository.aishu.cn:8081/repository/npm-all/
+              pnpm --filter @applet/icons run g 
+              pnpm --filter icons --filter api --filter common build
+              pnpm --filter $(chartName) build
+            displayName: 'Install Deps'
+
+          - script: |
+              set -e
+              pnpm --filter $(chartName) lint-report
+            displayName: 'Run Lint'
+
+          - script: |
+              set -e
+              pnpm --filter $(chartName) test
+              cd $(folder)
+              cp testResult/coverage/$(CoverageReportName) $(CoverageReportName)
+            displayName: Run UT
+
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: $(Build.SourcesDirectory)/$(folder)
+              contents: |
+                $(LintReportName)
+                $(CoverageReportName)
+                $(UTReportName)
+              targetFolder: $(Build.BinariesDirectory)/report
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.BinariesDirectory)/report'
+              ArtifactName: CodeCheckReportFiles
+
+          - script: |
+              set -e
+              pnpm --filter @applet/icons run g 
+              pnpm --filter icons --filter api --filter common build
+              pnpm --filter $(chartName) build
+            displayName: 'Run Build'
+
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: $(Build.SourcesDirectory)/$(folder)
+              contents: |
+                dist/**
+                Dockerfile
+                nginx.conf
+              targetFolder: $(Build.BinariesDirectory)/build
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.BinariesDirectory)/build'
+              ArtifactName: $(chartName)
+              publishLocation: 'Container'
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+      - job: UploadReport
+        displayName: 上传检查报告
+        container: dotnet
+        dependsOn: InstallAndCheck
+        pool:
+          name: $(amd64Pool)
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: CodeCheckReportFiles
+              downloadPath: $(Build.BinariesDirectory)
+
+          - task: PublishTestResults@2
+            displayName: 发布Lint测试报告
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(Build.BinariesDirectory)/CodeCheckReportFiles/$(lintReportName)'
+              testRunTitle: 'Lint Result'
+              failTaskOnFailedTests: false
+          - task: BuildQualityChecks@8 # 此行保持一致 Lint卡点
+            displayName: Quality Gate Lint # 此行保持一致
+            inputs:
+              checkWarnings: true # 此行保持一致
+              warningFailOption: 'fixed'
+              warningThreshold: '1000'
+              showStatistics: false
+              evaluateTaskWarnings: false
+              evaluateFileWarnings: true
+              warningFilesFolder: '$(Build.BinariesDirectory)/CodeCheckReportFiles'
+              warningFiles: '**/$(LintReportName)'
+              warningFileFilters: '/^.+<\/failure>.*?$/'
+              warningFilesArtifact: 'CodeCheckReportFiles'
+
+          - task: PublishTestResults@2
+            displayName: 发布UT测试报告
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(Build.BinariesDirectory)/CodeCheckReportFiles/$(UTReportName)'
+              testRunTitle: 'UT Result'
+              failTaskOnFailedTests: true
+
+          - task: BuildQualityChecks@8 # 此行保持一致 # UT卡点
+            displayName: Quality Gate UT # 此行保持一致
+            inputs:
+              checkWarnings: true # 此行保持一致
+              warningFailOption: 'fixed'
+              warningThreshold: '1000'
+              showStatistics: false
+              evaluateTaskWarnings: false
+              evaluateFileWarnings: true
+              warningFilesFolder: '$(Build.BinariesDirectory)/CodeCheckReportFiles'
+              warningFiles: '**/$(utReportName)' # 此行保持一致
+              warningFileFilters: '/^.+<\/failure>.*?$/'
+              warningFilesArtifact: 'CodeCheckReportFiles'
+
+          - task: PublishCodeCoverageResults@1
+            displayName: 发布UT测试覆盖率报告
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: '$(Build.BinariesDirectory)/CodeCheckReportFiles/$(coverageReportName)'
+
+          - task: BuildQualityChecks@8 # 此行保持一致 代码覆盖率卡点
+            displayName: Quality Gate Coverage # 此行保持一致
+            inputs:
+              coverageType: 'lines' # 代表行覆盖率
+              coverageFailOption: 'fixed'
+              checkCoverage: true # 此行保持一致
+              coverageThreshold: '0' # 代码覆盖率卡点阈值
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)

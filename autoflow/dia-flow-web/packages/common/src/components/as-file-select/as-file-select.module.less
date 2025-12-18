@@ -1,0 +1,32 @@
+.container {
+    display: flex;
+
+    .input {
+        flex-grow: 1;
+        margin-right: 8px;
+        width: 0;
+        &:hover,
+        &:active,
+        &:focus {
+            border-color: rgb(217, 217, 217);
+            box-shadow: none;
+        }
+        &.multiple {
+            :global(.@{ant-prefix}-select-selection-overflow) {
+                flex-wrap: wrap;
+            }
+        }
+    }
+
+    .readOnlyContent {
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .omittedMessage {
+        position: absolute;
+        top: 100%;
+        color: rgba(0, 0, 0, 0.55);
+    }
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.engine.config.dao.ApplicationDao">
+    <select id="selectByUserId" resultType="com.aishu.wf.core.engine.config.model.ApplicationEntity">
+        select a.app_id,
+               app_name,
+               app_type,
+               app_access_url,
+               app_create_time,
+               app_update_time,
+               app_creator_id,
+               app_updator_id,
+               app_status,
+               app_desc,
+               app_provider,
+               app_linkman,
+               app_phone,
+               ip_list,
+               u.user_id,
+               u.remark,
+               (select user_name from t_wf_user b where b.user_id = u.user_id) as userName
+        from t_wf_application_user u
+                 left join t_wf_application a on a.app_id = u.app_id
+        where u.user_id = #{userId}
+        order by app_id
+    </select>
+</mapper>
+

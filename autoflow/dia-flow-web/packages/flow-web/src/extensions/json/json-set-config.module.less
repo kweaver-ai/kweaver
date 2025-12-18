@@ -1,0 +1,34 @@
+.JSONSetFieldItem {
+  margin-bottom: 0;
+
+  .JSONSetFieldInner {
+    display: flex;
+    gap: 8px;
+    align-items: start;
+
+    .JSONSetFieldKey {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .JSONSetFieldType {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .JSONSetFieldValue {
+      flex-grow: 1;
+    }
+
+    .JSONSetFieldRemove {
+      color: rgba(0, 0, 0, 0.45);
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      margin-top: 7px;
+      > * {
+        font-size: 12px;
+      }
+    }
+  }
+}

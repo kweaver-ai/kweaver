@@ -1,0 +1,163 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+    padding: 20px 32px;
+    overflow: auto;
+
+    .title {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .description {
+        margin-top: 8px;
+        color: #999;
+    }
+
+    .content {
+        display: flex;
+        flex-grow: 1;
+        margin-top: 12px;
+        width: 100%;
+        min-height: 500px;
+        border: 1px solid #eee;
+        overflow: auto;
+
+        .btn-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin: 12px 0 0 0;
+
+            .btn {
+                padding: 0 8px;
+            }
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background-color: rgb(250, 250, 250);
+            padding: 24px;
+            height: 100%;
+            min-width: 450px;
+
+            .spin-container {
+                position: absolute;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: calc(100% - 48px);
+                height: calc(100% - 48px);
+                background: rgba(250, 250, 250, 0.8);
+            }
+
+            .preview-wrapper {
+                flex-grow: 1;
+            }
+
+            .textarea {
+                background: #fff;
+                flex-grow: 1;
+            }
+
+            .empty-container {
+                position: relative;
+                display: flex;
+                flex-grow: 1;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border: 1px dashed #ccc;
+                height: 100%;
+            }
+            .empty {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+
+                .file-icon {
+                    display: block;
+                    font-size: 40px;
+                    line-height: 40px;
+                }
+                .description {
+                    margin-top: 16px;
+                    font-size: 13px;
+                    line-height: 24px;
+                    text-align: center;
+                }
+            }
+        }
+
+        .result-container {
+            padding: 12px;
+            width: 300px;
+            height: 100%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+
+            .result {
+                margin-top: 8px;
+                flex-grow: 1;
+            }
+
+            .result-empty {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                height: 100%;
+
+                .img {
+                    width: 128px;
+                }
+
+                .tip {
+                    color: rgba(0, 0, 0, 0.55);
+                    font-size: 14px;
+                    margin-top: 8px;
+                    line-height: 22px;
+                    text-align: center;
+                }
+            }
+
+            .res-content {
+                .status-icon {
+                    margin-right: 8px;
+                    font-size: 16px;
+                }
+
+                .key {
+                    font-weight: 600;
+                    font-size: 14px;
+                }
+
+                .tag-container {
+                    margin-top: 8px;
+                    margin-left: 24px;
+                }
+
+                .val {
+                    padding: 4px 8px;
+                    margin-top: 4px;
+                    margin-bottom: 0 !important;
+                    font-size: 13px;
+                    max-width: 100%;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    word-break: break-all;
+                    color: #3461ec;
+                    background: rgb(236, 246, 255);
+                    border: none;
+                }
+            }
+        }
+    }
+}

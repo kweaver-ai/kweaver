@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="org.activiti.engine.impl.persistence.entity.DeploymentEntity">
+
+  <!-- DEPLOYMENT INSERT -->
+  
+  <insert id="insertDeployment" parameterType="org.activiti.engine.impl.persistence.entity.DeploymentEntity">
+    insert into ${prefix}t_wf_re_deployment(id_, name_, category_, tenant_id_, deploy_time_)
+    values(#{id, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{category, jdbcType=VARCHAR}, #{tenantId, jdbcType=VARCHAR}, #{deploymentTime, jdbcType=TIMESTAMP})
+  </insert>
+
+  <insert id="bulkInsertDeployment" parameterType="java.util.List">
+    insert into ${prefix}t_wf_re_deployment(id_, name_, category_, tenant_id_, deploy_time_)
+    values
+      <foreach collection="list" item="deployment" index="index" separator=",">
+        (#{deployment.id, jdbcType=VARCHAR},
+         #{deployment.name, jdbcType=VARCHAR},
+         #{deployment.category, jdbcType=VARCHAR},
+         #{deployment.tenantId, jdbcType=VARCHAR},
+         #{deployment.deploymentTime, jdbcType=TIMESTAMP})
+      </foreach>
+  </insert>
+
+  <insert id="bulkInsertDeployment_oracle" parameterType="java.util.List">
+    INSERT ALL 
+      <foreach collection="list" item="deployment" index="index">
+        into ${prefix}T_WF_RE_DEPLOYMENT(ID_, NAME_, CATEGORY_, TENANT_ID_, DEPLOY_TIME_) VALUES 
+          (#{deployment.id, jdbcType=VARCHAR},
+           #{deployment.name, jdbcType=VARCHAR},
+           #{deployment.category, jdbcType=VARCHAR},
+           #{deployment.tenantId, jdbcType=VARCHAR},
+           #{deployment.deploymentTime, jdbcType=TIMESTAMP})
+      </foreach>
+    SELECT * FROM dual
+  </insert>
+
+  <!-- DEPLOYMENT UPDATE -->
+  
+  <update id="updateDeployment" parameterType="org.activiti.engine.impl.persistence.entity.DeploymentEntity">
+    update ${prefix}t_wf_re_deployment set
+      category_ = #{category, jdbcType=VARCHAR},
+      tenant_id_ = #{tenantId, jdbcType=VARCHAR}
+    where id_ = #{id, jdbcType=VARCHAR}
+  </update>
+  
+  <!-- DEPLOYMENT DELETE -->
+  
+  <delete id="deleteDeployment" parameterType="string">
+    delete from ${prefix}t_wf_re_deployment where id_ = #{id}
+  </delete>
+
+  <!-- DEPLOYMENT RESULTMAP -->
+  
+  <resultMap id="deploymentResultMap" type="org.activiti.engine.impl.persistence.entity.DeploymentEntity">
+    <id property="id" column="id_" jdbcType="VARCHAR" />
+    <result property="name" column="name_" jdbcType="VARCHAR" />
+    <result property="category" column="category_" jdbcType="VARCHAR" />
+    <result property="tenantId" column="tenant_id_" jdbcType="VARCHAR" />
+    <result property="deploymentTime" column="deploy_time_" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- DEPLOYMENT SELECT -->
+
+  <select id="selectDeploymentsByQueryCriteria" parameterType="org.activiti.engine.impl.DeploymentQueryImpl" resultMap="deploymentResultMap">
+  	${limitBefore}
+    select distinct RES.* ${limitBetween}
+    <include refid="selectDeploymentsByQueryCriteriaSql"/>
+    ${orderBy}
+    ${limitAfter}
+  </select>
+
+  <select id="selectDeploymentCountByQueryCriteria" parameterType="org.activiti.engine.impl.DeploymentQueryImpl" resultType="long">
+    select count(distinct RES.id_)
+    <include refid="selectDeploymentsByQueryCriteriaSql"/>
+  </select>
+  
+  <sql id="selectDeploymentsByQueryCriteriaSql">  
+    from ${prefix}t_wf_re_deployment RES
+    <if test="processDefinitionKey != null or processDefinitionKeyLike != null">
+    	inner join ${prefix}t_wf_re_procdef procdef on RES.id_ = procdef.deployment_id_
+    </if>
+    <where>
+      <if test="deploymentId != null">
+        RES.id_ = #{deploymentId}
+      </if>
+      <if test="name != null">
+        and RES.name_ = #{name}
+      </if>
+      <if test="nameLike != null">
+        and RES.name_ like #{nameLike}${wildcardEscapeClause}
+      </if>
+      <if test="category != null">
+        and RES.category_ = #{category}
+      </if>
+      <if test="categoryNotEquals != null">
+        and ( RES.category_ &lt;&gt; #{categoryNotEquals} or RES.category_ is null )
+      </if>
+      <if test="tenantId != null">
+        and RES.tenant_id_ = #{tenantId}
+      </if>
+      <if test="tenantIdLike != null">
+        and RES.tenant_id_ like #{tenantIdLike}${wildcardEscapeClause}
+      </if>
+      <if test="withoutTenantId">
+        and (RES.tenant_id_ = '' or RES.tenant_id_ is null)
+      </if>
+      <if test="processDefinitionKey != null">
+        and procdef.key_ = #{processDefinitionKey}
+      </if>
+      <if test="processDefinitionKeyLike != null">
+        and procdef.key_ like #{processDefinitionKeyLike}${wildcardEscapeClause}
+      </if>
+    </where>
+  </sql>
+    
+  <select id="selectDeploymentsByName" parameterType="org.activiti.engine.impl.db.ListQueryParameterObject" resultMap="deploymentResultMap">
+    select * from ${prefix}t_wf_re_deployment d where name_=#{parameter} order by d.deploy_time_ desc
+  </select>
+  
+  <select id="selectDeploymentById" parameterType="string" resultMap="deploymentResultMap">
+    select * from ${prefix}t_wf_re_deployment where id_ = #{id}
+  </select>
+
+  <!-- mysql specific -->
+  <select id="selectDeploymentsByQueryCriteria_mysql" parameterType="org.activiti.engine.impl.DeploymentQueryImpl" resultMap="deploymentResultMap">
+  	${limitBefore}
+    select distinct RES.* ${limitBetween}
+    <include refid="selectDeploymentsByQueryCriteriaSql"/>
+   	${orderBy}
+    ${limitAfter}
+  </select>
+  
+  <!-- mysql specific -->
+  <select id="selectDeploymentCountByQueryCriteria_mysql" parameterType="org.activiti.engine.impl.DeploymentQueryImpl" resultType="long">
+    select distinct count(RES.id_)
+    <include refid="selectDeploymentsByQueryCriteriaSql"/>
+  </select>
+
+  <select id="selectDeploymentByNativeQuery" parameterType="java.util.Map" resultMap="deploymentResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBefore}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectDeploymentByNativeQuery_mssql_or_db2" parameterType="java.util.Map" resultMap="deploymentResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBeforeNativeQuery}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectDeploymentCountByNativeQuery" parameterType="java.util.Map" resultType="long">
+    ${sql}
+  </select>
+
+</mapper>

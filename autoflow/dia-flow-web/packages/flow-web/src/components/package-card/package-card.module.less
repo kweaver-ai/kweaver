@@ -1,0 +1,74 @@
+.card {
+    position: relative;
+    border-radius: 4px;
+    background: #FFFFFF;
+    box-shadow: 0px 2px 9px 1px #00000019;
+    overflow: hidden;
+
+    &:hover {
+        border-color: rgba(0, 0, 0, 0.3);
+    }
+
+    :global(.@{ant-prefix}-card-body) {
+        padding: 16px 24px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .header-title {
+            margin-right: 16px;
+            color: #000;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 24px;
+            white-space: pre;
+        }
+
+        // 更多操作按钮
+        .card-operation-btn {
+            padding: 0;
+            border-radius: 4px;
+            background: transparent;
+            color: #000;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            width: 26px;
+            height: 26px;
+
+            &:hover,
+            &:global(.@{ant-prefix}-dropdown-open) {
+                border-radius: 4px;
+                background: rgba(211, 212, 219, 0.7);
+            }
+        }
+
+        // 去掉按钮点击效果
+        .card-operation-btn:after {
+            border: 0 none;
+            opacity: 0;
+            animation: none 0 ease 0 1 normal;
+        }
+    }
+
+    .card-footer {
+        margin-top: 42px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .card-time {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: rgba(0, 0, 0, 0.3);
+            font-size: 12px;
+            line-height: 20px;
+        }
+    }
+}

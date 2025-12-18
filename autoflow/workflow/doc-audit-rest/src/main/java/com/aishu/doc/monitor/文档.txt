@@ -1,0 +1,7 @@
+根据事件类型来命名监听处理类
+事件类型包含
+1、用户（删除/禁用）：UserChangeMonitor，方法：delete/disable
+2、文档（修改/删除）：DocChangeMonitor，方法：update/delete
+3、审核员（添加/删除）：AuditorChangeMonitor，方法：add/delete
+4、流程定义（删除/重命名处理）：ProcessChangeMonitor，方法：delete/rename
+其他地方所有的与之相关的都迁移到该包下，并按照相关命名方法

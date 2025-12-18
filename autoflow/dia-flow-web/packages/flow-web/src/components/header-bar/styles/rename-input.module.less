@@ -1,0 +1,71 @@
+.box-rename {
+    display: flex;
+    align-items: center;
+    width: 450px;
+    height: 32px;
+
+    .box-btn:hover {
+        background-color: #eae9ed;
+    }
+    .box-btn:active {
+        background-color: #e0e1e6;
+    }
+    .box-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin-left: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    }
+
+    .spin {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: default;
+        margin-left: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    }
+
+    .disable {
+        pointer-events: none;
+        cursor: default;
+        color: grey;
+    }
+
+    .normal {
+        pointer-events: all;
+        cursor: pointer;
+        color: #000;
+    }
+
+    .box-input {
+        width: 360px;
+        height: 30px;
+    }
+
+    :global(.@{ant-prefix}-input):hover,
+    :global(.@{ant-prefix}-input):active {
+        border-color: #779eea;
+    }
+
+    :global(.@{ant-prefix}-input):focus {
+        border-color: #779eea;
+        box-shadow: 0px 0px 0px 2px rgba(119, 158, 234, 0.35);
+    }
+
+    .box-input::selection {
+        background: #779eea;
+    }
+    .box-input::-moz-selection {
+        background: #779eea;
+    }
+    .box-input::-webkit-selection {
+        background: #779eea;
+    }
+}

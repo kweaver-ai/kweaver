@@ -1,0 +1,87 @@
+.DagIcon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.DagList {
+  .DagListItem {
+    border-bottom: none;
+    padding: 4px 8px;
+  }
+}
+
+.DagCard {
+  flex-grow: 1;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+
+  &.DropdownOpen,
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  :global(.@{ant-prefix}-card-body) {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  .DagCardTitle {
+    flex-grow: 1;
+  }
+
+  .DagCardButton {
+    padding: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #000;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    width: 26px;
+    height: 26px;
+
+    &:hover,
+    &:global(.@{ant-prefix}-dropdown-open) {
+      border-radius: 4px;
+      background: rgba(211, 212, 219, 0.7);
+    }
+
+    &:after {
+      border: 0 none;
+      opacity: 0;
+      animation: none 0 ease 0 1 normal;
+    }
+  }
+
+  .DagStatus {
+    font-size: 12px;
+    white-space: nowrap;
+
+    &[data-status="stopped"] {
+      color: #979797;
+    }
+
+    &[data-status="normal"] {
+      color: #60bc9f;
+    }
+  }
+}
+
+.DagMenu {
+  min-width: 120px;
+}
+
+.SpinContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  padding-top: 16px;
+}

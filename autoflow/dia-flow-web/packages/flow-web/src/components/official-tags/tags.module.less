@@ -1,0 +1,71 @@
+.official-tag {
+    display: flex;
+    align-items: center;
+
+    .tag {
+        padding: 2px 8px;
+        background: rgb(235, 237, 239);
+        border: none;
+    }
+
+    .select {
+        flex-grow: 1;
+        margin-right: 8px;
+        width: 0;
+        cursor: default;
+    }
+
+    .add-btn {
+        padding: 0 8px;
+    }
+}
+
+.tag-dropdownContainer {
+    // max-width: 632px;
+    overflow-x: auto;
+
+    .tag-columns {
+        display: flex;
+        height: 220px;
+        border-right: 1px solid transparent;
+
+        .tag-column {
+            width: 198px;
+            flex-shrink: 0;
+            padding: 0;
+            border-right: 1px solid lightgray;
+            margin: 0;
+            overflow-y: auto;
+
+            .tag-row {
+                list-style: none;
+                height: 30px;
+                display: flex;
+                align-items: center;
+
+                :global(.@{ant-prefix}-checkbox-wrapper) {
+                    width: auto;
+                }
+
+                .tag-label {
+                    width: 118px;
+                    color: #000000;
+                    font-size: 13px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    word-break: break-all;
+                    white-space: nowrap;
+                }
+            }
+
+            .tag-row:hover,
+            .tag-row.active {
+                background: #e6f7ff;
+            }
+        }
+
+        .tag-column:last-child {
+            border-right: none;
+        }
+    }
+}

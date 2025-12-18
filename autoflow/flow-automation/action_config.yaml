@@ -1,0 +1,8 @@
+fulltext:
+  expireSec: 86400
+
+docformatconvert:
+  expireSec: 86400
+
+fileparse:
+  expireSec: 86400

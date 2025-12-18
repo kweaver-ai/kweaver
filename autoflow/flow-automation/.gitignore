@@ -1,0 +1,13 @@
+.cache
+.vscode
+/logs
+/upload
+/tapi/*
+!/tapi/.gitkeep
+/API
+/tlqv9
+__debug_bin
+/examples
+tests
+./Python-3.7.0/*
+__debug_*

@@ -1,0 +1,36 @@
+.drawer-title {
+    color: #000000;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 22px;
+    letter-spacing: 0px;
+    text-align: left;
+}
+
+.drawer-tips {
+    color: #0000008C;
+    font-size: 13px;
+    line-height: 22px;
+    letter-spacing: 0px;
+    text-align: left;
+}
+
+.data-studio-drawer {
+    :global {
+        .@{ant-prefix}-drawer-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .@{ant-prefix}-drawer-close {
+            position: absolute;
+            right: 0;
+            top: 16px;
+        }
+
+        .@{ant-prefix}-drawer-body {
+            position: relative;
+            padding-top: 8px;
+        }
+    }
+}

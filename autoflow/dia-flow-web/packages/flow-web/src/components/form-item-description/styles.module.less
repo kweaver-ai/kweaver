@@ -1,0 +1,128 @@
+.popover {
+    :global(.@{ant-prefix}-popover-inner-content) {
+        padding: 0;
+    }
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover:not(.disable),
+    &.active {
+        background-color: rgb(216, 216, 216);
+    }
+
+    &.disable {
+        cursor: not-allowed;
+    }
+
+    .icon {
+        font-size: 18px;
+    }
+}
+
+.popover-content {
+    display: flex;
+    flex-direction: column;
+    width: 450px;
+    height: 300px;
+
+    .tip {
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        min-height: 40px;
+        color: gray;
+    }
+
+    .container {
+        display: flex;
+        flex-grow: 1;
+
+        .menu {
+            width: 120px;
+            flex-grow: 1;
+            border-right: 1px solid #eee;
+
+            :global(.@{ant-prefix}-menu) {
+                padding: 6px 0;
+            }
+
+            :global(.@{ant-prefix}-menu-item) {
+                padding: 0 16px;
+                width: 100%;
+                height: 30px;
+                line-height: 30px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #000;
+
+                &:hover {
+                    color: #000;
+                    background-color: rgba(165, 168, 180, 0.11);
+                }
+
+                &:global(.@{ant-prefix}-menu-item-selected) {
+                    font-weight: bold;
+                    color: #000;
+                    background: rgb(232, 241, 251);
+                }
+            }
+        }
+        .content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 16px;
+            width: 330px;
+
+            .wrapper {
+                flex-grow: 1;
+
+                .label {
+                    margin-bottom: 8px;
+                }
+
+                .input {
+                    width: 100%;
+                    margin-bottom: 12px;
+                }
+
+                .ellipsis {
+                    display: inline-block;
+                    max-width: 200px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    vertical-align: top;
+                }
+
+                .button {
+                    min-width: 60px;
+                }
+
+                .error-tip {
+                    margin-top: 8px;
+                    font-size: 12px;
+                    color: #ff4d4f;
+                }
+            }
+
+            .footer {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+
+                .button {
+                    min-width: 60px;
+                }
+            }
+        }
+    }
+}

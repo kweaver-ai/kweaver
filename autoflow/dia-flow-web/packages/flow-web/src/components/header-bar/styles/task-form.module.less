@@ -1,0 +1,104 @@
+.form {
+    .stop {
+        margin-left: 8px;
+        color: #979797;
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .running {
+        margin-left: 8px;
+        color: #60bc9f;
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    // .detail {
+    //     :global(.@{ant-prefix}-input) {
+    //         height: 96px;
+    //     }
+    // }
+
+    .tip {
+        margin-top: 8px;
+        color: rgba(0, 0, 0, 0.45);
+    }
+
+    .input:global(.@{ant-prefix}-input-status-error):not(
+            :global(.@{ant-prefix}-input-disabled)
+        ):not(
+            :global(.@{ant-prefix}-input-borderless):global(
+                    .@{ant-prefix}-input
+                )
+        ) {
+        border-color: #ff7875;
+    }
+
+    .input:global(.@{ant-prefix}-input-status-error):not(
+            :global(.@{ant-prefix}-input-disabled)
+        ):not(
+            :global(.@{ant-prefix}-input-borderless):global(
+                    .@{ant-prefix}-input:focus
+                )
+        ),
+    .input:global(.@{ant-prefix}-input-status-error):not(
+            :global(.@{ant-prefix}-input-disabled)
+        ):not(
+            :global(.@{ant-prefix}-input-borderless):global(
+                    .@{ant-prefix}-input-focused
+                )
+        ),
+    .input:global(.@{ant-prefix}-input-status-error):not(
+            :global(.@{ant-prefix}-input-disabled)
+        ):not(
+            :global(.@{ant-prefix}-input-borderless):global(
+                    .@{ant-prefix}-input:hover
+                )
+        ) {
+        border-color: #ff7875;
+        box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+    }
+
+    .input:global(.@{ant-prefix}-input):focus,
+    .input:global(.@{ant-prefix}-input-focused) {
+        border-color: #779eea;
+        box-shadow: 0 0 0 2px rgb(119 158 234 / 35%);
+    }
+
+    .input:global(.@{ant-prefix}-input):hover {
+        border: 1px solid #779eea;
+    }
+
+    :global(.@{ant-prefix}-form-item-explain-error) {
+        color: #ff4d4f;
+        font-size: 12px;
+        min-height: 20px;
+    }
+
+    .accessorList {
+        margin-bottom: 16px;
+        max-height: 300px;
+        overflow: auto;
+    }
+
+    .accessorItem {
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        .accessorName {
+            margin-left: 4px;
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .removeButton {
+            opacity: 0;
+        }
+        &:hover {
+            .removeButton {
+                opacity: 1;
+            }
+        }
+    }
+}

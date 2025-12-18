@@ -1,0 +1,91 @@
+.Card {
+    position: relative;
+    height: 96px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.NewCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 64px;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.549);
+}
+
+.NewCardTitle {
+    margin-top: 8px;
+}
+
+.Header {
+    display: flex;
+    align-items: center;
+}
+
+.Title {
+    flex-grow: 1;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+}
+
+.Name {
+    width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.Icon {
+    font-size: 32px;
+}
+
+.Description {
+    margin-left: 48px;
+    line-height: 22px;
+    color: rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.MenuTriggerButton {
+    padding: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #000;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    width: 26px;
+    height: 26px;
+
+    &:hover,
+    &:global(.@{ant-prefix}-dropdown-open) {
+        border-radius: 4px;
+        background: rgba(211, 212, 219, 0.7);
+    }
+
+    &:after {
+        border: 0 none;
+        opacity: 0;
+        animation: none 0 ease 0 1 normal;
+    }
+}
+
+.DropdownOverlay {
+    width: 120px !important;
+
+    .Disable {
+        color: rgb(180, 180, 180);
+        pointer-events: none;
+        cursor: default;
+    }
+}

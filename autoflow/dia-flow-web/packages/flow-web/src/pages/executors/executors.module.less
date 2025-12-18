@@ -1,0 +1,22 @@
+.Container {
+    padding: 32px;
+}
+
+.Header {
+    height: 32px;
+    line-height: 32px;
+}
+
+.Toolbar {
+    margin: 16px 0;
+}
+
+.ConfirmModal {
+    :global(.@{ant-prefix}-modal-confirm-btns) {
+        display: flex;
+        flex-direction: row-reverse;
+        > button {
+            margin-left: 8px;
+        }
+    }
+}

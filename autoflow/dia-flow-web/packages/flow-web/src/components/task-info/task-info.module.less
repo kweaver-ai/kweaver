@@ -1,0 +1,72 @@
+.details-container {
+    margin: 24px 32px;
+    border-radius: 4px;
+    background: #fff;
+    user-select: none;
+
+    td {
+        vertical-align: baseline;
+    }
+
+    .table-wrapper {
+        padding: 24px;
+    }
+
+    .title {
+        padding-bottom: 8px;
+        color: #000;
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 22px;
+        width: 80px;
+        text-align: left;
+    }
+
+    .label {
+        padding-top: 16px;
+        white-space: nowrap;
+        padding-right: 16px;
+        line-height: 22px;
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.55);
+        width: 80px;
+    }
+
+    .title-en,
+    .label-en {
+        width: 120px;
+    }
+
+    .content {
+        padding-right: 24px;
+        font-size: 13px;
+        color: #000;
+        white-space: nowrap;
+        line-height: 22px;
+        user-select: text;
+
+        .name,
+        .detail {
+            max-width: 100%;
+            white-space: pre;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .btn-wrapper {
+        vertical-align: top;
+        padding-right: 12px;
+        width: 100px;
+
+        :global(.@{ant-prefix}-btn-link) {
+            height: 22px;
+        }
+    }
+
+    :global(.@{ant-prefix}-typography),
+    :global(.@{ant-prefix}-typography) p {
+        margin-bottom: 0;
+        white-space: pre-wrap;
+    }
+}

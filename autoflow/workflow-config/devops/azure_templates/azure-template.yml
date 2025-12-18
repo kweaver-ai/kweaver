@@ -1,0 +1,46 @@
+parameters:
+  - name: name
+    default: ''
+  - name: pool
+    default: ''
+  - name: registry
+    default: ''
+  - name: imageRepository
+    default: ''
+  - name: arch
+    default: ''
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    steps:
+      - checkout: self
+      - script: |
+          set -ex
+          
+          CURRENT_IMAGE="${{ parameters.registry }}/${{ parameters.imageRepository }}:$(CURRENT_TAG).${{ parameters.arch }}"
+          LATEST_IMAGE="${{ parameters.registry }}/${{ parameters.imageRepository }}:$(LATEST_TAG).${{ parameters.arch }}"
+          docker build -f ./Dockerfile -t $LATEST_IMAGE .
+          docker tag $LATEST_IMAGE $CURRENT_IMAGE
+          
+          set +x
+          echo "##vso[task.setvariable variable=BuildAgentName;isOutput=true]$(Agent.Name)"
+          echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+          echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+        name: getAgentName
+        displayName: 'Build'
+      - script: |
+          rm -rf $(Build.SourcesDirectory)/**
+          ls
+        displayName: 'Remove Source'
+        condition: always()
+      - script: |
+          CURRENT_IMAGE="${{ parameters.registry }}/${{ parameters.imageRepository }}:$(CURRENT_TAG).${{ parameters.arch }}"
+          LATEST_IMAGE="${{ parameters.registry }}/${{ parameters.imageRepository }}:$(LATEST_TAG).${{ parameters.arch }}"
+          docker rmi -f $CURRENT_IMAGE
+          docker rmi -f $LATEST_IMAGE
+          docker images
+        displayName: 'Clearn Image'
+        condition: failed()

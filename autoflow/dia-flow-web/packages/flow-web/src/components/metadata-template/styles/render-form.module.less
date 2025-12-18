@@ -1,0 +1,86 @@
+.form {
+    padding-right: 24px;
+
+    :global(.@{ant-prefix}-form-item-control) {
+        :global(.@{ant-prefix}-form-item-extra) {
+            top: 0;
+        }
+    }
+
+    &.isView {
+        padding-right: 0;
+
+        :global(.@{ant-prefix}-form-item-row) {
+            flex-direction: row;
+        }
+
+        :global(.@{ant-prefix}-form-item-control) {
+            flex: 1 1 0;
+        }
+    }
+
+    .form-item {
+        position: relative;
+
+        :global(.@{ant-prefix}-form-item-label) label {
+            color: #000;
+        }
+
+        &.hidden {
+            visibility: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+    }
+
+    .label-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 280px;
+        height: 30px;
+
+        .label {
+            flex-grow: 1;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .notSupport-tip {
+            flex-shrink: 0;
+            margin-left: 8px;
+            color: #000;
+            opacity: 0.3;
+        }
+    }
+
+    &.isView .label-wrapper {
+        max-width: 88px;
+    }
+
+    :global(.@{ant-prefix}-form-item-row) {
+        flex-direction: column;
+    }
+
+    :global(.@{ant-prefix}-form-item) {
+        margin-bottom: 8px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    :global(.@{ant-prefix}-form-item-label) {
+        padding: 0;
+        height: 30px;
+        line-height: 30px;
+    }
+
+    &.isView
+        :global(.@{ant-prefix}-form-item-label)
+        > label:global(.@{ant-prefix}-form-item-required):not(
+            :global(.@{ant-prefix}-form-item-required-mark-optional)
+        )::after {
+        display: none;
+    }
+}

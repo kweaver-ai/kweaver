@@ -1,0 +1,34 @@
+<svg viewBox="0 0 144 144" focusable="false" class="" data-icon="shareNoPermissions" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+    <defs>
+        <linearGradient id="linearGradient-1" x1="50%" x2="50%" y1="3.85%" y2="121.56%">
+            <stop offset="0%" stop-color="#779EEA" stop-opacity=".4"></stop>
+            <stop offset="100%" stop-color="#FFF" stop-opacity="0"></stop>
+        </linearGradient>
+    </defs>
+    <g fill-rule="evenodd" fill="none" id="权限" stroke-width="1" stroke="none">
+        <g id="编组-2">
+            <g id="Group-3">
+                <path d="M0 0h144v144H0z" id="Rectangle-3"></path>
+            </g>
+            <path d="M0 0h144v144H0z" id="Rectangle-25"></path>
+            <path d="M72 100c34.37 0 63.32 16 72 36H0c8.68-20 37.63-36 72-36z" fill="url(#linearGradient-1)" id="Combined-Shape"></path>
+            <g id="Group-2" transform="translate(31 32)">
+                <path d="M5.17 1.28H47.3l14.62 11.48v55.69a3 3 0 01-3 3H5.17a3 3 0 01-3-3V4.28a3 3 0 013-3z" fill="#FFF" id="Rectangle"></path>
+                <path d="M46.78 1H6a4.98 4.98 0 00-5 5v62a4.98 4.98 0 005 5h51a4.98 4.98 0 005-5V12.73L46.78 1z" fill="#FFF" id="Rectangle-4" stroke-width="2" stroke="#779EEA"></path>
+                <path d="M46 1v12h15.2" id="Path-4" stroke-width="2" stroke="#779EEA"></path>
+            </g>
+            <path d="M100.27 27.72c.32 0 .58.26.58.58v2.58h2.58a.57.57 0 010 1.15h-2.58v2.58a.57.57 0 11-1.15 0v-2.58h-2.58a.57.57 0 110-1.15h2.58V28.3c0-.32.26-.58.57-.58z" fill="#779EEA" id="Combined-Shape" transform="rotate(45 100.27 31.45)"></path>
+            <path d="M108.45 48.3c.27 0 .49.22.49.49v2.18h2.18a.48.48 0 010 .97h-2.18v2.18a.48.48 0 11-.97 0v-2.18h-2.18a.48.48 0 010-.97h2.18v-2.18c0-.27.21-.49.48-.49z" fill="#779EEA" id="Combined-Shape-Copy-10" opacity=".3" transform="rotate(45 108.45 51.45)"></path>
+            <path d="M45.3 53h20v2h-20z" fill="#779EEA" id="Rectangle-23"></path>
+            <path d="M45.3 61.5h28v2h-28z" fill="#779EEA" id="Rectangle-23-Copy"></path>
+            <path d="M45.3 70h28v2h-28z" fill="#779EEA" id="Rectangle-23-Copy-2"></path>
+            <circle cx="112.5" cy="37.5" id="Oval-7-Copy-3" r="1.5" stroke="#779EEA"></circle>
+            <g fill-rule="nonzero" fill="#FFF" id="编组" stroke-width="2" stroke="#779EEA" transform="translate(79 74)">
+                <path d="M26.2 4.06L13.5 0 .8 4.06c-.48.15-.8.6-.8 1.1v16.17c.02.11.62 2.77 3.22 5.35 2 1.98 6.8 4.53 8.88 5.63l.62.31.62.32c.17.08.46.08.62 0l.62-.32c1.23-.6 6.89-3.65 9.2-5.94A11.8 11.8 0 0027 21.33V5.17c0-.5-.32-.96-.8-1.1h0z" id="路径"></path>
+            </g>
+            <g fill-rule="nonzero" fill="#779EEA" id="权限设置" transform="rotate(46 -44.91 148.95)">
+                <path d="M7.9 10.65L.9 3.63l1.17-1.17L3.83.7A.82.82 0 115 1.85L3.22 3.62 4.4 4.78l1.76-1.77a.82.82 0 011.17 1.16L5.55 5.94l3.53 3.53a4.95 4.95 0 016.38.5 4.95 4.95 0 01-.05 7 4.96 4.96 0 01-7 .04 4.94 4.94 0 01-.5-6.36zm6.35 5.16a3.3 3.3 0 00.03-4.67 3.3 3.3 0 00-4.67.03 3.3 3.3 0 00-.03 4.67 3.3 3.3 0 004.67-.03z" id="形状"></path>
+            </g>
+        </g>
+    </g>
+</svg>

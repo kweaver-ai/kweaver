@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="org.activiti.engine.impl.persistence.entity.GroupEntity">
+
+  <!-- GROUP INSERT -->
+
+  <insert id="insertGroup" parameterType="org.activiti.engine.impl.persistence.entity.GroupEntity">
+    insert into ${prefix}t_wf_id_group (id_, rev_, name_, type_)
+    values (
+      #{id ,jdbcType=VARCHAR},
+      1, 
+      #{name ,jdbcType=VARCHAR},
+      #{type ,jdbcType=VARCHAR}
+    )
+  </insert>
+
+  <insert id="bulkInsertGroup" parameterType="java.util.List">
+    insert into ${prefix}t_wf_id_group (id_, rev_, name_, type_)
+    values 
+      <foreach collection="list" item="group" index="index" separator=",">
+        (#{group.id ,jdbcType=VARCHAR},
+         1,
+         #{group.name ,jdbcType=VARCHAR},
+         #{group.type ,jdbcType=VARCHAR})
+      </foreach>
+  </insert>
+
+  <insert id="bulkInsertGroup_oracle" parameterType="java.util.List">
+    insert all 
+      <foreach collection="list" item="group" index="index">
+        INTO ${prefix}t_wf_id_group (id_, rev_, name_, type_) values 
+            (#{group.id ,jdbcType=VARCHAR},
+             1,
+             #{group.name ,jdbcType=VARCHAR},
+             #{group.type ,jdbcType=VARCHAR})
+      </foreach>
+    select * from dual
+  </insert>
+
+  <!-- GROUP UPDATE -->
+  
+  <update id="updateGroup" parameterType="org.activiti.engine.impl.persistence.entity.GroupEntity">
+    update ${prefix}t_wf_id_group set
+      rev_ = #{revisionNext ,jdbcType=INTEGER},
+      name_ = #{name ,jdbcType=VARCHAR},
+      type_ = #{type ,jdbcType=VARCHAR}
+    where id_ = #{id}
+       and rev_ = #{revision}
+  </update>
+  
+  <!-- GROUP DELETE -->
+
+  <delete id="deleteGroup" parameterType="org.activiti.engine.impl.persistence.entity.GroupEntity">
+    delete from ${prefix}t_wf_id_group where id_ = #{id} and rev_ = #{revision} 
+  </delete>
+
+  <!-- GROUP RESULTMAP -->
+
+  <resultMap id="groupResultMap" type="org.activiti.engine.impl.persistence.entity.GroupEntity">
+    <id property="id" column="id_" jdbcType="VARCHAR" />
+    <result property="revision" column="rev_" jdbcType="INTEGER" />
+    <result property="name" column="name_" jdbcType="VARCHAR" />
+    <result property="type" column="type_" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <!-- GROUP SELECT -->
+
+  <select id="selectGroup" parameterType="string" resultMap="groupResultMap">
+    select * from ${prefix}t_wf_id_group where id_ = #{id}
+  </select>
+    
+  <select id="selectGroupsByUserId" parameterType="org.activiti.engine.impl.db.ListQueryParameterObject" resultMap="groupResultMap">
+    select g.*
+    from ${prefix}t_wf_id_group g, ${prefix}t_wf_id_membership membership
+    where g.id_ = membership.group_id_
+      and membership.user_id_ = #{parameter}
+  </select>
+
+  <select id="selectGroupsByUserIdAndGroupType" parameterType="org.activiti.engine.impl.db.ListQueryParameterObject" resultMap="groupResultMap">
+    select g.*
+    from ${prefix}t_wf_id_group g, ${prefix}t_wf_id_membership membership
+    where g.id_ = membership.group_id_
+      and membership.user_id_ = #{parameter.userId}
+      <if test="groupType != null">
+         and g.type_ = #{parameter.groupType}
+      </if>
+  </select>
+  
+  <select id="selectGroupByQueryCriteria" parameterType="org.activiti.engine.impl.GroupQueryImpl" resultMap="groupResultMap">
+  	${limitBefore}
+    select RES.* ${limitBetween}
+    <include refid="selectGroupByQueryCriteriaSql" />
+    ${orderBy}
+    ${limitAfter}
+  </select>
+  
+   <select id="selectGroupCountByQueryCriteria" parameterType="org.activiti.engine.impl.GroupQueryImpl" resultType="long">
+    select count(RES.id_)
+    <include refid="selectGroupByQueryCriteriaSql" />
+  </select>
+  
+  <sql id="selectGroupByQueryCriteriaSql">
+    from ${prefix}t_wf_id_group RES
+    <if test="userId != null">
+      inner join ${prefix}t_wf_id_membership m on RES.id_ = m.group_id_
+      inner join ${prefix}t_wf_id_user u on m.user_id_ = u.id_
+    </if>
+    <where>
+      <if test="id != null">
+        RES.id_ = #{id}
+      </if>
+      <if test="name != null">
+        and RES.name_ = #{name}
+      </if>
+      <if test="nameLike != null">
+        and RES.name_ like #{nameLike}${wildcardEscapeClause}
+      </if>
+      <if test="type != null">
+        and RES.type_ = #{type}
+      </if>
+      <if test="userId != null">
+        and u.id_ = #{userId}
+      </if>
+      <if test="procDefId != null">
+        and exists (select ID_ from ${prefix}t_wf_ru_identitylink where proc_def_id_ = #{procDefId} and group_id_=RES.id_ )
+      </if>
+      
+    </where>
+  </sql>
+
+  <select id="selectGroupByNativeQuery" parameterType="java.util.Map" resultMap="groupResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBefore}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectGroupByNativeQuery_mssql_or_db2" parameterType="java.util.Map" resultMap="groupResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBeforeNativeQuery}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectGroupCountByNativeQuery" parameterType="java.util.Map" resultType="long">
+    ${sql}
+  </select>
+  
+</mapper>

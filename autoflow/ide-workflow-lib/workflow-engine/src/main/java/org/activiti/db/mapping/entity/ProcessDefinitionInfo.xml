@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="org.activiti.engine.impl.persistence.entity.ProcessDefinitionInfoEntity">
+
+  <!-- ProcessDefinitionInfo INSERT -->
+  
+  <insert id="insertProcessDefinitionInfo" parameterType="org.activiti.engine.impl.persistence.entity.ProcessDefinitionInfoEntity">
+    insert into ${prefix}t_wf_procdef_info(id_, proc_def_id_, rev_, info_json_id_)
+    values(#{id, jdbcType=VARCHAR}, 
+           #{processDefinitionId, jdbcType=VARCHAR},
+           1,
+           #{infoJsonId, jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="bulkInsertProcessDefinitionInfo" parameterType="java.util.List">
+    INSERT INTO ${prefix}t_wf_procdef_info(id_, proc_def_id_, rev_, info_json_id_)
+    VALUES 
+      <foreach collection="list" item="processDefinitionInfo" index="index" separator=","> 
+        (#{processDefinitionInfo.id, jdbcType=VARCHAR}, 
+         #{processDefinitionInfo.processDefinitionId, jdbcType=VARCHAR},
+         1,
+         #{processDefinitionInfo.infoJsonId, jdbcType=VARCHAR})
+     </foreach>
+  </insert>
+
+  <insert id="bulkInsertProcessDefinitionInfo_oracle" parameterType="java.util.List">
+    INSERT ALL 
+      <foreach collection="list" item="processDefinitionInfo" index="index"> 
+        INTO ${prefix}t_wf_procdef_info(id_, proc_def_id_, rev_, info_json_id_) VALUES
+          (#{processDefinitionInfo.id, jdbcType=VARCHAR}, 
+           #{processDefinitionInfo.processDefinitionId, jdbcType=VARCHAR},
+           1,
+           #{processDefinitionInfo.infoJsonId, jdbcType=VARCHAR})
+     </foreach>
+    SELECT * FROM dual
+  </insert>
+
+  <!-- ProcessDefinitionInfo UPDATE -->
+  <update id="updateProcessDefinitionInfo" parameterType="org.activiti.engine.impl.persistence.entity.ProcessDefinitionInfoEntity">
+    update ${prefix}t_wf_procdef_info set
+      rev_ = #{revisionNext, jdbcType=INTEGER},
+      info_json_id_ = #{infoJsonId, jdbcType=VARCHAR}
+    where id_ = #{id, jdbcType=VARCHAR} and rev_ = #{revision, jdbcType=INTEGER}
+  </update>
+
+  
+  <!-- ProcessDefinitionInfo DELETE -->
+  
+  <delete id="deleteProcessDefinitionInfo" parameterType="org.activiti.engine.impl.persistence.entity.ProcessDefinitionInfoEntity">
+    delete from ${prefix}t_wf_procdef_info where id_ = #{id} and rev_ = #{revision}
+  </delete>
+
+  <!-- MODEL RESULTMAP -->
+  
+  <resultMap id="processDefinitionInfoResultMap" type="org.activiti.engine.impl.persistence.entity.ProcessDefinitionInfoEntity">
+    <id property="id" column="id_" jdbcType="VARCHAR" />
+    <result property="processDefinitionId" column="proc_def_id_" jdbcType="VARCHAR" />
+    <result property="revision" column="rev_" jdbcType="INTEGER"/>
+    <result property="infoJsonId" column="info_json_id_" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <!-- ProcessDefinitionInfo SELECT -->
+
+  <select id="selectProcessDefinitionInfo" parameterType="string" resultMap="processDefinitionInfoResultMap">
+    select * from ${prefix}t_wf_procdef_info where id_ = #{id}
+  </select>
+  
+  <select id="selectProcessDefinitionInfoByProcessDefinitionId" parameterType="string" resultMap="processDefinitionInfoResultMap">
+    select * from ${prefix}t_wf_procdef_info where proc_def_id_ = #{processDefinitionId}
+  </select>
+
+</mapper>

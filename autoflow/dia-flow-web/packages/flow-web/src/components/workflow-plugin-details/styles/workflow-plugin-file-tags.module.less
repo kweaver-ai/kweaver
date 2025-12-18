@@ -1,0 +1,63 @@
+.modal {
+    .content {
+        margin: 0 -32px;
+        padding: 0 32px;
+        height: 100%;
+        overflow: auto;
+    }
+    :global(.@{ant-prefix}-modal-title) {
+        font-size: 15px;
+        font-weight: bold;
+    }
+    :global(.@{ant-prefix}-modal-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        padding: 0 32px 20px;
+        height: 432px;
+    }
+}
+.description {
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.tags-container {
+    width: 100%;
+    color: #000;
+
+    .tag {
+        padding: 4px 8px;
+        margin-top: 4px;
+        margin-bottom: 0 !important;
+        font-size: 13px;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        background: rgba(211, 212, 219, 0.24);
+        border: none;
+    }
+}
+
+.accessors-container {
+    width: 100%;
+    color: #000;
+
+    .tag {
+        padding: 4px 8px;
+        margin-bottom: 4px;
+        font-size: 13px;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        background: rgba(211, 212, 219, 0.24);
+        border: none;
+    }
+}

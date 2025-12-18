@@ -1,0 +1,81 @@
+parameters:
+  - name: name
+    default: ''
+  - name: displayName
+    default: ''
+  - name: pool
+    default: ''
+  - name: containerName
+    default: ''
+  - name: artifactName
+    default: ''
+  - name: downloadPerparePath
+    default: ''
+  - name: dependOn
+    default: ''
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    dependsOn: ${{parameters.dependOn}}
+    condition: succeeded()
+    pool:
+      name: ${{ parameters.pool }}
+      demands:
+        - Agent.OSArchitecture -equals X64
+        - Agent.OS -equals Linux
+        - docker
+    container: ${{ parameters.containerName }}
+    workspace:
+      clean: all
+    steps:
+      - template: go_build_pre.yml
+      - task: DownloadBuildArtifacts@0
+        displayName: Download code from artifacts
+        inputs:
+          artifactName: ${{parameters.downloadPerparePath}}
+          downloadPath: $(Build.SourcesDirectory)
+      # 执行构建命令
+      - script: |
+          echo "start"
+          mkdir API
+          mv  $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}/API/* ./API
+          mkdir $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}/report
+          ls
+        condition: succeeded()
+        displayName: 'Copy Source'
+      - script: |
+          bash -x ./init_tapi.sh
+          rm -rf ./API
+          cd ./tapi && ls
+        condition: succeeded()
+        displayName: 'Bash -x init_tapi.sh'
+      - script: |
+          set -ex
+          go version
+          echo machine devops.aishu.cn login $(AZURE_USER) password $(AZURE_TOKEN) > /root/.netrc
+          go env -w GOPROXY=https://goproxy.aishu.cn,direct
+          go env -w GOSUMDB=off
+          go generate ./...
+          golangci-lint run -v --config .golangci.yml --out-format junit-xml ./main.go > $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}/report/$(LintReportName)
+          go test -v -coverprofile=cover.out ./driveradapters/mgnt/...  | go-junit-report > $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}/report/$(UTReportName)
+          gocov convert cover.out | gocov-xml > $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}/report/$(CoverageReportName)
+          ls $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}/report
+        condition: succeeded()
+        displayName: 'UT Test'
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)/${{parameters.downloadPerparePath}}
+          contents: |
+            report/**
+          targetFolder: $(Build.BinariesDirectory)
+      - task: PublishBuildArtifacts@1
+        inputs:
+          # 由于Pipeline机制，不同的job可能会在不同的workspace执行，所以需要通过artifact在job间传递文件
+          pathToPublish: $(Build.BinariesDirectory)
+          artifactName: ${{parameters.artifactName}}
+      - script: |
+          pwd
+          rm -rf $(Build.SourcesDirectory)/**
+        displayName: 'Remove source'
+        condition: always()

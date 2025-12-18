@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="org.activiti.engine.impl.persistence.entity.UserEntity">
+
+  <!-- USER INSERT -->
+
+  <insert id="insertUser" parameterType="org.activiti.engine.impl.persistence.entity.UserEntity">
+    insert into ${prefix}t_wf_id_user (id_, rev_, first_, last_, email_, pwd_)
+    values (
+      #{id ,jdbcType=VARCHAR},
+      1,
+      #{firstName ,jdbcType=VARCHAR},
+      #{lastName ,jdbcType=VARCHAR},
+      #{email ,jdbcType=VARCHAR},
+      #{password ,jdbcType=VARCHAR}
+    )
+  </insert>
+
+  <insert id="bulkInsertUser" parameterType="java.util.List">
+    INSERT INTO ${prefix}t_wf_id_user (id_, rev_, first_, last_, email_, pwd_) VALUES
+      <foreach collection="list" item="user" index="index" separator=",">
+        (#{user.id ,jdbcType=VARCHAR},
+         1,
+         #{user.firstName ,jdbcType=VARCHAR},
+         #{user.lastName ,jdbcType=VARCHAR},
+         #{user.email ,jdbcType=VARCHAR},
+         #{user.password ,jdbcType=VARCHAR})
+      </foreach>
+  </insert>
+
+  <insert id="bulkInsertUser_oracle" parameterType="java.util.List">
+    INSERT ALL 
+      <foreach collection="list" item="user" index="index">
+        INTO ${prefix}t_wf_id_user (id_, rev_, first_, last_, email_, pwd_) VALUES
+        (#{user.id ,jdbcType=VARCHAR},
+         1,
+         #{user.firstName ,jdbcType=VARCHAR},
+         #{user.lastName ,jdbcType=VARCHAR},
+         #{user.email ,jdbcType=VARCHAR},
+         #{user.password ,jdbcType=VARCHAR})
+      </foreach>
+    SELECT * FROM dual
+  </insert>
+
+  <!-- USER UPDATE -->
+
+  <update id="updateUser" parameterType="org.activiti.engine.impl.persistence.entity.UserEntity">
+    update ${prefix}t_wf_id_user set
+      rev_ = #{revisionNext ,jdbcType=INTEGER},
+      first_ = #{firstName ,jdbcType=VARCHAR},
+      last_ = #{lastName ,jdbcType=VARCHAR},
+      email_ = #{email ,jdbcType=VARCHAR},
+      pwd_ = #{password ,jdbcType=VARCHAR},
+      picture_id_ = #{pictureByteArrayRef ,typeHandler=ByteArrayRefTypeHandler}
+    where id_ = #{id}
+      and rev_ = #{revision}
+  </update>
+  
+  <!-- USER DELETE -->
+
+  <delete id="deleteUser" parameterType="org.activiti.engine.impl.persistence.entity.UserEntity">
+    delete from ${prefix}t_wf_id_user where id_ = #{id} and rev_ = #{revision}
+  </delete>
+
+  <!-- USER RESULTMAP -->
+
+  <resultMap id="userResultMap" type="org.activiti.engine.impl.persistence.entity.UserEntity">
+    <id property="id" column="id_" jdbcType="VARCHAR" />
+    <result property="revision" column="rev_" jdbcType="INTEGER" />
+    <result property="firstName" column="first_" jdbcType="VARCHAR" />
+    <result property="lastName" column="last_" jdbcType="VARCHAR" />
+    <result property="email" column="email_" jdbcType="VARCHAR" />
+    <result property="password" column="pwd_" jdbcType="VARCHAR" />
+    <result property="pictureByteArrayRef" column="picture_id_" typeHandler="ByteArrayRefTypeHandler" />
+  </resultMap>
+  
+  <!-- USER SELECT -->
+
+  <select id="selectUserById" parameterType="string" resultMap="userResultMap">
+    select * from ${prefix}t_wf_id_user where id_ = #{id,jdbcType=VARCHAR}
+  </select>
+    
+  <select id="selectUserByQueryCriteria" parameterType="org.activiti.engine.impl.UserQueryImpl" resultMap="userResultMap">
+  	${limitBefore}
+    select RES.* ${limitBetween}
+    <include refid="selectUserByQueryCriteriaSql" />
+    ${orderBy}
+    ${limitAfter}
+  </select>
+  
+   <select id="selectUserCountByQueryCriteria" parameterType="org.activiti.engine.impl.UserQueryImpl" resultType="long">
+    select count(RES.id_)
+    <include refid="selectUserByQueryCriteriaSql" />
+  </select>
+  
+  <sql id="selectUserByQueryCriteriaSql">
+    from ${prefix}t_wf_id_user RES
+    <if test="groupId != null">
+      inner join ${prefix}t_wf_id_membership m on RES.id_ = m.user_id_
+      inner join ${prefix}t_wf_id_group g on m.group_id_ = g.id_
+    </if>
+    <where>
+      <if test="id != null">
+        RES.id_ = #{id}
+      </if>
+      <if test="firstName != null">
+        and RES.first_ = #{firstName}
+      </if>
+      <if test="firstNameLike != null">
+        and RES.first_ like #{firstNameLike}${wildcardEscapeClause}
+      </if>
+      <if test="lastName != null">
+        and RES.last_ = #{lastName}
+      </if>
+      <if test="lastNameLike != null">
+        and RES.last_ like #{lastNameLike}${wildcardEscapeClause}
+      </if>
+      <if test="fullNameLike != null">
+        and (RES.first_ like #{fullNameLike}${wildcardEscapeClause} or RES.last_ like #{fullNameLike}${wildcardEscapeClause})
+      </if>
+      <if test="email != null">
+        and RES.email_ = #{email}
+      </if>
+      <if test="emailLike != null">
+        and RES.email_ like #{emailLike}${wildcardEscapeClause}
+      </if>
+      <if test="groupId != null">
+        and g.id_ = #{groupId}
+      </if>
+      <if test="procDefId != null">
+        and exists (select id_ from ${prefix}t_wf_ru_identitylink where proc_def_id_ = #{procDefId} and user_id_=RES.id_ )
+      </if>
+      
+    </where>
+  </sql>
+
+  <select id="selectUserByNativeQuery" parameterType="java.util.Map" resultMap="userResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBefore}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectUserByNativeQuery_mssql_or_db2" parameterType="java.util.Map" resultMap="userResultMap">
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitBeforeNativeQuery}
+    </if>
+    ${sql}
+    <if test="resultType == 'LIST_PAGE'">
+      ${limitAfter}
+    </if>
+  </select>
+
+  <select id="selectUserCountByNativeQuery" parameterType="java.util.Map" resultType="long">
+    ${sql}
+  </select>
+  
+</mapper>

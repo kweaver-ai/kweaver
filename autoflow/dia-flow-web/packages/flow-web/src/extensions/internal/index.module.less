@@ -1,0 +1,90 @@
+.label {
+    padding: 3px 8px 3px 0;
+    white-space: nowrap;
+    display: inline-flex;
+    min-width: 160px;
+}
+
+.output {
+    white-space: pre-wrap;
+}
+
+.inputNumber {
+    display: block;
+    width: auto;
+}
+
+.textArea > textarea {
+    white-space: pre-wrap;
+    white-space: break-spaces;
+    word-break: break-all;
+}
+
+.datePicker {
+    display: flex;
+}
+
+.textJoinTexts {
+    display: flex;
+    .textJoinTextFormItem {
+        flex-grow: 1;
+        :global(.@{ant-prefix}-form-item-label)
+            > :global(label.@{ant-prefix}-form-item-required) {
+            &:not(:global(.@{ant-prefix}-form-item-required-mark-optional)) {
+                &::after {
+                    display: none;
+                }
+            }
+        }
+    }
+    .textJoinRemove {
+        margin-left: 8px;
+        margin-top: 28px;
+    }
+}
+
+.separators {
+    display: flex;
+    flex-direction: column;
+    > :not(:first-child) {
+        margin-top: 8px;
+    }
+}
+
+.customSeparator {
+    display: flex;
+    align-items: center;
+    > label {
+        flex-shrink: 0;
+    }
+    > input {
+        width: 120px;
+    }
+}
+
+.tip {
+    margin-left: 4px;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 12px;
+}
+
+.text-matchType {
+    display: flex;
+    flex-direction: column;
+
+    > :not(:first-child) {
+        margin-top: 8px;
+    }
+}
+
+.label-wrapper {
+    color: #000;
+}
+
+.relative_value,
+.relative_unit {
+    position: relative;
+    margin: 0;
+    width: 140px;
+    height: 30px;
+}

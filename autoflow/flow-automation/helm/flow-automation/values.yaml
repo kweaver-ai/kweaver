@@ -1,0 +1,376 @@
+# Default values for collectapp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+namespace: anyshare
+
+image:
+  registry: acr.aishu.cn
+  repository: dip/flow-automation
+  tag: 1.0.0-feature-744853.76f808f
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8680
+  prefix: /api/automation/v1
+  coderunnerPrefix: /api/coderunner
+  coderunnerLogLevel: INFO
+  debug: "false"
+  language: zh_CN
+  logger: stdout
+  name: content-automation
+  # 用于控制自动化转存运行列表历史记录最大阈值
+  dagThreshold: "1000000"
+  # 用于控制自动化转存运行列表任务任务历史记录最大阈值
+  taskThreshold: "2000000"
+  # 最近历史运行记录保留时间，支持按天或按小时配置 7d:保留近七天的记录 7h:保留近7小时的运行记录, 不支持的值默认保留最近7天
+  keepHistory: "7d"
+  # 默认12小时执行一次，可手动修改执行时间, 必须符合cron表达式格式
+  # 格式校验地址参考: https://crontab.guru/
+  deleteLogsCron: "0 */12 * * *"
+  lowestExecutorCount: 200
+  lowExecutorCount: 200
+  mediumExecutorCount: 200
+  highExecutorCount: 200
+  highestExecutorCount: 200
+  debugExcutorCount: 300
+  listdagCount: 500
+  parserCount: 200
+  executorTimeout: 600
+  scheduleTimeout: 150
+  # 告警邮件发送间隔时间, 默认30min
+  warningInternal: 30m
+  livenessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  # 超过此大小的 sharedata、dump 上传到对象存储
+  mongoMaxInlineSize: 262144
+  # 对象存储前缀路径
+  storagePrefix: "29376f25-1aad-4a03-91d4-901c5ee4b905"
+  # 已删除的 dag instance 关联的文件清理周期
+  deleteExtDataCron: "0 1 * * *"
+  deleteExpiredTaskCacheCron: "0 3 * * *"
+
+flow-o11y-data-log:
+  log_level: "INFO"
+  exporters:
+    console:
+      enable: false
+    proton_mq:
+      enable: true
+      config:
+        sub_type: "kafka"
+        topic: default.dataflow.dip-flow-o11y-data
+        broker_list: ["kafka-headless.resource:9097"]
+        username: "dX25DulTIJd+H6e8JKKBPaQBYfwtoE+KSg+QBkgJom5X2ZkRYZiMMVPtxl/nfTfD3i8A4gfhMzK9u6johN7LV0uFToAk9DcCzLO9emV3rS6H8YQerQSP2J56uSCKiMA9UfeIbdwJ+pXqVqXPiqV/10ayw5WYi7zW+Yv+M0r6vx4dw5xYATOHKCK6GQJqS3uaZi3TwHgY/HicDw2o/5PAFkQAnbNiQoitGS4owC2UuSljtkoYyr3r9HrhiHry/usddx9WUPa/GW5NGQ2QGRia1eeuQax3obVZ6AzI4JhpfYmy3qrZ938YOKNpfb+/atmin/qfrWcPcsNvpnJ1zeMOFQ=="
+        password: "YMqgppqxZGwjBhfWr9397RZvU5OTK7jd3Yp/aZk0hQomHUjEtocBo39Lb8xKmaNSXN0z+wk8AeBxdpqw/ZLFUULkKcCTl5IZ/SwMmv29Hizw/4hhjZpnjvZPt4go3gR9tPYNveNpz0Yc9COCovH3f95wdtJHAGttDEr1Mb/B/y+UvpLjDE3d+YgksNOZT1Z55P0HrZ4Zlr6lFyRnQn26SJ9ga+o76wzcrDT+jarB2g/D/ByMNzsc9O0bY9sZI+Je+b0J+ax1/uek/nQI1DMi3JXIEF6nR+rkAPuMGLsPWdQsRpj4XYzdtqpJf0tG584SJnuuOLWwNGKm+erNrlCaaw=="
+
+kafka:
+  sessionTimeoutMs: 45000               # 组管理协议用来监测消费者是否失效的超时时间
+  socketTimeoutMs: 60000                # 消费者拉取消息的超时时间
+  maxPollIntervalMs: 300000             # 两次 poll操作之间的间隔
+  heartbeatIntervalMs: 10000            # 消费者向coordinator发送心跳包的间隔时间
+  transactionTimeoutMs: 60000           # 事务操作超时时间
+  retentionTime: 7d                     # day or hour, example: 7d, 8h
+  retentionSize: -1                     # GiB
+  autoOffsetReset: earliest             # 可选值 latest, earliest
+  adminClientRequestTimeoutMs: 30000    # 获取源集群 topics 的超时时间
+  adminClientOperationTimeoutMs: 60000  # 向目标集群创建 topic 的超时时间
+  retries: 5                            # 生产者重试次数
+  retryBackoffMs: 500                   # 生产者每次重试之间的间隔
+
+depServices:
+  aladdin-tika:
+    host: aladdin-tika
+    port: "9998"
+  authentication:
+    privateHost: authentication-private
+    privatePort: "30110"
+    publicHost: authentication-public
+    publicPort: "30110"
+  deploy-service:
+    HttpHost: deploy-service
+    HttpPort: "9703"
+  doc-share:
+    privateHost: doc-share-private
+    privatePort: "30920"
+    publicHost: doc-share-public
+    publicPort: "30920"
+  document:
+    privateHost: document-private
+    privatePort: "30920"
+    publicHost: document-public
+    publicPort: "30920"
+  efast:
+    efastThriftHost: efast-efast
+    efastThriftPort: "9121"
+    evfsThriftHost: efast-evfs
+    evfsThriftPort: "9064"
+    privateHttpHost: efast-private
+    privateHttpPort: "9123"
+    publicHttpHost: efast-public
+    publicHttpPort: "9123"
+  emetadata:
+    host: emetadata
+    port: "30156"
+    privateHost: emetadata-private
+    privatePort: "30157"
+  fast-text-analysis:
+    host: fast-text-analysis
+    port: "9528"
+  hydra:
+    administrativeHost: hydra-admin
+    administrativePort: "4445"
+    administrativePrefix: /admin
+    publicHost: hydra-public
+    publicPort: "4444"
+  mongodb:
+    host: mongodb-mongodb-0.mongodb-mongodb.resource
+    port: 28000
+    user: "anyshare"
+    password: "eisoo.com123"
+    replicaSet: "rs0"
+    options:
+      authSource: "anyshare"
+    ssl: false
+    sslCAFile: ""
+    direct: false
+    maxPoolSize: 5
+    minPoolSize: 1
+  mq:
+    auth: {}
+    connectorType: nsq
+    mqHost: proton-mq-nsq-nsqd.resource
+    mqLookupdHost: proton-mq-nsq-nsqlookupd.resource
+    mqLookupdPort: 4161
+    mqPort: 4151
+    mqType: nsq
+    protocol: sasl_plaintext
+  user-management:
+    privateHost: user-management-private
+    privatePort: "30980"
+    publicHost: user-management-public
+    publicPort: "30980"
+  appstore-public:
+    host: appstore-public
+    port: 7010
+  intelliinfo:
+    privateHost: intelliinfo-private
+    privatePort: "9002"
+    publicHost: intelliinfo-public
+    publicPort: "9000"
+  ecron:
+    host: ecron-management
+    port: 32345
+  ecotag:
+    privateHost: ecotag-private
+    privatePort: "32157"
+  content-automation:
+    privateHost: flow-automation-private
+    privatePort: "8680"
+    publicHost: flow-automation
+    publicPort: "8680"
+  kc-mc:
+    host: kc-mc
+    port: 7201
+    privateHost: kc-mc-private
+    privatePort: "7203"
+  ossgatewaymanager:
+    privateHost: ossgatewaymanager-private
+    privatePort: 9002
+  redis:
+    certName: cert.pem
+    connectInfo:
+      host: ""
+      port: 26379
+      masterHost: ""
+      masterPort: 26379
+      slaveHost: ""
+      slavePort: 26379
+      masterGroupName: mymaster
+      password: eisoo.com123
+      sentinelHost: proton-redis-proton-redis-sentinel.resource
+      sentinelPassword: eisoo.com123
+      sentinelPort: 26379
+      sentinelUsername: root
+      username: root
+    connectType: sentinel
+    enableSSL: false
+    secretName: redis-ssl-secret
+    keyName: key.pem
+  ocr-engine:
+    t4th:
+      switch: false
+      host: 127.0.0.1
+      port: 100
+      protocol: http
+      connectType: ocr
+  observability:
+    host: feed-ingester-service
+    port: 13031
+    protocol: http
+    log_level: warn
+    trace_enabled: false
+  sharemgnt:
+    host: sharemgnt
+    port: "9600"
+  cognitive-assistant:
+    host: cognitive-assistant
+    port: 8888
+  docset:
+    privateHost: docset-private
+    privatePort: 32597
+    publicHost: docset-public
+    publicPort: 32596
+  personal-config:
+    privateHost: personal-config-private
+    privatePort: 8082
+    publicHost: personal-config
+    publicPort: 8081
+  metadata:
+    privateHost: metadata-private
+    privatePort: 30159
+    publicHost: metadata-public
+    publicPort: 30158
+  speech-model:
+    privateHost: 127.0.0.1
+    privatePort: 8680
+  rds:
+    system_id: ""
+    host: mariadb-mariadb-master.resource
+    port: "3330"
+    database: "workflow"
+    user: "anyshare"
+    password: "eisoo.com123"
+    type: "mysql"
+  uie:
+    privateHost: 127.0.0.1
+    privatePort: 8680
+  anydata:
+    protocol: "https"
+    host: ""
+    port: "8444"
+    appid: ""
+    model: ""
+  coderunner:
+    privateHost: coderunner-private
+    privatePort: 8680
+  dataflowtools:
+    privateHost: dataflowtools-private
+    privatePort: 8683
+  agentoperatorintegration:
+    host: agent-operator-integration
+    port: 9000
+  mfmodelmanager:
+    host: mf-model-manager
+    port: 9898
+  mfmodelapi:
+    host: mf-model-api
+    port: 9898
+  agentfactory:
+    host: agent-factory
+    port: 13020
+  knknowledgedata:
+    host: kn-knowledge-data
+    port: 6475
+  ecoconfig:
+    publicHost: ecoconfig-public.anyshare 
+    publicPort: "32127"
+    privateHost: ecoconfig-private.anyshare
+    privatePort: "32128"
+  agentapp:
+    host: agent-app
+    port: "30777"
+  mdl_uniquery:
+    host: mdl-uniquery-svc
+    port: 13011
+  mdl_datamodel:
+    host: mdl-data-model-svc
+    port: 13020
+  mdl_datapipeline:
+    host: flow-stream-data-pipeline-svc.anyshare
+    port: 13012
+  authorization:
+    privateHost: authorization-private
+    privatePort: 30920
+  opensearch:
+    host: opensearch-master.resource
+    port: 9200
+    protocol: http
+    user: admin
+    password: eisoo.com123
+  dp_datasource:
+    host: data-connection
+    port: 8098
+    protocol: http
+  contentpipeline:
+    privateHost: contentpipeline-private
+    privatePort: 9002
+  structure-extractor:
+    privateHost: 192.168.102.250
+    privatePort: 18089
+    outputDir: /output
+    backend: vlm-http-client
+    serverUrl: http://127.0.0.1:8088
+  ocr:
+    privateHost: 192.168.152.11
+    privatePort: 12349
+  business-system-service:
+    host: business-system-service
+    port: 80
+
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+
+nameOverride: ""
+fullnameOverride: ""
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  runAsGroup: 5000
+  runAsUser: 5000
+  readOnlyRootFilesystem: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 100Mi
+  limits:
+    cpu: 4
+    memory: 8192Mi
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+actionConfigYaml: /conf/action_config.yaml
+actionConfig:
+  fulltext:
+    timeoutSec: 3600
+
+  docformatconvert:
+    timeoutSec: 3600

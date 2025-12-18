@@ -1,0 +1,122 @@
+.modal {
+    .content {
+        margin-left: 6px;
+        color: rgba(0, 0, 0, 1);
+        font-size: 13px;
+    }
+
+    .extra {
+        display: inline-block;
+        margin-top: 8px;
+        margin-left: 6px;
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.45);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-content) {
+        min-height: 58px;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-body)
+        > :global(.@{iconfont-css-prefix}-info-circle) {
+        font-size: 28px;
+        color: #1890ff;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-body)
+        :global(.@{ant-prefix}-modal-confirm-title) {
+        line-height: 28px;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        padding: 32px 32px 20px;
+    }
+}
+
+.tooltip {
+    cursor: default;
+
+    .describe {
+        font-size: 11px;
+        color: #fff;
+    }
+
+    &:global(.@{ant-prefix}-tooltip) {
+        max-width: 300px;
+    }
+
+    &:global(.@{ant-prefix}-tooltip-placement-bottomLeft) {
+        padding-top: 8px;
+    }
+
+    &:global(.@{ant-prefix}-tooltip-placement-bottomLeft)
+        :global(.@{ant-prefix}-tooltip-arrow-content) {
+        top: 14px;
+        transform: translateY(6.53553391px) rotate(45deg);
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    :global(.@{ant-prefix}-tooltip-inner) {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    :global(.@{ant-prefix}-tooltip-arrow) {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.not-allowed-modal {
+    .not-allowed-content {
+        padding: 8px;
+        overflow: auto;
+        height: 120px;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
+        border: 1px solid rgb(255, 255, 255);
+        background: rgb(246, 246, 248);
+        font-size: 13px;
+
+        .not-allowed-item {
+            margin-bottom: 12px;
+        }
+
+        .not-allowed-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .not-allowed-item-name-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .not-allowed-item-name {
+            color: rgba(0, 0, 0, 0.55);
+            line-height: 24px;
+        }
+
+        .not-allowed-item-reason {
+            color: rgba(0, 0, 0, 0.55);
+            line-height: 24px;
+        }
+    }
+
+    &:global(.@{ant-prefix}-modal-confirm-info)
+        :global(.@{ant-prefix}-modal-body) {
+        padding: 32px 32px 20px;
+    }
+
+    &:global(.@{ant-prefix}-modal-confirm-info)
+        :global(.@{ant-prefix}-modal-confirm-body)
+        > :global(.@{iconfont-css-prefix}-info-circle) {
+        font-size: 28px;
+        color: #1890ff;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-body)
+        :global(.@{ant-prefix}-modal-confirm-title) {
+        line-height: 28px;
+    }
+}

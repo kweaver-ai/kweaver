@@ -1,0 +1,170 @@
+.DagEditorContainer {
+  position: fixed;
+  top: 52px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+
+  .Header {
+    background: rgb(255, 255, 255);
+    border-bottom: 1px solid rgb(208, 209, 216);
+    border-top: 1px solid transparent;
+    padding: 10px 24px;
+    width: 100%;
+
+    :global(.@{ant-prefix}-page-header-heading-title) {
+      color: #000;
+      font-weight: normal;
+      font-size: 13px;
+      line-height: 22px;
+    }
+
+    :global(.@{ant-prefix}-page-header-heading-left),
+    :global(.@{ant-prefix}-page-header-heading-extra) {
+      margin: 0;
+      height: 30px;
+    }
+  }
+
+  .Title {
+    color: rgb(0, 0, 0);
+    font-size: 13px;
+    line-height: 22px;
+    white-space: pre;
+  }
+
+  .BackIcon {
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 13px;
+    line-height: 13px;
+  }
+}
+
+.Editor {
+  height: 100%;
+}
+
+.modal {
+  .modal-title {
+    font-size: 15px;
+    font-weight: bold;
+    user-select: none;
+  }
+
+  .footer-btn-ok[disabled],
+  .footer-btn-ok[disabled]:active,
+  .footer-btn-ok[disabled]:focus,
+  .footer-btn-ok[disabled]:hover {
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    border-color: transparent;
+    border-radius: 4px;
+    background: rgba(101, 177, 252, 0.5);
+    text-shadow: none;
+    box-shadow: none;
+    cursor: default;
+  }
+
+  :global(.@{ant-prefix}-modal-header) {
+    padding: 16px 32px;
+    border-bottom: none;
+  }
+
+  :global(.@{ant-prefix}-modal-body) {
+    padding: 8px 32px 20px;
+    max-height: 400px;
+    overflow: auto;
+  }
+
+  :global(.@{ant-prefix}-modal-footer) {
+    padding: 0 32px 20px;
+    border-top: none;
+  }
+}
+
+.drawer {
+  .drawer-title {
+    font-size: 15px;
+    font-weight: bold;
+    user-select: none;
+  }
+
+  .drawer-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    .footer-btn-cancel {
+      margin-left: 8px;
+    }
+  }
+
+  .footer-btn-ok[disabled],
+  .footer-btn-ok[disabled]:active,
+  .footer-btn-ok[disabled]:focus,
+  .footer-btn-ok[disabled]:hover {
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    border-color: transparent;
+    border-radius: 4px;
+    background: rgba(101, 177, 252, 0.5);
+    text-shadow: none;
+    box-shadow: none;
+    cursor: default;
+  }
+
+  // 抽屉
+  :global(.@{ant-prefix}-drawer-close) {
+    position: absolute;
+    right: 0px;
+  }
+
+  :global(.@{ant-prefix}-drawer-title) {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0px;
+    text-align: left;
+  }
+
+  :global(.@{ant-prefix}-drawer-header) {
+    padding: 16px 32px;
+    border-bottom: none;
+  }
+
+  :global(.@{ant-prefix}-drawer-body) {
+    padding: 8px 32px 20px;
+  }
+
+  :global(.@{ant-prefix}-drawer-footer) {
+    padding: 20px 32px;
+    border-top: none;
+  }
+
+  :global(.@{ant-prefix}-drawer-close) {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 16px;
+    color: #7f8391;
+    text-align: center;
+    border-radius: 0px;
+    border-color: transparent;
+    transition: none;
+
+    &:hover {
+      color: #ffffff;
+      background-color: rgba(255, 103, 109, 0.7);
+    }
+    &:active {
+      background-color: #ff677d;
+      color: #ffffff;
+    }
+  }
+}

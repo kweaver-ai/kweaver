@@ -1,0 +1,64 @@
+.selectOptionDescription {
+    // color: #0000004c;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+:global(.@{ant-prefix}-select-selection-item) .selectOptionDescription {
+    display: none;
+}
+
+.label {
+    padding: 3px 8px 3px 0;
+    white-space: nowrap;
+    display: inline-flex;
+    min-width: 160px;
+}
+
+.inputTags {
+    white-space: pre-wrap;
+}
+
+.keyword {
+    display: flex;
+    flex-direction: column;
+    > :not(:first-child) {
+        margin-top: 8px;
+    }
+}
+
+.customItem {
+    display: flex;
+    flex-wrap: wrap;
+    > label {
+        flex-shrink: 0;
+    }
+    > input,
+    textarea {
+        width: 100%;
+        margin-top: 4px;
+        margin-left: 24px;
+    }
+
+    :global(.@{ant-prefix}-input-disabled) {
+        user-select: none;
+        pointer-events: none;
+    }
+}
+
+.invalid-help {
+    margin-top: 0;
+    margin-left: 24px;
+    font-size: 13px;
+    color: rgb(255, 77, 79);
+}
+
+.matchtype {
+    :global(.@{ant-prefix}-form-item-explain) {
+        display: none;
+    }
+}
+
+.subDescription {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.55);
+}

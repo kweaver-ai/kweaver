@@ -1,0 +1,284 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 32px;
+    min-width: 760px;
+    // height: 52px;
+    // line-height: 52px;
+    // box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.05);
+    z-index: 1;
+    overflow: hidden;
+    border-bottom: 1px solid #E4E7ED;
+    margin-top: 16px;
+
+    .menu-nav {
+        display: flex;
+        align-items: center;
+
+        .nav-item {
+            display: inline-block;
+            width: auto;
+            max-width: 128px;
+            margin-right: 32px;
+            font-size: 14px;
+            line-height: 32px;
+            white-space: nowrap;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-divider {
+            width: 2px;
+            height: 18px;
+            margin-right: 32px;
+            background-color: rgb(229, 229, 229);
+        }
+    }
+
+    .extra-nav {
+        display: flex;
+        align-items: center;
+
+        .nav-divider {
+            width: 2px;
+            height: 18px;
+            margin-right: 16px;
+            background-color: rgb(229, 229, 229);
+        }
+
+        .link-btn {
+            color: #000;
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+
+            .nav-icon {
+                font-size: 18px;
+                color: #000;
+            }
+
+            .workflow-icon {
+                font-size: 20px;
+            }
+        }
+
+        .newButton {
+            margin-left: 8px;
+            padding: 0 8px;
+
+            .newButtonIcon {
+                color: #fff;
+                font-size: 16px;
+                border-radius: 4px;
+            }
+
+            .newButton-content {
+                display: inline-flex;
+                align-items: center;
+                padding-left: 10px;
+            }
+
+            .arrow-icon {
+                font-size: 8px;
+                padding-left: 8px;
+            }
+        }
+    }
+}
+
+.extra-btn-badge {
+    :global(.@{ant-prefix}-badge-count-sm) {
+        min-width: 16px;
+        height: 16px;
+        font-size: 12px;
+        line-height: 16px;
+        border-radius: 8px;
+    }
+
+    :global(.@{ant-prefix}-badge-multiple-words) {
+        padding: 0 6px;
+        transform: translate(20px, -6px);
+    }
+}
+
+.extra-btn-badge.three-length {
+    :global(.@{ant-prefix}-badge-multiple-words) {
+        transform: translate(28px, -6px);
+    }
+}
+
+.create-drop-menu {
+    .import-menu {
+        :global(.@{ant-prefix}-dropdown-menu-title-content) {
+            height: 20px;
+        }
+    }
+
+    .import-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .import-icon {
+            position: absolute;
+            top: 2px;
+            color: #126ee3;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .import-text {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-left: 24px;
+            width: 100%;
+        }
+    }
+
+    .template-icon {
+        font-size: 18px;
+        border-radius: 4px;
+    }
+
+    .btn-icon {
+        font-size: 20px;
+        border-radius: 4px;
+    }
+
+    :global(.@{ant-prefix}-dropdown-menu-item) {
+        min-width: 120px;
+    }
+
+    :global(.@{ant-prefix}-dropdown-menu-item-selected),
+    :global(.@{ant-prefix}-dropdown-menu-submenu-title-selected) {
+        color: inherit;
+        background-color: inherit;
+
+        &:hover {
+            background: rgb(240, 242, 247);
+        }
+    }
+}
+
+.modal {
+    position: relative;
+
+    .modal-container {
+        display: flex;
+        margin-bottom: 120px;
+
+        .top-content {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .left-wrapper {
+            margin-right: 16px;
+            width: 316px;
+            height: 215px;
+
+            img {
+                width: 316px;
+                height: 215px;
+            }
+        }
+
+        .right-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+
+            .right-title {
+                margin: 13px 0;
+                color: rgba(0, 0, 0, 1);
+                font-weight: bold;
+                font-size: 16px;
+                line-height: 24px;
+            }
+
+            .right-description {
+                margin-top: 8px;
+                color: rgba(0, 0, 0, 1);
+                font-size: 13px;
+                line-height: 24px;
+            }
+
+            ul li {
+                list-style: none;
+            }
+
+            .li-icon {
+                margin-right: 8px;
+                font-size: 16px;
+            }
+        }
+    }
+
+    .confirm-btn {
+        position: absolute;
+        bottom: 66px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0px 21px;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        min-height: 400px;
+        height: auto;
+        overflow: hidden;
+        padding: 56px 40px 12px 24px;
+    }
+
+    :global(.@{ant-prefix}-carousel .slick-dots li:not(.slick-active)) {
+        width: 10px;
+    }
+
+    :global(.@{ant-prefix}-carousel .slick-dots li button) {
+        background: #bbb;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    :global(.@{ant-prefix}-carousel .slick-dots li.slick-active button) {
+        background: rgb(184, 212, 247);
+        border-radius: 8px;
+    }
+}
+
+.guide-pop {
+    position: relative;
+    padding: 4px;
+    width: 280px;
+    height: 100px;
+
+    p {
+        color: rgba(0, 0, 0, 1);
+        font-weight: bold;
+        font-size: 14px;
+        line-height: 22px;
+    }
+
+    .knowButton {
+        position: absolute;
+        padding: 0 8px;
+        right: 0;
+        bottom: 0;
+        height: 28px;
+        border-radius: 4px;
+        line-height: 20px;
+        min-width: 80px;
+    }
+}
+
+.pop-wrapper.ie {
+    :global(.@{ant-prefix}-popover-arrow) {
+        :global(.@{ant-prefix}-popover-arrow-content) {
+            top: 32px;
+        }
+    }
+}

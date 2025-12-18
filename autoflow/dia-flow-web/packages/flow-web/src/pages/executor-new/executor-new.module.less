@@ -1,0 +1,98 @@
+.Container {
+    display: flex;
+    height: 100%;
+
+    &.Loading {
+        pointer-events: none;
+    }
+}
+
+.Header {
+    border-bottom: 1px solid #d0d1d8;
+    border-top: 1px solid transparent;
+    width: 100%;
+    background: #fff;
+    padding: 10px 24px;
+
+    .Title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre;
+    }
+
+    .BackIcon {
+        font-size: 13px;
+        line-height: 13px;
+        color: rgba(0, 0, 0, 0.4);
+    }
+
+    :global(.@{ant-prefix}-page-header-heading-title) {
+        color: #000;
+        font-weight: normal;
+        font-size: 13px;
+        line-height: 22px;
+    }
+
+    :global(.@{ant-prefix}-page-header-heading-left) {
+        margin: 0;
+        height: 30px;
+    }
+}
+
+.Sider {
+    border-right: 1px solid rgba(0, 0, 0, 0.098);
+    padding: 24px;
+}
+
+.Content {
+    flex-grow: 1;
+    display: flex;
+}
+
+.Steps {
+    width: 240px;
+    height: 176px;
+}
+
+.Main {
+    flex-grow: 1;
+}
+
+.MainContent {
+    padding: 28px 40px;
+    overflow-y: auto;
+}
+
+.MainFooter {
+    display: flex;
+    justify-content: flex-end;
+
+    .FooterRight {
+        margin-left: auto;
+    }
+}
+
+.Drawer {
+    :global(.@{ant-prefix}-drawer-close) {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        margin-right: 0;
+        margin-top: 0;
+    }
+
+    .DrawerFooterButtons {
+        margin-right: 16px;
+        float: right;
+    }
+}
+
+.ConfirmModal {
+    :global(.@{ant-prefix}-modal-confirm-btns) {
+        display: flex;
+        flex-direction: row-reverse;
+        > button {
+            margin-left: 8px;
+        }
+    }
+}

@@ -1,0 +1,38 @@
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        line-height: 22px;
+        padding: 24px;
+        height: calc(100% - 52px);
+
+        .upload-button {
+            margin: 16px 0;
+        }
+
+        .package-list {
+            flex-grow: 1;
+        }
+    }
+}
+
+.uploading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 122px;
+
+    &-spin {
+        margin-top: 15px;
+        margin-bottom: 16px;
+    }
+}
+
+.uploading-footer {
+    margin-left: 290px;
+}

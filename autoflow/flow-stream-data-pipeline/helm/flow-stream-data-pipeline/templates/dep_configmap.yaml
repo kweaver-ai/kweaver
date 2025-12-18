@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.moduleName }}-dep-configmap
+    namespace: {{ .Values.namespace }}
+data:
+    mdlconfig.json: |
+        {
+            "services": {
+                {{- with .Values.depServices.rds }}
+                "rds": {
+                    "dbType": "{{ .type }}",
+                    "namespace": "",
+                    "service": "{{ .host }}",
+                    "ports": {
+                        "default": {{ .port }}
+                    },
+                    "protocol": "tcp",
+                    "username": "{{ .user }}",
+                    "password": "{{ .password }}",
+                    "encryptionType": "{{ .encryptionType }}"
+                },
+                {{- end }}
+                {{- with .Values.depServices.mq }}
+                "mq": {
+                    "mqType": "{{ .mqType }}",
+                    "namespace": "",
+                    "service": "{{ .mqHost }}",
+                    "ports": {
+                        "default": {{ .mqPort }}
+                    },
+                    "protocol": "{{ .protocol }}",
+                    "mechanism": "{{ .auth.mechanism }}",
+                    "username": "{{ .auth.username }}",
+                    "password": "{{ .auth.password }}",
+                    "tenant": "{{ .tenant }}",
+                    "encryptionType": "{{ .encryptionType }}"
+                },
+                {{- end }}
+                {{- with .Values.depServices.opensearch }}
+                "opensearch": {
+                    "namespace": "",
+                    "service": "{{ .host }}",
+                    "ports": {
+                        "default": {{ .port }}
+                    },
+                    "protocol": "{{ .protocol }}",
+                    "username": "{{ .user }}",
+                    "password": "{{ .password }}",
+                    "encryptionType": "{{ .encryptionType }}"
+                },
+                {{- end }}
+                "index-base": {
+                    "namespace": "{{ .Values.namespace }}",
+                    "service": "mdl-index-base-svc",
+                    "protocol": "http",
+                    "ports": {
+                        "default": 13013
+                    }
+                },
+                "flow-stream-data-pipeline": {
+                    "namespace": "{{ .Values.namespace }}",
+                    "service": "flow-stream-data-pipeline-svc",
+                    "protocol": "http",
+                    "ports": {
+                        "default": 13012
+                    }
+                },
+                "user-management": {
+                    "namespace": "{{ .Values.namespace }}",
+                    "service": "user-management-private",
+                    "protocol": "http",
+                    "ports": {
+                        "default": 30980
+                    }
+                },
+                "hydra-public": {
+                    "namespace": "{{ .Values.namespace }}",
+                    "service": "hydra-public",
+                    "protocol": "http",
+                    "ports": {
+                        "default": 4444
+                    }
+                },
+                "hydra-admin": {
+                    "namespace": "{{ .Values.namespace }}",
+                    "service": "hydra-admin",
+                    "protocol": "http",
+                    "ports": {
+                        "default": 4445
+                    }
+                },
+                "authorization-private": {
+                    "namespace": "{{ .Values.namespace }}",
+                    "service": "authorization-private",
+                    "protocol": "http",
+                    "ports": {
+                        "default": 30920
+                    }
+                }
+            }
+        }
+
+    dm_svc.conf: |
+        TIME_ZON=(480)
+        LANGUAGE=(cn)
+        DM=({{ .Values.depServices.rds.host }})
+        [DM]
+        LOGIN_MODE=(1)

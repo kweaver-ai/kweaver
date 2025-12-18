@@ -1,0 +1,67 @@
+apiVersion: v1
+data:
+  RDSHOST: {{ .Values.depServices.rds.host | quote}}
+  RDSPORT: {{ quote .Values.depServices.rds.port }}
+  RDSUSER: {{ .Values.depServices.rds.user | quote}}
+  RDSPASS: {{ .Values.depServices.rds.password | quote}}
+  DB_TYPE: {{ .Values.depServices.rds.type | quote}}
+  RDSDBNAME: {{ .Values.depServices.rds.database | quote}}
+  dm_svc.conf: |
+    TIME_ZON=(480)
+    LANGUAGE=(cn)
+    DM={{ printf "(%s)" .Values.depServices.rds.host }}
+    [DM]
+    LOGIN_MODE=(1)
+
+  agent-app.yaml: |
+    # 配置文件路径/sysvol/conf/agent-app.yaml
+    project:
+      language: {{ .Values.service.language }}
+      host: "0.0.0.0"
+      port: {{ .Values.service.port }}
+      logger_level: {{ .Values.service.loggerLevel }}
+    stream_diff_frequency: {{ .Values.service.streamDiffFrequency }}
+
+    hydra:
+      user-mgnt:
+        host: {{ .Values.depServices.hydra.userMgnt.host }}
+        port: {{ .Values.depServices.hydra.userMgnt.port }}
+      hydra-public:
+        host: {{ .Values.depServices.hydra.hydraPublic.host }}
+        port: {{ .Values.depServices.hydra.hydraPublic.port }}
+      hydra-admin:
+        host: {{ .Values.depServices.hydra.hydraAdmin.host }}
+        port: {{ .Values.depServices.hydra.hydraAdmin.port }}
+    agent_executor:
+      {{- toYaml .Values.depServices.agentExecutor | nindent 6 }}
+    agent_factory:
+      {{- toYaml .Values.depServices.agentFactory | nindent 6 }}
+    efast:
+      {{- toYaml .Values.depServices.efast | nindent 6 }}
+    docset:
+      {{- toYaml .Values.depServices.docset | nindent 6 }}
+    ecoconfig:
+      {{- toYaml .Values.depServices.ecoconfig | nindent 6 }}
+ 
+
+  observability.yaml: |
+    # 可观测相关配置
+    logEnabled: {{ .Values.observability.logEnabled }}
+    traceEnabled: {{ .Values.observability.traceEnabled }}
+    metricEnabled: {{ .Values.observability.metricEnabled }}
+    logExporter: {{ .Values.observability.logExporter }}
+    traceProvider: {{ .Values.observability.traceProvider }}
+    metricProvider: {{ .Values.observability.metricProvider }}
+    logLoadInternal: {{ .Values.observability.logLoadInternal }}
+    logLoadMaxLog: {{ .Values.observability.logLoadMaxLog }}
+    traceMaxQueueSize: {{ .Values.observability.traceMaxQueueSize }}
+    metricIntervalSecond: {{ .Values.observability.metricIntervalSecond }}
+    httpLogFeedIngesterUrl: {{ .Values.observability.httpLogFeedIngesterUrl }}
+    httpTraceFeedIngesterUrl: {{ .Values.observability.httpTraceFeedIngesterUrl }}
+    httpMetricFeedIngesterUrl: {{ .Values.observability.httpMetricFeedIngesterUrl }}
+    grpcTraceFeedIngesterUrl: {{ .Values.observability.grpcTraceFeedIngesterUrl }}
+    grpcTraceJobId: {{ .Values.observability.grpcTraceJobId }}
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-yaml
+  namespace: {{ .Values.namespace }}

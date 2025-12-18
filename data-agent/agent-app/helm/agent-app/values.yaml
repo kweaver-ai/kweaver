@@ -1,0 +1,156 @@
+replicaCount: 1
+
+nodeSelector: {}
+
+namespace: dip
+moduleName: agent-app
+serviceName: agent-app
+
+# 设置为dev则为开发模式.
+runMode: release
+
+enableSecurityContext: true
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+
+image:
+  registry: acr.aishu.cn
+  service:
+    repository: dip/agent-app
+    tag: data-581755
+    pullPolicy: IfNotPresent
+
+service:
+  ingressclassname: "class-443"
+  agentApp:
+    type: ClusterIP
+    port: 30777
+    nodePort: 31022
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /api/agent-app/v1
+  type: ClusterIP
+  enableDualStack: false
+  port: 30777
+  language: zh-CN
+  loggerOutput: stdout
+  loggerLevel: info
+  businessTimeOffset: 0
+  # 流式响应差异计算频率，每 N 次响应计算一次差异，默认值 5
+  streamDiffFrequency: 5
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 60
+    failureThreshold: 10
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3小时超时
+
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+
+depServices:
+  hydra:
+    userMgnt:
+      host: user-management-private
+      port: 30980
+    hydraPublic:
+      host: hydra-public
+      port: 4444
+    hydraAdmin:
+      host: hydra-admin
+      port: 4445
+  # 数据库连接配置
+  rds:
+    type: MYSQL
+    host: mariadb-mariadb-cluster.resource
+    port: 3330
+    hostRead: mariadb-mariadb-cluster.resource
+    portRead: 3330
+    user: anyshare
+    password: eisoo.com123
+    database: dip_data_agent
+    maxConnections: 30
+    maxReadConnections: 30
+    dbCharset: utf8mb4
+    timeout: 10
+    readTimeout: 10
+    writeTimeout: 10
+  agentExecutor:
+    public_svc:
+      host: agent-executor-public
+      port: 30778
+      protocol: http
+    private_svc:
+      host: agent-executor
+      port: 30778
+      protocol: http
+    use_v2: true
+  agentFactory:
+    public_svc:
+      host: agent-factory
+      port: 13020
+      protocol: http
+    private_svc:
+      host: agent-factory
+      port: 13020
+      protocol: http
+  efast:
+    private_svc:
+      host: efast-private
+      port: 9123
+      protocol: http
+    public_svc:
+      host: efast-public
+      port: 9123
+      protocol: http
+  docset:
+    public_svc:
+      host: docset-public
+      port: 32596
+      protocol: http
+    private_svc:
+      host: docset-private
+      port: 32597
+      protocol: http
+  ecoconfig:
+    private_svc:
+      host: ecoconfig-private
+      port: 32128
+      protocol: http
+    public_svc:
+      host: ecoconfig-public
+      port: 32127
+      protocol: http
+      
+resources:
+  requests:
+    cpu: 200m
+    memory: 200Mi
+  limits:
+    cpu: 4
+    memory: 8Gi
+
+
+observability:
+  logEnabled: false
+  traceEnabled: false
+  metricEnabled: false
+  logExporter: http
+  traceProvider: http
+  metricProvider: http
+  logLoadInternal: 1
+  logLoadMaxLog: 10
+  traceMaxQueueSize: 50000
+  metricIntervalSecond: 60
+  httpLogFeedIngesterUrl: http://feed-ingester-service:13031/api/feed_ingester/v1/jobs/dip-o11y-log/events
+  httpTraceFeedIngesterUrl: http://feed-ingester-service:13031/api/feed_ingester/v1/jobs/dip-o11y-trace/events
+  httpMetricFeedIngesterUrl: http://feed-ingester-service:13031/api/feed_ingester/v1/jobs/dip-o11y-metric/events
+  grpcTraceFeedIngesterUrl: feed-ingester-service:30013
+  grpcTraceJobId: dip-o11y-trace-grpc

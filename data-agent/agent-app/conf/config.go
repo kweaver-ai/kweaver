@@ -3,7 +3,7 @@ package conf
 import (
 	"sync"
 
-	"devops.aishu.cn/AISHUDevOps/DIP/_git/agent-app/version"
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/agent-app/appruntime"
 
 	"devops.aishu.cn/AISHUDevOps/DIP/_git/agent-go-common-pkg/cconf"
 	o11y "devops.aishu.cn/AISHUDevOps/DIP/_git/mdl-go-lib/observability"
@@ -65,11 +65,11 @@ func init_o11y() {
 	}
 
 	serverInfo := o11y.ServerInfo{
-		ServerName:    version.ServerName,
-		ServerVersion: version.ServerVersion,
-		Language:      version.LanguageGo,
-		GoVersion:     version.GoVersion,
-		GoArch:        version.GoArch,
+		ServerName:    appruntime.ServerName,
+		ServerVersion: appruntime.ServerVersion,
+		Language:      appruntime.LanguageGo,
+		GoVersion:     appruntime.GoVersion,
+		GoArch:        appruntime.GoArch,
 	}
 
 	o11y.Init(serverInfo, *configImpl.O11yCfg)

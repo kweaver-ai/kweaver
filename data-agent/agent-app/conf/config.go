@@ -67,7 +67,7 @@ func init_o11y() {
 	serverInfo := o11y.ServerInfo{
 		ServerName:    appruntime.ServerName,
 		ServerVersion: appruntime.ServerVersion,
-		Language:      appruntime.LanguageGo,
+		Language:      appruntime.LanguageGO,
 		GoVersion:     appruntime.GoVersion,
 		GoArch:        appruntime.GoArch,
 	}

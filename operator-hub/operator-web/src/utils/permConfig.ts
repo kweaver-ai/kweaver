@@ -1,4 +1,4 @@
-import { apis, components } from '@libs/dip-components/dip-components.min';
+import { apis, components } from '@aishu-tech/components/dist/dip-components.min';
 import { getRoleByUserInfo } from '@/utils/role';
 
 export const componentsPermConfig = (resource: any, microWidgetProps: any) => {

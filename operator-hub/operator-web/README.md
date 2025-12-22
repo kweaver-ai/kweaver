@@ -13,7 +13,6 @@ ADP Operator Web前端项目，基于React + TypeScript + Ant Design构建的现
 
 ```
 ├── public/                      # 公共静态资源
-├── libs/                        # 第三方库
 ├── src/                         # 源代码目录
 │   ├── apis/                    # API接口管理
 │   ├── assets/                  # 应用静态资源
@@ -135,10 +134,6 @@ yarn test
 #### public/ 目录
 
 - **公共静态资源**：构建时直接复制到输出目录的文件
-
-#### libs/ 目录
-
-- **第三方库和组件库**：存放外部依赖的库文件
 
 ### 构建配置
 

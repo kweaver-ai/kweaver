@@ -40,4 +40,4 @@ declare module '*.less' {
   export = classes;
 }
 
-declare module '@libs/dip-components/dip-components.min';
+declare module '@aishu-tech/components/dist/dip-components.min';

@@ -13,8 +13,8 @@ import { MicroWidgetContext } from '@/hooks/useMicroWidgetProps';
 import { setConfig } from '@/utils/http';
 import { initializeI18n } from '@/i18n';
 import { RoutesComponent } from './RoutesComponent';
-import { apis } from '@libs/dip-components/dip-components.min';
-import '@libs/dip-components/dip-components.min.css';
+import { apis } from '@aishu-tech/components/dist/dip-components.min';
+import '@aishu-tech/components/dist/dip-components.min.css';
 
 // 常量定义
 const APP_PREFIX_CLS = 'operator-web';

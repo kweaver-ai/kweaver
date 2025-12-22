@@ -24,8 +24,7 @@
     /* path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"], // 路径映射，@ 指向 src 目录
-      "@libs/*": ["libs/*"] // 路径映射，libs 指向根目录下的 libs 目录
+      "@/*": ["src/*"] // 路径映射，@ 指向 src 目录
     }
   },
   "include": ["src"]

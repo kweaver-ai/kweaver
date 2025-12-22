@@ -7,6 +7,11 @@
   resolved "https://registry.npmjs.org/@adobe/css-tools/-/css-tools-4.4.4.tgz#2856c55443d3d461693f32d2b96fb6ea92e1ffa9"
   integrity sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==
 
+"@aishu-tech/components@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/@aishu-tech/components/-/components-1.0.1.tgz#1c85a5122e2ebcd5ece5d2ed64dce9ef5e8ee162"
+  integrity sha512-fDuaA4loMlYYdfFmQiSvRMr1PA5TSjdOvdOGxQ0hXMiRw4XniFd6qUvmHJXGN4IOWZXpDxkSub5i4TiFdwn9ig==
+
 "@ant-design/colors@^7.0.0", "@ant-design/colors@^7.1.0", "@ant-design/colors@^7.2.1":
   version "7.2.1"
   resolved "https://registry.npmjs.org/@ant-design/colors/-/colors-7.2.1.tgz#3bbc1c6c18550020d1622a0067ff03492318df98"

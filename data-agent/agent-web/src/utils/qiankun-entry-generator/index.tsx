@@ -16,8 +16,8 @@ import { initAdMonacoEditor } from '@/components/Editor/AdMonacoEditor/assitants
 import { RoutesComponent } from './RoutesComponent';
 import '@/assets/graphIcons/iconfont.css';
 import '@/assets/graphIconsMore/iconfont.css';
-import { apis } from '@libs/dip-components/dip-components.min';
-import '@libs/dip-components/dip-components.min.css';
+import { apis } from '@aishu-tech/components/dist/dip-components.min';
+import '@aishu-tech/components/dist/dip-components.min.css';
 
 // 常量定义
 const APP_PREFIX_CLS = 'agent-web';

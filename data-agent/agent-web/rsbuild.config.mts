@@ -58,10 +58,6 @@ export default defineConfig({
   // ========== 构建配置 ==========
   source: {
     entry,
-    // 排除已编译的库文件，避免重复编译
-    exclude: [
-      /libs\//, // 排除根目录下的libs目录
-    ],
   },
 
   resolve: {
@@ -69,7 +65,6 @@ export default defineConfig({
     alias: {
       // 配置 TypeScript 路径映射对应的别名
       '@': path.resolve(__dirname, 'src'),
-      '@libs': path.resolve(__dirname, 'libs'),
       // 指定特定的React路径
       react: path.resolve(__dirname, './node_modules/react'),
     },

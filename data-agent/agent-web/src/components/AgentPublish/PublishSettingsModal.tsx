@@ -17,7 +17,7 @@ import {
   type PublishData,
 } from '@/apis/agent-factory';
 import { Category } from '@/apis/agent-factory/type';
-import { apis, components } from '@libs/dip-components/dip-components.min';
+import { apis, components } from '@aishu-tech/components/dist/dip-components.min';
 import { useMicroWidgetProps } from '@/hooks';
 import { getRoleByUserInfo, RoleTypeEnum } from '@/utils/role';
 import { formatAccessor, formatPMSControl, transformPMSControlFromBackend } from './utils';

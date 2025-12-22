@@ -47,4 +47,4 @@ declare module 'css.escape';
 declare module 'sha.js';
 declare module 'react-syntax-highlighter/*';
 declare module 'xml-but-prettier';
-declare module '@libs/dip-components/dip-components.min';
+declare module '@aishu-tech/components/dist/dip-components.min';

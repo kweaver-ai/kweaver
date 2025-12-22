@@ -1038,7 +1038,6 @@ const ToolModal = ({ agentKey, onCancel, value, onConfirm, retrieverBlockOptions
           page: 1,
           page_size: 100,
           status: 'published', // 只获取已发布的MCP服务
-          mode: 'sse',
         },
         publicAndCurrentDomainIdsRef.current
       );

@@ -2,7 +2,7 @@ import { Button } from 'antd';
 import DipIcon from '@/components/DipIcon';
 import React, { useEffect, useRef } from 'react';
 import { FileTypeIcon } from '@/utils/doc';
-import { apis, components } from '@libs/dip-components/dip-components.min';
+import { apis, components } from '@aishu-tech/components/dist/dip-components.min';
 import styles from './index.module.less';
 import classNames from 'classnames';
 type FilePreviewProps = {

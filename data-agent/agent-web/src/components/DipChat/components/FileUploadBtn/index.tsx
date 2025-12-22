@@ -4,7 +4,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { getFileUploadEnable, getTempAreaConfigFromAgent, getTempAreaEnable } from '../../utils';
 import { createDir, getDocInfoByName, getEntryDocLibs } from '@/apis/efast';
 import { DocLibTypeEnum, getFileExtension, getLastDocId } from '@/utils/doc';
-import { apis } from '@libs/dip-components/dip-components.min';
+import { apis } from '@aishu-tech/components/dist/dip-components.min';
 import _ from 'lodash';
 import { TempFileTypeEnum } from '@/apis/intelli-search/type';
 import { FileItem } from '../../interface';

@@ -24,7 +24,7 @@ import {
   DownOutlined,
   ControlOutlined,
 } from '@ant-design/icons';
-import { apis } from '@libs/dip-components/dip-components.min';
+import { apis } from '@aishu-tech/components/dist/dip-components.min';
 import { FileTypeIcon } from '@/utils/doc';
 import KnEntryIcon from '@/assets/icons/kn-entry.svg';
 import DocLib from '@/assets/icons/doclib.svg';

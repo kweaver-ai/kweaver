@@ -44,3 +44,6 @@ rank-bm25==0.2.2
 jupyter_client==8.6.3
 oracledb==3.1.1
 ipykernel==7.0.1
+
+# Local sandbox package (wheel is vendored under ./tmp/)
+./tmp/sandbox_env-0.1.0-py3-none-any.whl

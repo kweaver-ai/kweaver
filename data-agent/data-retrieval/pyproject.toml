@@ -59,4 +59,4 @@ windows = []
 where = ["src"]
 
 [tool.setuptools.package-data]
-"af_agent.prompts.tools_prompts.text2metric_prompt" = ["params_json.txt"]
+"data_retrieval.prompts.tools_prompts.text2metric_prompt" = ["params_json.txt"]

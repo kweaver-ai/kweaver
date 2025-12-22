@@ -9,7 +9,7 @@ import os
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.af_agent.tools.base_tools.text2dip_metric import Text2DIPMetricTool
+from src.data_retrieval.tools.base_tools.text2dip_metric import Text2DIPMetricTool
 
 async def test_as_async_api_cls():
     """测试 as_async_api_cls 方法的参数获取"""

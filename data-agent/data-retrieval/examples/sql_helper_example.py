@@ -9,9 +9,9 @@ SQL Helper 工具使用示例
 
 import asyncio
 from langchain_openai import ChatOpenAI
-from af_agent.tools.base_tools.sql_helper import SQLHelperTool
-from af_agent.datasource.vega_datasource import VegaDataSource
-from af_agent.api.auth import get_authorization
+from data_retrieval.tools.base_tools.sql_helper import SQLHelperTool
+from data_retrieval.datasource.vega_datasource import VegaDataSource
+from data_retrieval.api.auth import get_authorization
 
 
 async def main():

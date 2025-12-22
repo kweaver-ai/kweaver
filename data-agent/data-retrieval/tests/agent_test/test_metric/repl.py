@@ -6,34 +6,34 @@ import os
 from langchain_community.chat_models import ChatOpenAI
 from pydantic import BaseModel, Field
 
-from af_agent.agents.react_agent.react_agent import ReactAgent
-from af_agent.datasource import AFIndicator
-from af_agent.datasource.vega_datasource import VegaDataSource
-from af_agent.sessions.base import GetSessionId
-from af_agent.sessions.redis_session import RedisHistorySession
-from af_agent.tools import ToolName
-from af_agent.tools import Json2Plot
-from af_agent.tools.base_tools.knowledge_enhanced import KnowledgeEnhancedTool
-from af_agent.tools.base_tools.text2metric import Text2MetricTool
-from af_agent.tools.base_tools.analyzer_with_code import AnalyzerWithCodeTool
-# from af_agent.tools.text2metric_by_func import Text2MetricToolByFunc
-from af_agent.tools.base_tools.text2sql import Text2SQLTool
-from af_agent.tools.base_tools.get_tool_cache import GetToolCacheTool
-from af_agent.tools.base_tools.af_sailor import AfSailorTool
-from af_agent.tools.base_tools.datasource_filter import DataSourceFilterTool
-from af_agent.tools.sandbox_tools.shared_all_in_one import SandboxTool
-from af_agent.tools.toolkits import InstructionBookInsideToolkit
-from af_agent.api.auth import get_authorization
+from data_retrieval.agents.react_agent.react_agent import ReactAgent
+from data_retrieval.datasource import AFIndicator
+from data_retrieval.datasource.vega_datasource import VegaDataSource
+from data_retrieval.sessions.base import GetSessionId
+from data_retrieval.sessions.redis_session import RedisHistorySession
+from data_retrieval.tools import ToolName
+from data_retrieval.tools import Json2Plot
+from data_retrieval.tools.base_tools.knowledge_enhanced import KnowledgeEnhancedTool
+from data_retrieval.tools.base_tools.text2metric import Text2MetricTool
+from data_retrieval.tools.base_tools.analyzer_with_code import AnalyzerWithCodeTool
+# from data_retrieval.tools.text2metric_by_func import Text2MetricToolByFunc
+from data_retrieval.tools.base_tools.text2sql import Text2SQLTool
+from data_retrieval.tools.base_tools.get_tool_cache import GetToolCacheTool
+from data_retrieval.tools.base_tools.af_sailor import AfSailorTool
+from data_retrieval.tools.base_tools.datasource_filter import DataSourceFilterTool
+from data_retrieval.tools.sandbox_tools.shared_all_in_one import SandboxTool
+from data_retrieval.tools.toolkits import InstructionBookInsideToolkit
+from data_retrieval.api.auth import get_authorization
 
-from af_agent.utils.repl import astart_repl
-from af_agent.utils.llm import CustomChatOpenAI
-from af_agent.utils.model_types import ModelType4Prompt
+from data_retrieval.utils.repl import astart_repl
+from data_retrieval.utils.llm import CustomChatOpenAI
+from data_retrieval.utils.model_types import ModelType4Prompt
 
-from af_agent.api.ad_api import AD_CONNECT
+from data_retrieval.api.ad_api import AD_CONNECT
 
 
-from af_agent.settings import set_value, get_settings
-from af_agent.prompts.manager.base import BasePromptManager
+from data_retrieval.settings import set_value, get_settings
+from data_retrieval.prompts.manager.base import BasePromptManager
 
 base_session = RedisHistorySession(history_num_limit=20, history_max=5000)
 
@@ -559,7 +559,6 @@ def get_parameter():
         # 142
         # "AF_DEBUG_IP": "http://10.4.109.142",
         # "AD_GATEWAY_USER": "liberly",
-        # "AD_GATEWAY_PASSWORD": "eisoo.com123",
         # "view_list": ["3dc503a6-827d-40a3-b78c-9e28087c9cfc"],
         # "indicator_list": ["541569060106716947", "541569242810599187", "541569417713075987", "541569516732204819"],
         # "token": get_authorization("http://10.4.109.142", "liberly", "111111"),
@@ -569,7 +568,6 @@ def get_parameter():
         # 192.168.181.27
         # "AF_DEBUG_IP": "https://192.168.181.27",
         # "AD_GATEWAY_USER": "zyh",
-        # "AD_GATEWAY_PASSWORD": "111111",
         # # "view_list": ["0e28edb1-b309-44e2-81b5-bc4aac870de9"],
         # # "indicator_list": ["540407952356457333", "540407838573378421", "545485743628270359", "545485327620422423"],
         # # "token": get_authorization("https://192.168.181.27", "zyh", "111111"),
@@ -579,22 +577,10 @@ def get_parameter():
         # "token": get_authorization("https://192.168.181.27", "zyh", "111111"),
         # "user_id": "bd807fd6-a2f5-11ef-8cb2-ee22f1c9e319",
 
-        # 10.4.111.246
-        # "ad_gateway_url": "https://10.4.135.251:8444",
-        # "AF_DEBUG_IP": "https://10.4.111.246",
-        # "AD_GATEWAY_USER": "liberly",
-        # "AD_GATEWAY_PASSWORD": "eisoo.com123",
-        # "view_list": ["f68c61a7-d7ec-4c05-9406-ab53e140dd01", "f645ad34-a28b-4b92-960d-89acea67a96e"],
-        # "indicator_list": ["550553203188496077", "550553625571686093", "550553311317653197", "550553544386737869"],
-        # # "indicator_list": ["550553203188496077"],
-        # "token": get_authorization("https://10.4.111.246", "xia", "eisoo.com123"),
-        # "user_id": "a979abfa-d952-11ef-8ef0-faff6bb8d829",
-
         # 10.4.134.26
         "ad_gateway_url": "https://10.4.135.251:8444",
         "AF_DEBUG_IP": "https://10.4.134.26",
         "AD_GATEWAY_USER": "liberly",
-        "AD_GATEWAY_PASSWORD": "eisoo.com123",
         "view_list": ["621c6638-64cc-4a70-9743-dc140f759d3e", "7a695eb6-668a-4f16-9e8b-5228f6f1b510"],
         "indicator_list": ["559105028636286450", "564359530884898217"],
         "token": get_authorization("https://10.4.134.26", "liberly", "111111"),
@@ -602,7 +588,6 @@ def get_parameter():
         # "ad_gateway_url": "https://10.4.135.251:8444",
         # "AF_DEBUG_IP": "https://10.4.111.247",
         # "AD_GATEWAY_USER": "liberly",
-        # "AD_GATEWAY_PASSWORD": "eisoo.com123",
         # "view_list": ["4830f9d6-ebab-4cd2-badf-8cdae6c723b8", "377c0c72-c8de-46c3-a46e-69b40dbc993a"],
         # "indicator_list": ["564216184304588723", "564216333806360499"],
         # "token": get_authorization("https://10.4.111.247", "liberly", "111111"),
@@ -633,7 +618,6 @@ def get_parameter():
     set_value("AF_DEBUG_IP", parameter["AF_DEBUG_IP"])
     set_value("AD_GATEWAY_URL", parameter["ad_gateway_url"])
     set_value("AD_GATEWAY_USER", parameter["AD_GATEWAY_USER"])
-    set_value("AD_GATEWAY_PASSWORD", parameter["AD_GATEWAY_PASSWORD"])
     # set_value("AF_DEBUG_IP", parameter["AF_DEBUG_IP"])
 
     return parameter

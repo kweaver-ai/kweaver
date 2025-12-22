@@ -9,8 +9,8 @@ import os
 import asyncio
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.af_agent.api.data_model import DataModelService
-from src.af_agent.api.error import DataModelDetailError, DataModelQueryError
+from src.data_retrieval.api.data_model import DataModelService
+from src.data_retrieval.api.error import DataModelDetailError, DataModelQueryError
 
 
 def test_data_model_service(url: str = ""):

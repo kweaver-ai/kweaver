@@ -35,7 +35,7 @@ def __del__(self):
 
 ```python
 import asyncio
-from src.af_agent.tools.sandbox_tools.shared_env import SandboxTool
+from src.data_retrieval.tools.sandbox_tools.shared_env import SandboxTool
 
 async def example():
     tool = SandboxTool(server_url="http://localhost:9101")
@@ -192,6 +192,6 @@ python test_sandbox_session_cleanup.py
 
 ## 相关文件
 
-- `src/af_agent/tools/sandbox_tools/shared_env.py` - 主要实现
+- `src/data_retrieval/tools/sandbox_tools/shared_env.py` - 主要实现
 - `tests/agent_test/test_sandbox_session_cleanup.py` - 测试脚本
 - `deps/sandbox_env-0.1.0-py3-none-any.whl` - 依赖包 

@@ -12,12 +12,12 @@ import os
 # 添加项目根目录到 Python 路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from af_agent.tools.sandbox_tools.shared_all_in_one import SandboxTool, SandboxActionType
-from af_agent.tools.sandbox_tools.toolkit import (
+from data_retrieval.tools.sandbox_tools.shared_all_in_one import SandboxTool, SandboxActionType
+from data_retrieval.tools.sandbox_tools.toolkit import (
     ExecuteCodeTool,
     ExecuteCommandTool
 )
-from af_agent.errors import SandboxError
+from data_retrieval.errors import SandboxError
 
 
 async def test_error_handling():

@@ -13,9 +13,9 @@ import json
 import asyncio
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.af_agent.tools.base_tools.text2dip_metric import Text2DIPMetricTool
-from src.af_agent.datasource.dip_metric import DIPMetric
-from src.af_agent.utils.llm import CustomChatOpenAI
+from src.data_retrieval.tools.base_tools.text2dip_metric import Text2DIPMetricTool
+from src.data_retrieval.datasource.dip_metric import DIPMetric
+from src.data_retrieval.utils.llm import CustomChatOpenAI
 
 def get_test_llm():
     """获取测试用的 LLM"""

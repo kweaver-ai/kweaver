@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r re
 # RUN pip install --no-cache-dir ./tmp/sandbox_env-0.1.0-py3-none-any.whl -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 设置子目录为工作目录
-WORKDIR /af-agent/src/af_agent/tools
+WORKDIR /af-agent/src/data_retrieval/tools
 
 # 使端口可用
 EXPOSE 9100

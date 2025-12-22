@@ -4,17 +4,17 @@ import sys
 
 from datetime import datetime
 from textwrap import dedent
-from af_agent.tools.base_tools.text2sql import Text2SQLTool
-from af_agent.tools.base_tools.text2metric import Text2MetricTool
-from af_agent.sessions.redis_session import RedisHistorySession
-from af_agent.datasource import AFIndicator
-from af_agent.agents.tool_use_agent import ToolUseAgent
+from data_retrieval.tools.base_tools.text2sql import Text2SQLTool
+from data_retrieval.tools.base_tools.text2metric import Text2MetricTool
+from data_retrieval.sessions.redis_session import RedisHistorySession
+from data_retrieval.datasource import AFIndicator
+from data_retrieval.agents.tool_use_agent import ToolUseAgent
 from langchain_openai import ChatOpenAI
-from af_agent.utils.llm import CustomChatOpenAI
-from af_agent.utils.repl import astart_repl
+from data_retrieval.utils.llm import CustomChatOpenAI
+from data_retrieval.utils.repl import astart_repl
 
-# from af_agent.agent_v2 import AFAgent
-# from af_agent.datasource.af_ds import AFDataSource
+# from data_retrieval.agent_v2 import AFAgent
+# from data_retrieval.datasource.af_ds import AFDataSource
 
 base_session = RedisHistorySession()
 
@@ -46,8 +46,8 @@ def init_agent(session_id):
 
     # tool_model = deepseek
 
-    from af_agent.api.auth import get_authorization
-    from af_agent.datasource.vega_datasource import VegaDataSource
+    from data_retrieval.api.auth import get_authorization
+    from data_retrieval.datasource.vega_datasource import VegaDataSource
 
     # token = get_authorization("https://10.4.109.201", "liberly", "111111")
     # token = get_authorization("https://10.4.109.233", "liberly", "111111")

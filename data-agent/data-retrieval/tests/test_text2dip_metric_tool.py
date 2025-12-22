@@ -8,9 +8,9 @@ import json
 import asyncio
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.af_agent.tools.base_tools.text2dip_metric import Text2DIPMetricTool
-from src.af_agent.datasource.dip_metric import DIPMetric
-from src.af_agent.utils.llm import CustomChatOpenAI
+from src.data_retrieval.tools.base_tools.text2dip_metric import Text2DIPMetricTool
+from src.data_retrieval.datasource.dip_metric import DIPMetric
+from src.data_retrieval.utils.llm import CustomChatOpenAI
 
 test_url = "http://192.168.167.13"
 test_token = "Bearer ory_at_uBTNqEZ836nmpYv4hPZL-GnD4_1pHNB1Lt2cPoRiykc.53bJ9LEDrDbr20_8GMgNquOxR6qjaicQn36d1wiODqA"

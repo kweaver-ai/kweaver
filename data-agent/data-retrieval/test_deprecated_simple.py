@@ -11,7 +11,7 @@ import os
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.af_agent.utils import deprecated, deprecated_class, deprecated_property
+from src.data_retrieval.utils import deprecated, deprecated_class, deprecated_property
 
 def test_deprecated_function():
     """测试函数弃用装饰器"""

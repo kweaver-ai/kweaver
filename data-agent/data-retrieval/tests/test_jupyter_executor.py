@@ -15,7 +15,7 @@ sys.path.append(grandparent_dir)
 print(grandparent_dir)
 
 import asyncio
-from af_agent.tools.experiment_tools.jupyter_code_executor import JupyterCodeExecutorTool
+from data_retrieval.tools.experiment_tools.jupyter_code_executor import JupyterCodeExecutorTool
 
 
 async def test_jupyter_executor():

@@ -8,7 +8,7 @@ import sys
 import os
 import asyncio
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/src")
-from af_agent.tools.graph_tools.utils.llm import llm_chat, llm_chat_stream
+from data_retrieval.tools.graph_tools.utils.llm import llm_chat, llm_chat_stream
 
 
 async def test_llm_chat_non_streaming():

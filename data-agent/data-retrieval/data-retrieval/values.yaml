@@ -22,7 +22,7 @@ depServices:
     host: "opensearch-master"
     port: "9200"
     user: "admin"
-    password: "eisoo.com123"
+    password: ""
   redis:
     connectType: sentinel
     enableSSL: false
@@ -30,9 +30,9 @@ depServices:
       sentinelHost: kg-redis-cluster-proton-redis-sentinel
       sentinelPort: 26379
       username: root
-      password: eisoo.com123
+      password: ""
       sentinelUsername: root
-      sentinelPassword: eisoo.com123
+      sentinelPassword: ""
       masterGroupName: mymaster
       masterHost: xxx.dcs.huaweicloud.com
       masterPort: 26379
@@ -68,7 +68,7 @@ depServices:
     user: "root"
     password: "nebula"
     readonlyuser: "anydata"
-    readonlypassword: "eisoo.com123"
+    readonlypassword: ""
 
 
 appConfig:

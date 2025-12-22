@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.af_agent.datasource.dip_metric import DIPMetric, MockDIPMetric
+from src.data_retrieval.datasource.dip_metric import DIPMetric, MockDIPMetric
 
 
 def test_dip_metric_basic():

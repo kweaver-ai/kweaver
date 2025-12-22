@@ -2,20 +2,20 @@ import sys
 import time
 from textwrap import dedent
 sys.path.append("/mnt/pan/zkn/code_sdk/agent_678138/af-agent/src/")
-from af_agent.tools.base_tools.json2plot import Json2Plot
+from data_retrieval.tools.base_tools.json2plot import Json2Plot
 from langchain_community.chat_models import ChatOpenAI
 from pydantic import BaseModel, Field
-from af_agent.agents import ReactAgent
-from af_agent.datasource import AFIndicator
-from af_agent.datasource.vega_datasource import VegaDataSource
-from af_agent.sessions import GetSessionId
-from af_agent.sessions.redis_session import RedisHistorySession
-from af_agent.tools.base_tools.text2metric import Text2MetricTool
-from af_agent.tools.base_tools.text2sql import Text2SQLTool
-from af_agent.tools.toolkits import InstructionBookInsideToolkit
-from af_agent.api.auth import get_authorization
-from af_agent.tools import ToolName
-from af_agent.tools.base_tools.knowledge_enhanced import KnowledgeEnhancedTool
+from data_retrieval.agents import ReactAgent
+from data_retrieval.datasource import AFIndicator
+from data_retrieval.datasource.vega_datasource import VegaDataSource
+from data_retrieval.sessions import GetSessionId
+from data_retrieval.sessions.redis_session import RedisHistorySession
+from data_retrieval.tools.base_tools.text2metric import Text2MetricTool
+from data_retrieval.tools.base_tools.text2sql import Text2SQLTool
+from data_retrieval.tools.toolkits import InstructionBookInsideToolkit
+from data_retrieval.api.auth import get_authorization
+from data_retrieval.tools import ToolName
+from data_retrieval.tools.base_tools.knowledge_enhanced import KnowledgeEnhancedTool
 
 
 

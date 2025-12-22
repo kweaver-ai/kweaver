@@ -1,4 +1,4 @@
-from af_agent.datasource.vega_connector import Connection
+from data_retrieval.datasource.vega_connector import Connection
 
 if __name__ == "__main__":
     conn = Connection(

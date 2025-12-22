@@ -31,7 +31,7 @@ DataModelService 是一个用于获取指标详情和查询指标数据的服务
 ### 基本用法
 
 ```python
-from src.af_agent.api.data_model import DataModelService
+from src.data_retrieval.api.data_model import DataModelService
 
 # 创建服务实例
 service = DataModelService()
@@ -69,7 +69,7 @@ except DataModelQueryError as e:
 
 ```python
 import asyncio
-from src.af_agent.api.data_model import DataModelService
+from src.data_retrieval.api.data_model import DataModelService
 
 async def async_example():
     service = DataModelService()
@@ -91,7 +91,7 @@ result = asyncio.run(async_example())
 ### 错误处理
 
 ```python
-from src.af_agent.api.error import DataModelDetailError, DataModelQueryError
+from src.data_retrieval.api.error import DataModelDetailError, DataModelQueryError
 
 try:
     result = service.get_metric_models_detail("invalid_id", headers)

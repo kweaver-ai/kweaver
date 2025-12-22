@@ -8,8 +8,8 @@ grandparent_dir = os.path.abspath(os.path.join(current_file_path, '../../src'))
 # 将上上级目录添加到sys.path中
 sys.path.append(grandparent_dir)
 print(sys.path)
-from af_agent.tools.graph_tools.common.config import Config
-from af_agent.tools.graph_tools.utils.nebula import NebulaConnector, graph_util, NebulaRequests
+from data_retrieval.tools.graph_tools.common.config import Config
+from data_retrieval.tools.graph_tools.utils.nebula import NebulaConnector, graph_util, NebulaRequests
 graph_id = 5 # 灰度环境的
 nebula_engine = NebulaConnector(ips=Config.GRAPHDB_HOST.split(','),
                                 ports=Config.GRAPHDB_PORT.split(','),

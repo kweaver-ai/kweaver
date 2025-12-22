@@ -20,10 +20,10 @@ from fastapi import FastAPI
 # 添加项目根目录到 Python 路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from af_agent.tools.tool_api_router import BaseToolAPIRouter
-from af_agent.tools.sandbox_tools.shared_all_in_one import SandboxTool, SandboxActionType
+from data_retrieval.tools.tool_api_router import BaseToolAPIRouter
+from data_retrieval.tools.sandbox_tools.shared_all_in_one import SandboxTool, SandboxActionType
 
-from af_agent.tools.tool_api_router import _BASE_TOOLS_MAPPING, _BASE_TOOL_NAMES
+from data_retrieval.tools.tool_api_router import _BASE_TOOLS_MAPPING, _BASE_TOOL_NAMES
 
 
 async def test_sandbox_api_registration():

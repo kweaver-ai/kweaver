@@ -1,7 +1,7 @@
 # import sys
 # sys.path.append("/mnt/pan/zkn/code_sdk/agent_678138/af-agent/src")
-from af_agent.tools.base_tools.af_sailor import AfSailorTool
-from af_agent.api.auth import get_authorization
+from data_retrieval.tools.base_tools.af_sailor import AfSailorTool
+from data_retrieval.api.auth import get_authorization
 
 if __name__ == "__main__":
     

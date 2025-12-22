@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.af_agent.prompts.tools_prompts.text2dip_metric_prompt import (
+from src.data_retrieval.prompts.tools_prompts.text2dip_metric_prompt import (
     Text2DIPMetricPrompt
 )
 

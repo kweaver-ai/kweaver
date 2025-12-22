@@ -19,21 +19,21 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 import uuid
 
-from af_agent.agents.react_agent.react_agent import ReactAgent
-from af_agent.datasource import AFIndicator
-from af_agent.datasource.vega_datasource import VegaDataSource
-from af_agent.sessions.base import GetSessionId
-from af_agent.sessions.redis_session import RedisHistorySession
-from af_agent.tools import ToolName
-from af_agent.tools.base_tools.context2question import Context2QuestionTool
-from af_agent.tools.base_tools.knowledge_enhanced import KnowledgeEnhancedTool
-from af_agent.tools.base_tools.text2metric import Text2MetricTool
-from af_agent.tools.base_tools.text2sql import Text2SQLTool
-from af_agent.tools.toolkits.danger_goods_transport.arima import ArimaTool
-from af_agent.tools.toolkits.danger_goods_transport.detection import DetectionTool
-from af_agent.tools.toolkits.danger_goods_transport.decision import DecisionTool
-from af_agent.tools.toolkits.base import InstructionBookInsideToolkit
-from af_agent.api.auth import get_authorization
+from data_retrieval.agents.react_agent.react_agent import ReactAgent
+from data_retrieval.datasource import AFIndicator
+from data_retrieval.datasource.vega_datasource import VegaDataSource
+from data_retrieval.sessions.base import GetSessionId
+from data_retrieval.sessions.redis_session import RedisHistorySession
+from data_retrieval.tools import ToolName
+from data_retrieval.tools.base_tools.context2question import Context2QuestionTool
+from data_retrieval.tools.base_tools.knowledge_enhanced import KnowledgeEnhancedTool
+from data_retrieval.tools.base_tools.text2metric import Text2MetricTool
+from data_retrieval.tools.base_tools.text2sql import Text2SQLTool
+from data_retrieval.tools.toolkits.danger_goods_transport.arima import ArimaTool
+from data_retrieval.tools.toolkits.danger_goods_transport.detection import DetectionTool
+from data_retrieval.tools.toolkits.danger_goods_transport.decision import DecisionTool
+from data_retrieval.tools.toolkits.base import InstructionBookInsideToolkit
+from data_retrieval.api.auth import get_authorization
 
 base_session = RedisHistorySession()
 
@@ -626,10 +626,6 @@ def get_parameter(query, session_id=None):
         ## 10.4.111.246 环境
         "token": get_authorization("https://10.4.111.246", "xia", "111111"),
         "user_id": "",
-        ## 云路：客户环境
-        # "token": get_authorization("https://172.25.17.92", "admin", "eisoo.com123"),
-        # "user_id": "266c6a42-6131-4d62-8f39-853e7093701c",
-
         "query": query,
         "background": "--",
         "task_description": "xxx",

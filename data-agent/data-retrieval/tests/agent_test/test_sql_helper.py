@@ -5,9 +5,9 @@ import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock
 
-from af_agent.tools.base_tools.sql_helper import SQLHelperTool, CommandType
-from af_agent.datasource.db_base import DataSource
-from af_agent.errors import SQLHelperException
+from data_retrieval.tools.base_tools.sql_helper import SQLHelperTool, CommandType
+from data_retrieval.datasource.db_base import DataSource
+from data_retrieval.errors import SQLHelperException
 
 
 class MockDataSource(DataSource):
@@ -242,7 +242,7 @@ class TestSQLHelperTool:
     
     def test_handle_result_get_metadata(self):
         """Test handle_result for get_metadata"""
-        from af_agent.tools.base import ToolMultipleResult
+        from data_retrieval.tools.base import ToolMultipleResult
         
         log = {}
         ans_multiple = ToolMultipleResult()
@@ -264,7 +264,7 @@ class TestSQLHelperTool:
     
     def test_handle_result_execute_sql(self):
         """Test handle_result for execute_sql"""
-        from af_agent.tools.base import ToolMultipleResult
+        from data_retrieval.tools.base import ToolMultipleResult
         
         log = {}
         ans_multiple = ToolMultipleResult()
@@ -288,7 +288,7 @@ class TestSQLHelperTool:
     
     def test_handle_result_execute_sql_with_data_title(self):
         """Test handle_result for execute_sql with data_title"""
-        from af_agent.tools.base import ToolMultipleResult
+        from data_retrieval.tools.base import ToolMultipleResult
         
         log = {}
         ans_multiple = ToolMultipleResult()

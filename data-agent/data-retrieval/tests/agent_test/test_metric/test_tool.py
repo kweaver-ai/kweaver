@@ -1,8 +1,8 @@
-from af_agent.datasource.af_indicator import AFIndicator
-from af_agent.tools.base_tools.text2metric import Text2MetricTool
+from data_retrieval.datasource.af_indicator import AFIndicator
+from data_retrieval.tools.base_tools.text2metric import Text2MetricTool
 # from langchain_community.chat_models import ChatOllama
 from langchain_openai import ChatOpenAI
-from af_agent.utils.llm import CustomChatOpenAI
+from data_retrieval.utils.llm import CustomChatOpenAI
 import traceback
 
 # llm = ChatOpenAI(
@@ -27,7 +27,7 @@ llm = CustomChatOpenAI(
 # llm = ChatOllama(model="phi3:latest")
 # llm = ChatOllama(model="codegemma")
 
-from af_agent.api.auth import get_authorization
+from data_retrieval.api.auth import get_authorization
 
 # indicator_list = ["532179399886306706"]
 # token = get_authorization("https://10.4.109.201", "liberly", "111111")
@@ -46,7 +46,7 @@ text2metric = AFIndicator(
     token=token,
 )
 
-# from af_agent.datasource.af_indicator import MockAFIndicator
+# from data_retrieval.datasource.af_indicator import MockAFIndicator
 # text2metric = MockAFIndicator()
 
 tool = Text2MetricTool.from_indicator(

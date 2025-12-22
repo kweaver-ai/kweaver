@@ -11,11 +11,11 @@ from textwrap import dedent
 from flask import Flask, request
 from langchain_openai import ChatOpenAI
 
-from af_agent.datasource.vega_datasource import VegaDataSource
-from af_agent.tools.text2sql import Text2SQLTool
-from af_agent.tools.toolkits.danger_goods_transport.arima import ArimaTool
-from af_agent.tools.chat2plot_simple import ChatToPlotToolSimple
-from af_agent.sessions.redis_session import RedisHistorySession
+from data_retrieval.datasource.vega_datasource import VegaDataSource
+from data_retrieval.tools.text2sql import Text2SQLTool
+from data_retrieval.tools.toolkits.danger_goods_transport.arima import ArimaTool
+from data_retrieval.tools.chat2plot_simple import ChatToPlotToolSimple
+from data_retrieval.sessions.redis_session import RedisHistorySession
 from password import get_authorization
 
 
@@ -343,7 +343,7 @@ def _init_vectorstore():
     from langchain_community.vectorstores import FAISS
     from langchain_community.document_loaders import TextLoader
     from langchain_text_splitters import CharacterTextSplitter
-    from af_agent.utils.embeddings import M3EEmbeddings, MSE_EMBEDDING_SIZE
+    from data_retrieval.utils.embeddings import M3EEmbeddings, MSE_EMBEDDING_SIZE
     from langchain_community.docstore.in_memory import InMemoryDocstore
     def load_and_splits(directory_path):
         """

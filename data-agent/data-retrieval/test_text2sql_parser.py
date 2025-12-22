@@ -12,7 +12,7 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 
-from af_agent.parsers.text2sql_parser import JsonText2SQLRuleBaseParser, RuleBaseSource, MysqlKeyword
+from data_retrieval.parsers.text2sql_parser import JsonText2SQLRuleBaseParser, RuleBaseSource, MysqlKeyword
 
 
 def create_test_source():

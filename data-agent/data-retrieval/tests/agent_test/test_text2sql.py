@@ -1,13 +1,13 @@
-# from af_agent.agent_v2 import AFAgent
+# from data_retrieval.agent_v2 import AFAgent
 import uuid
 from textwrap import dedent
 
 from langchain_community.chat_models import ChatOpenAI
 
-from af_agent.agents import ToolUseAgent
-from af_agent.datasource.vega_datasource import VegaDataSource
-from af_agent.sessions.redis_session import RedisHistorySession
-from af_agent.tools.base_tools.text2sql import Text2SQLTool
+from data_retrieval.agents import ToolUseAgent
+from data_retrieval.datasource.vega_datasource import VegaDataSource
+from data_retrieval.sessions.redis_session import RedisHistorySession
+from data_retrieval.tools.base_tools.text2sql import Text2SQLTool
 
 
 def get_chat_history(
@@ -37,7 +37,7 @@ def get_time():
     return f"当前时间: {current_time}, 星期: {weekday}"
 
 
-from af_agent.api.auth import get_authorization
+from data_retrieval.api.auth import get_authorization
 
 def test_234():
     tool_model = ChatOpenAI(

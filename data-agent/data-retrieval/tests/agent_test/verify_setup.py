@@ -24,7 +24,7 @@ def check_imports():
         ("requests", "HTTP 客户端"),
         ("pandas", "数据处理"),
         ("langchain", "LangChain 框架"),
-        ("af_agent", "AF Agent 框架"),
+        ("data_retrieval", "AF Agent 框架"),
         ("sandbox_env", "沙箱环境"),
     ]
     
@@ -41,16 +41,16 @@ def check_imports():
     return all_imports_ok
 
 
-def check_af_agent_modules():
+def check_data_retrieval_modules():
     """检查 AF Agent 模块"""
     print("\n=== 检查 AF Agent 模块 ===")
     
     required_af_modules = [
-        "af_agent.tools.sandbox_tools.shared_env",
-        "af_agent.tools.tool_api_router",
-        "af_agent.tools.base",
-        "af_agent.settings",
-        "af_agent.errors",
+        "data_retrieval.tools.sandbox_tools.shared_env",
+        "data_retrieval.tools.tool_api_router",
+        "data_retrieval.tools.base",
+        "data_retrieval.settings",
+        "data_retrieval.errors",
     ]
     
     all_modules_ok = True
@@ -71,7 +71,7 @@ def check_sandbox_tool():
     print("\n=== 检查 SandboxTool 类 ===")
     
     try:
-        from af_agent.tools.sandbox_tools.shared_all_in_one import SandboxTool, SandboxActionType
+        from data_retrieval.tools.sandbox_tools.shared_all_in_one import SandboxTool, SandboxActionType
         
         # 检查类属性
         required_attrs = [
@@ -102,7 +102,7 @@ def check_api_router():
     print("\n=== 检查 API 路由 ===")
     
     try:
-        from af_agent.tools.tool_api_router import _BASE_TOOLS_MAPPING, _BASE_TOOL_NAMES
+        from data_retrieval.tools.tool_api_router import _BASE_TOOLS_MAPPING, _BASE_TOOL_NAMES
         
         # 检查工具注册
         if "sandbox" in _BASE_TOOLS_MAPPING:
@@ -129,7 +129,7 @@ def check_settings():
     print("\n=== 检查设置 ===")
     
     try:
-        from af_agent.settings import get_settings
+        from data_retrieval.settings import get_settings
         
         settings = get_settings()
         
@@ -178,7 +178,7 @@ def main():
     
     checks = [
         ("依赖导入", check_imports),
-        ("AF Agent 模块", check_af_agent_modules),
+        ("AF Agent 模块", check_data_retrieval_modules),
         ("SandboxTool 类", check_sandbox_tool),
         ("API 路由", check_api_router),
         ("设置配置", check_settings),

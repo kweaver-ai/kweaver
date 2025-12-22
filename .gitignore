@@ -1,6 +1,5 @@
-/kw-studio/node_modules
-/kw-studio/coverage
-/kw-studio/build
-/kw-studio/report
-
+.idea
+.vscode
+.env
+.venv
 .DS_Store

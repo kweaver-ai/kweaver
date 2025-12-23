@@ -1,1 +1,0 @@
-export { twotoneStringify } from "./twotone";

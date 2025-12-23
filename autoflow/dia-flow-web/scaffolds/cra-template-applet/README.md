@@ -1,1 +1,0 @@
-# cra-template-applet

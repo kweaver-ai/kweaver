@@ -1,0 +1,77 @@
+.UserSelectRender {
+    display: flex;
+    .input {
+        flex-grow: 1;
+        margin-right: 8px;
+        width: 0;
+    }
+}
+
+.link-btn {
+    transition: 0s;
+
+    &:global(.@{ant-prefix}-btn-link) {
+        color: rgba(52, 97, 236, 0.75);
+        &:hover {
+            color: rgba(52, 97, 236, 1);
+        }
+    }
+
+    .add-icon {
+        font-size: 16px;
+    }
+}
+
+.inherit,
+.perminfo {
+    margin-bottom: 12px;
+}
+
+.inherit {
+    visibility: hidden;
+    position: absolute;
+}
+
+.PermInfo {
+    position: relative;
+    padding: 36px 0 0;
+    border-bottom: 1px solid #d9d9d9;
+
+    .accessorNum {
+        position: absolute;
+        left: 0;
+        top: 8px;
+        color: #999;
+    }
+
+    .removeButton {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 12px;
+        height: 12px;
+        font-size: 12px;
+    }
+}
+
+.asPerm {
+    margin-top: 8px;
+    margin-left: 24px;
+}
+
+.asAccessorPerms {
+    position: relative;
+    margin: 6px 0 12px 24px;
+}
+
+.required-mark {
+    :global(.@{ant-prefix}-form-item-label) > label::after {
+        display: inline-block;
+        margin-left: 4px;
+        color: rgb(255, 77, 79);
+        font-size: 13px;
+        font-family: inherit;
+        line-height: 1;
+        content: "*";
+    }
+}

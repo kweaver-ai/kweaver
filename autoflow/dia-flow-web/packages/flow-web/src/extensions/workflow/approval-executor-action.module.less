@@ -1,0 +1,107 @@
+.form {
+    :global(.@{ant-prefix}-form-horizontal)
+        :global(.@{ant-prefix}-form-item-control) {
+        flex: 1 1 auto;
+    }
+}
+
+.ApprovalContent {
+    background: rgb(245, 249, 253);
+    padding: 12px 16px;
+    position: relative;
+
+    .draggle-icon {
+        position: absolute;
+        left: -24px;
+        top: 6px;
+        width: 24px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 4px;
+        visibility: hidden;
+        cursor: move;
+    }
+
+    &:hover .draggle-icon,
+    &.isDragging .draggle-icon,
+    .visible {
+        visibility: visible;
+    }
+
+    .ApprovalContentHeader {
+        position: relative;
+        margin-bottom: 12px;
+
+        .ApprovalContentTitle {
+            font-weight: bold;
+        }
+
+        .removeButton {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            font-size: 12px;
+        }
+    }
+
+    .textarea {
+        height: 70px;
+        resize: none;
+    }
+}
+
+// 覆盖 workflow 流程设计样式
+.AuditFlowDrawer {
+    :global(.processTemplate) {
+        :global(.containers) {
+            position: absolute;
+        }
+
+        :global(.back),
+        :global(.el-steps-new),
+        :global(.fixed-btn-box) {
+            position: absolute;
+        }
+
+        :global(.over-box1) {
+            height: calc(100% - 50px);
+        }
+
+        :global(.fd-nav-content) {
+            position: absolute;
+        }
+
+        :global(.el-drawer__wrapper) {
+            position: absolute;
+        }
+
+        :global(.foot_button) {
+            position: absolute;
+            width: 100%;
+        }
+
+        :global(.el-form .view-template + .foot_button) {
+            display: none;
+        }
+
+        :global(.setting-type-tabs) {
+            height: calc(100% - 125px);
+        }
+    }
+}
+
+.label {
+    padding: 3px 8px 3px 0;
+    white-space: nowrap;
+    display: inline-flex;
+    min-width: 160px;
+}
+
+.dropdown-menu {
+    max-height: 280px;
+    overflow-y: auto;
+    background: #fff;
+}

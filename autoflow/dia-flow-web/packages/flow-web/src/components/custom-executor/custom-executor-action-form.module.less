@@ -1,0 +1,34 @@
+.Form {
+    :global(.@{ant-prefix}-form-item-required::before) {
+        display: none !important;
+    }
+
+    :global(.@{ant-prefix}-form-item-required::after) {
+        display: inline-block !important;
+        margin-left: 4px;
+        color: rgb(255, 77, 79);
+        font-size: 13px;
+        font-family: SimSun, sans-serif;
+        line-height: 1;
+        content: "*" !important;
+    }
+}
+
+.OutputFormItem,
+.InputFormItem {
+    :global(.@{ant-prefix}-form-item-extra) {
+        position: absolute;
+        right: 0px;
+        top: 30px;
+    }
+}
+
+.ActionInput,
+.ActionOutput {
+    .ActionInputTitle,
+    .ActionOutputTitle {
+        line-height: 24px;
+        color: rgba(0%, 0%, 0%, 0.549);
+        margin-bottom: 8px;
+    }
+}

@@ -1,0 +1,252 @@
+@import '~antd/es/style/themes/default.less';
+@import '~antd/dist/antd.less';
+
+@layout-body-background: #fff;
+@primary-color: #126EE3; // 全局主色
+@font-size-base: 13px; // 主字号
+@border-radius-base: 4px;
+@text-color: #000;
+@heading-color: #000;
+@input-placeholder-color: rgba(0, 0, 0, 0.3);
+@table-header-color: rgba(0, 0, 0, 0.55);
+@height-base: 30px;
+@font-family: inherit;
+
+.@{ant-prefix}-modal-footer{
+    display: flex;
+    justify-content: end;
+    flex-direction: row-reverse;
+    > footer{
+      width: 100%;
+    }
+    .@{ant-prefix}-btn{
+      margin-left: 0;
+      &:nth-child(1){
+        margin-left: 8px;
+      }
+    }
+}
+
+.@{ant-prefix}-btn{
+  &:not(.@{ant-prefix}-btn-icon-only):not(.@{ant-prefix}-btn-sm):not(.@{ant-prefix}-btn-link):not(.@{ant-prefix}-btn-text){
+    height: 30px;
+    border-radius: 4px;
+    line-height: 20px;
+    min-width: 80px;
+    &.mw-0{
+      min-width: 0;
+    }
+  }
+  &.@{ant-prefix}-btn-text,
+  &.@{ant-prefix}-btn-link{
+    min-width: 0;
+    padding: 0;
+  }
+  &.mw-0{
+    min-width: 0;
+  }
+  &.p-0{
+    padding: 0;
+  }
+
+  &.@{ant-prefix}-btn-default{
+    border-color: #D3D4DB;
+    color: #000;
+    &:hover{
+      color: #000;
+      background-color: rgba(228,230,237,0.25);
+    }
+    &:active{
+      color: #000;
+      background-color: rgba(228,230,237,0.4);
+    }
+  }
+}
+
+.@{ant-prefix}-modal-confirm-body .@{ant-prefix}-modal-confirm-title{
+  font-weight: bold;
+}
+
+// 加载中图标居中
+.@{ant-prefix}-spin-nested-loading>div>.@{ant-prefix}-spin {
+  max-height: 100%;
+}
+
+// 状态筛选项
+.@{ant-prefix}-checkbox-wrapper {
+  width: 100%;
+}
+
+// 表格
+.@{ant-prefix}-table-thead > tr > th {
+  background-color: transparent;
+
+  &::before {
+      display: none;
+  }
+}
+
+.@{ant-prefix}-table-thead > tr > th,
+.@{ant-prefix}-table-tbody > tr > td,
+.@{ant-prefix}-table tfoot > tr > th,
+.@{ant-prefix}-table tfoot > tr > td {
+  height: 50px;
+  padding: 8px 16px;
+}
+
+.@{ant-prefix}-table-thead th.@{ant-prefix}-table-column-has-sorters:hover {
+  background: none;
+}
+
+.@{ant-prefix}-table-tbody > tr.@{ant-prefix}-table-row:hover > td,
+.@{ant-prefix}-table-tbody > tr > td.@{ant-prefix}-table-cell-row-hover {
+  background: rgba(165, 168, 180, 0.11);
+}
+
+.@{ant-prefix}-tabs-tab.@{ant-prefix}-tabs-tab-active .@{ant-prefix}-tabs-tab-btn {
+  text-shadow: none;
+}
+
+.@{ant-prefix}-table-filter-dropdown .@{ant-prefix}-dropdown-menu {
+  max-height: none;
+}
+
+.@{ant-prefix}-pagination-total-text,
+.@{ant-prefix}-pagination-prev,
+.@{ant-prefix}-pagination-item{
+  margin-right: 0;
+}
+
+.@{ant-prefix}-pagination-item:not(.@{ant-prefix}-pagination-item-active){
+  border-color: transparent;
+}
+
+.@{ant-prefix}-pagination-item-link{
+  border-color: transparent!important;
+}
+
+td.@{ant-prefix}-table-column-sort{
+  background: unset;
+}
+// .@{ant-prefix}-input-textarea-show-count.@{ant-prefix}-input-textarea-in-form-item::after{
+//   transform: translate(-1em, -1.8em);
+// }
+
+.@{ant-prefix}-switch{
+  background-image: none;
+  background-color: #D3D4DB;
+  height: 10px;
+  width: 36px;
+  line-height: 10px;
+  &.@{ant-prefix}-switch-checked{
+    background-image: none;
+    background-color: #779EEA;
+    .@{ant-prefix}-switch-handle{
+      left: calc(100% - 18px);
+      &::before{
+        border: 1px solid  #779EEA;
+        box-shadow: 0 0 4px 0 #779EEA;
+      }
+    }
+  }
+  .@{ant-prefix}-switch-handle{
+    width: 18px;
+    height: 18px;
+    top: -4px;
+    left: 0px;
+    &::before{
+      border: 1px solid  #D3D4DB ;
+      background-color: #fff;
+      box-shadow: 0 0 4px 0 #D3D4DB;
+    }
+  }
+}
+// 复选框
+.@{ant-prefix}-checkbox-wrapper:hover .@{ant-prefix}-checkbox-inner,
+.@{ant-prefix}-checkbox:hover .@{ant-prefix}-checkbox-inner,
+.@{ant-prefix}-checkbox-input:focus+.@{ant-prefix}-checkbox-inner {
+  border-radius: 2px;
+  border-color: #779EEA;
+}
+
+.@{ant-prefix}-checkbox-inner {
+  border-radius: 2px;
+  border-color: #D3D4DB;
+}
+
+.@{ant-prefix}-checkbox-checked .@{ant-prefix}-checkbox-inner{
+  background-color: #779EEA;
+  border-color: #779EEA;
+}
+
+.@{ant-prefix}-checkbox-checked::after {
+  border-color: #779EEA;
+}
+
+.@{ant-prefix}-checkbox-disabled .@{ant-prefix}-checkbox-inner{
+  background-color: rgba(228,230,237,0.4);
+}
+
+.@{ant-prefix}-checkbox-disabled.@{ant-prefix}-checkbox-checked .@{ant-prefix}-checkbox-inner::after{
+    border-color: #D3D4DB;
+}
+
+// 排序图标
+.@{ant-prefix}-table-column-sorter {
+  color: #AEB1B2;
+}
+
+.@{ant-prefix}-table-column-sorter-up.active,
+.@{ant-prefix}-table-column-sorter-down.active {
+  color: #779EEA;
+}
+
+.@{ant-prefix}-modal-close-x{
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  color: #7F8391;
+  &:hover{
+    background: rgba(255, 103, 109, 0.698);
+    color: #fff;
+  }
+  &:active{
+    color: #fff;
+    background: #FF676D;
+  }
+}
+
+// 下拉菜单悬浮样式
+.@{ant-prefix}-dropdown-menu-item:hover,
+.@{ant-prefix}-dropdown-menu-submenu-title:hover {
+  background: rgba(240, 242, 247, 1);
+}
+
+.@{ant-prefix}-dropdown-menu-item {
+  height: 30px;
+}
+
+.@{ant-prefix}-select-multiple .@{ant-prefix}-select-selector{
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.@{ant-prefix}-select-multiple .@{ant-prefix}-select-selection-item{
+    border-radius: 4px;
+    background: #FAFAFA;
+    border: 1px solid rgba(211,212,219,0.8);
+}
+
+.@{ant-prefix}-select-multiple .@{ant-prefix}-select-selection-search{
+    margin-inline-start: 0px;
+}
+
+.@{ant-prefix}-popover-arrow-content::before{
+    background: #fff;
+}
+
+.@{ant-prefix}-form-item.no-mark{
+    .@{ant-prefix}-form-item-label > label.@{ant-prefix}-form-item-required:not(.@{ant-prefix}-form-item-required-mark-optional)::before{
+        display: none;
+    }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+  <g fill="none" fill-rule="evenodd">
+    <ellipse cx="31" cy="7.5" fill="#F1F2F4" rx="31" ry="7.5" transform="translate(1 38)"/>
+    <g transform="translate(15 11)">
+      <circle cx="17.5" cy="17.5" r="17.5" fill="#FFF" stroke="#CFD1DB" stroke-width="1.5"/>
+      <g fill="#CFD1DB">
+        <path d="M24.364 25.278L10.222 11.136l1.06-1.06 14.143 14.142z"/>
+        <path d="M10.222 24.218l14.142-14.143 1.06 1.061-14.142 14.142z"/>
+      </g>
+    </g>
+  </g>
+</svg>

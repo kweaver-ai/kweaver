@@ -1,0 +1,152 @@
+.records {
+    flex-grow: 1;
+    margin: 0 32px 24px;
+}
+
+.records-table {
+    user-select: default;
+    height: 100%;
+
+    // 单次运行状态
+    .status-wrapper {
+        display: flex;
+        align-items: center;
+
+        .status-icon {
+            font-size: 16px;
+            margin-right: 8px;
+            color: #fff;
+        }
+
+        .icon-gray {
+            color: #979797;
+        }
+    }
+
+    .cancel-btn {
+        margin-left: 32px;
+        padding: 0;
+    }
+
+    .ops-btn {
+        padding: 0;
+    }
+
+    .filter-active {
+        :global(.@{ant-prefix}-table-column-title) {
+            color: rgba(52, 97, 236, 0.75);
+            font-weight: bold;
+        }
+
+        :global(.@{ant-prefix}-table-filter-trigger.active) {
+            color: rgba(52, 97, 236, 0.75);
+        }
+    }
+
+    .limit-select {
+        :global(.@{ant-prefix}-select-selector) {
+            display: flex;
+            align-items: center;
+            height: 24px;
+        }
+
+        &:global(.@{ant-prefix}-select):not(
+                :global(.@{ant-prefix}-select-disabled)
+            ):hover
+            :global(.@{ant-prefix}-select-selector) {
+            border-color: rgba(119, 158, 234, 1);
+        }
+
+        &:global(.@{ant-prefix}-select-focused):not(
+                :global(.@{ant-prefix}-select-disabled)
+            ):global(.@{ant-prefix}-select):not(
+                :global(.@{ant-prefix}-select-customize-input)
+            )
+            :global(.@{ant-prefix}-select-selector) {
+            box-shadow: 0 0 0 2px rgba(119, 158, 234, 0.35);
+            border: 1px solid rgba(119, 158, 234, 1);
+        }
+    }
+
+    tr,
+    td,
+    th {
+        vertical-align: middle;
+    }
+
+    /* 排序对应列背景色 */
+    :global(
+            .@{ant-prefix}-table-thead th.@{ant-prefix}-table-column-has-sorters
+        ):hover,
+    :global(.@{ant-prefix}-table-column-sort) {
+        background: transparent;
+    }
+
+    :global(.@{ant-prefix}-table-thead th.@{ant-prefix}-table-column-sort) {
+        background: inherit;
+    }
+
+    /* 排序图标靠左 */
+    :global(.@{ant-prefix}-table-column-sorters),
+    :global(.@{ant-prefix}-table-filter-column) {
+        padding: 0;
+        justify-content: flex-start;
+    }
+
+    :global(
+            .@{ant-prefix}-table-column-sorters
+                .@{ant-prefix}-table-column-title
+        ),
+    :global(
+            .@{ant-prefix}-table-filter-column .@{ant-prefix}-table-column-title
+        ) {
+        flex: none;
+    }
+
+    /* 表格为空时隐藏滚动条 */
+    :global(.@{ant-prefix}-table-body) {
+        overflow-y: auto !important;
+    }
+
+    &
+        :global(.@{ant-prefix}-table-empty)
+        :global(.@{ant-prefix}-table-tbody)
+        > tr
+        > td {
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-table-cell-scrollbar) {
+        box-shadow: none;
+    }
+
+    :global(.@{ant-prefix}-table-thead > tr > th) {
+        background-color: #fff;
+    }
+
+    :global(.@{ant-prefix}-table-pagination):global(.@{ant-prefix}-pagination) {
+        margin: 24px 0;
+    }
+}
+
+.filter-menu {
+    :global(.@{ant-prefix}-dropdown-menu-item-selected),
+    :global(.@{ant-prefix}-dropdown-menu-submenu-title-selected) {
+        background-color: #fff;
+    }
+
+    :global(.@{ant-prefix}-dropdown-menu-item):hover,
+    :global(.@{ant-prefix}-dropdown-menu-submenu-title):hover {
+        background: #f0f2f7;
+    }
+}
+
+/* 筛选弹窗确定按钮 */
+.filter-confirm-btn {
+    float: right;
+    margin: 12px;
+    padding: 0 8px;
+    border-radius: 4px;
+    min-width: 48px;
+    height: 24px;
+}

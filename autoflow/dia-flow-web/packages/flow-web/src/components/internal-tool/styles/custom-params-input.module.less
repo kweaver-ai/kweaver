@@ -1,0 +1,31 @@
+// 添加按钮
+.link-btn {
+    transition: 0s;
+    margin-right: 8px;
+
+    &:global(.@{ant-prefix}-btn-link) {
+        color: rgba(52, 97, 236, 0.75);
+        &:hover {
+            color: rgba(52, 97, 236, 1);
+        }
+    }
+
+    .add-icon {
+        font-size: 16px;
+    }
+}
+
+.link-btn[disabled],
+.link-btn[disabled]:hover,
+.link-btn[disabled]:focus,
+.link-btn[disabled]:active {
+    color: rgba(52, 97, 236, 0.3);
+    -webkit-text-fill-color: rgba(52, 97, 236, 0.3);
+}
+
+.valid-tip {
+    margin-top: 2px;
+    color: #ff4d4f;
+    font-size: 13px;
+    line-height: 20px;
+}

@@ -1,0 +1,95 @@
+.container {
+    display: flex;
+
+    .input {
+        flex-grow: 1;
+        margin-right: 8px;
+        width: 0;
+
+        &:hover,
+        &:active,
+        &:focus {
+            border-color: rgb(217, 217, 217);
+            box-shadow: none;
+        }
+
+        &.multiple {
+            :global(.@{ant-prefix}-select-selection-overflow) {
+                flex-wrap: wrap;
+            }
+        }
+    }
+
+    .input.readOnly {
+        border-color: rgb(217, 217, 217);
+        box-shadow: none;
+
+        input {
+            cursor: default;
+        }
+
+        span {
+            pointer-events: auto;
+        }
+    }
+
+    .input.allowClear {
+        pointer-events: none;
+
+        input {
+            cursor: default;
+            pointer-events: none;
+        }
+
+        span {
+            pointer-events: auto;
+        }
+    }
+}
+
+.omittedMessage {
+    margin-top: 8px;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.list-container {
+    width: 100%;
+
+    .doc-name-wrapper {
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        .lib-icon {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+        }
+
+        .doc-icon {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .doc-name {
+            margin-right: 12px;
+        }
+    }
+
+    .delete-icon {
+        font-size: 13px;
+        cursor: pointer;
+        color: rgba(0, 0, 0, 0.45);
+    }
+
+    :global(.@{ant-prefix}-table-tbody) tr>td {
+        vertical-align: middle;
+        padding: 8px 0;
+        border-bottom: none;
+    }
+
+    /* 超出高度前隐藏滚动条 */
+    :global(.@{ant-prefix}-table-body) {
+        overflow-y: auto !important;
+    }
+}

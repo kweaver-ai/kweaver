@@ -1,0 +1,89 @@
+.drawer {
+    .btn-group {
+        :global(.@{ant-prefix}-radio-button-wrapper) {
+            min-width: 120px;
+            text-align: center;
+            box-shadow: none;
+        }
+    }
+
+    .scene-item {
+        display: flex;
+        .scene-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 0;
+            margin-left: 12px;
+
+            .scene-title {
+                font-weight: bold;
+                font-size: 16px;
+                line-height: 29px;
+                color: rgba(0, 0, 0, 0.8);
+            }
+
+            .scene-description {
+                margin-top: 4px;
+                font-size: 13px;
+                line-height: 24px;
+            }
+        }
+    }
+
+    .divider {
+        margin: 32px 0 24px;
+        background: rgba(238, 238, 238, 0.45);
+        height: 1px;
+        width: 100%;
+    }
+
+    :global(.@{ant-prefix}-drawer-title) {
+        color: rgba(0, 0, 0, 1);
+        font-weight: bold;
+        font-size: 15px;
+        line-height: 23px;
+        user-select: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-body) {
+        padding: 8px 32px 20px;
+    }
+
+    :global(.@{ant-prefix}-drawer-footer) {
+        padding: 20px 32px;
+        border-top: none;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    :global(.@{ant-prefix}-drawer-close) {
+        position: absolute;
+        margin: 0px;
+        padding: 0px;
+        top: 0px;
+        right: 0px;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 16px;
+        color: #7f8391;
+        text-align: center;
+        border-radius: 0px;
+        border-color: transparent;
+        transition: none 0s ease 0s;
+
+        &:hover {
+            color: #ffffff;
+            background-color: rgba(255, 103, 109, 0.7);
+        }
+        &:active {
+            background-color: #ff677d;
+            color: #ffffff;
+        }
+    }
+}

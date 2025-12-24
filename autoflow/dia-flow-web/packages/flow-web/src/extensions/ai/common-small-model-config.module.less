@@ -1,0 +1,31 @@
+.data-input-radio-group {
+  margin-bottom: 24px;
+  width: 100%;
+
+  .radio {
+    width: 50%;
+    text-align: center;
+  }
+}
+
+.text-item-wrapper {
+  display: flex;
+  gap: 15px;
+
+  .form-item {
+    flex: 1;
+  }
+
+  .close-btn {
+    width: 16px;
+    height: 16px;
+    align-self: center;
+  }
+
+  :global {
+    // 隐藏必填星号
+    .FLOW_WEB-ant-form-item-required::after {
+      content: "" !important;
+    }
+  }
+}

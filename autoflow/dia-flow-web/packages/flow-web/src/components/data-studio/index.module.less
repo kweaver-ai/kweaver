@@ -1,0 +1,74 @@
+
+.data-studio-index {
+    padding: 10px 24px;
+    // background: url(./assets/overview.png);
+    position: relative;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    min-height: calc(100vh - 52px);
+    .data-studio-operator {
+        position: absolute;
+        right: 0;
+        top: -42px;
+        display: flex;
+        align-items: center;
+        z-index: 1;
+    }
+    .data-studio-card {
+        border-radius: 16px;
+        background: #FFFFFF;
+        box-shadow: 0px 2px 8px 0px #00000019;
+        margin-bottom: 16px;
+        .card-statistic-title {
+            display: flex;
+            align-items: center;
+            img {
+                margin-right: 8px;
+            }
+        }
+        .data-studio-card-pie {
+            height: 190px;
+        }
+        .data-studio-card-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+        }
+        .data-studio-card-title {
+            color: #000000D8;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 22px;
+        }
+        .data-studio-card-icon {
+            color: #00000072;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        :global {
+           .@{ant-prefix}-card-body {
+               padding: 20px;
+               height: 100%;
+            }
+            .@{ant-prefix}-statistic {
+                padding: 10px 30px 10px 20px;
+            }
+            .@{ant-prefix}-table-thead > tr > th {
+                height: 40px;
+            }
+        }
+    }
+}
+.data-studio-tabs {
+     :global {
+        .@{ant-prefix}-tabs-tab {
+            padding: 6px 0px;
+        }
+        .@{ant-prefix}-tabs-nav::before {
+            border: none;
+        }
+        .@{ant-prefix}-tabs-tab + .@{ant-prefix}-tabs-tab {
+                margin: 0px 0px 0px 24px;
+        }
+     }
+}

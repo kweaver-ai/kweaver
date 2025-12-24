@@ -1,0 +1,51 @@
+.switch {
+  height: 16px;
+  line-height: 16px;
+
+  :global {
+    .FLOW_WEB-ant-switch-handle {
+      top: -1px !important;
+    }
+  }
+}
+
+.switch-label {
+  margin-left: 8px;
+  display: inline-block;
+  height: 22px;
+  vertical-align: middle;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.slice-config-radio-group {
+  max-width: 100%;
+
+  :global {
+    .FLOW_WEB-ant-radio-wrapper {
+      display: flex;
+    }
+
+    .FLOW_WEB-ant-radio-wrapper > span:last-child {
+      overflow: hidden;
+    }
+  }
+}
+
+.slice-config-item {
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+
+  .label {
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  .description {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+    margin-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

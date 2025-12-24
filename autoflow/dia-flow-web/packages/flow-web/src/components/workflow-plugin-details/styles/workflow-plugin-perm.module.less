@@ -1,0 +1,79 @@
+.modal {
+    .content {
+        margin: 0 -32px;
+        padding: 0 32px;
+        height: 100%;
+        overflow: auto;
+    }
+
+    :global(.@{ant-prefix}-modal-title) {
+        font-size: 15px;
+        font-weight: bold;
+    }
+    :global(.@{ant-prefix}-modal-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        padding: 0 32px 20px;
+        height: 432px;
+    }
+}
+.description {
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.table {
+    user-select: none;
+    flex: 1 1 auto;
+
+    tr,
+    td,
+    th {
+        vertical-align: middle;
+    }
+
+    :global(.@{ant-prefix}-table-thead > tr > th) {
+        background-color: #fff;
+    }
+
+    :global(.@{ant-prefix}-table-cell .@{iconfont-css-prefix}) {
+        line-height: 1;
+    }
+
+    :global(.@{ant-prefix}-table-cell-scrollbar) {
+        box-shadow: none;
+    }
+
+    :global(.@{ant-prefix}-table-empty)
+        :global(.@{ant-prefix}-table-tbody)
+        > tr
+        > td {
+        border-bottom: none;
+    }
+
+    // 加载中图标居中
+    :global(.@{ant-prefix}-spin-nested-loading) {
+        height: 100%;
+    }
+
+    /* 表格为空时隐藏滚动条 */
+    :global(.@{ant-prefix}-table-body) {
+        overflow-y: auto !important;
+        min-height: 250px;
+    }
+
+    :global(.@{ant-prefix}-table-tbody)
+        > tr:global(.@{ant-prefix}-table-row-selected)
+        > td {
+        background: rgba(159, 204, 255, 0.2);
+    }
+
+    :global(.@{ant-prefix}-table-thead) > tr > th {
+        color: #000;
+        font-weight: bold;
+    }
+}

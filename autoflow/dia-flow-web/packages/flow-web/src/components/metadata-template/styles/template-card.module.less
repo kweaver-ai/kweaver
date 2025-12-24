@@ -1,0 +1,66 @@
+.card {
+    border: 1px solid #efefef;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 16px 16px 20px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        height: 30px;
+
+        .template-title {
+            width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: bold;
+        }
+        .operation {
+            display: flex;
+            height: 24px;
+
+            .operation-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                border-radius: 4px;
+                font-size: 16px;
+                color: rgba(80, 80, 80, 1);
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgba(229, 228, 233, 0.8);
+                }
+            }
+        }
+
+        .disable {
+            pointer-events: none;
+        }
+    }
+
+    .footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+        padding-right: 24px;
+        width: 100%;
+        height: 30px;
+        .ok-btn {
+            width: 80px;
+        }
+
+        .cancel-btn {
+            width: 80px;
+            margin-left: 10px;
+        }
+    }
+}

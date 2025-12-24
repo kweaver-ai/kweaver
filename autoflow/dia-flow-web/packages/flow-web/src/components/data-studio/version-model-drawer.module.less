@@ -1,0 +1,142 @@
+.drawer {
+    :global {
+        .@{ant-prefix}-drawer-header {
+            border-bottom: none;
+
+            &-title {
+                display: block;
+            }
+        }
+
+        .@{ant-prefix}-drawer-close {
+            float: right;
+            margin-right: 0;
+        }
+
+        .@{ant-prefix}-drawer-body {
+            padding-top: 0;
+        }
+    }
+}
+
+.version-steps {
+    :global {
+        .@{ant-prefix}-steps-item {
+            transition: background-color 0.3s;
+            border-radius: 8px;
+            padding-top: 5px;
+        }
+
+        .@{ant-prefix}-steps-item:hover {
+            background-color: #F5F5F5 !important;
+
+            :local {
+                .version-steps-title-right {
+                    display: flex;
+                }
+            }
+        }
+
+        .@{ant-prefix}-steps-item-title {
+            width: 100%;
+        }
+    }
+
+    &-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+
+        &-left {
+            display: flex;
+            align-items: center;
+        }
+
+        &-right {
+            display: none;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        &-name {
+            font-weight: bold;
+        }
+    }
+
+    .title-name-new {
+        border-radius: 4px;
+        background: #1677FF19;
+        color: #1677FF;
+        padding: 2px 6px;
+        margin-left: 6px;
+        font-size: 12px;
+        line-height: normal;
+    }
+
+    &-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover {
+            border-radius: 4px;
+            background: #0000000F;
+        }
+    }
+
+    &-desc {
+        font-size: 12px;
+        color: #00000072;
+
+        &:hover {
+            .version-steps-title-right {
+                display: block;
+            }
+        }
+    }
+}
+
+.version-modal {
+    :global {
+        .@{ant-prefix}-modal-footer {
+            border-top: none;
+
+            &-title {
+                display: block;
+            }
+        }
+
+        .@{ant-prefix}-drawer-close {
+            float: right;
+            margin-right: 0;
+        }
+
+        .@{ant-prefix}-drawer-body {
+            padding-top: 0;
+        }
+    }
+
+    .modal-content {
+        display: flex;
+        align-items: center;
+
+        &-icon {
+            font-size: 22px;
+            margin-right: 12px;
+            color: orange;
+        }
+
+        &-desc {
+            font-size: 15px;
+        }
+    }
+}
+
+.preview-audit-flow {
+    overflow: hidden;
+    width: 600px;
+    height: 600px;
+}

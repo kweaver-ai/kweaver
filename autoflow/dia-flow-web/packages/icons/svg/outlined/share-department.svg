@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>部门</title>
+    <desc>Created with Sketch.</desc>
+    <g id="部门" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M14,0 L14,16 L2,16 L2,0 L14,0 Z M13,5 L7,5 L7,15 L13,15 L13,5 Z M13,1 L3,1 L3,15 L6,15 L6,4 L13,4 L13,1 Z M11,9 C11.5522847,9 12,9.44771525 12,10 C12,10.5522847 11.5522847,11 11,11 C10.4477153,11 10,10.5522847 10,10 C10,9.44771525 10.4477153,9 11,9 Z" id="形状结合" fill="#505050" fill-rule="nonzero"></path>
+    </g>
+</svg>

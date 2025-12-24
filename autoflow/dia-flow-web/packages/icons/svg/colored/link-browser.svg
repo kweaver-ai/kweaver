@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="104px" height="72px" viewBox="0 0 104 72" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.3 (57544) - http://www.bohemiancoding.com/sketch -->
+    <title>Artboard@2x</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Artboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-15">
+            <rect id="Rectangle-5" x="0" y="0" width="104" height="71.5"></rect>
+            <g id="Group-7" transform="translate(15.000000, 4.000000)">
+                <g id="Group-28">
+                    <rect id="Rectangle" fill="#D2D6E5" x="0" y="0" width="74" height="63.375"></rect>
+                    <rect id="Rectangle-Copy" fill="#6B8BD1" x="0" y="0" width="74" height="13"></rect>
+                </g>
+                <g id="Group-17" transform="translate(49.750000, 4.875000)" fill="#FFFFFF">
+                    <g id="Group-16" transform="translate(14.625000, 0.000000)">
+                        <g id="Group-6">
+                            <ellipse id="Oval" cx="1.5886148" cy="1.60752688" rx="1.5886148" ry="1.60752688"></ellipse>
+                        </g>
+                    </g>
+                    <g id="Group-16-Copy" transform="translate(7.312500, 0.000000)">
+                        <g id="Group-6">
+                            <ellipse id="Oval" cx="1.5886148" cy="1.60752688" rx="1.5886148" ry="1.60752688"></ellipse>
+                        </g>
+                    </g>
+                    <g id="Group-16-Copy-2">
+                        <g id="Group-6">
+                            <ellipse id="Oval" cx="1.5886148" cy="1.60752688" rx="1.5886148" ry="1.60752688"></ellipse>
+                        </g>
+                    </g>
+                </g>
+                <g id="Group-5" transform="translate(9.666667, 19.500000)" fill="#FFFFFF">
+                    <rect id="Rectangle-3" x="0.0652329749" y="0.188638359" width="10.6166667" height="36.6122449"></rect>
+                </g>
+                <g id="Group-5-Copy" transform="translate(28.541667, 19.500000)" fill="#FFFFFF">
+                    <rect id="Rectangle-3" x="0" y="0" width="36.8333333" height="36.5625"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

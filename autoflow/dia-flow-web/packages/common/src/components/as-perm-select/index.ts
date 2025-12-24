@@ -1,0 +1,1 @@
+export * from './as-perm-select'

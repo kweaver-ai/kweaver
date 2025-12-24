@@ -1,0 +1,85 @@
+.link-btn {
+    transition: 0s;
+
+    &:global(.@{ant-prefix}-btn-link) {
+        color: rgba(52, 97, 236, 0.75);
+        &:hover {
+            color: rgba(52, 97, 236, 1);
+        }
+    }
+
+    .add-icon {
+        font-size: 16px;
+    }
+}
+
+.link-btn[disabled],
+.link-btn[disabled]:hover,
+.link-btn[disabled]:focus,
+.link-btn[disabled]:active {
+    color: rgba(52, 97, 236, 0.3);
+    -webkit-text-fill-color: rgba(52, 97, 236, 0.3);
+}
+
+// 日志输出
+.label-wrapper {
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    max-width: 160px;
+}
+
+.label {
+    padding: 3px 8px 3px 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.confirm {
+    transition: none;
+
+    :global(.@{ant-prefix}-modal-confirm-body > .@{iconfont-css-prefix}) {
+        font-size: 28px;
+    }
+
+    :global(
+            .@{ant-prefix}-modal-confirm-body
+                > .@{iconfont-css-prefix}
+                + .@{ant-prefix}-modal-confirm-title
+                + .@{ant-prefix}-modal-confirm-content
+        ) {
+        margin-left: 44px;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-body)
+        :global(.@{ant-prefix}-modal-confirm-title) {
+        font-size: 15px;
+        font-weight: 700;
+        color: #000;
+        line-height: 28px;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        padding: 32px 32px 20px;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-body) {
+        min-height: 92px;
+    }
+
+    :global(.@{ant-prefix}-modal-confirm-btns) {
+        display: flex;
+        flex-direction: row-reverse;
+
+        :global(.@{ant-prefix}-btn-primary) {
+            padding: 0 8px;
+            line-height: 24px;
+            border-radius: 4px;
+        }
+
+        :global(.@{ant-prefix}-btn-default) {
+            margin-left: 8px;
+        }
+    }
+}

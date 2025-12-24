@@ -1,0 +1,26 @@
+.container {
+    overflow: hidden;
+    display: flex;
+    > :global(.@{ant-prefix}-btn) {
+        flex-shrink: 0;
+        &.flowNameButton {
+            flex-shrink: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre;
+            > span {
+                display: inline;
+            }
+        }
+    }
+}
+
+.drawer {
+    :global(.@{ant-prefix}-drawer-content-wrapper) {
+        transition: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-body) {
+        padding: 0;
+    }
+}

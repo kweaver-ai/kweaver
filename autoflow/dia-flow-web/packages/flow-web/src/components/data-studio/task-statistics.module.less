@@ -1,0 +1,87 @@
+.container {
+    margin: 24px 32px 0;
+    border-radius: 4px;
+    background: #fff;
+    user-select: none;
+    height: calc(100vh - 100px);
+
+    .content {
+        padding: 24px 24px 0;
+        height: 100%;
+
+        .title {
+            margin-bottom: 24px;
+            align-items: center;
+            color: #000;
+            font-size: 14px;
+            line-height: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+
+            .left {
+                font-size: 14px;
+                font-weight: bold;
+                line-height: 22px;
+            }
+
+            .right {
+                :global {
+                    .ant-picker {
+                        width: 280px;
+                    }
+                }
+            }
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            width: 100%;
+            margin-bottom: 16px;
+
+            .statItem {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                margin-right: 20px;
+                padding: 12px 32px 6px 32px;
+                border-radius: 4px;
+                background: rgba(246, 246, 247, 1);
+                height: 96px;
+
+                &:last-child {
+                    margin-right: 0;
+                }
+            }
+
+            .stat-label {
+                font-size: 13px;
+                line-height: 22px;
+                color: rgba(0, 0, 0, 0.55);
+            }
+
+            .count {
+                font-size: 36px;
+                font-weight: bold;
+                color: #000;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            // .committed .count {
+            //     color: #52c41b;
+            // }
+
+            // .uncommitted .count {
+            //     color: #ff4d4f;
+            // }
+        }
+    }
+    .console-task-statistics:global(.@{ant-prefix}-input-affix-wrapper) {
+        height: 30px;
+    }
+}

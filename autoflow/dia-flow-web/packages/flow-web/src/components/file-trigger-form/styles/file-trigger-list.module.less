@@ -1,0 +1,174 @@
+.container {
+    padding: 8px 32px 0;
+
+    .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+
+        .header-sub-title {
+            color: rgba(0, 0, 0, 1);
+            font-size: 13px;
+            user-select: none;
+        }
+    }
+
+    .footer {
+        margin-top: 56px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+
+        .confirm-btn,
+        .cancel-btn {
+            padding: 0 8px;
+            border-radius: 4px;
+            min-width: 80px;
+            height: 30px;
+        }
+
+        // .confirm-btn:global(.@{ant-prefix}-btn-primary[disabled]) {
+        //     &,
+        //     &:hover,
+        //     &:focus,
+        //     &:active {
+        //         border: none;
+        //         border-radius: 4px;
+        //         background: rgba(184, 212, 247, 1);
+        //         color: #fff;
+        //         -webkit-text-fill-color: #fff;
+        //         cursor: default;
+        //     }
+        // }
+    }
+}
+
+.table-container {
+    height: 316px;;
+}
+
+.table {
+    height: 316px;;
+
+    .task-name-wrapper {
+        display: flex;
+        align-items: center;
+
+        .task-icon {
+            margin-right: 12px;
+            font-size: 24px;
+        }
+
+        .task-name {
+            color: #000;
+            vertical-align: middle;
+        }
+    }
+
+    // 加载中图标居中
+    :global(.@{ant-prefix}-spin-nested-loading) {
+        height: 100%;
+    }
+
+    /* 排序对应列背景色 */
+    :global(
+            .@{ant-prefix}-table-thead th.@{ant-prefix}-table-column-has-sorters
+        ):hover,
+    :global(.@{ant-prefix}-table-column-sort) {
+        background: transparent;
+    }
+
+    :global(.@{ant-prefix}-table-thead th.@{ant-prefix}-table-column-sort) {
+        background: inherit;
+    }
+
+    /* 排序图标靠左 */
+    :global(.@{ant-prefix}-table-column-sorters),
+    :global(.@{ant-prefix}-table-filter-column) {
+        padding: 0;
+        justify-content: flex-start;
+    }
+
+    :global(
+            .@{ant-prefix}-table-column-sorters
+                .@{ant-prefix}-table-column-title
+        ),
+    :global(
+            .@{ant-prefix}-table-filter-column .@{ant-prefix}-table-column-title
+        ) {
+        flex: none;
+    }
+
+    /* 表格为空时隐藏滚动条 */
+    :global(.@{ant-prefix}-table-body) {
+        overflow-y: auto !important;
+        min-height: 200px;
+    }
+
+    :global(.@{ant-prefix}-table-thead > tr > th) {
+        background-color: #fff;
+    }
+
+    :global(.@{ant-prefix}-table-cell .@{iconfont-css-prefix}) {
+        line-height: 1;
+    }
+
+    :global(.@{ant-prefix}-table-cell-scrollbar) {
+        box-shadow: none;
+    }
+
+    &
+        :global(.@{ant-prefix}-table-empty)
+        :global(.@{ant-prefix}-table-tbody)
+        > tr
+        > td {
+        border-bottom: none;
+    }
+
+    tr,
+    td,
+    th {
+        vertical-align: middle;
+    }
+
+    :global(.@{ant-prefix}-table-cell) {
+        border-top: 1px solid transparent;
+
+        &:nth-child(2) {
+            border-left: 1px solid transparent;
+        }
+
+        &:last-child {
+            border-right: 1px solid transparent;
+        }
+    }
+
+    :global(.@{ant-prefix}-table-tbody)
+        > tr:global(.@{ant-prefix}-table-row-selected)
+        > td {
+        background: rgba(159, 204, 255, 0.2);
+    }
+
+    :global(.@{ant-prefix}-table-row-selected:hover .@{ant-prefix}-table-cell) {
+        background: rgba(159, 204, 255, 0.2);
+        border-top: 1px solid rgba(159, 204, 255, 1);
+        border-bottom: 1px solid rgba(159, 204, 255, 1);
+
+        &:nth-child(2) {
+            border-left: 1px solid rgba(159, 204, 255, 1);
+        }
+
+        &:last-child {
+            border-right: 1px solid rgba(159, 204, 255, 1);
+        }
+    }
+
+    :global(.@{ant-prefix}-table-selection-column) {
+        position: absolute;
+        visibility: hidden;
+    }
+
+    :global(.@{ant-prefix}-table-selection-col) {
+        width: 0;
+    }
+}

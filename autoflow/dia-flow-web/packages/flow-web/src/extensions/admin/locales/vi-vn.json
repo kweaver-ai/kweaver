@@ -1,0 +1,10 @@
+{
+    "emptyMessage": "Mục này không được để trống",
+    "EAdmin": "Thực hiện với tư cách quản trị viên",
+    "EAdminDescription": "Tự động thực hiện các thao tác liên quan với tư cách quản trị viên",
+    "EAQuota": "Thiết lập hạn ngạch người dùng",
+    "EAQuotaDescription": "Tự động thiết lập hạn ngạch cho người dùng",
+    "setQuota.user": "Người dùng mục tiêu",
+    "setQuota.quota": "Kích thước mở rộng",
+    "input.placeholder": "Vui lòng nhập"
+}

@@ -1,0 +1,22 @@
+.edit-content {
+    display: flex;
+    .content-item {
+        flex-grow: 1;
+        :global(.@{ant-prefix}-form-item-label)
+            > :global(label.@{ant-prefix}-form-item-required) {
+            &:not(:global(.@{ant-prefix}-form-item-required-mark-optional)) {
+                &::after {
+                    display: none;
+                }
+            }
+        }
+    }
+    .item-remove {
+        margin-left: 8px;
+        margin-top: 28px;
+    }
+
+    // :global(.@{ant-prefix}-form-item) {
+    //     margin-bottom: 12px;
+    // }
+}

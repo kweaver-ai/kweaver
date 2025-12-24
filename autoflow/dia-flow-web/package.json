@@ -1,0 +1,16 @@
+{
+    "name": "@applet/root",
+    "private": "true",
+    "scripts": {
+        "preinstall": "pnpm -v",
+        "build:deps": "pnpm --filter @applet/icons run g && pnpm --filter icons --filter api --filter common --filter util --filter core build",
+        "new": "node scripts/new.js"
+    },
+    "devDependencies": {
+        "create-react-app": "5.0.1"
+    },
+    "engines": {
+        "pnpm": "^7 || 8 || 9",
+        "node": ">=14.6"
+    }
+}

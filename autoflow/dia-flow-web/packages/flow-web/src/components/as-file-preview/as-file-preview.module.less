@@ -1,0 +1,38 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background-color: #fafafa;
+}
+
+.frameContainer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+
+    &.hidden {
+        display: none;
+    }
+}
+
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.errorIcon{
+    width: 128px;
+}
+
+.errorMessage {
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}

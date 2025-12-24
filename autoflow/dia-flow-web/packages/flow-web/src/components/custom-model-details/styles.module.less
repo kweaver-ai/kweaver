@@ -1,0 +1,200 @@
+.container {
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    background: #f6f6f7;
+
+    .header {
+        border-bottom: 1px solid #d0d1d8;
+        border-top: 1px solid transparent;
+        width: 100%;
+        background: #fff;
+        padding: 10px 24px;
+
+        .title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre;
+        }
+
+        .back-icon {
+            font-size: 13px;
+            line-height: 13px;
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        .header-icon {
+            margin-right: 8px;
+            width: 24px;
+            height: 24px;
+        }
+
+        .ops-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border-radius: 4px;
+            width: 26px;
+            height: 26px;
+            color: #000000;
+            box-shadow: none;
+            cursor: pointer;
+
+            // 去掉按钮点击效果
+            &::after {
+                border: 0 none;
+                opacity: 0;
+                animation: none;
+            }
+        }
+
+        :global(.@{ant-prefix}-page-header-heading-title) {
+            color: #000;
+            font-weight: normal;
+            font-size: 13px;
+            line-height: 22px;
+        }
+
+        :global(.@{ant-prefix}-page-header-heading-left) {
+            margin: 0;
+            height: 30px;
+        }
+
+        :global(.@{ant-prefix}-page-header-heading) {
+            align-items: center;
+        }
+    }
+
+    .content {
+        overflow: auto;
+        padding-bottom: 24px;
+    }
+}
+
+.details-container {
+    margin: 24px 32px;
+    border-radius: 4px;
+    background: #fff;
+    cursor: default;
+
+    // 详细信息
+    .table-wrapper {
+        padding: 24px;
+
+        .title {
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .form {
+            .tip {
+                margin-left: 8px;
+            }
+
+            :global(.@{ant-prefix}-form-item) {
+                margin-bottom: 8px;
+            }
+        }
+    }
+
+    // 相关流程
+    .list-wrapper {
+        position: relative;
+        padding: 24px 0 16px;
+        border-radius: 4px;
+
+        header {
+            margin-bottom: 8px;
+            padding: 0 24px;
+        }
+        .title {
+            font-weight: 600;
+        }
+
+        .tip {
+            margin-left: 8px;
+            color: gray;
+        }
+
+        .list-spin {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 -20px;
+            width: 100%;
+            min-height: 100px;
+            z-index: 10;
+        }
+
+        .spin-blur {
+            opacity: 0.5;
+        }
+
+        .spin-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 60px;
+            padding-top: 16px;
+        }
+
+        .list-container {
+            position: relative;
+            width: 100%;
+            min-height: 300px;
+            max-height: 360px;
+            overflow: auto;
+
+            .scrollable-container {
+                min-height: 200px;
+                padding: 0 12px;
+
+                :global(.@{ant-prefix}-list-grid)
+                    :global(.@{ant-prefix}-col)
+                    > :global(.@{ant-prefix}-list-item) {
+                    margin: 4px 0 20px 0;
+                }
+
+                &.max-1960 :global(.@{ant-prefix}-row) > div {
+                    width: 20% !important;
+                    max-width: 20% !important;
+                }
+            }
+
+            // 消除横向滚动条
+            :global(.@{ant-prefix}-row) {
+                margin: 0 !important;
+            }
+        }
+
+        .empty-container {
+            width: 100%;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .empty-wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+
+                img {
+                    width: 128px;
+                }
+
+                .text {
+                    margin-top: 8px;
+                    font-size: 14px;
+                    line-height: 22px;
+                    text-align: center;
+                    color: rgba(0, 0, 0, 0.55);
+                }
+            }
+        }
+    }
+}

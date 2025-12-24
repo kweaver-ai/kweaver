@@ -1,0 +1,38 @@
+.select-button {
+  margin-left: 8px;
+}
+
+.alert-setting {
+  :global {
+    .@{ant-prefix}-select-show-search.@{ant-prefix}-select:not(.@{ant-prefix}-select-customize-input) .@{ant-prefix}-select-selector {
+      max-height: 96px;
+      overflow: auto;
+    }
+  }
+}
+.alert-setting-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawer-tips {
+  margin: 8px 0;
+}
+
+.alert-setting-form {
+  :global {
+    .@{ant-prefix}-form-item-required::before {
+      display: none !important;
+    }
+
+    .@{ant-prefix}-form-item-required::after {
+      display: inline-block;
+      margin-left: 4px;
+      color: #ff4d4f;
+      font-size: 14px;
+      font-family: SimSun, sans-serif;
+      line-height: 1;
+      content: '*';
+    }
+  }
+}

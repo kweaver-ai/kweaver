@@ -1,0 +1,10 @@
+{
+    "emptyMessage": "This field is required",
+    "EAdmin": "Run as administrator",
+    "EAdminDescription": "Automatically perform related actions as administrator",
+    "EAQuota": "Set quota",
+    "EAQuotaDescription": "Automatically set quota expansion for users",
+    "setQuota.user": "Target users",
+    "setQuota.quota": "Expansion size",
+    "input.placeholder": "Enter here"
+}

@@ -1,0 +1,18 @@
+.container {
+    display: flex;
+    width: 100%;
+
+    .input {
+        flex-grow: 1;
+        margin-right: 8px;
+        cursor: default;
+        :global(.@{ant-prefix}-select-selection-search) {
+            display: none;
+        }
+        &:hover{
+            :global(.@{ant-prefix}-select-selector){
+                border: 1px solid rgb(217, 217, 217);
+            }
+        }
+    }
+}

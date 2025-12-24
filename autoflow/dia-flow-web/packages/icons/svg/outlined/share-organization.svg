@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>组织</title>
+    <desc>Created with Sketch.</desc>
+    <g id="组织" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, 0.500000)" fill="#505050">
+            <path d="M10,-2.39808173e-14 L10,4.999 L15,5 L15,14 L16,14 L16,15 L0,15 L0,14 L1,14 L1,-2.39808173e-14 L10,-2.39808173e-14 Z M9,0.99609375 L2,0.99609375 L2,14 L9,14 L9,0.99609375 Z M14,5.96590909 L10,5.96590909 L10,14 L14,14 L14,5.96590909 Z" id="形状结合"></path>
+            <polygon id="Rectangle-9" points="3 2.82352941 5 2.82352941 5 3.76470588 3 3.76470588"></polygon>
+            <polygon id="Rectangle-9-Copy-2" points="3 5.64705882 5 5.64705882 5 6.58823529 3 6.58823529"></polygon>
+            <polygon id="Rectangle-9-Copy-6" points="11 7.52941176 13 7.52941176 13 8.47058824 11 8.47058824"></polygon>
+            <polygon id="Rectangle-9-Copy-7" points="11 10.3529412 13 10.3529412 13 11.2941176 11 11.2941176"></polygon>
+            <polygon id="Rectangle-9-Copy-4" points="3 8.47058824 5 8.47058824 5 9.41176471 3 9.41176471"></polygon>
+            <polygon id="Rectangle-9-Copy" points="6 2.82352941 8 2.82352941 8 3.76470588 6 3.76470588"></polygon>
+            <polygon id="Rectangle-9-Copy-3" points="6 5.64705882 8 5.64705882 8 6.58823529 6 6.58823529"></polygon>
+            <polygon id="Rectangle-9-Copy-5" points="6 8.47058824 8 8.47058824 8 9.41176471 6 9.41176471"></polygon>
+        </g>
+    </g>
+</svg>

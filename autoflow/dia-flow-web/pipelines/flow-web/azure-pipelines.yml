@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - MISSION
+      - develop
+      - feature/*
+      - hotfix/*
+  paths:
+    include:
+      - packages/flow-web # 修改
+
+variables:
+  - group: global-dip
+  - name: imageRegistry
+    value: acr.aishu.cn
+  - name: chartName
+    value: flow-web # 修改
+  - name: imageRepository
+    value: dip/$(chartName)
+  - name: folder
+    value: packages/$(chartName)
+  - name: isMisson
+    value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/MISSION')]
+  - name: lintReportName
+    value: lintReport.xml
+  - name: utReportName
+    value: UTReport.xml
+  - name: coverageReportName
+    value: cobertura-coverage.xml
+  - name: chartRepo
+    value: 'https://acr.aishu.cn/api/chartrepo/dip/charts'
+  - name: amd64Pool
+    value: anydata-centos7.7-x86_64
+  - name: arm64Pool
+    value: anydata-centos7-arm
+  - name: yqImage
+    value: 'acr.aishu.cn/public/mikefarah/yq:4.26.1'
+
+resources:
+  containers:
+    - container: dotnet
+      endpoint: acr.aishu.cn
+      image: wing-biz/euop/dotnet-runtime:3.1
+    - container: node
+      endpoint: acr.aishu.cn
+      image: public/node:18-pnpm-7
+  repositories:
+    - repository: templatesAlias
+      type: git
+      name: ONE-Architecture\Yaml-Templates
+      ref: 'refs/heads/main'
+    - repository: arPipelineTemplates
+      type: git
+      name: AnyRobot\PipelineTemplates
+      ref: 'refs/heads/develop'
+
+stages:
+  - template: ../templates/pipelines.yml

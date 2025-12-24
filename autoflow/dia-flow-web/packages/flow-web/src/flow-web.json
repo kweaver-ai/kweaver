@@ -1,0 +1,20 @@
+
+{
+    "name": "flow-web",
+    "parent": "root",
+    "orderIndex": 0,
+    "app": {
+      "textZHCN": "工作流",
+      "textZHTW": "工作流",
+      "textENUS": "工作流",
+      "isShowTab": true,
+      "icon": "",
+      "pageTag": "Workspace"
+    },
+    "subapp": {
+      "entry": "https://localhost:3045/dataStudio.html",
+      "activeRule": "/",
+      "baseRouter": ""
+    }
+  }
+  

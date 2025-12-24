@@ -1,0 +1,76 @@
+.suffixType {
+    .collapse {
+        background-color: #fff;
+
+        .check-all {
+            width: auto;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .custom-panel {
+            .textarea {
+                width: 100%;
+                resize: none;
+            }
+
+            :global(.@{ant-prefix}-collapse-content-box) {
+                padding: 8px 0 0;
+            }
+        }
+
+        :global(.@{ant-prefix}-collapse-header) {
+            background-color: rgba(165, 168, 180, 0.12);
+            border-radius: 4px;
+            padding: 7px 40px 7px 16px;
+            height: 35px;
+        }
+
+        :global(.@{ant-prefix}-collapse-item .@{ant-prefix}-collapse-header) {
+            border-radius: 4px;
+        }
+
+        :global(.@{ant-prefix}-collapse-item) {
+            margin-bottom: 8px;
+            border: none;
+        }
+
+        :global(.@{ant-prefix}-collapse-content-box) {
+            padding: 8px 16px 8px 32px;
+        }
+    }
+
+    .panel-content {
+        display: flex;
+        flex-wrap: wrap;
+
+        :global(.@{ant-prefix}-checkbox-group-item) {
+            margin: 4px 0px 4px 8px;
+            width: 72px;
+        }
+
+        :global(.@{ant-prefix}-checkbox) + span {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}
+
+.explain-error {
+    font-size: 12px;
+    color: #ff4d4f;
+    word-break: break-all;
+}
+
+.suffix-item {
+    font-size: 13px;
+    line-height: 30px;
+
+    .label {
+        margin-right: 8px;
+    }
+}

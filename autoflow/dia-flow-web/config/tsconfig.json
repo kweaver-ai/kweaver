@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es6",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsxImportSource": "react",
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "paths": {
+      "@dia-web/common/*": ["./deps/common/*"]
+    },
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["@testing-library/jest-dom"]
+  }
+}

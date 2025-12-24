@@ -1,0 +1,54 @@
+.data-view-left {
+  border-radius: 3px;
+  border: 1px solid #00000026;
+  padding: 10px;
+  width: 300px;
+  min-height: 560px;
+}
+
+.data-view-right {
+  width: 600px;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.data-view-tree {
+  max-height: 500px;
+  overflow: auto;
+  margin-top: 8px;
+
+  :global {
+    .@{ant-prefix}-tree-node-selected {
+      background-color: #F1F7FE !important;
+    }
+  }
+}
+
+.data-view-content {
+  display: flex;
+}
+
+.data-view-table {
+  // width: 100%;
+  margin: 16px;
+}
+
+.data-view-list {
+  max-height: 500px;
+  overflow: auto;
+  margin-top: 10px;
+
+  li {
+    width: 100%;
+    cursor: pointer;
+    padding: 5px;
+
+    &:hover {
+      background: rgb(245, 245, 245);
+    }
+
+    &.selected {
+      background: #F1F7FE;
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "moduleResolution": "node",
+        "target": "es5",
+        "module": "ESNext",
+        "lib": ["es2015", "es2016", "es2017", "dom"],
+        "strict": true,
+        "strictNullChecks": false,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "declaration": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "outDir": "es",
+        "jsx": "react"
+    },
+    "include": ["src"]
+}

@@ -1,0 +1,36 @@
+// 确认删除弹窗
+.delete-modal {
+    .delete-title {
+        color: #000;
+        font-weight: bold;
+        font-size: 15px;
+        line-height: 23px;
+    }
+
+    .delete-info {
+        color: rgba(0, 0, 0, 1);
+        font-size: 13px;
+        line-height: 23px;
+    }
+
+    .delete-extra-tip {
+        margin: 4px 0 24px;
+        font-size: 13px;
+        line-height: 22px;
+        color: rgba(0, 0, 0, 0.3);
+    }
+
+    :global(.@{ant-prefix}-modal-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-modal-body) {
+        padding: 8px 32px 14px;
+    }
+
+    :global(.@{ant-prefix}-modal-footer) {
+        padding: 0 16px 20px;
+        border-top: none;
+    }
+}

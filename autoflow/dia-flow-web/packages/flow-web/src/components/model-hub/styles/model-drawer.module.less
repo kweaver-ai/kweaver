@@ -1,0 +1,54 @@
+.drawer {
+    .btn-group {
+        margin-bottom: 24px;
+
+        :global(.@{ant-prefix}-radio-button-wrapper) {
+            min-width: 120px;
+            text-align: center;
+            box-shadow: none;
+        }
+    }
+
+    :global(.@{ant-prefix}-drawer-title) {
+        color: rgba(0, 0, 0, 1);
+        font-weight: bold;
+        font-size: 15px;
+        line-height: 23px;
+        user-select: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-header) {
+        padding: 16px 32px;
+        border-bottom: none;
+    }
+
+    :global(.@{ant-prefix}-drawer-body) {
+        padding: 8px 32px 20px;
+    }
+
+    :global(.@{ant-prefix}-drawer-close) {
+        position: absolute;
+        margin: 0px;
+        padding: 0px;
+        top: 0px;
+        right: 0px;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 16px;
+        color: #7f8391;
+        text-align: center;
+        border-radius: 0px;
+        border-color: transparent;
+        transition: none 0s ease 0s;
+
+        &:hover {
+            color: #ffffff;
+            background-color: rgba(255, 103, 109, 0.7);
+        }
+        &:active {
+            background-color: #ff677d;
+            color: #ffffff;
+        }
+    }
+}

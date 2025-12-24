@@ -1,0 +1,52 @@
+.editor-container {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    border-radius: 4px;
+    overflow: auto;
+}
+
+:global {
+    .CodeMirror {
+        font-family: inherit;
+    }
+
+    .CodeMirror-hints {
+        z-index: 1001;
+    }
+    .cm-s-ayu-dark.CodeMirror-focused .CodeMirror-activeline-background {
+        border-top: 1px solid rgb(40, 40, 40);
+        border-bottom: 1px solid rgb(40, 40, 40);
+        background: inherit;
+    }
+    .cm-s-ayu-dark .CodeMirror-linenumber {
+        color: #858585;
+    }
+
+    .cm-s-ayu-dark .CodeMirror-activeline .CodeMirror-linenumber {
+        color: #c6c6c6;
+    }
+}
+
+.fullscreen-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 18px;
+    color: #fff;
+    z-index: 10;
+}
+
+.fullscreen-container {
+    position: relative;
+}
+.fullscreen-fixed {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    inset: 52px 0 0;
+}
+
+.full {
+    inset: 0;
+}

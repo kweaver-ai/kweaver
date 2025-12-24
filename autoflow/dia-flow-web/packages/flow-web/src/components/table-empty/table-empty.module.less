@@ -1,0 +1,33 @@
+.empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &.invisible {
+        visibility: hidden;
+    }
+
+    .img-wrapper {
+        display: flex;
+        align-items: flex-end;
+        width: 128px;
+        height: 128px;
+    }
+
+    .img {
+        width: 128px;
+    }
+
+    .tip {
+        color: rgba(0, 0, 0, 0.55);
+        font-size: 14px;
+        margin-top: 8px;
+        line-height: 22px;
+        text-align: center;
+    }
+
+    .error-img {
+        width: 128px;
+        height: 128px;
+    }
+}

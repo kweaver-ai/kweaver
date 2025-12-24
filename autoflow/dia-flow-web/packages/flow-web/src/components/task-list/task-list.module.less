@@ -1,0 +1,255 @@
+.home {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+
+    .header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 32px 32px 0 32px;
+        margin-bottom: 12px;
+
+        .title {
+            margin-bottom: 16px;
+            color: #000;
+            // font-weight: bold;
+            font-size: 14px;
+            line-height: 22px;
+        }
+
+        .btn-icon {
+            font-size: 16px;
+        }
+
+        .top-bar {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .list-nav {
+                position: relative;
+                display: inline-block;
+                margin-right: 25px;
+                color: rgba(0, 0, 0, 0.6);
+                font-size: 14px;
+                line-height: 24px;
+                text-align: left;
+                cursor: pointer;
+
+                &:not(:last-child)::after {
+                    position: relative;
+                    content: "";
+                    border-right: 1px solid rgba(0, 0, 0, 0.3);
+                    left: 12px;
+                }
+            }
+
+            .sort-btn:global(.@{ant-prefix}-btn) {
+                width: 24px;
+                height: 24px;
+                padding: 0;
+                font-size: 16px;
+                border-radius: 4px;
+                color: #000;
+
+                .sort-btn-icon {
+                    font-size: 16px;
+                    color: #000;
+                }
+
+                &:global(.@{ant-prefix}-btn-link) {
+                    &:global(.@{ant-prefix}-btn-icon-only) {
+                        border: none;
+
+                        &:hover {
+                            background-color: rgba(229, 228, 233, 0.8);
+                        }
+
+                        &.active,
+                        &:active {
+                            background-color: rgba(211, 212, 219, 0.7);
+                        }
+                    }
+                }
+
+                &:global(.@{ant-prefix}-dropdown-open) {
+                    background-color: rgba(211, 212, 219, 0.7);
+                }
+            }
+
+            :global(
+                    .@{ant-prefix}-tooltip-placement-bottom
+                        .@{ant-prefix}-tooltip-arrow-content
+                ),
+            :global(
+                    .@{ant-prefix}-tooltip-placement-top
+                        .@{ant-prefix}-tooltip-arrow-content
+                ) {
+                background: #444;
+                // transform: translateY(13px) rotate(225deg);
+            }
+        }
+
+        .searchInput {
+            border-radius: 4px;
+            border-color: #fff;
+            width: 200px;
+            height: 30px;
+            background: rgba(145, 151, 169, 0.16);
+
+            .search-icon {
+                font-size: 14px;
+                color: rgba(0, 0, 0, 0.55);
+            }
+
+            &:hover {
+                border: 1px solid rgba(119, 158, 234, 1);
+            }
+
+            :global(.@{ant-prefix}-input-prefix) {
+                margin-right: 8px;
+            }
+
+            :global(.@{ant-prefix}-input) {
+                background: rgba(145, 151, 169, 0);
+            }
+
+            &:global(.@{ant-prefix}-input-affix-wrapper-focused) {
+                box-shadow: 0 0 0 2px rgba(119, 158, 234, 0.35);
+                border: 1px solid rgba(119, 158, 234, 1);
+            }
+
+            :global(
+                    .@{ant-prefix}-input-affix-wrapper
+                        > input.@{ant-prefix}-input
+                ) {
+                background-color: rgba(145, 151, 169, 0);
+            }
+        }
+    }
+
+    .scrollable-container {
+        min-height: 200px;
+        padding: 0 20px;
+
+        :global(.@{ant-prefix}-list-grid)
+            :global(.@{ant-prefix}-col)
+            > :global(.@{ant-prefix}-list-item) {
+            margin: 4px 0 20px 0;
+        }
+
+        &.max-1960 :global(.@{ant-prefix}-row) > div {
+            width: 20% !important;
+            max-width: 20% !important;
+        }
+    }
+
+    .list-spin {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 -20px;
+        width: 100%;
+        height: calc(100% - 236px);
+        min-height: 200px;
+        z-index: 10;
+    }
+
+    .spin-blur {
+        opacity: 0.5;
+    }
+
+    .spin-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 60px;
+        padding-top: 16px;
+    }
+
+    // 消除横向滚动条
+    :global(.@{ant-prefix}-row) {
+        margin: 0 !important;
+    }
+}
+
+.sort-drop-menu {
+    :global(.@{ant-prefix}-dropdown-menu-item-icon) {
+        font-size: 16px;
+    }
+
+    :global(.@{ant-prefix}-dropdown-menu-item):hover,
+    :global(.@{ant-prefix}-dropdown-menu-submenu-title):hover {
+        background: #eee;
+    }
+
+    :global(.@{ant-prefix}-dropdown-menu-item):global(
+            .@{ant-prefix}-dropdown-menu-item-selected
+        ),
+    :global(.@{ant-prefix}-dropdown-menu-item):global(
+            .@{ant-prefix}-dropdown-menu-submenu-title-selected
+        ) {
+        color: #000;
+        background: #f0f7ff;
+        font-weight: 600;
+    }
+}
+
+.create-drop-menu {
+    :global(.@{ant-prefix}-dropdown-menu-item-icon) {
+        font-size: 16px;
+    }
+}
+
+.tile-wrapper {
+    margin: 0 -12px;
+}
+
+.tile {
+    position: relative;
+    // margin-top: 16px;
+    padding: 16px 16px 16px 48px;
+    width: 240px;
+    height: 76px;
+    border: 1px solid rgba(238, 238, 238, 1);
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: #ffffff;
+    box-shadow: 0px 2px 9px 1px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+
+    &:hover {
+        border-color: rgba(0, 0, 0, 0.3);
+    }
+
+    .icon {
+        position: absolute;
+        left: 12px;
+        top: 16px;
+        font-size: 28px;
+    }
+
+    .name {
+        // font-weight: bold;
+        font-size: 14px;
+    }
+
+    .nameRow {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .description {
+        margin-top: 4px;
+        color: rgba(0, 0, 0, 0.45);
+        text-overflow: ellipsis;
+        white-space: pre;
+        overflow: hidden;
+    }
+}

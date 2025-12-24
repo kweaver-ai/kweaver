@@ -1,0 +1,72 @@
+.header {
+    border-bottom: 1px solid #d0d1d8;
+    border-top: 1px solid transparent;
+    width: 100%;
+    background: #fff;
+    padding: 10px 24px;
+
+    .back-icon {
+        font-size: 13px;
+        line-height: 13px;
+        color: rgba(0, 0, 0, 0.4);
+    }
+
+    .title {
+        color: rgba(0, 0, 0, 1);
+        font-size: 13px;
+        line-height: 22px;
+        white-space: pre;
+    }
+
+    .task-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .link-btn {
+        color: #000;
+        height: 30px;
+    }
+
+    .btn-icon {
+        font-size: 16px;
+    }
+
+    .primary-btn {
+        margin-left: 8px;
+    }
+
+    .editing {
+        pointer-events: none;
+        user-select: none;
+        cursor: default;
+    }
+
+    .cursor-default {
+        cursor: default;
+    }
+
+    :global(.@{ant-prefix}-page-header-heading-title) {
+        color: #000;
+        font-weight: normal;
+        font-size: 13px;
+        line-height: 22px;
+    }
+
+    :global(.@{ant-prefix}-page-header-heading-left),
+    :global(.@{ant-prefix}-page-header-heading-extra) {
+        margin: 0;
+        height: 30px;
+    }
+}
+
+.renaming {
+    :global(.@{ant-prefix}-page-header-heading-title) {
+        overflow: visible;
+    }
+
+    :global(.@{ant-prefix}-page-header-heading-left),
+    :global(.@{ant-prefix}-page-header-heading-extra) {
+        overflow: visible;
+    }
+}

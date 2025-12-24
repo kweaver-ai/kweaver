@@ -1,0 +1,79 @@
+.not-enable {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+
+    .img-wrapper {
+        display: flex;
+        align-items: flex-end;
+        width: 128px;
+        height: 128px;
+    }
+
+    .img {
+        width: 128px;
+    }
+
+    .tip {
+        color: rgba(0, 0, 0, 0.55);
+        font-size: 14px;
+        margin-top: 8px;
+        line-height: 22px;
+        text-align: center;
+    }
+
+    .error-img {
+        width: 128px;
+        height: 128px;
+    }
+}
+
+.container {
+    position: absolute;
+    left: 32px;
+    top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+
+    .card {
+        display: flex;
+        align-items: center;
+        padding: 24px;
+        width: 310px;
+        height: 96px;
+        background-color: rgb(255, 255, 255);
+        border: 1px solid rgb(228, 230, 237);
+        border-radius: 4px;
+        cursor: pointer;
+
+        img {
+            flex: 0 0 auto;
+            margin-right: 16px;
+            height: 48px;
+            width: 48px;
+        }
+
+        &:hover {
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+    }
+}
+
+.extra-btn-badge {
+    :global(.@{ant-prefix}-badge-count-sm) {
+        min-width: 16px;
+        height: 16px;
+        font-size: 12px;
+        line-height: 16px;
+        border-radius: 8px;
+    }
+
+    :global(.@{ant-prefix}-badge-multiple-words) {
+        z-index: 1;
+        padding: 0 6px;
+    }
+}

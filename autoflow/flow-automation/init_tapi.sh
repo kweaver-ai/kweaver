@@ -13,7 +13,14 @@ OUT="$CWD/tapi"
 test -d $OUT || mkdir -p $OUT
 
 API_DIR="$API_DIR/ThriftAPI"
-GEN="$API_DIR/thrift"
+GEN=""
+if [ $(arch) == "x86_64" ]; then
+    GEN="$API_DIR/thrift"
+elif [ $(arch) == "aarch64" ]; then
+    GEN="$API_DIR/thrift-arm"
+else
+    echo "unsupported architecture: ${arch)" && exit 1
+fi
 test ! -f $GEN && echo "Error: $GEN not found." && exit 1
 test ! -x $GEN && chmod +x $GEN
 

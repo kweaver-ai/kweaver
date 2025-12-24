@@ -1,0 +1,4 @@
+FROM acr.aishu.cn/public/ubuntu:22.04.20251014 as runtime
+FROM scratch as result
+COPY --from=runtime /usr/lib/libtlq* /
+COPY --from=runtime /usr/lib/libbesmq* /

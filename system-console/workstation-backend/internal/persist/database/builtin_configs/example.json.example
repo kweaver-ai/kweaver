@@ -1,0 +1,22 @@
+{
+    "name": "cert-manage",
+    "parent": "root",
+    "manifest": {
+        "app": {
+            "icon": "//ip:port/isfweb/icons/cert-manage.svg",
+            "textZHCN": "认证",
+            "textZHTW": "認證",
+            "textENUS": "Authentication"
+        },
+        "name": "cert-manage",
+        "orderIndex": 2000,
+        "parent": "root",
+        // "type": "custom",
+        "subapp": {
+            "activeRule": "/",
+            "baseRouter": "",
+            "children": {},
+            "entry": "//ip:port/isfweb/certifictionmgnt.html"
+        }
+    }
+}

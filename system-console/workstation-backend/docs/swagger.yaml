@@ -1,0 +1,557 @@
+basePath: /
+definitions:
+  health.ResponseAlive:
+    properties:
+      alive:
+        type: boolean
+    type: object
+  health.ResponseError:
+    properties:
+      error:
+        type: string
+    type: object
+  health.ResponseReady:
+    properties:
+      ready:
+        type: boolean
+    type: object
+  override.Config:
+    additionalProperties: {}
+    type: object
+  webapp.Manifest:
+    additionalProperties: {}
+    type: object
+  webapp.MenuItem:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  webapp.MenuResult:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/webapp.MenuItem'
+        type: array
+      total_count:
+        type: integer
+    type: object
+info:
+  contact:
+    email: Kain.Jiang@aishu.cn
+    name: Kain.Jiang
+  description: 工作站服务API接口
+  title: StudioWeb Backend API
+  version: 0.0.1
+paths:
+  /api/workstation/v1/custom/webapp/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: 注销WebAPP
+      parameters:
+      - description: 注销的WebAPP名
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注销成功
+        "500":
+          description: 注销失败
+      summary: 注销WebAPP
+      tags:
+      - WebApp
+    post:
+      consumes:
+      - application/json
+      description: 注册WebAPP
+      parameters:
+      - description: WebApp名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: WebApp清单数据
+        in: body
+        name: manifest
+        required: true
+        schema:
+          $ref: '#/definitions/webapp.Manifest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册WebAPP成功
+        "400":
+          description: 注册WebAPP失败, 参数异常
+      summary: 注册WebAPP
+      tags:
+      - WebApp
+    put:
+      consumes:
+      - application/json
+      description: 注册WebAPP
+      parameters:
+      - description: WebApp名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: WebApp清单数据
+        in: body
+        name: manifest
+        required: true
+        schema:
+          $ref: '#/definitions/webapp.Manifest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册WebAPP成功
+        "400":
+          description: 注册WebAPP失败, 参数异常
+      summary: 注册WebAPP
+      tags:
+      - WebApp
+  /api/workstation/v1/menu:
+    get:
+      consumes:
+      - application/json
+      description: 查询菜单列表
+      parameters:
+      - description: 查询的菜单ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询的WebAPP数据
+          schema:
+            $ref: '#/definitions/webapp.MenuResult'
+        "404":
+          description: 查询的菜单项不存在
+        "500":
+          description: 查询菜单项异常
+      summary: 查询菜单列表
+      tags:
+      - MenuItem
+  /api/workstation/v1/raw/webapp/:
+    get:
+      consumes:
+      - application/json
+      description: 查询原始WebAPP
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询的WebAPP数据
+          schema:
+            items:
+              $ref: '#/definitions/webapp.Manifest'
+            type: array
+        "500":
+          description: 查询的WebAPP失败
+      summary: 查询原始WebAPP
+      tags:
+      - WebApp
+  /api/workstation/v1/webapp:
+    delete:
+      consumes:
+      - application/json
+      description: 批量注销WebAPP
+      parameters:
+      - description: 注销的WebAPP名列表
+        in: body
+        name: names
+        required: true
+        schema:
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注销成功
+        "500":
+          description: 注销失败
+      summary: 批量注销WebAPP
+      tags:
+      - WebApp
+    post:
+      consumes:
+      - application/json
+      description: 注册WebAPP
+      parameters:
+      - description: WebApp列表
+        in: body
+        name: manifests
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/webapp.Manifest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册WebAPP成功
+        "400":
+          description: 注册WebAPP失败, 参数异常
+      summary: 批量注册WebAPP
+      tags:
+      - WebApp
+    put:
+      consumes:
+      - application/json
+      description: 注册WebAPP
+      parameters:
+      - description: WebApp列表
+        in: body
+        name: manifests
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/webapp.Manifest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册WebAPP成功
+        "400":
+          description: 注册WebAPP失败, 参数异常
+      summary: 批量注册WebAPP
+      tags:
+      - WebApp
+  /api/workstation/v1/webapp/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: 注销WebAPP
+      parameters:
+      - description: 注销的WebAPP名
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注销成功
+        "500":
+          description: 注销失败
+      summary: 注销WebAPP
+      tags:
+      - WebApp
+    get:
+      consumes:
+      - application/json
+      description: 查询WebAPP
+      parameters:
+      - description: 用户ID
+        in: query
+        name: uid
+        required: true
+        type: string
+      - description: 设置ID
+        in: query
+        name: sid
+        type: string
+      - description: 是否附加设置项：默认true
+        in: query
+        name: with-setted
+        type: boolean
+      - description: 是否附加移动项：默认true
+        in: query
+        name: with-moved
+        type: boolean
+      - description: 附加用户权限过滤：默认true
+        in: query
+        name: with-authed
+        type: boolean
+      - description: 查询的WebAPP名
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询的WebAPP数据
+          schema:
+            $ref: '#/definitions/webapp.Manifest'
+        "404":
+          description: 查询的WebAPP不存在
+        "500":
+          description: 查询的WebAPP失败
+      summary: 查询WebAPP
+      tags:
+      - WebApp
+    post:
+      consumes:
+      - application/json
+      description: 注册WebAPP
+      parameters:
+      - description: WebApp名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: WebApp清单数据
+        in: body
+        name: manifest
+        required: true
+        schema:
+          $ref: '#/definitions/webapp.Manifest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册WebAPP成功
+        "400":
+          description: 注册WebAPP失败, 参数异常
+      summary: 注册WebAPP
+      tags:
+      - WebApp
+    put:
+      consumes:
+      - application/json
+      description: 注册WebAPP
+      parameters:
+      - description: WebApp名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: WebApp清单数据
+        in: body
+        name: manifest
+        required: true
+        schema:
+          $ref: '#/definitions/webapp.Manifest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册WebAPP成功
+        "400":
+          description: 注册WebAPP失败, 参数异常
+      summary: 注册WebAPP
+      tags:
+      - WebApp
+  /api/workstation/v1/webappconfig:
+    get:
+      consumes:
+      - application/json
+      description: 批量查询App配置
+      parameters:
+      - description: WebApp名
+        in: body
+        name: names
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      - description: 设置ID
+        in: query
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询App配置成功
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/override.Config'
+            type: object
+        "400":
+          description: 查询App配置失败, 服务异常
+      summary: 批量查询App配置
+      tags:
+      - WebAppConfig
+    patch:
+      consumes:
+      - application/json
+      description: 批量设置App配置
+      parameters:
+      - description: WebApp配置内容
+        in: body
+        name: config
+        required: true
+        schema:
+          additionalProperties:
+            $ref: '#/definitions/override.Config'
+          type: object
+      - description: 设置ID
+        in: query
+        name: sid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 设置App配置成功
+        "400":
+          description: 设置App配置失败, 服务异常
+      summary: 批量设置App配置
+      tags:
+      - WebAppConfig
+  /api/workstation/v1/webappconfig/:
+    delete:
+      consumes:
+      - application/json
+      description: 批量清空App配置
+      parameters:
+      - description: WebApp名
+        in: body
+        name: name
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      - description: 设置ID
+        in: query
+        name: sid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 清空App配置成功
+        "400":
+          description: 清空App配置失败, 服务异常
+      summary: 批量清空App配置
+      tags:
+      - WebAppConfig
+  /api/workstation/v1/webappconfig/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: 清空App配置
+      parameters:
+      - description: WebApp名, *代表所有
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 设置ID
+        in: query
+        name: sid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 清空App配置成功
+        "400":
+          description: 清空App配置失败, 服务异常
+      summary: 清空App配置
+      tags:
+      - WebAppConfig
+    get:
+      consumes:
+      - application/json
+      description: 查询App配置
+      parameters:
+      - description: WebApp名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 设置ID
+        in: query
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询App配置成功
+          schema:
+            $ref: '#/definitions/override.Config'
+        "400":
+          description: 查询App配置失败, 服务异常
+      summary: 查询App配置
+      tags:
+      - WebAppConfig
+    patch:
+      consumes:
+      - application/json
+      description: 设置App配置
+      parameters:
+      - description: WebApp配置内容
+        in: body
+        name: config
+        required: true
+        schema:
+          $ref: '#/definitions/override.Config'
+      - description: WebApp名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 设置ID
+        in: query
+        name: sid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 设置App配置成功
+        "400":
+          description: 设置App配置失败, 服务异常
+      summary: 设置App配置
+      tags:
+      - WebAppConfig
+  /health/alive:
+    get:
+      description: 健康探针
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回存活状态
+          schema:
+            $ref: '#/definitions/health.ResponseAlive'
+      summary: 健康探针
+      tags:
+      - Heath
+  /health/ready:
+    get:
+      description: 就绪探针
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回就绪状态
+          schema:
+            $ref: '#/definitions/health.ResponseReady'
+        "503":
+          description: 失败返回未就绪错误
+          schema:
+            $ref: '#/definitions/health.ResponseError'
+      summary: 就绪探针
+      tags:
+      - Heath
+swagger: "2.0"

@@ -1,0 +1,18 @@
+{
+    "name": "super-agent3",
+    "parent": "super-agent3",
+    "orderIndex": 0,
+    "app": {
+        "textZHCN": "SuperAgent",
+        "textZHTW": "SuperAgent",
+        "textENUS": "SuperAgent",
+        "icon": "https://xxx.xxxx",
+        "isShowTab": true,
+        "pageTag": "Workspace"
+    },
+    "subapp": {
+        "entry": "//ip:por",
+        "activeRule": "/",
+        "baseRouter": ""
+    }
+}

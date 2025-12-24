@@ -1,0 +1,62 @@
+services:
+  pd:
+    image: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:pingcap.pd
+    container_name: tidb_pd
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    privileged: true
+    # ports:
+      # - "2379:2379"
+      # - "2380:2380"
+    environment:
+      - PD_SERVER_NAME=pd
+      - INITIAL_CLUSTER=pd=http://pd:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    volumes:
+      - pd-data:/pd
+
+  tikv:
+    image: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:pingcap.tikv
+    container_name: tidb_tikv
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    privileged: true
+    # ports:
+    #   - "20160:20160"
+    environment:
+      - PD_ADDR=pd:2379
+    depends_on:
+      - pd
+    volumes:
+      - tikv-data:/tikv
+
+  tidb:
+    image: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:pingcap.tidb
+    container_name: tidb_server
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    privileged: true
+    ports:
+      - "4000:4000"
+    environment:
+      - PATH="bin:$PATH"
+      - MYSQL_HOST=0.0.0.0
+      - MYSQL_PORT=4000
+      - STORE=tikv
+      - PD_ADDR=pd:2379
+    depends_on:
+      - tikv
+      - pd
+    volumes:
+      - tidb-data:/tidb
+
+volumes:
+  pd-data:
+  tikv-data:
+  tidb-data:

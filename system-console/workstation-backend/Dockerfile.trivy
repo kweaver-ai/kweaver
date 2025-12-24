@@ -1,0 +1,1 @@
+FROM acr.aishu.cn/ict/builder:tools-trivy.latest

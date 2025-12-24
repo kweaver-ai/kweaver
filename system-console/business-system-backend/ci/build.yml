@@ -1,0 +1,113 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - dev-*
+  paths:
+    include:
+      - docker/
+      - helm/
+      - ci/
+      - pkg/
+      - internal/
+      - go.mod
+      - go.sum
+      - cmd/
+
+variables:
+  - group: global-dip
+
+stages:
+  - stage: BuildImage
+    dependsOn: []
+    jobs:
+      - job: BuildImage
+        strategy:
+          matrix:
+            x86:
+              arch: "x86"
+              poolAgentOSArchitecture: "X64"
+              poolName: dip-centos7-x86_64
+            arm:
+              arch: "arm"
+              poolAgentOSArchitecture: "ARM64"
+              poolName: dip-centos7-arm
+          maxParallel: 2
+        pool:
+          name: $(poolName)
+          demands:
+            - Agent.OSArchitecture -equals $(poolAgentOSArchitecture)
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - task: PostBuildCleanup@3
+          - task: Docker@2
+            inputs:
+              containerRegistry: ACR
+              command: "login"
+          - script: |
+              set -ex
+              DOCKER_BUILDKIT=1 docker build --output type=local,dest=result/trivy -f docker/Dockerfile.trivy .
+              ./result/trivy/trivy fs .
+            displayName: "Triving Filesystem"
+          - script: |
+              set -ex
+              DOCKER_BUILDKIT=1 docker build --output type=local,dest=result/buildx -f docker/Dockerfile.buildx .
+              DEVOPS_PAT=$(System.AccessToken) ./result/buildx/buildx bake test
+            displayName: "Testing"
+          - script: |
+              set -ex
+              tag=$(git describe --match="v*" --tags --always)
+              DOCKER_BUILDKIT=1 docker build --output type=local,dest=result/buildx -f docker/Dockerfile.buildx .
+              DEVOPS_PAT=$(System.AccessToken) TAG=${tag}.$(uname -m) ./result/buildx/buildx bake image --push
+            displayName: "Building and Pushing Image"
+          - script: |
+              set -ex
+              tag=$(git describe --match="v*" --tags --always)
+              DOCKER_BUILDKIT=1 docker build --output type=local,dest=result/trivy -f docker/Dockerfile.trivy .
+              image=acr.aishu.cn/ict/business-system-backend:${tag}.$(uname -m)
+              ./result/trivy/trivy image ${image}
+            displayName: "Triving Image"
+
+  - stage: MakeManifest
+    dependsOn: BuildImage
+    jobs:
+      - job: MakeManifest
+        pool:
+          name: dip-centos7-x86_64
+        steps:
+          - task: Docker@2
+            inputs:
+              command: login
+              containerRegistry: ACR
+          - script: |
+              set -ex
+              tag=$(git describe --match="v*" --tags --always)
+              image="acr.aishu.cn/ict/business-system-backend:${tag}"
+              docker manifest create --amend "${image}" "${image}.x86_64" "${image}.aarch64"
+              docker manifest push --purge "${image}"
+
+  - stage: MakeChart
+    dependsOn: MakeManifest
+    jobs:
+      - job: MakeChart
+        pool:
+          name: dip-centos7-x86_64
+        steps:
+          - script: |
+              set -ex
+              tag=$(git describe --match="v*" --tags --always)
+              branch=${BUILD_SOURCEBRANCH:-$(git branch --show-current)}
+              vbranch=$(echo ${branch,,} | sed -E 's#^refs/(heads|tags)/##' | tr '/_' '.-')
+
+              DOCKER_BUILDKIT=1 docker build --output type=local,dest=result/buildx -f docker/Dockerfile.buildx .
+              TAG=${tag} VERSION=${tag#v} ./result/buildx/buildx bake chart
+              TAG=${tag} VERSION="0.0.0-${vbranch}" ./result/buildx/buildx bake chart
+
+              charts=$(realpath result/chart/*)
+              for chart in ${charts}; do
+                account="$(registry.username):$(registry.password)"
+                curl -v -s -k -f -u $account "https://acr.aishu.cn/api/chartrepo/dip/charts?force=true" -XPOST -F "chart=@$chart"
+                echo
+              done

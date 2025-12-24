@@ -1,0 +1,115 @@
+[
+    {
+        "name": "auth",
+        "parent": "root",
+        "orderIndex": 11000,
+        "app": {
+            "textZHCN": "用户与认证",
+            "textZHTW": "用戶與認證",
+            "textENUS": "Auth & Users",
+            "icon": "//ip:port/isfweb/icons/userandcertifiction.png",
+            "isShowTab": true,
+            "pageTag": "Settings",
+            "roles": [
+                "Supper",
+                "OrgManager"
+            ]
+        },
+        "subapp": {
+            "children": {
+                "user-org": {
+                    "app": {
+                        "icon": "",
+                        "isShowTab": true,
+                        "pageTag": "Settings",
+                        "pathname": "/auth/user-org",
+                        "textZHCN": "用户与组织",
+                        "textZHTW": "用戶與組織",
+                        "textENUS": "Organization & Users",
+                        "roles": [
+                            "Supper",
+                            "OrgManager"
+                        ]
+                    },
+                    "name": "user-org",
+                    "orderIndex": 1000,
+                    "parent": "auth",
+                    "subapp": {
+                        "activeRule": "/",
+                        "baseRouter": "",
+                        "children": {},
+                        "entry": "//ip:port/isfweb/userorgmgnt.html"
+                    }
+                },
+                "cert-manage": {
+                    "app": {
+                        "icon": "",
+                        "isShowTab": true,
+                        "pageTag": "Settings",
+                        "pathname": "/auth/cert-manage",
+                        "textZHCN": "认证管理",
+                        "textZHTW": "認證管理",
+                        "textENUS": "Auth Management",
+                        "roles": [
+                            "Supper"
+                        ]
+                    },
+                    "name": "cert-manage",
+                    "orderIndex": 2000,
+                    "parent": "auth",
+                    "subapp": {
+                        "activeRule": "/",
+                        "baseRouter": "",
+                        "children": {},
+                        "entry": "//ip:port/isfweb/certifictionmgnt.html"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "name": "audit",
+        "parent": "root",
+        "orderIndex": 12000,
+        "app": {
+            "textZHCN": "审计与监控",
+            "textZHTW": "用戶與認證",
+            "textENUS": "Monitoring & Audit",
+            "icon": "//ip:port/isfweb/icons/auditandmonitor.png",
+            "isShowTab": true,
+            "pageTag": "Settings",
+            "roles": [
+                "Supper",
+                "OrgAudit"
+            ]
+        },
+        "subapp": {
+            "children": {
+                "auditlog": {
+                    "app": {
+                        "icon": "",
+                        "isShowTab": true,
+                        "pageTag": "Settings",
+                        "pathname": "/audit/auditlog",
+                        "textZHCN": "审计日志",
+                        "textZHTW": "審計日誌",
+                        "textENUS": "Audit Log",
+                        "roles": [
+                            "Supper",
+                            "OrgAudit"
+                        ]
+                    },
+                    "name": "auditlog",
+                    "orderIndex": 1,
+                    "parent": "audit",
+                    "subapp": {
+                        "activeRule": "/",
+                        "baseRouter": "",
+                        "children": {},
+                        "entry": "//ip:port/isfweb/auditlog.html"
+                    }
+                }
+            }
+        }
+    }
+]

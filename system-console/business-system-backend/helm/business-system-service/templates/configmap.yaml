@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ include "this-app.name" . }}-envconfig
+  namespace: {{ include "this-app.namespace" . }}
+  labels:
+    {{- include "this-app.labels" . | nindent 4 }}
+data: 
+  APP_DB_HOST: {{ .Values.depServices.rds.host | quote }}
+  APP_DB_PORT: {{ .Values.depServices.rds.port | quote }}
+  APP_DB_NAME: {{ .Values.depServices.rds.database | quote }}
+  APP_DB_USER: {{ .Values.depServices.rds.user | quote }}
+  APP_DB_PASSWORD: {{ .Values.depServices.rds.password | quote }}
+  APP_DB_TYPE: {{ .Values.depServices.rds.type | upper | quote }}
+  APP_DB_SYSTEMID: {{ .Values.depServices.rds.system_id | default "" | quote }}
+
+  APP_MQ_TYPE: {{ .Values.depServices.mq.mqType | quote }}
+  APP_MQ_HOST: {{ .Values.depServices.mq.mqHost | quote }}
+  APP_MQ_PORT: {{ .Values.depServices.mq.mqPort | quote }}
+  APP_MQ_LOOKUPD_HOST: {{ .Values.depServices.mq.mqLookupdHost | quote }}
+  APP_MQ_LOOKUPD_PORT: {{ .Values.depServices.mq.mqLookupdPort | quote }}
+  APP_MQ_AUTH_MECHANISM: {{ .Values.depServices.mq.auth.mechanism | quote }}
+  APP_MQ_AUTH_USERNAME: {{ .Values.depServices.mq.auth.username | quote }}
+  APP_MQ_AUTH_PASSWORD: {{ .Values.depServices.mq.auth.password | quote }}

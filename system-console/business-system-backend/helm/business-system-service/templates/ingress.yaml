@@ -1,0 +1,48 @@
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "this-app.name" . }}
+  namespace: {{ include "this-app.namespace" . }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ index .Values.depServices "class-443" "ingressClass" }}
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: {{ include "this-app.name" . }}
+            port:
+              number: 80
+        path: /api/business-system/v1
+        pathType: Prefix
+{{- end }}
+
+---
+{{- if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "this-app.name" . }}
+  namespace: {{ include "this-app.namespace" . }}
+  annotations:
+    kubernetes.io/ingress.class: {{ index .Values.depServices "class-443" "ingressClass" }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "this-app.name" . }}
+          servicePort: 80
+        path: /api/business-system/v1
+{{- end }}
+

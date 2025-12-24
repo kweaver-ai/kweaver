@@ -1,0 +1,19 @@
+{
+    "conponentDefineType": "helm/service",
+    "name": "business-system-service",
+    "configSchema": {},
+    "dependence": [
+        {
+            "name": "rds"
+        },
+        {
+            "name": "mq"
+        },
+        {
+            "name": "class-443"
+        },
+        {
+            "name": "model-management-dm-pre"
+        }
+    ]
+}

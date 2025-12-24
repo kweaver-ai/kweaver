@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ include "this-app.name" . }}-hook
+  namespace: {{ include "this-app.namespace" . }}
+  labels:
+    {{- include "this-app.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook-delete-policy: "before-hook-creation"
+    helm.sh/hook: "post-install, post-upgrade"
+    helm.sh/weight: "0"
+data: 
+  APP_DB_HOST: {{ .Values.depServices.rds.host | quote }}
+  APP_DB_PORT: {{ .Values.depServices.rds.port | quote }}
+  APP_DB_NAME: {{ .Values.depServices.rds.database | quote }}
+  APP_DB_USER: {{ .Values.depServices.rds.user | quote }}
+  APP_DB_PASSWORD: {{ .Values.depServices.rds.password | quote }}
+  APP_DB_TYPE: {{ .Values.depServices.rds.type | upper | quote }}
+  APP_DB_SYSTEMID: {{ .Values.depServices.rds.system_id | default "" | quote }}
+
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "this-app.name" . }}-hook
+  namespace: {{ include "this-app.namespace" . }}
+  annotations:
+    helm.sh/hook-delete-policy: "before-hook-creation"
+    helm.sh/hook: "post-install, post-upgrade"
+    helm.sh/weight: "1"
+spec:
+  template:
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ template "this-app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: initdb
+          image: {{ include "this-app.image" . }}
+          args: [ "initdb" ]
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "this-app.name" . }}-hook
+      restartPolicy: Never
+  backoffLimit: 0
+  activeDeadlineSeconds: 240

@@ -1,0 +1,842 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "工作站服务API接口",
+        "title": "StudioWeb Backend API",
+        "contact": {
+            "name": "Kain.Jiang",
+            "email": "Kain.Jiang@aishu.cn"
+        },
+        "version": "0.0.1"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/workstation/v1/custom/webapp/{name}": {
+            "put": {
+                "description": "注册WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "注册WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "WebApp清单数据",
+                        "name": "manifest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/webapp.Manifest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "注册WebAPP成功"
+                    },
+                    "400": {
+                        "description": "注册WebAPP失败, 参数异常"
+                    }
+                }
+            },
+            "post": {
+                "description": "注册WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "注册WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "WebApp清单数据",
+                        "name": "manifest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/webapp.Manifest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "注册WebAPP成功"
+                    },
+                    "400": {
+                        "description": "注册WebAPP失败, 参数异常"
+                    }
+                }
+            },
+            "delete": {
+                "description": "注销WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "注销WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "注销的WebAPP名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注销成功"
+                    },
+                    "500": {
+                        "description": "注销失败"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/menu": {
+            "get": {
+                "description": "查询菜单列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MenuItem"
+                ],
+                "summary": "查询菜单列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "查询的菜单ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询的WebAPP数据",
+                        "schema": {
+                            "$ref": "#/definitions/webapp.MenuResult"
+                        }
+                    },
+                    "404": {
+                        "description": "查询的菜单项不存在"
+                    },
+                    "500": {
+                        "description": "查询菜单项异常"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/raw/webapp/": {
+            "get": {
+                "description": "查询原始WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "查询原始WebAPP",
+                "responses": {
+                    "200": {
+                        "description": "查询的WebAPP数据",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/webapp.Manifest"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "查询的WebAPP失败"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/webapp": {
+            "put": {
+                "description": "注册WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "批量注册WebAPP",
+                "parameters": [
+                    {
+                        "description": "WebApp列表",
+                        "name": "manifests",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/webapp.Manifest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "注册WebAPP成功"
+                    },
+                    "400": {
+                        "description": "注册WebAPP失败, 参数异常"
+                    }
+                }
+            },
+            "post": {
+                "description": "注册WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "批量注册WebAPP",
+                "parameters": [
+                    {
+                        "description": "WebApp列表",
+                        "name": "manifests",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/webapp.Manifest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "注册WebAPP成功"
+                    },
+                    "400": {
+                        "description": "注册WebAPP失败, 参数异常"
+                    }
+                }
+            },
+            "delete": {
+                "description": "批量注销WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "批量注销WebAPP",
+                "parameters": [
+                    {
+                        "description": "注销的WebAPP名列表",
+                        "name": "names",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注销成功"
+                    },
+                    "500": {
+                        "description": "注销失败"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/webapp/{name}": {
+            "get": {
+                "description": "查询WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "查询WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "uid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "sid",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否附加设置项：默认true",
+                        "name": "with-setted",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否附加移动项：默认true",
+                        "name": "with-moved",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "附加用户权限过滤：默认true",
+                        "name": "with-authed",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "查询的WebAPP名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询的WebAPP数据",
+                        "schema": {
+                            "$ref": "#/definitions/webapp.Manifest"
+                        }
+                    },
+                    "404": {
+                        "description": "查询的WebAPP不存在"
+                    },
+                    "500": {
+                        "description": "查询的WebAPP失败"
+                    }
+                }
+            },
+            "put": {
+                "description": "注册WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "注册WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "WebApp清单数据",
+                        "name": "manifest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/webapp.Manifest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "注册WebAPP成功"
+                    },
+                    "400": {
+                        "description": "注册WebAPP失败, 参数异常"
+                    }
+                }
+            },
+            "post": {
+                "description": "注册WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "注册WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "WebApp清单数据",
+                        "name": "manifest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/webapp.Manifest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "注册WebAPP成功"
+                    },
+                    "400": {
+                        "description": "注册WebAPP失败, 参数异常"
+                    }
+                }
+            },
+            "delete": {
+                "description": "注销WebAPP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebApp"
+                ],
+                "summary": "注销WebAPP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "注销的WebAPP名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注销成功"
+                    },
+                    "500": {
+                        "description": "注销失败"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/webappconfig": {
+            "get": {
+                "description": "批量查询App配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebAppConfig"
+                ],
+                "summary": "批量查询App配置",
+                "parameters": [
+                    {
+                        "description": "WebApp名",
+                        "name": "names",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "uid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询App配置成功",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/override.Config"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "查询App配置失败, 服务异常"
+                    }
+                }
+            },
+            "patch": {
+                "description": "批量设置App配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebAppConfig"
+                ],
+                "summary": "批量设置App配置",
+                "parameters": [
+                    {
+                        "description": "WebApp配置内容",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/override.Config"
+                            }
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "sid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "设置App配置成功"
+                    },
+                    "400": {
+                        "description": "设置App配置失败, 服务异常"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/webappconfig/": {
+            "delete": {
+                "description": "批量清空App配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebAppConfig"
+                ],
+                "summary": "批量清空App配置",
+                "parameters": [
+                    {
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "sid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "清空App配置成功"
+                    },
+                    "400": {
+                        "description": "清空App配置失败, 服务异常"
+                    }
+                }
+            }
+        },
+        "/api/workstation/v1/webappconfig/{name}": {
+            "get": {
+                "description": "查询App配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebAppConfig"
+                ],
+                "summary": "查询App配置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "uid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询App配置成功",
+                        "schema": {
+                            "$ref": "#/definitions/override.Config"
+                        }
+                    },
+                    "400": {
+                        "description": "查询App配置失败, 服务异常"
+                    }
+                }
+            },
+            "delete": {
+                "description": "清空App配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebAppConfig"
+                ],
+                "summary": "清空App配置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "WebApp名, *代表所有",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "sid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "清空App配置成功"
+                    },
+                    "400": {
+                        "description": "清空App配置失败, 服务异常"
+                    }
+                }
+            },
+            "patch": {
+                "description": "设置App配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebAppConfig"
+                ],
+                "summary": "设置App配置",
+                "parameters": [
+                    {
+                        "description": "WebApp配置内容",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/override.Config"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "WebApp名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "设置ID",
+                        "name": "sid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "设置App配置成功"
+                    },
+                    "400": {
+                        "description": "设置App配置失败, 服务异常"
+                    }
+                }
+            }
+        },
+        "/health/alive": {
+            "get": {
+                "description": "健康探针",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Heath"
+                ],
+                "summary": "健康探针",
+                "responses": {
+                    "200": {
+                        "description": "成功返回存活状态",
+                        "schema": {
+                            "$ref": "#/definitions/health.ResponseAlive"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/ready": {
+            "get": {
+                "description": "就绪探针",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Heath"
+                ],
+                "summary": "就绪探针",
+                "responses": {
+                    "200": {
+                        "description": "成功返回就绪状态",
+                        "schema": {
+                            "$ref": "#/definitions/health.ResponseReady"
+                        }
+                    },
+                    "503": {
+                        "description": "失败返回未就绪错误",
+                        "schema": {
+                            "$ref": "#/definitions/health.ResponseError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "health.ResponseAlive": {
+            "type": "object",
+            "properties": {
+                "alive": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "health.ResponseError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "health.ResponseReady": {
+            "type": "object",
+            "properties": {
+                "ready": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "override.Config": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "webapp.Manifest": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "webapp.MenuItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "webapp.MenuResult": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/webapp.MenuItem"
+                    }
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Web App Manifest",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "orderIndex": {
+      "type": "integer"
+    },
+    "app": {
+      "type": "object",
+      "properties": {
+        "textZHCN": {
+          "type": "string",
+          "minLength": 1
+        },
+        "textZHTW": {
+          "type": "string",
+          "minLength": 1
+        },
+        "textENUS": {
+          "type": "string",
+          "minLength": 1
+        },
+        "icon": {
+          "type": "string"
+        },
+        "isShowTab": {
+          "type": "boolean"
+        },
+        "customVisible": {
+          "type": "boolean"
+        },
+        "pageTag": {
+          "type": "string",
+          "enum": [
+            "Workspace",
+            "Home",
+            "Smart Data",
+            "Settings"
+          ]
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Supper",
+              "OrgManager",
+              "OrgAudit"
+            ]
+          }
+        },
+        "openMethod": {
+          "type": "string",
+          "enum": [
+            "self",
+            "blank"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "group",
+            "directory"
+          ]
+        },
+        "isDefaultOpen": {
+          "type": "boolean"
+        },
+        "pathname": {
+          "type": "string",
+          "pattern": "^/[a-zA-Z0-9-_/]*$"
+        }
+      },
+      "required": [
+        "textZHCN",
+        "textZHTW",
+        "textENUS"
+      ]
+    },
+    "subapp": {
+      "type": "object",
+      "properties": {
+        "entry": {
+          "type": "string"
+        },
+        "activeRule": {
+          "type": "string"
+        },
+        "baseRouter": {
+          "type": "string"
+        },
+        "useEntryByRoute": {
+          "type": "boolean"
+        },
+        "children": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "orderIndex",
+    "app",
+    "subapp"
+  ]
+}

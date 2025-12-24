@@ -1,0 +1,16 @@
+services:
+  dm8:
+    image: acr.aishu.cn/ict/dm8_single:v8.1.2.128_ent_x86_64_ctm_pack4
+    volumes:
+      - data:/opt/dmdbms/data
+    ports:
+      - "5236:5236"
+    restart: unless-stopped
+    environment:
+      PAGE_SIZE: 16
+      LD_LIBRARY_PATH: /opt/dmdbms/bin
+      INSTANCE_NAME: dm8_01
+      CASE_SENSITIVE: 0
+      COMPATIBLE_MODE: 4
+volumes:
+  data: {}

@@ -1,0 +1,43 @@
+services:
+  kingbase8:
+    image: acr.aishu.cn/ict/kingbase_v008r006c009b0014_single:v1
+    container_name: kingbase8
+    privileged: true
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - DB_USER=system
+      - DB_MODE=mysql
+      - DB_PASSWORD=system
+      - NEED_START=yes
+    volumes:
+      - kingbase8:/home/kingbase/userdata/
+    ports:
+      - "54321:54321"
+    command: /usr/sbin/init
+    tty: true
+
+  kingbase9:
+    image: acr.aishu.cn/ict/kingbase_v009r001c001b0025_single_x86:v1
+    container_name: kingbase9
+    privileged: true
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - DB_USER=system
+      - DB_MODE=mysql
+      - DB_PASSWORD=system
+      - NEED_START=yes
+    volumes:
+      - kingbase9:/home/kingbase/userdata/
+    ports:
+      - "54320:54321"
+    command: /usr/sbin/init
+    tty: true
+
+
+volumes:
+  kingbase8: {}
+  kingbase9: {}
+
+

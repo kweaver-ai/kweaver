@@ -1,0 +1,27 @@
+ARG TAG="latest"
+ARG VERSION="0.1.0-alpha"
+
+# stage1: 修改版本
+FROM acr.aishu.cn/ict/builder:tools-yq.latest AS stage1
+ARG VERSION TAG
+COPY ./helm /src
+
+WORKDIR /work
+
+RUN true \
+    && cp -r /src/business-system-service ./ \
+    && yq -i '.version = "'${VERSION}'"' ./business-system-service/Chart.yaml \
+    && yq -i '.image.tag = "'${TAG}'"' ./business-system-service/values.yaml
+
+
+FROM acr.aishu.cn/public/ubuntu:22.04.20251014 as stage2
+COPY --from=acr.aishu.cn/ict/builder:tools-helm-3.17 /usr/bin/helm /usr/bin/helm
+COPY --from=stage1 /work /src
+
+WORKDIR /work
+
+RUN true \
+    && helm package /src/business-system-service
+
+FROM scratch AS result
+COPY --from=stage2 /work/*.tgz /

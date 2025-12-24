@@ -1,0 +1,23 @@
+[
+    {
+        "name": "app1",
+        "parent": "root", //顶级为root
+        "orderIndex": 0,
+        // !important
+        "app": {
+            "textZHCN": "",
+            "textZHTW": "",
+            "textENUS": "",
+            "icon": "",
+            "isShowTab": true
+        },
+        "subapp": {
+            "entry": "",
+            "activeRule": "/",
+            "baseRouter": "",
+            "children": {
+                "app1children1": { /* manifest */}
+            }
+        }
+    }
+]

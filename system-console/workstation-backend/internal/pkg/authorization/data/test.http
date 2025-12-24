@@ -1,0 +1,172 @@
+@paddr = https://10.4.71.239:443
+@auth_iaddr = http://10.4.71.239:30921
+@auth_paddr = http://10.4.71.239:30920
+
+@userID = 266c6a42-6131-4d62-8f39-853e7093701c
+
+### 获取所有资源类型
+GET {{auth_paddr}}/api/authorization/v1/resource_type?limit=100
+Content-Type: application/json
+
+### 获取菜单资源类型
+GET {{auth_paddr}}/api/authorization/v1/resource_type/menu
+Content-Type: application/json
+
+### 创建菜单资源类型(已经内置)
+PUT {{auth_paddr}}/api/authorization/v1/resource_type/menu
+Content-Type: application/json
+
+{
+  "name": "菜单",
+  "description": "工作台侧栏菜单",
+  "instance_url": "GET studio-web-service:8877/api/workstation/v1/menu",
+  "data_struct": "tree",
+  "operation": [
+    {
+      "id": "display",
+      "name": [
+        {
+          "language": "zh_cn",
+          "value": "显示"
+        }
+      ]
+    }
+  ]
+}
+
+
+### 查询角色
+# @name getRoles
+GET {{auth_paddr}}/api/authorization/v1/roles
+
+### 创建角色
+POST {{auth_paddr}}/api/authorization/v1/roles
+
+{
+  "name": "工作台管理员",
+  "description": "工作台管理员",
+  "resource_type_scope": [
+    {
+        "id": "menu",
+        "name": "菜单"
+    }
+  ]
+}
+
+
+
+### 查询角色成员1
+@roleID = {{getRoles.response.body.entries.$[?(@.name = "工作台管理员")].id}}
+
+GET {{auth_paddr}}/api/authorization/v1/role-members/{{roleID}}
+Content-Type: application/json
+
+
+### 为角色配置用户
+POST {{auth_paddr}}/api/authorization/v1/role-members/{{roleID}}
+Content-Type: application/json
+
+{
+    "method": "POST",
+    "members": [
+        {
+            "id": "{{userID}}",
+            "type": "user"
+        }
+    ]
+}
+
+
+
+
+### 为角色添加权限
+POST {{auth_paddr}}/api/authorization/v1/policy
+
+[
+  {
+    "accessor": {
+      "id": "{{roleID}}",
+      "type": "role"
+    },
+    "resource": {
+      "id": "auditlog",
+      "type": "menu",
+      "name": "审计日志"
+    },
+    "operation": {
+      "allow": [
+        {
+          "id": "display"
+        }
+      ],
+      "deny": []
+    },
+    "condition": "{}",
+    "expires_at": "2025-07-11 00:00:00"
+  },
+  {
+    "accessor": {
+      "id": "{{roleID}}",
+      "type": "role"
+    },
+    "resource": {
+      "id": "cert-manage",
+      "type": "menu",
+      "name": "证书管理"
+    },
+    "operation": {
+      "allow": [
+        {
+          "id": "display"
+        }
+      ],
+      "deny": []
+    },
+    "condition": "{}",
+    "expires_at": "2025-07-11 00:00:00"
+  }
+]
+
+
+### 获取策略
+# @name getPolicy
+GET {{auth_paddr}}/api/authorization/v1/policy
+
+### 删除策略
+@policyID1 = {{getPolicy.response.body.entries.0.id}}
+@policyID2 = {{getPolicy.response.body.entries.1.id}}
+
+### 删除策略1
+DELETE {{auth_paddr}}/api/authorization/v1/policy/{{policyID1}}
+
+### 删除策略2
+DELETE {{auth_paddr}}/api/authorization/v1/policy/{{policyID2}}
+
+
+
+
+### 资源列举
+POST {{auth_iaddr}}/api/authorization/v1/resource-list
+Content-Type: application/json
+
+{
+    "accessor": {
+      "id": "266c6a42-6131-4d62-8f39-853e7093701c",
+      "type": "user"
+    },
+    "resource": {
+        "type": "menu"
+    },
+    "operation": ["display"],
+    "method": "GET"
+}
+
+
+###  直接父级和所有子级别拥有权限
+
+
+
+### 菜单资源列举
+@menuID = 
+GET {{paddr}}/api/workstation/v1/menu?id={{menuID}}
+Content-Type: application/json

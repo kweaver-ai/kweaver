@@ -1,0 +1,78 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feat/develop-*
+  paths:
+    include:
+      - Dockerfile
+      - cmd/
+      - internal/
+      - pkg/
+      - go.mod
+      - go.sum
+
+stages:
+- stage: BuildImage
+  jobs:
+  - job: BuildImage
+    strategy:
+      matrix:
+        x86:
+          arch: "x86"
+          poolAgentOSArchitecture: "X64"
+        arm:
+          arch: "arm"
+          poolAgentOSArchitecture: "ARM64"
+      maxParallel: 2
+    pool:
+      name: ASDeployment
+      demands:
+        - Agent.OSArchitecture -equals $(poolAgentOSArchitecture)
+        - Agent.OS -equals Linux
+        - docker
+    steps:
+    - task: PostBuildCleanup@3
+    - checkout: self
+      fetchDepth: 1
+    - task: Docker@2
+      inputs:
+        containerRegistry: ProtonACR
+        command: "login"
+    - script: |
+        set -ex
+        export DOCKER_BUILDKIT=1
+        image="acr.aishu.cn/ict/workstation-backend"
+        tags=("git.${BUILD_SOURCEVERSION:0:8}" "${BUILD_SOURCEBRANCHNAME,,}.latest")
+        for tag in ${tags[@]}; do
+          docker build --build-arg DEVOPS_PAT=$(System.AccessToken) --pull -t ${image}:${tag}.$(arch) -f Dockerfile .
+          docker push ${image}:${tag}.$(arch)
+          docker rmi -f ${image}:${tag}.$(arch) 2>/dev/null
+        done
+    - script: |
+        set -ex
+        DOCKER_BUILDKIT=1 docker build --output type=local,dest=./trivy -f Dockerfile.trivy .
+        image="acr.aishu.cn/ict/workstation-backend:git.${BUILD_SOURCEVERSION:0:8}.$(arch)"
+        ./trivy/trivy image ${image}
+
+- stage: MakeManifest
+  jobs:
+  - job: MakeManifest
+    pool:
+      name: ASDeployment
+    steps:
+      - checkout: none
+      - task: Docker@2
+        inputs:
+          command: login
+          containerRegistry: ProtonACR
+      - script: |
+          set -ex
+          image="acr.aishu.cn/ict/workstation-backend"
+          tags=("git.${BUILD_SOURCEVERSION:0:8}" "${BUILD_SOURCEBRANCHNAME,,}.latest")
+          for tag in ${tags[@]}; do
+            docker manifest create --amend "${image}:${tag}" "${image}:${tag}.x86" "${image}:${tag}.arm"
+            docker manifest push --purge "${image}:${tag}"
+            docker rmi -f "${image}:${tag}" 2>/dev/null
+          done
+

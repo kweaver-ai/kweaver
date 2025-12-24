@@ -1,0 +1,4 @@
+@addr = 10.102.183.14:8877
+
+### 
+GET http://{{addr}}/api/workstation/v1/menu?id=settings

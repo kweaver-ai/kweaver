@@ -1,0 +1,13 @@
+version: "2"
+# linters:
+#   disable:
+#   - errcheck
+#   - unused
+#   - staticcheck
+output:
+  formats:
+    text:
+      path: stdout
+
+run:
+  issues-exit-code: 0

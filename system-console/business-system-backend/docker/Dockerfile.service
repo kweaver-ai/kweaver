@@ -1,0 +1,32 @@
+FROM acr.aishu.cn/public/ubuntu:22.04.20251014 as runtime
+FROM scratch as mqsdk
+COPY --from=runtime /usr/lib/libtlq* /
+COPY --from=runtime /usr/lib/libbesmq* /
+
+
+FROM acr.aishu.cn/ict/builder:golang-1.25.5n AS goenv
+ARG DEVOPS_PAT
+COPY --from=mqsdk /*  /usr/lib64/
+ENV CGO_ENABLED=1 DEVOPS_PAT=${DEVOPS_PAT}
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+
+FROM goenv as builder
+RUN --mount=type=bind,target=/app,readwrite \
+    go build  -o /build-result/business-system .
+
+
+FROM goenv as tester
+env LD_LIBRARY_PATH=/usr/lib64
+RUN --mount=type=bind,target=/app,readwrite \
+    go test -v ./... -coverprofile=coverage.out -covermode=atomic && \
+    go tool cover -func=coverage.out
+
+
+FROM acr.aishu.cn/public/ubuntu:22.04.20251014 as result
+ENV TZ=Asia/Shanghai LANG=en_US.UTF-8
+COPY --from=builder /build-result /app
+WORKDIR /app
+ENTRYPOINT ["./business-system"]

@@ -1,0 +1,12 @@
+services:
+  mysql:
+    image: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:mysql.8
+    volumes:
+      - data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123qweASD
+      MYSQL_DATABASE: deploy
+volumes:
+  data: {}

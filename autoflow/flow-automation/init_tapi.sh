@@ -24,7 +24,7 @@ fi
 test ! -f $GEN && echo "Error: $GEN not found." && exit 1
 test ! -x $GEN && chmod +x $GEN
 
-MODS=("EACPLog" "EVFS" "ShareMgnt")
+MODS=("ShareMgnt")
 for mod in ${MODS[@]}; do
     $API_DIR/thrift -r -out $OUT \
     --gen go:thrift_import=devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/go-lib/thrift,package_prefix=devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/tapi/ \

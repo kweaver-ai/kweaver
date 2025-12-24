@@ -19,14 +19,14 @@ if [ $(arch) == "x86_64" ]; then
 elif [ $(arch) == "aarch64" ]; then
     GEN="$API_DIR/thrift-arm"
 else
-    echo "unsupported architecture: ${arch)" && exit 1
+    echo "unsupported architecture: $(arch)" && exit 1
 fi
 test ! -f $GEN && echo "Error: $GEN not found." && exit 1
 test ! -x $GEN && chmod +x $GEN
 
 MODS=("ShareMgnt")
 for mod in ${MODS[@]}; do
-    $API_DIR/thrift -r -out $OUT \
+    $GEN -r -out $OUT \
     --gen go:thrift_import=devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/go-lib/thrift,package_prefix=devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/tapi/ \
     "$API_DIR/$mod.thrift"
 done

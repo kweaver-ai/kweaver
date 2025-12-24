@@ -1,0 +1,65 @@
+.sidebar-container {
+  position: fixed;
+  left: 16px; /* 距离左边距30px */
+  // top: 24%;
+  // transform: translateY(-50%); /* 垂直居中 */
+  background: #fff; /* 灰色背景 */
+  padding: 20px 8px;
+  border-radius: 8px;
+  width: 80px;
+  text-align: center;
+  box-shadow: 0 3px 6px -4px #0000001f, 0 6px 16px 0 #00000014, 0 9px 28px 8px #0000000d;
+
+  & .split {
+    width: 20px;
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.1);
+    margin: 16px auto;
+  }
+}
+  
+.sidebar-item {
+  margin-bottom: 8px;
+  text-align: center;
+  cursor: pointer;
+  height: 48px;
+  padding-top: 5px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+
+  /* 悬停效果 */
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 6px;
+  }
+}
+
+.sidebar-item-home {
+  margin-bottom: 8px;
+  text-align: center;
+  cursor: pointer;
+  height: 48px;
+  padding-top: 5px;
+  box-sizing: border-box;
+  border: 1px solid rgba(18,110,227,0.04);
+  background-color: #F1F7FE;
+  border-radius: 6px;
+}
+
+.item-text {
+  font-size: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+  
+.account {
+  cursor: default !important;
+  color: #000000d9 !important;
+
+  &:hover {
+    background-color: #fff !important;
+    color: #000000d9 !important;
+  }
+}

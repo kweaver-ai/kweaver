@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="25px" viewBox="0 0 24 25" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- <title>编组 3</title> -->
+    <defs>
+        <linearGradient x1="71.2953416%" y1="23.6255761%" x2="19.0010231%" y2="83.9096714%" id="linearGradient-1">
+            <stop stop-color="#1C4DFA" offset="0%"></stop>
+            <stop stop-color="#3FA9F5" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="版本3" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组-3" transform="translate(0.000000, 0.202561)">
+            <rect id="Rectangle-7" x="0" y="0" width="24" height="24"></rect>
+            <g id="文件夹_0" transform="translate(3.000000, 5.000000)" fill="url(#linearGradient-1)" fill-rule="nonzero">
+                <path d="M5.61195,0 L6.6708,1.05885 L18,1.05885 L18,14.82345 L0,14.82345 L0,0 L5.61195,0 Z M14.8239,10.5876 L10.5885,10.5876 L10.5885,11.6469 L14.8239,11.6469 L14.8239,10.5876 Z M5.08185,1.0584 L1.0584,1.0584 L1.0584,4.23720001 L16.94115,4.23720001 L16.94115,2.11725 L6.14115,2.11725 L5.08185,1.0584 Z" id="形状结合"></path>
+            </g>
+        </g>
+    </g>
+</svg>

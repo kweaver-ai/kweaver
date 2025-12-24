@@ -1,0 +1,7 @@
+node_modules/
+bin/
+dist/
+testResult/
+yarn-error.log
+build/
+API/

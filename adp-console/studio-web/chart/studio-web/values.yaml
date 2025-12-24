@@ -1,0 +1,92 @@
+affinity: {}
+
+depServices:
+  deploy-installer:
+    mode: ""
+  rds:
+    host: 10.2.179.253
+    password: 123qweASD
+    port: 3306
+    user: root
+    type: MySQL
+    database: deploy
+    system_id: ""
+  redis:
+    caName: ""
+    certName: ""
+    connectInfo:
+      host: ""
+      masterGroupName: ""
+      masterHost: ""
+      masterPort: 0
+      password: ""
+      port: 0
+      sentinelHost: ""
+      sentinelPassword: ""
+      sentinelPort: 0
+      sentinelUsername: ""
+      slaveHost: ""
+      slavePort: 0
+      username: ""
+    connectType: ""
+    enableSSL: false
+    keyName: ""
+    secretName: ""
+  nodemgnt:
+    host: nodemgnt-host
+    port: 8090
+  deploy-service:
+    HttpHost: deploy-service
+    HttpPort: 9703
+  class-443:
+    ingressClass: "class-443"
+env:
+  timezone: Asia/Shanghai
+image:
+  studio_web_static:
+    pullPolicy: ifNotPresent
+    repository: ict/studio-web-static
+    tag: -mission
+  deploy_web_tproxy:
+    pullPolicy: ifNotPresent
+    repository: ict/deploy-web-tproxy
+    tag: -mission
+  pullPolicy: IfNotPresent
+  registry: acr.aishu.cn
+  studio_web_service:
+    pullPolicy: ifNotPresent
+    repository: ict/studio-web-service
+    tag: -mission
+  studio_web_backend:
+    pullPolicy: ifNotPresent
+    repository: ict/workstation-backend
+    tag: latest
+imagePullSecrets: []
+ingress:
+  annotations: {}
+maxReplicaCount: 0
+name: studio-web
+nameOverride: ""
+nodeSelector: {}
+podAnnotations: {}
+podSecurityContext: {}
+replicaCount: 1
+resources: 
+  limits:
+    cpu: 2
+    memory: 400M
+  requests:
+    cpu: 0
+    memory: 0
+securityContext:
+  runAsGroup: 5000
+  runAsNonRoot: true
+  runAsUser: 5000
+service:
+  language: zh_CN
+  initMenuLayout: dip
+serviceAccount:
+  annotations: {}
+  create: true
+  name: ""
+tolerations: []

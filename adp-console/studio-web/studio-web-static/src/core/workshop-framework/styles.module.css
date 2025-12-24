@@ -1,0 +1,7 @@
+.icon {
+    display: inline-block;
+    vertical-align: -0.125em;
+}
+.img {
+    filter: contrast(0) opacity(1) brightness(0);
+}

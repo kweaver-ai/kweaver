@@ -1,0 +1,48 @@
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "template.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ index .Values.depServices "class-443" "ingressClass" }}
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: {{ include "template.fullname" $ }}-service
+            port:
+              number: 8877
+        path: /api/workstation/v1/menu
+        pathType: Prefix
+{{- end }}
+
+---
+{{- if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "template.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: {{ index .Values.depServices "class-443" "ingressClass" }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ include "template.fullname" $ }}-service
+          servicePort: 8877
+        path: /api/workstation/v1/menu
+{{- end }}
+

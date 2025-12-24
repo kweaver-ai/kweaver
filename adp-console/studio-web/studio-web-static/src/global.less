@@ -1,0 +1,81 @@
+/* 字体粗细 */
+@fontSize: 13px;
+@fontSizePlus: 15px;
+@fontSizePro: 30px;
+
+/* 字体颜色 */
+@fontColor: #000;
+@fontColorAlpha: rgba(0, 0, 0, 0.75);
+@fontColorAlpha2: rgba(0, 0, 0, 0.5);
+@fontColorLink: rgba(52, 97, 236, 0.75);
+@fontColorError: #e60012;
+@fontColorSuccess: #60bc9f;
+@fontColorDisabled: #b1b1b1;
+
+/* 字重 */
+@fontWeight: 600;
+
+/* 边框圆角 */
+@borderRadius: 4px;
+
+/* 边框颜色 */
+@borderColor: #d3d4db;
+@borderColorAlpha: rgba(0, 0, 0, 0.05);
+
+/* 配置项列表 */
+@listBorderColor: #dcdcdc;
+@listBG: #f3f3f7;
+
+/* 卡片背景 */
+@blockBG: #f9f9f9;
+@blockBGHover: rgba(159, 204, 255, 0.2);
+
+/* 间距 */
+@gutterSlim: 4px;
+@gutterSmall: 8px;
+@gutterRegular: 16px;
+@gutterLarge: 24px;
+
+/* card 高度 */
+@cardHeightSmall: 60px;
+@cardHeightRegular: 82px;
+@cardHeightLarge: 136px;
+@cardHeightOverSized: 165px;
+@cardHeightHuge: 203px;
+
+/* 常用宽度 */
+@width: 200px;
+
+/* icon大小 */
+@iconSlim: 12px;
+@iconSmall: 16px;
+@iconRegular: 24px;
+@iconLarge: 32px;
+
+/* icon颜色 */
+@iconWarning: #f39422;
+
+/* 阴影 */
+@boxShadowColor: rgba(0, 0, 0, 0.1);
+
+.row {
+    background: @blockBG;
+    overflow: hidden;
+}
+.rowHover {
+    background: @blockBGHover;
+    overflow: hidden;
+}
+.icon-slim {
+    width: @iconSlim;
+    height: @iconSlim;
+}
+.icon-small {
+    width: @iconSmall;
+    height: @iconSmall;
+}
+.link {
+    font-size: @fontSize;
+    color: @fontColorLink;
+    cursor: pointer;
+}

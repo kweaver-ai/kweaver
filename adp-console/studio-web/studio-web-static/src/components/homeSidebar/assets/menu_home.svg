@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="17px" viewBox="0 0 18 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- <title>形状结合</title> -->
+    <defs>
+        <linearGradient x1="71.2953416%" y1="19.8774688%" x2="19.0010231%" y2="88.7286234%" id="linearGradient-1">
+            <stop stop-color="#1C4DFA" offset="0%"></stop>
+            <stop stop-color="#3FA9F5" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="版本3" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="画板3" transform="translate(-41.000000, -364.000000)" fill="url(#linearGradient-1)" fill-rule="nonzero">
+            <g id="编组-5" transform="translate(16.000000, 266.202561)">
+                <g id="编组-2" transform="translate(8.000000, 89.000000)">
+                    <g id="编组-3" transform="translate(14.000000, 5.000000)">
+                        <path d="M12.0553345,8.61907632 L18.4152284,13.3668337 L18.4152284,18.7550786 C18.4152284,19.3523771 17.9444777,19.8417638 17.3471792,19.8417638 L13.9474137,19.8417638 L13.9474137,14.5286869 L10.022982,14.5286869 L10.022982,19.8417638 L6.66745193,19.8417638 C6.07015341,19.8417638 5.57529263,19.3523771 5.57529263,18.7550786 L5.57529263,13.3668337 L12.0553345,8.61907632 Z M12.0000101,4 L21,10.8598866 L19.8696429,12.3428791 L12.0000101,6.34457629 L4.1303571,12.3428791 L3,10.8598866 L12.0000101,4 Z" id="形状结合"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

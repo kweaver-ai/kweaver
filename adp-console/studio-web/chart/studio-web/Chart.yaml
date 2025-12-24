@@ -1,0 +1,5 @@
+ApiVersion: v1
+appVersion: 1.3.4
+name: studio-web
+type: application
+version: 1.3.4

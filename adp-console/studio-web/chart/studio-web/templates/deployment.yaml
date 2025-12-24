@@ -1,0 +1,240 @@
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: apps/v1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ include "template.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "template.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.stratege }}
+  strategy:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{ if not .Values.maxReplicaCount}}
+  replicas: {{ .Values.replicaCount }}
+  {{- else }}
+  replicas: {{ min .Values.replicaCount .Values.maxReplicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "template.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/rules: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "template.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.dnsConfig }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "template.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      - name: depservice
+        configMap:
+          name: {{ include "template.fullname" $}}
+      - name: cms-release-config-oauth-registry-info
+        secret:
+          defaultMode: 420
+          items:
+          - key: default.yaml
+            path: oauth-registry-info.yaml
+          secretName: cms-release-config-oauth-registry-info
+      containers:
+        - name: studio-web-service
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.studio_web_service.repository }}:{{ .Values.image.studio_web_service.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/alive
+              port: 18080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/ready
+              port: 18080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+              - echo
+              - no startupProbe
+            failureThreshold: 30
+            periodSeconds: 10
+          command: 
+          - "node"
+          args:
+            - /AnyShare/StudioWebService/build/bundle.js
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - name: depservice
+            mountPath: "/etc/globalConfig/depservice"
+          - mountPath: /etc/globalConfig/oauth
+            name: cms-release-config-oauth-registry-info
+          env:
+          - name: TZ
+            value: "{{ $.Values.env.timezone }}"
+          - name: LANG
+            value: {{ $.Values.service.language | default "zh_CN" }}
+          {{- range $k, $v := $.Values.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+        - name: studio-web-static
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.studio_web_static.repository }}:{{ .Values.image.studio_web_static.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/alive
+              port: 18800
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/ready
+              port: 18800
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+              - echo
+              - no startupProbe
+            failureThreshold: 30
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - name: depservice
+            mountPath: "/etc/globalConfig/depservice"
+          - mountPath: /etc/globalConfig/oauth
+            name: cms-release-config-oauth-registry-info
+          env:
+          - name: TZ
+            value: "{{ $.Values.env.timezone }}"
+          - name: LANG
+            value: {{ $.Values.service.language | default "zh_CN" }}
+          {{- range $k, $v := $.Values.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+        - name: deploy-web-tproxy
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.deploy_web_tproxy.repository }}:{{ .Values.image.deploy_web_tproxy.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            tcpSocket:
+              port: 18008
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            tcpSocket:
+              port: 18008
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+              - echo
+              - no startupProbe
+            failureThreshold: 30
+            periodSeconds: 10
+          command: 
+          - "node"
+          args:
+            - /AnyShare/DeployWebTProxy/index.js
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - name: depservice
+            mountPath: "/etc/globalConfig/depservice"
+          - mountPath: /etc/globalConfig/oauth
+            name: cms-release-config-oauth-registry-info
+          env:
+          - name: TZ
+            value: "{{ $.Values.env.timezone }}"
+          - name: LANG
+            value: {{ $.Values.service.language | default "zh_CN" }}
+          {{- range $k, $v := $.Values.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+        - name: studio-web-backend
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.studio_web_backend.repository }}:{{ .Values.image.studio_web_backend.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: 8877
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8877
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "template.fullname" . }}-backend
+        {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}
+              topologyKey: kubernetes.io/hostname
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

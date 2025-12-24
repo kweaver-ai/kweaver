@@ -1,0 +1,79 @@
+# 参考链接：
+# https://confluence.aishu.cn/display/AS/Azure+Pipelines
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+# https://confluence.aishu.cn/pages/viewpage.action?pageId=110275994
+# https://confluence.aishu.cn/pages/viewpage.action?pageId=108105674
+# https://confluence.aishu.cn/pages/viewpage.action?pageId=110275915
+
+trigger:
+  - chore
+
+stages:
+  - stage: BuildService
+    displayName: 编译服务
+    jobs:
+      - job: BuildImage
+        displayName: 编译镜像
+        strategy:
+          matrix:
+            x86:
+              arch: "x86"
+              poolAgentOSArchitecture: "X64"
+            arm:
+              arch: "arm"
+              poolAgentOSArchitecture: "ARM64"
+          maxParallel: 2
+        pool:
+          name: ASDeployment
+          demands:
+            - Agent.OSArchitecture -equals $(poolAgentOSArchitecture)
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - task: PostBuildCleanup@3
+          - checkout: self
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              command: login
+              containerRegistry: ProtonACR
+          - task: DownloadSecureFile@1
+            name: SSHKEY
+            displayName: "下载密钥"
+            inputs:
+              secureFile: "id_rsa"
+          - task: Bash@3
+            displayName: 编译镜像
+            inputs:
+              targetType: "filePath"
+              filePath: "$(Build.SourcesDirectory)/runtime/build.sh"
+            env:
+              BRANCH_NAME: $(Build.SourceBranchName)
+              SSH_KEY: $(SSHKEY.secureFilePath)
+              BUILD_NUMBER: $(Build.BuildId)
+              RELEASE_VERSION: $(release_version)
+              SERVICE_VERSION: $(version)
+              BUILD_ARCH: $(arch)
+  - stage: MakeManifest
+    displayName: 多架构镜像
+    jobs:
+      - job: MakeManifest
+        displayName: 创建manifest
+        pool:
+          name: ASDeployment
+        steps:
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              command: login
+              containerRegistry: ProtonACR
+          - task: Bash@3
+            displayName: 制作多架构镜像
+            inputs:
+              targetType: "filePath"
+              filePath: "$(Build.SourcesDirectory)/runtime/manifest.sh"
+            env:
+              BRANCH_NAME: $(Build.SourceBranchName)
+              RELEASE_VERSION: $(release_version)
+              SERVICE_VERSION: $(version)
+              BUILD_NUMBER: $(Build.BuildId)

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ include "template.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "template.labels" . | nindent 4 }}
+data: 
+  depServices.yaml: |
+    {{- toYaml .Values.depServices |  nindent 4 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ include "template.fullname" . }}-backend
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "template.labels" . | nindent 4 }}
+data: 
+  APP_PORT: "8877"
+  APP_DB_HOST: {{ .Values.depServices.rds.host | quote }}
+  APP_DB_PORT: {{ .Values.depServices.rds.port | quote }}
+  APP_DB_NAME: {{ .Values.depServices.rds.database | quote }}
+  APP_DB_USER: {{ .Values.depServices.rds.user | quote }}
+  APP_DB_PASSWORD: {{ .Values.depServices.rds.password | quote }}
+  APP_DB_TYPE: {{ .Values.depServices.rds.type | upper | quote }}
+  APP_DB_SYSTEMID: {{ .Values.depServices.rds.system_id | default "" | quote }}

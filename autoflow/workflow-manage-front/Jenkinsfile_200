@@ -1,0 +1,102 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent any
+    stages {
+        stage('checkout') {
+            steps {
+                checkout(
+		                [
+                       $class: 'SubversionSCM',
+                       additionalCredentials: [],
+                       excludedCommitMessages: '',
+                       excludedRegions: '',
+                       excludedRevprop: '',
+                       excludedUsers: '',
+                       filterChangelog: false,
+                       ignoreDirPropChanges: false,
+                       includedRegions: '',
+                       locations: [
+                           [
+                               cancelProcessOnExternalsFail: true,
+                               credentialsId: 'hanjian',
+                               depthOption: 'infinity',
+                               ignoreExternalsOption: true,
+                               local: './workflow-manage-front',
+                               remote: 'http://www.rzdata.net:81/svn/bluesvn/爱数流程项目组/04_源码目录/流程前端/feature/Feature-ASP-11076/workflow-manage-front'
+                           ]
+                       ],
+                       quietOperation: true,
+                       workspaceUpdater: [$class: 'UpdateUpdater']
+		               ]
+                )
+            }
+        }
+        stage('prepare') {
+            steps {
+                script{
+                    sh '''
+                       npm install --registry=http://www.rzdata.net:8081/repository/npm-group/
+                       '''
+                }
+            }
+        }
+        stage('build-process-definition') {
+            steps {
+                script{
+                    sh '''
+                       sed -i -e "s#workflow-manage-front#process-definition#g" package.json
+                       npm run build:anyshare-200
+                       rm -rf ./process-definition
+                       mv dist process-definition
+                       '''
+                }
+            }
+        }
+        stage('build-process-instance') {
+            steps {
+                script{
+                    sh '''
+                       sed -i -e "s#process-definition#process-instance#g" package.json
+                       npm run build:anyshare-200
+                       rm -rf ./process-instance
+                       mv dist process-instance
+                       '''
+                }
+            }
+        }
+        stage('build-process-task') {
+            steps {
+                script{
+                    sh '''
+                       sed -i -e "s#process-instance#process-task#g" package.json
+                       npm run build:anyshare-200
+                       rm -rf ./process-task
+                       mv dist process-task
+                       rm -f package.json
+                       '''
+                }
+            }
+        }
+        stage('build-image') {
+            steps {
+                script{
+                    sh '''
+                       path=$WORKSPACE
+                       dockerPath=$path/Dockerfile_anyshare
+                       cd $path
+                       docker build -f $dockerPath -t ${IMAGE_PATH} .
+                       docker push ${IMAGE_PATH}
+                       rm -rf $dockerPath
+                       '''
+                }
+            }
+        }
+    }
+	  post {
+		  always {
+			  sh """
+           curl -X POST ${API_URL}/$currentBuild.result
+           """
+		  }
+	  }
+}

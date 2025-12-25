@@ -1,0 +1,17 @@
+<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+ <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+
+ <title>已通过</title>
+ <desc>Created with Sketch.</desc>
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g id="编组-15">
+   <circle r="16" cy="16" cx="16" fill="#0F6FE4" id="椭圆形"/>
+   <path fill="#FFFFFF" id="形状结合" d="m16.5,8c2.48528,0 4.5,2.01472 4.5,4.5c0,1.64345 -0.881,3.08112 -2.19648,3.86653c2.85546,0.92726 4.95903,3.52128 5.16373,6.63388l-14.96725,0c0.20522,-3.12049 2.31894,-5.71975 5.18493,-6.64158c-1.30877,-0.78561 -2.18493,-2.2199 -2.18493,-3.85883c0,-2.48528 2.01472,-4.5 4.5,-4.5z"/>
+  </g>
+ </g>
+</svg>

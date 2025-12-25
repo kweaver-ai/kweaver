@@ -1,0 +1,89 @@
+trigger:
+  - MISSION
+  - feature/*
+  - Release-*
+  
+variables:
+  defaultBranch: MISSION
+  branchNameLower: $[lower(variables['Build.SourceBranchName'])]
+  actualBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
+  actualBranchLower: $[lower(variables['actualBranch'])]
+
+jobs:
+  - template: templates/ut.yml
+    parameters:
+      jobName: LintAndTest
+
+  - job: buildJob
+    displayName: 'fetch代码并打包'
+    dependsOn:
+      - LintAndTest
+    pool: 
+      name: server-agent
+
+    steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        displayName: 'Install Node.js'
+      - script: |
+          yarn install \
+            --registry https://registry.npmjs.org
+
+          echo 分支全称 $(Build.SourceBranch)
+          echo 真实分支 $(actualBranch)
+          echo 默认分支 $(defaultBranch)
+
+          echo '--------------各依赖的分支是------------------'
+          echo uiBranch $uiBranch
+          echo utilBranch $utilBranch
+          echo publicBranch $publicBranch
+          echo sweetuiBranch $sweetuiBranch
+          echo '----------------------------------------------'
+           
+          cd src
+          yarn
+          yarn run build:anyshare-45
+          echo ==================completed build==================
+        displayName: 'fetch code && webpack'
+
+      - task: CopyFiles@2
+        displayName: 
+        inputs:
+          contents: |
+            dist/**
+            Dockerfile_anyshare
+            Dockerfile_arm
+            default.conf.template
+            docker-entrypoint.sh
+            default.conf
+          TargetFolder: '$(Build.BinariesDirectory)'
+          flattenFolders: false
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.BinariesDirectory)'
+          ArtifactName: doc-audit-client
+          publishLocation: 'Container'
+
+  - template: templates/docker-build.yml
+    parameters:
+      name: DockerJobX86
+      displayName: '生成镜像并推送至harbar(x86)'
+      pool: server-agent
+      harborUrl: acr.aishu.cn:80
+      dependsOn: buildJob
+      condition: and(succeeded(), eq(variables['x86'], 'true'))
+      dockerfile: Dockerfile_anyshare
+
+  - template: templates/docker-build.yml
+    parameters:
+      name: DockerJobARM
+      displayName: '生成镜像并推送至harbar(arm)'
+      pool: uedc-centos-7-arm
+      harborUrl: acr-arm.aishu.cn:80
+      dependsOn: buildJob
+      condition: and(succeeded(), eq(variables['arm'], 'true'))
+      dockerfile: Dockerfile_arm

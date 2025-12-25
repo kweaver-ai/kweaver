@@ -1,0 +1,4 @@
+FROM nginxinc/nginx-unprivileged:1.19.9-alpine
+COPY default_test.conf /etc/nginx/conf.d/default.conf
+COPY ./dist /usr/share/nginx/html/wf-manage-client
+EXPOSE 9800

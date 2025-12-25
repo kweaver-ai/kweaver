@@ -1,0 +1,69 @@
+/* COLOR PICKER */
+
+/* context pad */
+.djs-context-pad .entry {
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.6);
+}
+
+.bpmn-icon-color:before {
+    content: '🖌';
+}
+
+/* color popup menu */
+[class^="color-icon-"]:before,
+[class*=" color-icon-"]:before {
+  display: inline-block;
+  content: '';
+  width: 1.5em;
+  height: 0.6em;
+  border-radius: 0.5em;
+  border: 0.03em solid black;
+}
+
+.djs-popup-header .entry.color-icon-clear {
+  margin-left: 5px;
+  padding: 0;
+}
+
+.djs-popup-header .entry.color-icon-clear > span {
+  margin-left: 5px;
+}
+
+.color-icon-clear:before {
+  background-color: #ffffff;
+}
+
+.color-icon-ff0000:before {
+  background-color: #ff0000;
+}
+
+.color-icon-ff7f00:before {
+  background-color: #ff7f00;
+}
+
+.color-icon-ffff00:before {
+  background-color: #ffff00;
+}
+
+.color-icon-00ff00:before {
+  background-color: #00ff00;
+}
+
+.color-icon-0000ff:before {
+  background-color: #0000ff;
+}
+
+.color-icon-4b0082:before {
+  background-color: #4b0082;
+}
+
+.color-icon-9400d3:before {
+  background-color: #9400d3;
+}
+
+/* transparancy for shapes with colors */
+.color-transparancy {
+  fill-opacity: 0.50;
+}
+

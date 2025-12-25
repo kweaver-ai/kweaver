@@ -1,0 +1,4 @@
+FROM acr.aishu.cn/public/nginx:1.22.1-alpine-latest
+COPY default.conf /etc/nginx/conf.d/
+COPY ./dist /usr/share/nginx/html/doc-audit-client
+EXPOSE 1005

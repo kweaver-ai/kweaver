@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" href="../../demo/favicon.ico" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content="Web site created using create-react-app" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="anyshare-sdk-public-path" content="../../" />
+        <link rel="apple-touch-icon" href="../../demo/logo192.png" />
+        <link rel="manifest" href="../../demo/manifest.json" />
+        <title></title>
+        <link href="../../css/anyshare.sdk.css" rel="stylesheet" />
+        <script src="../../js/anyshare.sdk.js"></script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="text/javascript">
+            function mainSdk() {
+                AnyShareSDKFactory.create({
+                    apiBase: "http://127.0.0.1:3000",
+                    rootElement: document.getElementById("root"),
+                    token: "m6_MXNGT9SillXYtPboNwyZ1yovvK4tAgjJ1H840l7E.UTrs0rfgmZn2YJLYKZ-wnmwhfsQl3ZvGqLc5Hi6El4s",
+                    locale: "zh-tw",
+                })
+                    .then(function resolve(sdk) {
+                        sdk.addAccessor()
+                            .then(function resolve(res) {
+                                console.log(res);
+                            })
+                            .catch(function reject(err) {
+                                console.error(err);
+                            });
+                    })
+                    .catch(function reject(err) {
+                        console.error(err);
+                    });
+            }
+            mainSdk();
+        </script>
+    </body>
+</html>

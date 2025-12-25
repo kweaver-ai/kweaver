@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/introjs.min.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container" id="root">
+        <br />
+        <br />
+        <div
+            v-intro-autostart:hints="autostart"
+            v-intro-autostart.config="autostartConfig"
+            >
+            <div v-intro-hint="'Hint 1'">Hint 1.</div>
+            <div v-intro-hint="'Hint 2'">Hint 2.</div>
+
+        </div>
+        <br />
+    </div>
+    <script src="https://unpkg.com/vue@2.4.4/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/intro.min.js"></script>
+    <script type="text/javascript" src="../dist/index.min.js"></script>
+    <script type="text/javascript">
+        new Vue({
+            el: '#root',
+            data() {
+                return {
+                    autostart: true,
+                    autostartConfig: {
+                        nextLabel: '[next -->]'
+                    }
+                };
+            }
+        });
+    </script>
+  </body>
+</html>

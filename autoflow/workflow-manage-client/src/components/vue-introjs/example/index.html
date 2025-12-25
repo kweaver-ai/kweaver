@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/introjs.min.css" rel="stylesheet">
+    <style type="text/css">
+        .red-bg {
+            background: red;
+        }
+
+        .blue-bg {
+            background: blue;
+        }
+    </style>
+  </head>
+
+  <body>
+    <div class="container" id="root">
+        <br />
+        <div>
+            <button class="btn btn-primary" @click="startTour">Start tour</button>
+        </div>
+        <br />
+        <div v-intro-autostart="autostart">
+            <h3 v-intro="'Step 1, default'">Intro step 1</h3>
+            <div>
+                Step 1, use of v-intro="'Message'".
+            </div>
+            <hr />
+
+            <h3 v-intro="'Step 2, custom position'" v-intro-position="'top'">Intro step 2 (position "top")</h3>
+            <div>
+                Step 2, use of v-intro-position="'top'". <br />
+                Renders tooltip on the top of this element.
+            </div>
+            <hr />
+
+            <h3 v-intro="'Step 3, custom priority'" v-intro-step="2">Intro step 3 (set priority)</h3>
+            <div>
+                Step 3, use of v-intro-step="2". <br />
+                This step defines step priority = 2,
+                so intro for step #3 is rendered before step #2.
+            </div>
+            <hr />
+
+            <h3 v-intro="'Step 4, tooltip class'" v-intro-tooltip-class="'red-bg'">Intro step 4 (tooltip class)</h3>
+            <div>
+                Step 4, use of v-intro-tooltip-class="'red-bg'". <br />
+                Custom CSS class for tooltip.
+            </div>
+            <hr />
+
+            <h3 v-intro="'Step 5, highlight class'" v-intro-highlight-class="'blue-bg'">Intro step 5 (highlight class)</h3>
+            <div>
+                Step 5, use of v-highlight-tooltip-class="'blue-bg'". <br />
+                Custom CSS class for helper layer.
+            </div>
+            <hr />
+
+            <h3 v-intro="'Step 6, scroll to'" v-intro-scroll-to="'element'">Intro step 6 (change scrollTo attribute)</h3>
+            <div>
+                Step 6, use of v-scroll-to="'element'". <br />
+            </div>
+            <hr />
+
+            <h3 v-intro="'Step 7, disable-interaction'" v-intro-disable-interaction="true">Intro step 7 (change disable-interaction attribute)</h3>
+            <div>
+                Step 7, use of v-disable-interaction="true". <br />
+            </div>
+            <hr />
+
+            <h3 v-intro-hint="'The hint'">A hint</h3>
+            <div>
+                Renders a hint
+            </div>
+            <hr />
+
+            <h3 v-intro-hint="'The hint'" v-intro-hint-position="'top'">A hint (position = top)</h3>
+            <div>
+                Renders a hint on top of elemenet.
+            </div>
+            <hr />
+        </div>
+
+        <div>
+            <button class="btn btn-primary" @click="showHints">Show hints</button>
+        </div>
+    </div>
+    <script src="https://unpkg.com/vue@2.4.4/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/intro.min.js"></script>
+    <script type="text/javascript" src="../dist/index.min.js"></script>
+    <script type="text/javascript">
+        new Vue({
+            el: '#root',
+            data() {
+                return {
+                    autostart: false
+                };
+            },
+            methods: {
+                startTour() {
+                    this.$intro().start();
+                },
+                showHints() {
+                    this.$intro().showHints();
+                },
+                toggleAutostart() {
+                    this.autostart = !this.autostart;
+                }
+            }
+        });
+    </script>
+  </body>
+</html>

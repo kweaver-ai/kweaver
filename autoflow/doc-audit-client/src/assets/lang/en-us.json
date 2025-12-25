@@ -1,0 +1,410 @@
+{
+  "menu": {
+    "Audit": "Approvals",
+    "Test": "Initiating Flow",
+    "InitiateRealnameShare": "Share with users",
+    "InitiateAnonymousShare": "Share with anyone",
+    "InitiateSync": "Doc Domain Sync",
+    "Token": "Token Settings"
+  },
+  "common": {
+    "tabs": {
+      "applys": "My Requests",
+      "tasks": "To Dos",
+      "historys": "Processed"
+    },
+    "bizTypes": {
+      "name": "Requests of",
+      "all": "All",
+      "share": "Sharing",
+      "realname": "Sharing with users",
+      "perm": "Sharing with users",
+      "owner": "Sharing with users",
+      "inherit": "Sharing with users",
+      "secretRealName": "Sharing with users",
+      "anonymous": "Sharing with anyone",
+      "sync": "Doc Domain Sync",
+      "security": "Security Levels",
+      "flow": "Doc Relay/File Collector Workflow"
+    },
+    "dataBizTypes": {
+      "realname": "Sharing with users",
+      "perm": "Sharing with users",
+      "owner": "Sharing with users",
+      "inherit": "Sharing with users",
+      "secretRealName": "Sharing with users",
+      "anonymous": "Sharing with anyone",
+      "sync": "Request for Doc Domain Sync",
+      "security": "Security Levels",
+      "flow": "Doc Relay/File Collector Workflow"
+    },
+    "auditStatuss": {
+      "auditStatus": "Status",
+      "all": "All",
+      "pending": "Under approval",
+      "pending2": "Under approval",
+      "pending-done": "Approved",
+      "reject": "Rejected",
+      "cancel": "Rejected",
+      "pass": "Approved",
+      "avoid": "Automatically Approved",
+      "undone": "Undone",
+      "failed": "Failed",
+      "sendback": "Returned",
+      "transfer": "Already transferred"
+    },
+    "search": "Search",
+    "searches": "Search",
+    "selectNum": "{num} item(s) selected",
+    "selectApply": "{num} request(s) selected",
+    "noDetail": "No details for now",
+    "surePass": "Are you sure to approve the selected one(s)?",
+    "sureReject": "Are you sure to reject the selected one(s)?",
+    "handleAudit": "In progress: {num}%",
+    "noPrompt": "Do not show again",
+    "column": {
+      "apply": "",
+      "docName": "Name",
+      "bizType": "Requests of",
+      "docPath": "Location",
+      "abstract": "Content",
+      "auditor": "Approver",
+      "status": "Status",
+      "auditStatus": "Status",
+      "applyUserName": "Initiator",
+      "applyTime": "Started at",
+      "processTime": "Processed at"
+    },
+    "empty": {
+      "apply": "This list is empty",
+      "todo": "No To dos for now",
+      "done": "No processed workflow for now",
+      "none": "Sorry, no results found"
+    },
+    "detail": {
+      "tab": {
+        "audit": "Approvals",
+        "file": "File"
+      },
+      "founding": {
+        "startTitle": "'s request for ",
+        "realname": " has initiated the request for sharing with users",
+        "perm": " has initiated the request for sharing with users",
+        "owner": " has initiated the request for sharing with users",
+        "inherit": " has initiated the request for sharing with users",
+        "secretRealName": " has initiated the request for sharing with users",
+        "anonymous": " has initiated the request for sharing with anyone",
+        "sync": "'s request for Doc Domain Sync",
+        "security": " has initiated the request for security levels",
+        "flow": " has initiated the request for Doc Relay/File Collector Workflow",
+        "batch": {
+          "startTitle": "",
+          "realname": "the request for sharing with users",
+          "perm": "the request for sharing with users",
+          "owner": "the request for sharing with users",
+          "inherit": "the request for sharing with users",
+          "secretRealName": "the request for sharing with users",
+          "anonymous": "the request for sharing with anyone",
+          "sync": "the request for Doc Domain Sync",
+          "security": "the request for security levels",
+          "flow": "the request for Doc Relay/File Collector Workflow"
+        }
+      },
+      "applyTime": "Started at",
+      "accessorName": "Visited by",
+      "role": "Permissions",
+      "expiresAt": "Expires",
+      "urlTitle": "Description",
+      "password": "Pickup Code",
+      "accessLimit": "Max Visits",
+      "auditType": "Mode",
+      "auditTypes": {
+        "tjsh": "(Parallel Approval)",
+        "hqsh": "(Unanimous Approval)",
+        "zjsh": "(Serial Approval)"
+      },
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "flow": "Workflow",
+      "createApply": "Start",
+      "created": " Initiated",
+      "audit": "Approval",
+      "auditIdea": "Comment",
+      "auditDate": "Date",
+      "auditMessage": "Target location does not exist",
+      "revoke": "Undo the request",
+      "undone": "{} has undone the request",
+      "undoneForProcDefDelete": "Admin has deleted the workflow",
+      "delAuditFlow": "Delete the workflow",
+      "approvedAutomatically": "Approved automatically",
+      "rejectedAutomatically": "Rejected automatically",
+      "backlog": "Details ",
+      "apply": "Details ",
+      "done": "Details ",
+      "status": {
+        "pending": "Under approval",
+        "pending2": "Under approval",
+        "pass": "Approved",
+        "avoid": "AutomaticallyApproved",
+        "reject": "Rejected",
+        "flow": "Under approval",
+        "end": "Finished"
+      },
+      "operation": {
+        "placeholder": "Give your comments here (Optional)",
+        "requiredPlaceholder": "Give your comments here (Required)",
+        "countersignPlaceholder": "Remarks for adding temporary approvers(Optional)",
+        "transferPlaceholder": "Note(Optional)",
+        "remindPlaceholder": "Note(Optional)",
+        "sure": "OK",
+        "cancel": "Cancel",
+        "pass": "Approve",
+        "reject": "Reject",
+        "countersign": "Add temporary approvers",
+        "countersignBtn": "Add",
+        "transfer": "Transfer the approval to another user",
+        "Transfer": "Transfer",
+        "sendback": "Return",
+        "sendbackTitle": "Return to",
+        "sendbackPlaceholder": "Cause(Optional)",
+        "sendbackRequiredPlaceholder":"Cause(Required)",
+        "resubmit": "Re-submit ",
+        "more": "More",
+        "add": "Add",
+        "selected": "Selected",
+        "remind": "Send the reminder to",
+        "Remind": "Reminder",
+        "revoke": "Revoke"
+      },
+      "sendback": {
+        "applyUser": "This will be returned to the initiator ",
+        "reason": ". Cause: ",
+        "backTo": "Returned to {name}"
+      },
+      "remind": {
+        "user": "User(s): ",
+        "selectPlaceholder": "Select the users to send the reminder",
+        "selectEmpty": "Select the users to send the reminder.",
+        "comment": "Note:",
+        "waitInfo": "The reminder has been set",
+        "taskProcessed": "This workflow has expired or has been finished already.",
+        "userProcessed": "The user who received the reminder has processed this request.",
+        "usersNotFound": "The user who received the reminder no longer exists.",
+        "successInfo": "Reminder sent"
+      },
+      "transfer": {
+        "overLimit": "The max transfer.",
+        "success": "Transferred successfully",
+        "to": "Transfer to {name}",
+        "personnel": " time(s).",
+        "status": "Already transferred",
+        "select": "Add",
+        "hasTransferUser": "You cannot transfer to the user who have already transferred",
+        "usersNotFound": "The transfer user no longer exists.",
+        "err": {
+          "title": "Action failed",
+          "transferred": "You've already transferred this request to others."
+        }
+      },
+      "auditMsg": {
+        "title": "Tips",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "error": "You can enter at most 300 characters",
+        "countersignErrorTip": "You cannot set the approvers of this link as temporary approvers",
+        "transferErrorTip": "You cannot transfer to the user who is already the approver of this link",
+        "countersignApplyUserErrorTip": "You cannot add the request initiator as the temporary approver",
+        "transferApplyUserErrorTip": "You cannot transfer to the user who initiated this request",
+        "agree": {
+          "yes": "Sure to approve this request?",
+          "realname": "Sure to approve this request?",
+          "anonymous": "Sure to approve this request?",
+          "sync": "Sure to approve this request?",
+          "flow": "Sure to approve this request?"
+        },
+        "reject": {
+          "no": "Are you sure to reject the request? After this, this approval will end.",
+          "realname": "Sure to reject this request?",
+          "anonymous": "Sure to reject this request?",
+          "sync": "Sure to reject this request?",
+          "flow": "Sure to reject this request?"
+        }
+      },
+      "revokeMsg": {
+        "confirmMSg": "Undone",
+        "cancelMsg": "Quit",
+        "info": {
+          "sureRevoke1": "Sure to undo this request",
+          "sureRevoke2": "?",
+          "realname": "Sure to undo this request?",
+          "secretRealname": "Sure to undo this request?",
+          "anonymous": "Sure to undo this request?",
+          "sync": "Sure to undo this request?",
+          "flow": "Sure to undo this request?"
+        }
+      },
+      "dirEmpty": "This dir is empty",
+      "failedMsg": {
+        "realname": {
+          "noAuditor": "Your sharing requires an approval. Ask Admin to set an approver for the operation to take effect.",
+          "noMatchingLevelAuditor": "Your sharing requires an approval. Ask Admin to set a qualified approver for the operation to take effect."
+        },
+        "perm": {
+          "noAuditor": "Your sharing requires an approval. Ask Admin to set an approver for the operation to take effect.",
+          "noMatchingLevelAuditor": "Your sharing requires an approval. Ask Admin to set a qualified approver for the operation to take effect."
+        },
+        "owner": {
+          "noAuditor": "Your sharing requires an approval. Ask Admin to set an approver for the operation to take effect.",
+          "noMatchingLevelAuditor": "Your sharing requires an approval. Ask Admin to set a qualified approver for the operation to take effect."
+        },
+        "inherit": {
+          "noAuditor": "Your sharing requires an approval. Ask Admin to set an approver for the operation to take effect.",
+          "noMatchingLevelAuditor": "Your sharing requires an approval. Ask Admin to set a qualified approver for the operation to take effect."
+        },
+        "secretRealname": {
+          "noAuditor": "Your sharing requires an approval. Ask Admin to set an approver for the operation to take effect.",
+          "noMatchingLevelAuditor": "Your sharing requires an approval. Ask Admin to set a qualified approver for the operation to take effect."
+        },
+        "anonymous": {
+          "noAuditor": "Your sharing requires an approval. Ask Admin to set an approver for the operation to take effect.",
+          "noMatchingLevelAuditor": "Your sharing requires an approval. Ask Admin to set a qualified approver for the operation to take effect."
+        },
+        "sync": {
+          "noAuditor": "Can't start this Doc Domain Sync due to no approver found. Go to contact Admin.",
+          "noMatchingLevelAuditor": "Can't start this Doc Domain Sync due to no approver found. Go to contact Admin."
+        }
+      },
+      "countersign": {
+        "by": "Added by ",
+        "countersign": "",
+        "level": "Level",
+        "maxAdd": "",
+        "maxUnitsA": "Max Approver ",
+        "maxUnitsCount": "Max Add ",
+        "personnel": " time(s).",
+        "maxAddErrCount": "You've reached the Max Add",
+        "addErrRepeat": "Some users have been set as the temporary approver already",
+        "addErrNotFound": "Some users have been deleted already"
+      }
+    },
+    "operation": {
+      "name": "Operation",
+      "success": "Approved",
+      "details": "Details",
+      "cancel": "Cancel",
+      "audit": "Approver",
+      "download": "Download",
+      "openFileLocation": "Open file location"
+    },
+    "auditor": {
+      "title": "Approver",
+      "pending": "Pending",
+      "pass": "Approved",
+      "reject": "Rejected",
+      "free": "Approval free",
+      "none": "No approver"
+    }
+  },
+  "share": {
+    "accessorName": "User",
+    "role": "Permission",
+    "expiresAt": "Expires",
+    "permanent": "Never",
+    "auditStatus": "Status",
+    "copy": "Copy",
+    "shareLink": "SharedLink",
+    "linkCopied": "Copied",
+    "fileName": "Name: ",
+    "folderName": "Folder Name: ",
+    "deadline": "Expires: ",
+    "accessPassword": "Pickup Code: ",
+    "accessor": {
+      "all": "All users",
+      "anonymous": "Anyone"
+    },
+    "roleDetail": {
+      "delete": "Delete",
+      "modify": "Modify",
+      "create": "Create",
+      "preview": "Perview",
+      "download": "Download",
+      "display": "Display",
+      "inherit": "Enable the inherited permissions",
+      "noInherit": "Disable the inherited permissions",
+      "cancel": "Cancel",
+      "deny": "Deny",
+      "owner": "Owner",
+      "cache": "Cache"
+    }
+  },
+  "sync": {
+    "targetPath": "Details",
+    "mode": "Sync Pattern",
+    "modes": {
+      "sync": "Sync",
+      "copy": "Copy",
+      "move": "Move"
+    }
+  },
+  "flow": {
+    "targetPath": "Target",
+    "source": "Source",
+    "remark": "Note",
+    "title": "Name"
+  },
+  "move": {
+    "errorMsg": "This is not available on mobile devices. Please log in via your PC.",
+    "applyMsg": "No permission to view this description",
+    "auditMsg": "No permission to process this workflow"
+  },
+  "message": {
+    "title": "Tips",
+    "errTitle": "Action failed",
+    "submitErr": "Failed to submit",
+    "pluginDisabled": "Service is not available. Please contact Admin",
+    "docflowDisabled": "Admin hasn't enabled Doc Relay",
+    "doccollectDisabled": "Admin hasn't enabled File Collector",
+    "info": "Tips",
+    "confirm": "Confirm",
+    "authorized": "Login Timedout",
+    "approved": "Finished",
+    "attachmentOverLimit": "Allow up to 10 attachments to be added",
+    "serviceUnavailable": "Workflow Service is not available. Please contact Admin.",
+    "downloadError": "Download failed.",
+    "openFileError": "Unable to open.",
+    "openFolderError": "Unable to open the current folder",
+    "openFilePathError": "Unable to open the current file location",
+    "openFolderPathError": "Unable to open the current folder location",
+    "fileNotExist": "File <{}> doesn't exist.",
+    "filesNotExist": "File \"{name}\" doesn't exist.",
+    "folderNotExist": "Folder <{}> doesn't exist.",
+    "fileNotPrem": "You do not have the permission to read file <{}>.",
+    "fileNoDownloadPrem": "You have no permission to download file \"{name}\".",
+    "fileNoPreviewPrem": "You have no permission to preview the file.",
+    "folderNotPrem": "You do not have the permission to read folder <{}>.",
+    "taskNotPrem": "This record is invalid or has been reviewed by another approver.",
+    "csfLevel": "Your security level is insufficient.",
+    "readingStrategies": "Please contact Admin to check the Read Policy.",
+    "csfLevelDetail": "Unable to approve. Your security level is insufficient for {apply} initiated by {user}",
+    "readingControls": "Unable to download this file, due to Read Policy control (Download not allowed).",
+    "UndoFailed": "Undo failed",
+    "UndoFailedNotTask": "This is invalid or has been processed already.",
+    "UndoFailedNotTaskDetail": "{apply} initiated by {user} has expired or has been done.",
+    "auditErrorMsgStrategy": "Workflow policy hasn't been configured in the next link. Please ask Admin to set.",
+    "auditErrorMsgAuditor": "No approver was found in the next link. Please ask Admin to set.",
+    "auditErrorMsgCsfLevel": "No approver with the sufficient security level in the next link. Please ask Admin to set.",
+    "emptyIdea": "The comment cannot be empty.",
+    "errorMsgNotFile": "Unable to get the file or the file doesn't exist.",
+    "serverError": "Server error. Please try again later",
+    "noNetwork": "Unable to connect to network",
+    "batchHandle": "Batch approvals have been processed",
+    "frozen": "Your account has been frozen.",
+    "forbidden": "Your account has been disabled.",
+    "countersignApprovedError": ""
+  },
+  "selectFile": "Select a file",
+  "attachment": {
+    "add": "Add attachment"
+  },
+  "invalidParams": "Parameter error."
+}

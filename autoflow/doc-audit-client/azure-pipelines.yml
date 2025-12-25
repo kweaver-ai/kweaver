@@ -1,0 +1,121 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# parameters:
+#   - name: baseVersion
+#     displayName: 版本号前缀
+#     default: 1.3.7
+#     type: string
+
+variables:
+  registryUrl: acr.aishu.cn
+  imageName: as-workflow/doc-audit-rest
+  manifestTag: ${{ lower(variables['Build.SourceBranchName']) }}.$(Build.BuildId)
+
+trigger:
+  batch: true
+  branches:
+    include: # 可以触发的分支
+      - Feature-ASP*
+      - MISSION
+      - Rekease-MISSION-Console-*
+  paths:
+    exclude:
+      - .gitignore
+      - Makefile
+      - README.md
+
+stages:
+  - stage: CIStage
+    displayName: Run the CI stage
+    jobs:
+      - job: CheckoutCode
+        displayName: 拉取仓库相关项目代码
+        strategy:
+          matrix:
+            x86:
+              arch: "x86"
+              poolAgentOSArchitecture: "X64"
+            arm:
+              arch: "arm"
+              poolAgentOSArchitecture: "ARM64"
+          maxParallel: 2
+        pool:
+          name: ASDeployment
+          demands:
+            - Agent.OSArchitecture -equals $(poolAgentOSArchitecture)
+            - Agent.OS -equals Linux
+            - docker
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+
+      # endregion
+
+      - job: BuildAndPush
+        displayName: 'Build And Push'
+        dependsOn:
+          - CheckoutCode
+        condition: succeeded()
+        strategy:
+          matrix:
+            x86:
+              arch: "x86"
+              poolAgentOSArchitecture: "X64"
+            arm:
+              arch: "arm"
+              poolAgentOSArchitecture: "ARM64"
+          maxParallel: 2
+        pool:
+          name: ASDeployment
+          demands:
+            - Agent.OSArchitecture -equals $(poolAgentOSArchitecture)
+            - Agent.OS -equals Linux
+            - docker
+        variables:
+          imageTag: '${{ variables.manifestTag }}.$(arch)'
+        steps:
+          - task: Docker@2
+            displayName: 'docker login'
+            inputs:
+              command: login
+              containerRegistry: ACRDockerRegistry
+
+          - task: Bash@3
+            displayName: build image and push
+            inputs:
+              targetType: 'inline'
+              script: |
+                docker image build -t ${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.imageTag }} -f Dockerfile .
+                docker image push ${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.imageTag }}
+                docker rmi ${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.imageTag }}
+
+
+  - stage: MakeManifest
+    displayName: Make Mainifest
+    dependsOn: CIStage
+    condition: succeeded()
+    jobs:
+      - job: PushManifestList
+        displayName: 'Push Manifest List'
+        pool:
+          name: ASDeployment
+        variables:
+          imageX86: '${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.manifestTag }}.x86'
+          imageARM: '${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.manifestTag }}.arm'
+        steps:
+          - task: Docker@2
+            displayName: 'docker login'
+            inputs:
+              command: login
+              containerRegistry: ACRDockerRegistry
+          - task: Bash@3
+            displayName: 'docker create and push manifest'
+            inputs:
+              targetType: 'inline'
+              script: |
+                docker manifest create ${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.manifestTag }} ${{ variables.imageX86 }} ${{ variables.imageARM }}
+                docker manifest push ${{ variables.registryUrl }}/${{ variables.imageName }}:${{ variables.manifestTag }}

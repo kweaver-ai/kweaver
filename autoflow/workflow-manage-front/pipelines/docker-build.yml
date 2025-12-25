@@ -1,0 +1,102 @@
+parameters:
+  - name: name
+    default: 'build'
+  - name: buildImageJobName
+    default: 'buildImageJobName'
+  - name: containerName
+    default: ''
+  - name: arch
+    default: ''
+  - name: pool
+    default: ''
+  - name: registry
+    default: ''
+  - name: imageName
+    default: ''
+  - name: branchNameLower
+    default: ''
+  - name: version
+    default: '1.0.0'
+  - name: artifactName
+    default: ''
+  - name: isRelease
+    default: False
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    container: ${{ parameters.containerName }}
+    pool: ${{ parameters.pool }}
+    workspace:
+      clean: all
+    steps:
+      - script: |
+          echo build
+          npm install --registry https://repohub.aishu.cn/repository/npm-hub/
+          npm run build:anyshare-45
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)
+          contents: |
+            dist/**
+            Dockerfile_anyshare
+            default.conf
+          targetFolder: $(Build.BinariesDirectory)
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.BinariesDirectory)'
+          ArtifactName: $(artifactName)
+          publishLocation: 'Container'
+      - script: |
+          rm -rf ./**
+        displayName: 'Remove source'
+        condition: always()
+
+  - job: ${{ parameters.buildImageJobName }}
+    displayName: ${{ parameters.buildImageJobName }}
+    dependsOn: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    workspace:
+      clean: all
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          artifactName: ${{ parameters.artifactName }}
+          downloadPath: $(Build.BinariesDirectory)
+
+      - script: |
+          cd $(Build.BinariesDirectory)/${{parameters.artifactName}}
+          set -ex
+          SHORT_COMMIT_ID=$(echo $(Build.SourceVersion) | cut -c1-7)
+          if [ ${{ parameters.isRelease }} == True ];
+          then
+            imageTagProd=${{ parameters.registry }}/${{ parameters.imageName }}:${{ parameters.version }}.$SHORT_COMMIT_ID-${{ parameters.arch }}
+            imageTag=${{ parameters.registry }}/${{ parameters.imageName }}:${{ parameters.version }}-${{ parameters.arch }}
+          else
+            imageTagProd=${{ parameters.registry }}/${{ parameters.imageName }}:${{ parameters.version }}-${{ parameters.branchNameLower }}.$SHORT_COMMIT_ID-${{ parameters.arch }}
+            imageTag=${{ parameters.registry }}/${{ parameters.imageName }}:${{ parameters.version }}-${{ parameters.branchNameLower }}-${{ parameters.arch }}
+          fi
+
+          set +x
+          echo "##vso[task.setvariable variable=BuildAgentName;isOutput=true]$(Agent.Name)"
+          echo "##vso[task.setvariable variable=imageTag;isoutput=true]$imageTag"
+          echo "##vso[task.setvariable variable=imageTagProd;isoutput=true]$imageTagProd"
+          docker build -f ./Dockerfile_anyshare -t $imageTag .
+          docker tag $imageTag $imageTagProd
+        name: getAgentName
+        displayName: 'Build'
+
+      - script: |
+          rm -rf $(Build.BinariesDirectory)/${{parameters.artifactName}}/**/
+        displayName: 'Remove source'
+        condition: always()
+      - script: |
+          imageTag=${{ parameters.registry }}/${{ parameters.imageName }}
+          echo "image tag:"$imageTag
+          docker images|grep $imageTag|awk '{print$3}'|sort|uniq|xargs docker rmi -f
+          docker images
+        displayName: "Remove source"
+        condition: failed()
+

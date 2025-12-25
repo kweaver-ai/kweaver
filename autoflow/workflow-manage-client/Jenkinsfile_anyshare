@@ -1,0 +1,95 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent any
+    stages {
+        stage('checkout') {
+            steps {
+                checkout(
+		                [
+                       $class: 'SubversionSCM',
+                       additionalCredentials: [],
+                       excludedCommitMessages: '',
+                       excludedRegions: '',
+                       excludedRevprop: '',
+                       excludedUsers: '',
+                       filterChangelog: false,
+                       ignoreDirPropChanges: false,
+                       includedRegions: '',
+                       locations: [
+                           [
+                               cancelProcessOnExternalsFail: true,
+                               credentialsId: 'hanjian',
+                               depthOption: 'infinity',
+                               ignoreExternalsOption: true,
+                               local: './workflow-manage-front',
+                               remote: 'http://www.rzdata.net:81/svn/bluesvn/爱数流程项目组/04_源码目录/流程前端/feature/Feature-ASP-11076/workflow-manage-front'
+                           ]
+                       ],
+                       quietOperation: true,
+                       workspaceUpdater: [$class: 'UpdateUpdater']
+		               ]
+                )
+            }
+        }
+        stage('prepare') {
+            steps {
+                script{
+                    sh '''
+                       npm install --registry=http://www.rzdata.net:8081/repository/npm-group/
+                       '''
+                }
+            }
+        }
+        stage('build-workflow-manage-front') {
+            steps {
+                script{
+                    sh '''
+                       sed -i -e "s#workflow-manage-front#workflow-manage-front#g" package.json
+                       npm run build:anyshare-202
+                       rm -rf ./workflow-manage-front
+                       mv dist workflow-manage-front
+                       '''
+                }
+            }
+        }
+        stage('build-doc-share-audit') {
+            steps {
+                script{
+                    sh '''
+                       sed -i -e "s#workflow-manage-front#doc-share-audit#g" package.json
+                       npm run build:anyshare-202
+                       rm -rf ./doc-share-audit
+                       mv dist doc-share-audit
+                       '''
+                }
+            }
+        }
+        stage('build-doc-sync-audit') {
+            steps {
+                script{
+                    sh '''
+                       sed -i -e "s#doc-share-audit#doc-sync-audit#g" package.json
+                       npm run build:anyshare-202
+                       rm -rf ./doc-sync-audit
+                       mv dist doc-sync-audit
+                       rm -f package.json
+                       '''
+                }
+            }
+        }
+        stage('build-image') {
+            steps {
+                script{
+                    sh '''
+                       path=$WORKSPACE
+                       dockerPath=$path/Dockerfile_anyshare
+                       cd $path
+                       docker build -f $dockerPath -t ${IMAGE_PATH} .
+                       docker push ${IMAGE_PATH}
+                       rm -rf $dockerPath
+                       '''
+                }
+            }
+        }
+    }
+}

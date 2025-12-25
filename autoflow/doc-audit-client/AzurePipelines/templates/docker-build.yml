@@ -1,0 +1,73 @@
+parameters:
+  - name: name
+    default: ''
+  - name: displayName
+    default: ''
+  - name: pool
+    default: ''
+  - name: harborUrl
+    default: ''
+  - name: dependsOn
+    default: ''
+  - name: condition
+    default: ''
+  - name: dockerfile
+    default: 'Dockerfile'
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: 
+      name: ${{ parameters.pool }}
+    workspace:
+      clean: all
+    steps:
+      - checkout: none
+
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: doc-audit-client
+          downloadPath: $(Build.SourcesDirectory)
+          
+      - script: |
+          # mission分支tag为1.0.0
+          if [ $(actualBranchLower) == 'mission' ];
+          then
+            echo mission分支tag为1.0.0
+            imageTagProd=${{ parameters.harborUrl }}/as/as-workflow/doc-audit-client:1.0.0
+          elif [ $(actualBranchLower) == $(branchNameLower) ];
+          then
+            echo 分支tag为小写
+            imageTagProd=${{ parameters.harborUrl }}/as/as-workflow/doc-audit-client:1.0.0-$(branchNameLower)
+          elif [ $(actualBranchLower) == 'feature/'$(branchNameLower) ];
+          then
+            echo 需求分支
+            imageTagProd=${{ parameters.harborUrl }}/as/as-workflow/doc-audit-client:1.0.0-feature-$(branchNameLower)
+          else
+            echo 其他分支，退出
+            exit -1
+          fi
+
+          imageTag=$imageTagProd-$(Build.BuildNumber)
+          
+          cd doc-audit-client
+          ls
+          pwd
+
+          docker build -t $imageTag -f ${{ parameters.dockerfile }} .
+          docker tag $imageTag $imageTagProd
+          docker push $imageTagProd
+          docker push $imageTag
+          docker rmi $imageTagProd
+          docker rmi $imageTag
+
+        displayName: 生成镜像包并推送
+
+      - script: |
+          rm -rf ./**
+        displayName: 'remove source'
+        condition: always()

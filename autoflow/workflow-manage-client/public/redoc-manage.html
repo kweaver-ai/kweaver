@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>管理控制台文档</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+<redoc id="redoc" spec-url=''></redoc>
+<script src="xe-utils.js"></script>
+<script type="application/javascript">
+  import store from '@/store'
+  const parseUrl = XEUtils.parseUrl(window.location.href)
+  const publicPort = store.getters.port
+  let baseUrl = parseUrl.protocol + '//' + parseUrl.hostname
+  if (publicPort !== '' && publicPort !== undefined) {
+    baseUrl = baseUrl + ':' + publicPort
+  }
+  const redocObj = document.getElementById("redoc")
+  redocObj.setAttribute("spec-url", baseUrl + "/api/workflow-manage/v2/api-docs")
+</script>
+<script src="redoc.standalone.js"></script>
+</body>
+</html>

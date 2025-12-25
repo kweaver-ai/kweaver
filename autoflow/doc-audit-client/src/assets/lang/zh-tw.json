@@ -1,0 +1,410 @@
+{
+  "menu": {
+    "Audit": "簽核",
+    "Test": "发起流转",
+    "InitiateRealnameShare": "发起共用給指定使用者的申請",
+    "InitiateAnonymousShare": "发起共用給任意使用者的申請",
+    "InitiateSync": "发起文件網域同步申請",
+    "Token": "Token 設定"
+  },
+  "common": {
+    "tabs": {
+      "applys": "我的申請",
+      "tasks": "我的代辦",
+      "historys": "已處理的"
+    },
+    "bizTypes": {
+      "name": "申請類型",
+      "all": "全部",
+      "share": "共用申請",
+      "realname": "共用給指定使用者的申請",
+      "perm": "共享给指定用户的申请",
+      "owner": "共享给指定用户的申请",
+      "inherit": "共享给指定用户的申请",
+      "secretRealName": "內部授權的申請",
+      "anonymous": "共用給任意使用者的申請",
+      "sync": "文件網域同步申請",
+      "security": "定密申請",
+      "flow": "文件流轉/文件收集申請"
+    },
+    "dataBizTypes": {
+      "realname": "共用給指定使用者的申請",
+      "perm": "共用給指定使用者的申請",
+      "owner": "共用給指定使用者的申請",
+      "inherit": "共用給指定使用者的申請",
+      "secretRealName": "內部授權的申請",
+      "anonymous": "共用給任意使用者的申請",
+      "sync": "文件網域同步申請",
+      "security": "定密申請",
+      "flow": "文件流轉/文件收集申請"
+    },
+    "auditStatuss": {
+      "auditStatus": "簽核狀態",
+      "all": "全部簽核",
+      "pending": "簽核中",
+      "pending2": "簽核中",
+      "pending-done": "已通過",
+      "reject": "已拒絕",
+      "cancel": "已拒絕",
+      "pass": "已通過",
+      "avoid": "已自動簽核",
+      "undone": "已撤銷",
+      "failed": "發起失敗",
+      "sendback": "已退回",
+      "transfer": "已轉審"
+    },
+    "search": "搜索申請內容",
+    "searches": "搜索申請內容、發起人",
+    "selectNum": "已選中 {num} 項",
+    "selectApply": "已選中 {num} 條申請",
+    "noDetail": "暫無詳情",
+    "surePass": "確定同意選中的 {num} 個申請嗎？",
+    "sureReject": "確定拒絕選中的 {num} 個申請嗎？",
+    "handleAudit": "正在處理：{num}%",
+    "noPrompt": "不再提示",
+    "column": {
+      "apply": "申請",
+      "docName": "文件名稱",
+      "bizType": "申請類型",
+      "docPath": "文件路徑",
+      "abstract": "申請內容",
+      "auditor": "核准者",
+      "status": "狀態",
+      "auditStatus": "簽核狀態",
+      "applyUserName": "發起人",
+      "applyTime": "發起時間",
+      "processTime": "處理時間"
+    },
+    "empty": {
+      "apply": "申請清單為空",
+      "todo": "當前無待處理的簽核",
+      "done": "當前無已處理的簽核",
+      "none": "抱歉，沒有找到相關內容"
+    },
+    "detail": {
+      "tab": {
+        "audit": "簽核",
+        "file": "檔案"
+      },
+      "founding": {
+        "startTitle": "發起的",
+        "realname": "發起的共用給指定使用者的申請",
+        "perm": "發起的共用給指定使用者的申請",
+        "owner": "發起的共用給指定使用者的申請",
+        "inherit": "發起的共用給指定使用者的申請",
+        "secretRealName": "發起的內部授權的申請",
+        "anonymous": "發起的共用給任意使用者的申請",
+        "sync": "發起的文件網域同步申請",
+        "security": "發起的定密申請",
+        "flow": "發起的文件流轉/文件收集申請",
+        "batch": {
+          "startTitle": "發起的",
+          "realname": "發起的共用給指定使用者的申請",
+          "perm": "發起的共用給指定使用者的申請",
+          "owner": "發起的共用給指定使用者的申請",
+          "inherit": "發起的共用給指定使用者的申請",
+          "secretRealName": "發起的內部授權的申請",
+          "anonymous": "發起的共用給任意使用者的申請",
+          "sync": "發起的文件網域同步申請",
+          "security": "發起的定密申請",
+          "flow": "發起的文件流轉/文件收集申請"
+        }
+      },
+      "applyTime": "發起時間",
+      "accessorName": "存取者",
+      "role": "權限",
+      "expiresAt": "有效期",
+      "urlTitle": "連結標題",
+      "password": "提領代碼",
+      "accessLimit": "限製開啟次數",
+      "auditType": "簽核模式",
+      "auditTypes": {
+        "tjsh": "（同級簽核）",
+        "hqsh": "（會簽簽核）",
+        "zjsh": "（循序簽核）"
+      },
+      "today": "今天",
+      "yesterday": "昨天",
+      "flow": "流程",
+      "createApply": "發起申請",
+      "created": "已發起",
+      "audit": "簽核",
+      "auditIdea": "簽核意見",
+      "auditMessage": "目標位置已不存在",
+      "auditDate": "簽核日期",
+      "revoke": "撤銷申請",
+      "undone": "{}已撤銷",
+      "undoneForProcDefDelete": "管理員已刪除流程",
+      "delAuditFlow": "刪除簽核流程",
+      "approvedAutomatically": "系統自動通過",
+      "rejectedAutomatically": "系統自動拒絕",
+      "backlog": " 代辦詳情",
+      "apply": "申請詳情",
+      "done": "處理詳情",
+      "status": {
+        "pending": "簽核中",
+        "pending2": "簽核中",
+        "pass": "簽核通過",
+        "avoid": "自動簽核通過",
+        "reject": "已拒絕",
+        "flow": "簽核中",
+        "end": "流程結束"
+      },
+      "operation": {
+        "placeholder": "填寫意見（選填）",
+        "requiredPlaceholder": "填寫意見（必填）",
+        "countersignPlaceholder": "加簽備註（選填）",
+        "transferPlaceholder": "轉交備註（選填）",
+        "remindPlaceholder": "催辦備註（選填）",
+        "sure": "確定",
+        "cancel": "取消",
+        "pass": "同意",
+        "reject": "拒絕",
+        "countersign": "加簽",
+        "countersignBtn": "加簽",
+        "transfer": "轉審",
+        "Transfer": "轉審",
+        "sendback": "退回",
+        "sendbackTitle": "退回給",
+        "sendbackPlaceholder": "退回原因（選填）",
+        "sendbackRequiredPlaceholder":"退回原因（必填）",
+        "resubmit": "重新提交",
+        "more": "更多",
+        "add": "新增",
+        "selected": "已選",
+        "remind": "催辦",
+        "Remind": "催辦",
+        "revoke": "撤銷"
+      },
+      "sendback": {
+        "applyUser": "將退回給發起者",
+        "reason": "，退回原因：",
+        "backTo": "已退回給{name}"
+      },
+      "remind": {
+        "user": "催辦使用者：",
+        "selectPlaceholder": "請選擇催辦人員",
+        "selectEmpty": "請選擇催辦人員。",
+        "comment": "催辦備註：",
+        "waitInfo": "已提醒對方檢視，請耐心等待",
+        "taskProcessed": "此條記錄已失效或已簽核完成。",
+        "userProcessed": "催辦使用者已處理完此申請。",
+        "usersNotFound": "催辦使用者已不存在。",
+        "successInfo": "催辦成功"
+      },
+      "transfer": {
+        "overLimit": "已達到最大轉審次數。",
+        "success": "轉審成功",
+        "to": "轉交給{name}",
+        "personnel": "轉審人员。",
+        "status": "已轉審",
+        "select": "新增轉審使用者",
+        "hasTransferUser": "轉審使用者不能包含已轉審的使用者",
+        "usersNotFound": "轉審使用者已不存在。",
+        "err": {
+          "title": "無法執行此操作",
+          "transferred": "您已將此申請轉交給他人。"
+        }
+      },
+      "auditMsg": {
+        "title": "提示",
+        "confirm": "確定",
+        "cancel": "取消",
+        "error": "補充說明不能超過300個字",
+        "countersignErrorTip": "加簽使用者不能包含當前環節已有核准者",
+        "transferErrorTip": "轉審使用者不能包含當前環節已有簽核者",
+        "countersignApplyUserErrorTip": "加簽使用者不能包含申請的發起人",
+        "transferApplyUserErrorTip": "轉審使用者不能包含申請的發起人",
+        "agree": {
+          "yes": "確定同意申請嗎？",
+          "realname": "確定同意申請嗎？",
+          "anonymous": "確定同意申請嗎？",
+          "sync": "確定同意申請嗎？",
+          "flow": "確定同意申請嗎？"
+        },
+        "reject": {
+          "no": "確定拒絕申請嗎？拒絕后，簽核流程將結束。",
+          "realname": "確定拒絕申請嗎？",
+          "anonymous": "確定拒絕申請嗎？",
+          "sync": "確定拒絕申請嗎？",
+          "flow": "確定拒絕申請嗎？"
+        }
+      },
+      "revokeMsg": {
+        "confirmMSg": "撤銷成功",
+        "cancelMsg": "取消撤銷",
+        "info": {
+          "sureRevoke1": "確定撤銷",
+          "sureRevoke2": "嗎？",
+          "realname": "確定撤銷共用申請嗎？",
+          "secretRealname": "確定撤銷授权申請嗎？",
+          "anonymous": "確定撤銷共用申請嗎？",
+          "sync": "確定撤銷文件網域同步申請嗎？",
+          "flow": "確定撤銷文件流轉/文件收集申請嗎？"
+        }
+      },
+      "dirEmpty": "此資料夾為空",
+      "failedMsg": {
+        "realname": {
+          "noAuditor": "您的共用需要進行簽核，但當前無匹配的核准者，本次操作無法生效，請聯繫管理員。",
+          "noMatchingLevelAuditor": "您的共用需要進行簽核，但當前核准者密級不足，本次操作無法生效，請聯繫管理員。"
+        },
+        "perm": {
+          "noAuditor": "您的共用需要進行簽核，但當前無匹配的核准者，本次操作無法生效，請聯繫管理員。",
+          "noMatchingLevelAuditor": "您的共用需要進行簽核，但當前核准者密級不足，本次操作無法生效，請聯繫管理員。"
+        },
+        "owner": {
+          "noAuditor": "您的共用需要進行簽核，但當前無匹配的核准者，本次操作無法生效，請聯繫管理員。",
+          "noMatchingLevelAuditor": "您的共用需要進行簽核，但當前核准者密級不足，本次操作無法生效，請聯繫管理員。"
+        },
+        "inherit": {
+          "noAuditor": "您的共用需要進行簽核，但當前無匹配的核准者，本次操作無法生效，請聯繫管理員。",
+          "noMatchingLevelAuditor": "您的共用需要進行簽核，但當前核准者密級不足，本次操作無法生效，請聯繫管理員。"
+        },
+        "secretRealname": {
+          "noAuditor": "您的授權需要進行簽核，但當前無匹配的核准者，本次操作無法生效，請聯繫管理員。",
+          "noMatchingLevelAuditor": "您的授權需要進行簽核，但當前核准者密級不足，本次操作無法生效，請聯繫管理員。"
+        },
+        "anonymous": {
+          "noAuditor": "您的共用需要進行簽核，但當前無匹配的核准者，本次操作無法生效，請聯繫管理員。",
+          "noMatchingLevelAuditor": "您的共用需要進行簽核，但當前核准者密級不足，本次操作無法生效，請聯繫管理員。"
+        },
+        "sync": {
+          "noAuditor": "暫無匹配的核准者，無法發起文件網域同步，請聯繫管理員。",
+          "noMatchingLevelAuditor": "暫無匹配的核准者，無法發起文件網域同步，請聯繫管理員。"
+        }
+      },
+      "countersign": {
+        "by": "被",
+        "countersign": "加簽",
+        "level": "級",
+        "maxAdd": "最多允許新增",
+        "maxUnitsA": "个",
+        "maxUnitsCount": "次",
+        "personnel": "加簽人员。",
+        "maxAddErrCount": "超過加簽最大次數",
+        "addErrRepeat": "存在重複加簽的使用者",
+        "addErrNotFound": "存在已被刪除的使用者"
+      }
+    },
+    "operation": {
+      "name": "操作",
+      "success": "已通過",
+      "details": "檢視",
+      "cancel": "作廢",
+      "audit": "簽核",
+      "download": "下載",
+      "openFileLocation": "開啟檔案所在位置"
+    },
+    "auditor": {
+      "title": "簽核者",
+      "pending": "待簽核",
+      "pass": "已通過",
+      "reject": "已否决",
+      "free": "免簽核",
+      "none": "无簽核者"
+    }
+  },
+  "share": {
+    "accessorName": "訪客",
+    "role": "權限",
+    "expiresAt": "有效期至",
+    "permanent": "永久有效",
+    "auditStatus": "簽核狀態",
+    "copy": "複製連結",
+    "shareLink": "連結",
+    "linkCopied": "已複製連結位址",
+    "fileName": "檔案名稱：",
+    "folderName": "資料夾名稱：",
+    "deadline": "有效期限：",
+    "accessPassword": "提領代碼：",
+    "accessor": {
+      "all": "任何使用者",
+      "anonymous": "匿名使用者"
+    },
+    "roleDetail": {
+      "delete": "刪除",
+      "modify": "修改",
+      "create": "新增",
+      "preview": "預覽",
+      "download": "下載",
+      "display": "顯示",
+      "inherit": "恢復：從上級繼承的權限",
+      "noInherit": "停用：從上級繼承的權限",
+      "cancel": "取消",
+      "deny": "拒絕",
+      "owner": "擁有者",
+      "cache": "快取"
+    }
+  },
+  "sync": {
+    "targetPath": "同步位置",
+    "mode": "同步模式",
+    "modes": {
+      "sync": "同步",
+      "copy": "拷貝",
+      "move": "移動"
+    }
+  },
+  "flow": {
+    "targetPath": "目標位置",
+    "source": "源文件",
+    "remark": "說明",
+    "title": "名稱"
+  },
+  "move": {
+    "errorMsg": "暫不支援移動裝置開啟，可使用電腦登入用戶端檢視。",
+    "applyMsg": "您對該申請詳情沒有檢視權限",
+    "auditMsg": "您對該簽核代辦沒有簽核權限"
+  },
+  "message": {
+    "title": "提示",
+    "errTitle": "無法執行此操作",
+    "submitErr": "提交失敗",
+    "pluginDisabled": "服務不可用，請聯系管理員",
+    "docflowDisabled": "管理員未啟用文件流轉",
+    "doccollectDisabled": "管理員未啟用文件收集",
+    "info": "信息",
+    "confirm": "確定",
+    "authorized": "登錄已超時",
+    "approved": "签核完成",
+    "attachmentOverLimit": "最多允許添加10個附件",
+    "serviceUnavailable": "Workflow服務不可用，請聯繫管理員。",
+    "downloadError": "無法執行下載操作",
+    "openFileError": "無法開啟當前檔案",
+    "openFolderError": "無法打開當前資料夾",
+    "openFilePathError": "無法開啟當前檔案所在位置",
+    "openFolderPathError": "無法開啟當前資料夾所在位置",
+    "fileNotExist": "檔案<{}>不存在。",
+    "filesNotExist": "檔案“{name}”已不存在。",
+    "folderNotExist": "資料夾<{}>不存在。",
+    "fileNotPrem": "您對檔案<{}>沒有讀取權限。",
+    "fileNoDownloadPrem": "您對檔案“{name}”沒有下載權限。",
+    "fileNoPreviewPrem": "您對檔案沒有下載權限。",
+    "folderNotPrem": "您對資料夾<{}>沒有讀取權限。",
+    "taskNotPrem": "此條記錄已失效或已被其他簽核員簽核完成。",
+    "csfLevel": "您的密級不足。",
+    "csfLevelDetail": "對於{user}{apply}，您的密級不足，無法簽核。",
+    "readingStrategies": "請聯系管理員檢查讀取策略。",
+    "readingControls": "在讀取策略（僅允許線上存取）管控下，該檔案無法下載。",
+    "UndoFailed": "撤銷失敗",
+    "UndoFailedNotTask": "詞條記錄已失效或已簽核完成。",
+    "UndoFailedNotTaskDetail": "{user}{apply}已失效或已簽核完成。",
+    "auditErrorMsgStrategy": "下一連結未設定簽核策略，請聯繫管理員重新設定。",
+    "auditErrorMsgAuditor": "下一連結無匹配的核准者，請聯繫管理員重新設定。",
+    "auditErrorMsgCsfLevel": "下一連結無匹配密級的核准者，請聯繫管理員重新設定。",
+    "emptyIdea": "簽核意見不能為空。",
+    "errorMsgNotFile": "獲取檔案異常或檔案不存在",
+    "serverError": "伺服器出現錯誤，請稍後再試",
+    "noNetwork": "無法連線網路",
+    "batchHandle": "批量签核成功",
+    "frozen": "帳戶已被凍結。",
+    "forbidden": "帳戶已被停用。",
+    "countersignApprovedError": "已簽核過此申請，無法再次新增。"
+  },
+  "selectFile": "選擇檔案",
+  "attachment": {
+    "add": "新增附件"
+  },
+  "invalidParams": "引數錯誤。"
+}

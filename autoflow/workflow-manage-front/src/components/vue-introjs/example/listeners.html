@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/introjs.min.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container" id="root">
+        <br />
+        <br />
+        <div
+            v-intro-autostart="true"
+            v-intro-autostart:on.autostart="onAutostart"
+            v-intro-autostart:on.autostarthints="onAutostartHints"
+            v-intro-autostart:on.complete="onComplete"
+            v-intro-autostart:on.exit="onExit"
+            v-intro-autostart:on.beforeexit="onBeforeExit"
+            v-intro-autostart:on.change="onChange"
+            v-intro-autostart:on.beforechange="onBeforeChange"
+            v-intro-autostart:on.afterchange="onAfterChange"
+            >
+            <div v-intro="'Step 1'">1. Step.</div>
+            <div v-intro="'Step 2'">2. Step.</div>
+
+        </div>
+        <br />
+        <p>
+            See browser's console.
+        </p>
+    </div>
+    <script src="https://unpkg.com/vue@2.4.4/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/2.7.0/intro.min.js"></script>
+    <script type="text/javascript" src="../dist/index.min.js"></script>
+    <script type="text/javascript">
+        new Vue({
+            el: '#root',
+            methods: {
+                onComplete(el, introjs) { console.log('complete', el, introjs); },
+                onExit(el, introjs) { console.log('exit', el, introjs); },
+                onBeforeExit(el, introjs) { console.log('before exit', el, introjs); },
+                onChange(el, introjs) { console.log('change', el, introjs); },
+                onBeforeChange(el, introjs) { console.log('before change', el, introjs); },
+                onAfterChange(el, introjs) { console.log('after change', el, introjs); },
+                onAutostart(el, introjs) { console.log('autostarted', el, introjs); },
+                onAutostartHints(el, introjs) { console.log('hints autostarted', el, introjs); }
+            }
+        });
+    </script>
+  </body>
+</html>

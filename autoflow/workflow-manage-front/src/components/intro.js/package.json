@@ -1,0 +1,119 @@
+{
+  "_from": "intro.js",
+  "_id": "intro.js@4.3.0",
+  "_inBundle": false,
+  "_integrity": "sha512-F4LXM42QIXcO3/2myGBBFdbbUVUK0lBhK7pAxPLd082u+3HfvigFR+Rptqy05q3OzjG/O0vMFDedrnHdSPi2rQ==",
+  "_location": "/intro.js",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "intro.js",
+    "name": "intro.js",
+    "escapedName": "intro.js",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/intro.js/-/intro.js-4.3.0.tgz",
+  "_shasum": "39d072e638eae9c8491e225b8565ad63b6aaf1f7",
+  "_spec": "intro.js",
+  "_where": "D:\\bluesvn\\爱数流程项目组\\04_源码目录\\流程前端\\feature\\Feature-ASP-124794\\workflow-manage-front",
+  "author": {
+    "name": "Afshin Mehrabani",
+    "email": "afshin.meh@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/usablica/intro.js/issues"
+  },
+  "bundleDependencies": false,
+  "changelog": {
+    "labels": {
+      "new feature": ":rocket: New Feature",
+      "breaking": ":boom: Breaking Change",
+      "bug": ":bug: Bug Fix",
+      "polish": ":nail_care: Polish",
+      "documentation": ":memo: Documentation",
+      "internal": ":house: Internal",
+      "performance": ":running_woman: Performance"
+    },
+    "cacheDir": ".changelog"
+  },
+  "deprecated": false,
+  "description": "Lightweight, user-friendly onboarding tour library",
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "autoprefixer": "^9.0.0",
+    "babel-jest": "^27.0.2",
+    "core-js": "^3.6.5",
+    "cypress": "^7.2.0",
+    "cypress-real-events": "^1.4.0",
+    "cypress-visual-regression": "^1.5.7",
+    "eslint": "^8.0.1",
+    "jest": "^27.0.4",
+    "jshint": "^2.12.0",
+    "lerna-changelog": "^2.1.0",
+    "minify": "^8.0.2",
+    "node-sass": "^6.0.0",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.1.1",
+    "postcss-clean": "^1.1.0",
+    "postcss-normalize": "^8.0.1",
+    "prettier": "2.4.1",
+    "rollup": "^2.48.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-filesize": "^9.1.0",
+    "rollup-plugin-multi-entry": "^2.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-postcss": "^4.0.0",
+    "rollup-plugin-progress": "^1.1.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-uglify": "^6.0.4"
+  },
+  "engine": [
+    "node >=0.1.90"
+  ],
+  "files": [
+    "*.js",
+    "*.css",
+    "themes/*",
+    "minified/*"
+  ],
+  "homepage": "https://introjs.com",
+  "keywords": [
+    "onboarding",
+    "tour",
+    "introjs",
+    "intro",
+    "guide",
+    "walkthrough"
+  ],
+  "license": "AGPL-3.0",
+  "main": "intro.js",
+  "name": "intro.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usablica/intro.js.git"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "prettier": "prettier --write '(src|tests)/**/*.(js|ts|json|html)' '!tests/cypress/setup/dist'",
+    "release": "./bin/release.sh || true",
+    "test": "run-p test:prettier test:jest test:jshint test:cypress",
+    "test:cypress": "npm run build && cp -r ./dist ./tests/cypress/setup && cd ./tests && cypress run --env type=actual",
+    "test:jest": "jest ./tests --verbose",
+    "test:jshint": "jshint ./src --verbose && jshint ./tests --verbose",
+    "test:prettier": "prettier --check '(src|tests)/**/*.(js|ts|json|html)' '!tests/cypress/setup/dist'",
+    "test:watch": "jest ./tests --verbose --watch"
+  },
+  "version": "4.3.0"
+}

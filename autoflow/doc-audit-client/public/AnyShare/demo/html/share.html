@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" href="../../demo/favicon.ico" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content="Web site created using create-react-app" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="anyshare-sdk-public-path" content="../../" />
+        <link rel="apple-touch-icon" href="../../demo/logo192.png" />
+        <link rel="manifest" href="../../demo/manifest.json" />
+        <title></title>
+        <link href="../../css/anyshare.sdk.css" rel="stylesheet" />
+        <script src="../../js/anyshare.sdk.js"></script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="text/javascript">
+            function mainSdk() {
+                AnyShareSDKFactory.create({
+                    apiBase: "http://127.0.0.1:3000",
+                    rootElement: document.getElementById("root"),
+                    token: "oVVHNnvaqh6ILziW04DEvp6Qpj9KvFdSWoAM52lnXbA.YVOw2bDXGoH5Q57blW9tb16YTpkj_5F77i20gX1v-hw",
+                    locale: "zh-tw",
+                })
+                    .then(function resolve(sdk) {
+                        sdk.share(
+                            {
+                                client_mtime: 1609394351394000,
+                                create_time: 1611567448880604,
+                                creator: "2",
+                                csflevel: 5,
+                                docid:
+                                    "gns://5A625B891B5A4F38938F6F9D776B6981/9ED99456F0B345DDBA567237AD3A98E0/16879ABE7CB746789FCB2EE954970264",
+                                duedate: -1,
+                                editor: "2",
+                                modified: 1611567448880604,
+                                name: "ca (22).crt",
+                                rev: "56E3A0A085B7404287BE9A818420AD37",
+                                size: 1306,
+                            },
+                            "user"
+                        )
+                            .then(function resolve(res) {
+                                console.log(res);
+                            })
+                            .catch(function reject(err) {
+                                console.error(err);
+                            });
+                    })
+                    .catch(function reject(err) {
+                        console.error(err);
+                    });
+            }
+            mainSdk();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,84 @@
+{
+  "_args": [
+    [
+      "diagram-js-direct-editing@1.6.2",
+      "D:\\rzdata\\BlueLand\\SVN\\爱数流程项目组\\04_源码目录\\流程前端\\workflow-manage-front"
+    ]
+  ],
+  "_from": "diagram-js-direct-editing@1.6.2",
+  "_id": "diagram-js-direct-editing@1.6.2",
+  "_inBundle": false,
+  "_integrity": "sha512-hAiSnt6iETMLHBRsCU+XeATiV7u/rovlAX/l4MnvzW6+VeHqQOn+xFetD6JwxfTHKvT3h9fAQpfMZPOPlRFNlw==",
+  "_location": "/diagram-js-direct-editing",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "diagram-js-direct-editing@1.6.2",
+    "name": "diagram-js-direct-editing",
+    "escapedName": "diagram-js-direct-editing",
+    "rawSpec": "1.6.2",
+    "saveSpec": null,
+    "fetchSpec": "1.6.2"
+  },
+  "_requiredBy": [
+    "/bpmn-js"
+  ],
+  "_resolved": "https://registry.npmjs.org/diagram-js-direct-editing/-/diagram-js-direct-editing-1.6.2.tgz",
+  "_spec": "1.6.2",
+  "_where": "D:\\rzdata\\BlueLand\\SVN\\爱数流程项目组\\04_源码目录\\流程前端\\workflow-manage-front",
+  "author": {
+    "name": "bpmn.io"
+  },
+  "bugs": {
+    "url": "https://github.com/bpmn-io/diagram-js-direct-editing/issues"
+  },
+  "dependencies": {
+    "min-dash": "^3.5.2",
+    "min-dom": "^3.1.3"
+  },
+  "description": "Direct editing support for diagram-js",
+  "devDependencies": {
+    "chai": "^2.3.0",
+    "diagram-js": "^7.0.0",
+    "eslint": "^4.12.0",
+    "eslint-plugin-bpmn-io": "^0.5.2",
+    "karma": "^4.0.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-firefox-launcher": "^1.0.1",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-mocha": "^1.3.0",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-sinon-chai": "^2.0.2",
+    "karma-spec-reporter": "0.0.31",
+    "karma-webpack": "^3.0.5",
+    "mocha": "^6.0.2",
+    "mocha-test-container-support": "^0.1.0",
+    "npm-run-all": "^4.1.2",
+    "phantomjs-prebuilt": "^2.1.12",
+    "sinon": "^7.3.1",
+    "sinon-chai": "^3.3.0",
+    "webpack": "^4.29.6"
+  },
+  "homepage": "https://github.com/bpmn-io/diagram-js-direct-editing#readme",
+  "keywords": [
+    "diagram-js",
+    "diagram-js-plugin"
+  ],
+  "license": "MIT",
+  "name": "diagram-js-direct-editing",
+  "peerDependencies": {
+    "diagram-js": "^0.x || ^1.x || ^2.x || ^3.x || ^4.x || ^5.x || ^6.x || ^7.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpmn-io/diagram-js-direct-editing.git"
+  },
+  "scripts": {
+    "all": "run-s lint test",
+    "dev": "npm run test -- --auto-watch --no-single-run",
+    "lint": "eslint .",
+    "test": "karma start"
+  },
+  "version": "1.6.2"
+}

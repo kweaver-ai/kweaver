@@ -1,0 +1,132 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - Feature-*
+      - MISSION
+      - Release-*
+      - feature/*
+      - release/*
+
+variables:
+  # 针对服务的全局配置
+  - group: workcenter-global-config
+  - name: currentBranchName
+    value: $[lower(variables['Build.SourceBranchName'])]
+  - name: branchNameLower
+    ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
+      value: feature-$(currentBranchName)
+    ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')) }}:
+      value: $(currentBranchName)
+  - name: isRelease
+    ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')}}:
+      value: True
+    ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))}}:
+      value: False
+  - name: artifactName
+    value: output
+  - name: anyshareVersion
+    value: 7.0.6.5
+
+resources:
+  containers:
+    - container: builder
+      endpoint: acr.aishu.cn
+      image: public/node:14.16.0
+  repositories:
+    - repository: templatesAlias
+      type: git
+      name: ONE-Architecture\Yaml-Templates
+      ref: 'refs/heads/main'
+
+stages:
+  - stage: Build
+    jobs:
+      - template: docker-build.yml
+        parameters:
+          name: BuildJobX86
+          buildImageJobName: DockerJobX86_ImageBuild
+          arch: amd64
+          containerName: builder
+          pool: $(build.x86Pool)
+          registry: $(image.registry)
+          imageName: $(image.repository.workflow_manage_client)
+          branchNameLower: $(branchNameLower)
+          version: $(anyshareVersion)
+          artifactName: $(artifactName)
+          isRelease: $(isRelease)
+
+      - template: docker-build.yml
+        parameters:
+          name: BuildJobARM
+          buildImageJobName: DockerJobARM_ImageBuild
+          arch: arm64
+          containerName: builder
+          pool: $(build.armPool)
+          registry: $(image.registry)
+          imageName: $(image.repository.workflow_manage_client)
+          branchNameLower: $(branchNameLower)
+          version: $(anyshareVersion)
+          artifactName: $(artifactName)
+          isRelease: $(isRelease)
+
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: amd64 # 可选值 amd64,arm64
+          pool: $(build.x86Pool) # 代理池
+          dependsOnName: DockerJobX86_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[ dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.imageTag'] ] # 本地构建完镜像之后的全名
+          registry: $(endpoint.workflow.x86) # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 1 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[ dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.imageTagProd'] ] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: arm64 # 可选值 amd64,arm64
+          pool: $(build.armPool) # 代理池
+          dependsOnName: DockerJobARM_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[ dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.imageTag'] ] # 本地构建完镜像之后的全名
+          registry: $(endpoint.workflow.x86) # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 2 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[ dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.imageTagProd'] ] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+
+  - stage:
+    displayName: Manifest
+    dependsOn: Build
+    condition: succeeded()
+    variables:
+      imageNameAMD64: $[ stageDependencies.Build.DockerJobX86_ImageBuild.outputs['getAgentName.imageTag'] ]
+      imageNameARM64: $[ stageDependencies.Build.DockerJobARM_ImageBuild.outputs['getAgentName.imageTag'] ]
+      imageNameCommitIDAMD64: $[ stageDependencies.Build.DockerJobX86_ImageBuild.outputs['getAgentName.imageTagProd'] ]
+      imageNameCommitIDARM64: $[ stageDependencies.Build.DockerJobARM_ImageBuild.outputs['getAgentName.imageTagProd'] ]
+
+    jobs:
+      - job: Manifest
+        displayName: 异构
+        pool: $(build.x86Pool)
+        steps:
+          - checkout: none
+          - task: Docker@2
+            inputs:
+              command: login
+              containerRegistry: $(endpoint.workflow.x86)
+          - script: |
+              set -e
+              SHORT_COMMIT_ID=$(echo $(Build.SourceVersion) | cut -c1-7)
+              if [ $(isRelease) == True ];
+              then
+                imageName=$(image.registry)/$(image.repository.workflow_manage_client):$(anyshareVersion)
+                imageNameCommitID=$(image.registry)/$(image.repository.workflow_manage_client):$(anyshareVersion).$SHORT_COMMIT_ID
+              else
+                imageName=$(image.registry)/$(image.repository.workflow_manage_client):$(anyshareVersion)-$(branchNameLower)
+                imageNameCommitID=$(image.registry)/$(image.repository.workflow_manage_client):$(anyshareVersion)-$(branchNameLower).$SHORT_COMMIT_ID
+              fi
+              docker manifest create --amend $imageName $(imageNameAMD64) $(imageNameARM64)
+              docker manifest push --purge $imageName
+              docker manifest create --amend $imageNameCommitID $(imageNameCommitIDAMD64) $(imageNameCommitIDARM64)
+              docker manifest push --purge $imageNameCommitID

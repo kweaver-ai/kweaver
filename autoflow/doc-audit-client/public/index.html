@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!--<meta charset="utf-8" />-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <!-- 集成爱数SDK start -->
+  <meta name="anyshare-sdk-public-path" content="/doc-audit-client/AnyShare/" />
+  <link href="./AnyShare/css/anyshare.sdk.css" rel="stylesheet" />
+  <!-- <script src="./AnyShare/js/anyshare.sdk.js"></script> -->
+  <!-- 集成爱数SDK end -->
+  <link rel="icon" href="./favicon.ico" />
+  <!--    <title>应用门户</title>-->
+  <style media="print">
+    /*@page {*/
+    /*size: A4 portrait;  !* auto is the initial value *!*/
+    /*margin: 3.7cm 2.6cm 3.5cm; !* this affects the margin in the printer settings *!*/
+    /*}*/
+    @page {
+      size: auto;
+      /* auto is the initial value */
+      margin: 0.8cm 1.0cm 0.8cm 1.0cm;
+    }
+
+    body i {
+      display: none !important;
+    }
+
+    body {
+      background-color: white;
+      color: black;
+    }
+
+    .el-timeline .el-timeline-item__node {
+      display: none !important;
+    }
+
+    .el-timeline .el-timeline-item__tail {
+      border-left: 0 !important;
+    }
+
+    h1 {
+      page-break-before: always;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    thead,
+    tfoot,
+    tr,
+    th,
+    td,
+    li {
+      page-break-inside: avoid;
+    }
+
+    .el-form .el-form-item .el-form-item__content .el-radio {
+      margin: 8px 0 0 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>
+    <strong>
+      We're sorry but blueland-portal-front doesn't work properly without
+      JavaScript enabled. Please enable it to continue.
+    </strong>
+  </noscript>
+  <div id="app"></div>
+  <div id="AnyShareDom"></div>
+  <!-- built files will be auto injected -->
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" href="../../demo/favicon.ico" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content="Web site created using create-react-app" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="anyshare-sdk-public-path" content="../../" />
+        <link rel="apple-touch-icon" href="../../demo/logo192.png" />
+        <link rel="manifest" href="../../demo/manifest.json" />
+        <title></title>
+        <link href="../../css/anyshare.sdk.css" rel="stylesheet" />
+        <script src="../../js/anyshare.sdk.js"></script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="text/javascript">
+            function mainSdk() {
+                AnyShareSDKFactory.create({
+                    apiBase: "http://127.0.0.1:3000",
+                    rootElement: document.getElementById("root"),
+                    token: "nt2jJHuAP1r-BzKPIFdxics8HpLITnNaX1ECR12U-4E.KS4lEet6IJ2npD_i54eKkd7ygIRvj9qUcQbKdqFyFHE",
+                    locale: "zh-cn",
+                })
+                    .then(function resolve(sdk) {
+                        sdk.download(
+                            [
+                                {
+                                    docid: "gns://9B81466A5EF84B6CBB7A8CB9249B8A69/D204AB9310F8464798075E859B917255",
+                                    name:
+                                        "c1111111111111111111111111111111111111111111111111111obertura-coverage-console (5).xml",
+                                    rev: "B2D151194D3645DCAD1EF42035DA2114",
+                                    size: 735321,
+                                },
+                            ],
+                            [
+                                {
+                                    id: "gns://9B81466A5EF84B6CBB7A8CB9249B8A69",
+                                    name: "1",
+                                    rev: "3B865C04A5AC40249920E8A94044843E",
+                                    size: -1,
+                                    type: "user_doc_lib",
+                                },
+                            ]
+                            /*具体参数说明可查看组件说明书*/
+                        );
+                    })
+                    .catch(function reject(err) {
+                        console.error(err);
+                    });
+            }
+            mainSdk();
+        </script>
+    </body>
+</html>

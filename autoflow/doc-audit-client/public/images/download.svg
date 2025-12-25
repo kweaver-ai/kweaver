@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>下载</title>
+    <desc>Created with Sketch.</desc>
+    <g id="下载" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="下载备份-5" transform="translate(2.000000, 1.000000)">
+            <g id="编组-35" transform="translate(3.000000, 0.000000)" fill="#000000" fill-rule="nonzero">
+                <rect id="矩形" x="3" y="0" width="1" height="9"></rect>
+                <polygon id="路径" points="0.588592549 6 0 6.58837617 3.4110604 10 4 9.41086025"></polygon>
+                <polygon id="路径" points="3.58848229 10 3 9.41181167 6.41103187 6 7 6.58902136"></polygon>
+            </g>
+            <path d="M0,10 L0,13.0857143 C0,13.5885714 0.374969954,14 0.833266565,14 L12.1667334,14 C12.62503,14 13,13.5885714 13,12.3238095 L13,10" id="路径" stroke="#000000"></path>
+        </g>
+    </g>
+</svg>

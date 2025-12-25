@@ -1,0 +1,7 @@
+{
+    "name": "@anyshare/sdk",
+    "version": "7.0.0-mission-1500",
+    "description": "AISHU AnyShare 7 Web Components Demo",
+    "devDependencies": { "express": "4.17.1", "http-proxy-middleware": "1.0.5" },
+    "scripts": { "start": "node index.js" }
+}

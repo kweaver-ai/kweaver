@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>编辑</title>
+    <desc>Created with Sketch.</desc>
+    <g id="编辑" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="重命名备份-26" transform="translate(1.000000, 1.000000)">
+            <polygon id="矩形" fill="#000000" fill-rule="nonzero" transform="translate(11.329290, 4.301158) rotate(135.000000) translate(-11.329290, -4.301158) " points="7.13015724 3.85302439 15.5305163 3.83382298 15.5284237 4.7492922 7.12806467 4.76849361"></polygon>
+            <path d="M6.90837353,3 L0.874929893,3 C0.393718452,3 0,3.40204406 0,3.89343125 L0,13.1065688 C0,13.5980304 0.393718452,14 0.874929893,14 L12.1250701,14 C12.6062815,14 13,13.5980304 13,13.1065688 L13,7.21848455" id="路径" stroke="#000000" stroke-linejoin="round"></path>
+        </g>
+    </g>
+</svg>

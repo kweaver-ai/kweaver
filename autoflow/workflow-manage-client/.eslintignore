@@ -1,0 +1,10 @@
+build/*.js
+src/assets
+src/components
+public
+lib/ProcessModel/bpmn-js
+lib/ProcessModel/bpmnlint_plugin
+lib/ProcessModel/diagram-js-direct-editing
+lib/ProcessModel/node_modules
+lib/ProcessModel/src/components/share-selector
+dist

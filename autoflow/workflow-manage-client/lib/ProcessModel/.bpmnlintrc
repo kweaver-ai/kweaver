@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "bpmnlint:recommended",
+    "plugin:playground/recommended"
+  ],
+  "rules": {
+    "conditional-flows": "error",
+    "end-event-required": "error",
+    "event-sub-process-typed-start-event": "error",
+    "fake-join": "on",
+    "label-required": "warning",
+    "no-complex-gateway": "on",
+    "no-disconnected": "error",
+    "no-duplicate-sequence-flows": "error",
+    "no-gateway-join-fork": "error",
+    "no-implicit-split": "on",
+    "no-inclusive-gateway": "on",
+    "single-blank-start-event": "error",
+    "single-event-definition": "on",
+    "start-event-required": "error",
+    "sub-process-blank-start-event": "on",
+    "superfluous-gateway": "error"
+  }
+}

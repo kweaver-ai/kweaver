@@ -1,0 +1,412 @@
+{
+  "menu": {
+    "Audit": "审核",
+    "Test": "发起流程",
+    "InitiateRealnameShare": "发起共享给指定用户的申请",
+    "InitiateAnonymousShare": "发起共享给任意用户的申请",
+    "InitiateSync": "发起文档域同步申请",
+    "Flow": "发起文档流转申请",
+    "Arbitrarily": "发起任意审核申请",
+    "Token": "Token 设置"
+  },
+  "common": {
+    "tabs": {
+      "applys": "我的申请",
+      "tasks": "我的待办",
+      "historys": "已处理的"
+    },
+    "bizTypes": {
+      "name": "申请类型",
+      "all": "全部",
+      "share": "共享申请",
+      "realname": "共享给指定用户的申请",
+      "perm": "共享给指定用户的申请",
+      "owner": "共享给指定用户的申请",
+      "inherit": "共享给指定用户的申请",
+      "secretRealName": "内部授权的申请",
+      "anonymous": "共享给任意用户的申请",
+      "sync": "文档域同步申请",
+      "security": "定密申请",
+      "flow": "文档流转/文档收集申请"
+    },
+    "dataBizTypes": {
+      "realname": "共享给指定用户的申请",
+      "perm": "共享给指定用户的申请",
+      "owner": "共享给指定用户的申请",
+      "inherit": "共享给指定用户的申请",
+      "secretRealName": "内部授权的申请",
+      "anonymous": "共享给任意用户的申请",
+      "sync": "文档域同步申请",
+      "security": "定密申请",
+      "flow": "文档流转/文档收集申请"
+    },
+    "auditStatuss": {
+      "auditStatus": "审核状态",
+      "all": "全部",
+      "pending": "审核中",
+      "pending2": "审核中",
+      "pending-done": "已通过",
+      "reject": "已拒绝",
+      "cancel": "已拒绝",
+      "pass": "已通过",
+      "avoid": "自动审核通过",
+      "undone": "已撤销",
+      "failed": "发起失败",
+      "sendback": "已退回",
+      "transfer": "已转审"
+    },
+    "search": "搜索申请内容",
+    "searches": "搜索申请内容、发起人",
+    "selectNum": "已选中 {num} 项",
+    "selectApply": "已选中 {num} 条申请",
+    "noDetail": "暂无详情",
+    "surePass": "确定同意选中的 {num} 个申请吗？",
+    "sureReject": "确定拒绝选中的 {num} 个申请吗？",
+    "handleAudit": "正在处理：{num}%",
+    "noPrompt": "不再提示",
+    "column": {
+      "apply": "申请",
+      "docName": "文档名称",
+      "bizType": "申请类型",
+      "docPath": "文档路径",
+      "abstract": "申请内容",
+      "auditor": "审核员",
+      "status": "状态",
+      "auditStatus": "审核状态",
+      "applyUserName": "发起人",
+      "applyTime": "发起时间",
+      "processTime": "处理时间"
+    },
+    "empty": {
+      "apply": "申请列表为空",
+      "todo": "当前无待处理的审核",
+      "done": "当前无已处理的审核",
+      "none": "抱歉，没有找到相关内容"
+    },
+    "detail": {
+      "tab": {
+        "audit": "审核",
+        "file": "文件"
+      },
+      "founding": {
+        "startTitle": "发起的",
+        "realname": "发起的共享给指定用户的申请",
+        "perm": "发起的共享给指定用户的申请",
+        "owner": "发起的共享给指定用户的申请",
+        "inherit": "发起的共享给指定用户的申请",
+        "secretRealName": "发起的内部授权的申请",
+        "anonymous": "发起的共享给任意用户的申请",
+        "sync": "发起的文档域同步申请",
+        "security": "发起的定密申请",
+        "flow": "发起的文档流转/文档收集申请",
+        "batch": {
+          "startTitle": "发起的",
+          "realname": "发起的共享给指定用户的申请",
+          "perm": "发起的共享给指定用户的申请",
+          "owner": "发起的共享给指定用户的申请",
+          "inherit": "发起的共享给指定用户的申请",
+          "secretRealName": "发起的内部授权的申请",
+          "anonymous": "发起的共享给任意用户的申请",
+          "sync": "发起的文档域同步申请",
+          "security": "发起的定密申请",
+          "flow": "发起的文档流转/文档收集申请"
+        }
+      },
+      "applyTime": "发起时间",
+      "accessorName": "访问者",
+      "role": "权限",
+      "expiresAt": "有效期",
+      "urlTitle": "链接标题",
+      "password": "提取码",
+      "accessLimit": "限制打开次数",
+      "auditType": "审核模式",
+      "auditTypes": {
+        "tjsh": "（同级审核）",
+        "hqsh": "（会签审核）",
+        "zjsh": "（依次审核）"
+      },
+      "today": "今天",
+      "yesterday": "昨天",
+      "flow": "流程",
+      "createApply": "发起申请",
+      "created": "已发起",
+      "audit": "审核",
+      "auditIdea": "审核意见",
+      "auditDate": "审核日期",
+      "auditMessage": "目标位置已不存在",
+      "revoke": "撤销申请",
+      "undone": "{}已撤销",
+      "undoneForProcDefDelete": "管理员已删除流程",
+      "delAuditFlow": "删除审核流程",
+      "approvedAutomatically": "系统自动通过",
+      "rejectedAutomatically": "系统自动拒绝",
+      "backlog": "待办详情",
+      "apply": "申请详情",
+      "done": "处理详情",
+      "status": {
+        "pending": "审核中",
+        "pending2": "审核中",
+        "pass": "已通过",
+        "avoid": "自动审核通过",
+        "reject": "已拒绝",
+        "flow": "审核中",
+        "end": "审核结束"
+      },
+      "operation": {
+        "placeholder": "填写意见（选填）",
+        "requiredPlaceholder": "填写意见（必填）",
+        "countersignPlaceholder": "加签备注（选填）",
+        "transferPlaceholder": "转交备注（选填）",
+        "remindPlaceholder": "催办备注（选填）",
+        "sure": "确定",
+        "cancel": "取消",
+        "pass": "同意",
+        "reject": "拒绝",
+        "countersign": "加签",
+        "countersignBtn": "加签",
+        "transfer": "转审",
+        "Transfer": "转审",
+        "sendback": "退回",
+        "sendbackTitle": "退回给",
+        "sendbackPlaceholder": "退回原因（选填）",
+        "sendbackRequiredPlaceholder":"退回原因（必填）",
+        "resubmit": "重新提交",
+        "more": "更多",
+        "add": "添加",
+        "selected": "已选",
+        "remind": "催办",
+        "Remind": "催办",
+        "revoke": "撤销"
+      },
+      "sendback": {
+        "applyUser": "将退回给发起人",
+        "reason": "，退回原因：",
+        "backTo": "已退回给{name}"
+      },
+      "remind": {
+        "user": "催办用户：",
+        "selectPlaceholder": "请选择催办人员",
+        "selectEmpty": "请选择催办人员。",
+        "comment": "催办备注：",
+        "waitInfo": "已提醒对方查看，请耐心等待",
+        "taskProcessed": "此条记录已失效或已审核完成。",
+        "userProcessed": "催办用户已处理完此申请。",
+        "usersNotFound": "催办用户已不存在。",
+        "successInfo": "催办成功"
+      },
+      "transfer": {
+        "overLimit": "已达到最大转审次数。",
+        "success": "转审成功",
+        "to": "转交给{name}",
+        "personnel": "转审人员。",
+        "status": "已转审",
+        "select": "添加转审用户",
+        "hasTransferUser": "转审用户不能包含已转审的用户",
+        "usersNotFound": "转审用户已不存在。",
+        "err": {
+          "title": "无法执行此操作",
+          "transferred": "您已将此申请转交给他人。"
+        }
+      },
+      "auditMsg": {
+        "title": "提示",
+        "confirm": "确定",
+        "cancel": "取消",
+        "error": "补充说明不能超过300个字",
+        "countersignErrorTip": "加签用户不能包含当前环节已有审核员",
+        "transferErrorTip": "转审用户不能包含当前环节已有审核员",
+        "countersignApplyUserErrorTip": "加签用户不能包含申请的发起人",
+        "transferApplyUserErrorTip": "转审用户不能包含申请的发起人",
+        "agree": {
+          "yes": "确定同意申请吗？",
+          "realname": "确认同意申请吗？",
+          "anonymous": "确认同意申请吗？",
+          "sync": "确认同意申请吗？",
+          "flow": "确认同意申请吗？"
+        },
+        "reject": {
+          "no": "确定拒绝申请吗？拒绝后，审核流程将结束。",
+          "realname": "确认拒绝申请吗？",
+          "anonymous": "确认拒绝申请吗？",
+          "sync": "确认拒绝申请吗？",
+          "flow": "确认拒绝申请吗？"
+        }
+      },
+      "revokeMsg": {
+        "confirmMSg": "撤销成功",
+        "cancelMsg": "取消撤销操作",
+        "info": {
+          "sureRevoke1": "确定撤销",
+          "sureRevoke2": "吗？",
+          "realname": "确定撤销共享申请吗？",
+          "secretRealname": "确定撤销授权申请吗？",
+          "anonymous": "确定撤销共享申请吗？",
+          "sync": "确定撤销文档域同步申请吗？",
+          "flow": "确定撤销文档流转/文档收集申请吗？"
+        }
+      },
+      "dirEmpty": "此文件夹为空",
+      "failedMsg": {
+        "realname": {
+          "noAuditor": "您的共享需要进行审核，但当前无匹配的审核员，本次操作无法生效，请联系管理员。",
+          "noMatchingLevelAuditor": "您的共享需要进行审核，但当前审核员密级不足，本次操作无法生效，请联系管理员。"
+        },
+        "perm": {
+          "noAuditor": "您的共享需要进行审核，但当前无匹配的审核员，本次操作无法生效，请联系管理员。",
+          "noMatchingLevelAuditor": "您的共享需要进行审核，但当前审核员密级不足，本次操作无法生效，请联系管理员。"
+        },
+        "owner": {
+          "noAuditor": "您的共享需要进行审核，但当前无匹配的审核员，本次操作无法生效，请联系管理员。",
+          "noMatchingLevelAuditor": "您的共享需要进行审核，但当前审核员密级不足，本次操作无法生效，请联系管理员。"
+        },
+        "inherit": {
+          "noAuditor": "您的共享需要进行审核，但当前无匹配的审核员，本次操作无法生效，请联系管理员。",
+          "noMatchingLevelAuditor": "您的共享需要进行审核，但当前审核员密级不足，本次操作无法生效，请联系管理员。"
+        },
+        "secretRealname": {
+          "noAuditor": "您的授权需要进行审核，但当前无匹配的审核员，本次操作无法生效，请联系管理员。",
+          "noMatchingLevelAuditor": "您的授权需要进行审核，但当前审核员密级不足，本次操作无法生效，请联系管理员。"
+        },
+        "anonymous": {
+          "noAuditor": "您的共享需要进行审核，但当前无匹配的审核员，本次操作无法生效，请联系管理员。",
+          "noMatchingLevelAuditor": "您的共享需要进行审核，但当前审核员密级不足，本次操作无法生效，请联系管理员。"
+        },
+        "sync": {
+          "noAuditor": "暂无匹配的审核员，无法发起文档域同步，请联系管理员。",
+          "noMatchingLevelAuditor": "暂无匹配的审核员，无法发起文档域同步，请联系管理员。"
+        }
+      },
+      "countersign": {
+        "by": "被",
+        "countersign": "加签",
+        "level": "级",
+        "maxAdd": "最多允许添加",
+        "maxUnitsA": "个",
+        "maxUnitsCount": "次",
+        "personnel": "加签人员。",
+        "maxAddErrCount": "超过加签最大次数",
+        "addErrRepeat": "存在重复加签的用户",
+        "addErrNotFound": "存在已被删除的用户"
+      }
+    },
+    "operation": {
+      "name": "操作",
+      "success": "已通过",
+      "details": "查看",
+      "cancel": "作废",
+      "audit": "审核",
+      "download": "下载",
+      "openFileLocation": "打开文档所在位置"
+    },
+    "auditor": {
+      "title": "审核员",
+      "pending": "待审核",
+      "pass": "已通过",
+      "reject": "已否决",
+      "free": "免审核",
+      "none": "无审核员"
+    }
+  },
+  "share": {
+    "accessorName": "访问者",
+    "role": "权限",
+    "expiresAt": "有效期至",
+    "permanent": "永久有效",
+    "auditStatus": "审核状态",
+    "copy": "复制链接",
+    "shareLink": "链接",
+    "linkCopied": "已复制链接地址",
+    "fileName": "文件名：",
+    "folderName": "文件夹名：",
+    "deadline": "有效期限：",
+    "accessPassword": "提取码：",
+    "accessor": {
+      "all": "任何用户",
+      "anonymous": "匿名用户"
+    },
+    "roleDetail": {
+      "delete": "删除",
+      "modify": "修改",
+      "create": "新建",
+      "preview": "预览",
+      "download": "下载",
+      "display": "显示",
+      "inherit": "恢复：从上级继承的权限",
+      "noInherit": "禁用：从上级继承的权限",
+      "cancel": "取消",
+      "deny": "拒绝",
+      "owner": "所有者",
+      "cache": "缓存"
+    }
+  },
+  "sync": {
+    "targetPath": "同步位置",
+    "mode": "同步模式",
+    "modes": {
+      "sync": "同步",
+      "copy": "拷贝",
+      "move": "移动"
+    }
+  },
+  "flow": {
+    "targetPath": "目标位置",
+    "source": "源文件",
+    "remark": "说明",
+    "title": "名称"
+  },
+  "move": {
+    "errorMsg": "暂不支持移动设备打开，可使用电脑登录客户端查看。",
+    "applyMsg": "您对该申请详情没有查看权限",
+    "auditMsg": "您对该审核待办没有审核权限"
+  },
+  "message": {
+    "title": "提示",
+    "errTitle": "无法执行此操作",
+    "submitErr": "提交失败",
+    "pluginDisabled": "服务不可用，请联系管理员",
+    "docflowDisabled": "管理员未开启文档流转",
+    "doccollectDisabled": "管理员未开启文档收集",
+    "info": "信息",
+    "confirm": "确定",
+    "authorized": "登录已超时",
+    "approved": "审核完成",
+    "attachmentOverLimit": "最多允许添加10个附件",
+    "serviceUnavailable": "Workflow服务不可用，请联系管理员。",
+    "downloadError": "无法执行下载操作",
+    "openFileError": "无法打开当前文件",
+    "openFolderError": "无法打开当前文件夹",
+    "openFilePathError": "无法打开当前文件所在位置",
+    "openFolderPathError": "无法打开当前文件夹所在位置",
+    "fileNotExist": "文件<{}>不存在。",
+    "filesNotExist": "文件“{name}”已不存在。",
+    "folderNotExist": "文件夹<{}>不存在。",
+    "fileNotPrem": "您对文件<{}>没有读取权限。",
+    "fileNoDownloadPrem": "您对文件“{name}”没有下载权限。",
+    "fileNoPreviewPrem": "您对文件没有预览权限。",
+    "folderNotPrem": "您对文件夹<{}>没有读取权限。",
+    "taskNotPrem": "此条记录已失效或已被其他审核员审核完成。",
+    "csfLevel": "您的密级不足。",
+    "csfLevelDetail": "对于{user}{apply}申请，您的密级不足，无法审核。",
+    "readingStrategies": "请联系管理员检查读取策略。",
+    "readingControls": "在读取策略（仅允许在线访问）管控下，该文件无法下载。",
+    "UndoFailed": "撤销失败",
+    "UndoFailedNotTask": "此条记录已失效或已审核完成。",
+    "UndoFailedNotTaskDetail": "{user}{apply}已失效或已审核完成。",
+    "auditErrorMsgStrategy": "下一环节未配置审核策略，请联系管理员重新设置。",
+    "auditErrorMsgAuditor": "下一环节无匹配的审核员，请联系管理员重新设置。",
+    "auditErrorMsgCsfLevel": "下一环节无匹配密级的审核员，请联系管理员重新设置。",
+    "emptyIdea": "审核意见不能为空。",
+    "errorMsgNotFile": "获取文件异常或文件不存在。",
+    "serverError": "服务器出现错误，请稍后再试",
+    "noNetwork": "无法连接网络",
+    "batchHandle": "批量审核成功",
+    "frozen": "账号已被冻结。",
+    "forbidden": "账号已被禁用。",
+    "countersignApprovedError": "已审核过此申请，无法再次添加。"
+  },
+  "selectFile": "选择文件",
+  "attachment": {
+    "add": "添加附件"
+  },
+  "invalidParams": "参数错误。"
+}

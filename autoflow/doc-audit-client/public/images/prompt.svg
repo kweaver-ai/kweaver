@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>提示</title>
+    <desc>Created with Sketch.</desc>
+    <g id="提示" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M14,0 C6.2680135,0 0,6.2680135 0,14 C0,21.7319865 6.2680135,28 14,28 C21.7319865,28 28,21.7319865 28,14 C28,6.2680135 21.7319865,0 14,0 Z M14,2 C20.627417,2 26,7.372583 26,14 C26,20.627417 20.627417,26 14,26 C7.372583,26 2,20.627417 2,14 C2,7.372583 7.372583,2 14,2 Z" id="椭圆形" fill="#1890FF" fill-rule="nonzero"></path>
+        <rect id="矩形" fill="#1890FF" x="13" y="7" width="2" height="2"></rect>
+        <rect id="矩形" fill="#1890FF" x="13" y="11" width="2" height="9"></rect>
+    </g>
+</svg>

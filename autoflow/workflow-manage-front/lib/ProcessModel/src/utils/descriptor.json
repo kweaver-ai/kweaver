@@ -1,0 +1,28 @@
+{
+  "name": "self",
+  "uri": "https://self",
+  "prefix": "se",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "types": [
+    {
+      "name": "expandProperty",
+      "superClass": [
+        "Element"
+      ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": "true"
+        },
+        {
+          "name": "value",
+          "type": "String",
+          "isAttr": "true"
+        }
+      ]
+    }
+  ]
+}

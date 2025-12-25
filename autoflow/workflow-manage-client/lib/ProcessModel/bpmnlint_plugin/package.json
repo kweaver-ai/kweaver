@@ -1,0 +1,10 @@
+{
+  "name": "bpmnlint-plugin-playground",
+  "version": "0.0.0",
+  "private": true,
+  "description": "bpmnlint playground rules",
+  "main": "index.js",
+  "dependencies": {
+    "bpmnlint-utils": "^1.0.1"
+  }
+}

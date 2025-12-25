@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" href="../../demo/favicon.ico" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content="Web site created using create-react-app" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="anyshare-sdk-public-path" content="../../" />
+        <link rel="apple-touch-icon" href="../../demo/logo192.png" />
+        <link rel="manifest" href="../../demo/manifest.json" />
+        <title></title>
+        <link href="../../css/anyshare.sdk.css" rel="stylesheet" />
+        <script src="../../js/anyshare.sdk.js"></script>
+    </head>
+    <body>
+        <input
+            type="file"
+            multiple
+            onchange="upload(event.target.files,{
+                docid:'gns:\/\/34474AFB06DD4FC7917D6DC880BADA73/0444AD2248554CB49632C5A60574568A/895C8AAD036E4BA48053AF016C4FEDB7',
+                name: '文件夹'
+            })"
+        />
+        <div id="root"></div>
+        <script type="text/javascript">
+            function upload(files, dest) {
+                AnyShareSDKFactory.create({
+                    apiBase: "https://10.2.177.29:443",
+                    rootElement: document.getElementById("root"),
+                    token: "m6_MXNGT9SillXYtPboNwyZ1yovvK4tAgjJ1H840l7E.UTrs0rfgmZn2YJLYKZ-wnmwhfsQl3ZvGqLc5Hi6El4s",
+                    locale: "zh-tw",
+                })
+                    .then(function resolve(sdk) {
+                        sdk.upload.uploadFileList(files, dest);
+                        sdk.upload.subscribe(sdk.upload.EventType.UPLOAD_SUCCESS, function success(res) {
+                            console.log(res);
+                        });
+                        sdk.upload.subscribe(sdk.upload.EventType.UPLOAD_FINISHED, function finish(res) {
+                            console.log(res);
+                        });
+                        sdk.upload.subscribe(sdk.upload.EventType.UPLOAD_ERROR, function error(err) {
+                            console.error(err);
+                        });
+                    })
+                    .catch(function reject(err) {
+                        console.error(err);
+                    });
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "files": {
+    "anyshare.sdk.css": "/css/anyshare.sdk.css",
+    "anyshare.sdk.js": "/js/anyshare.sdk.js",
+    "js/1.chunk.js": "/js/1.chunk.js",
+    "js/anyshare.sdk.js.LICENSE.txt": "/js/anyshare.sdk.js.LICENSE.txt",
+    "media/collectEmpty.png": "/media/collectEmpty.png",
+    "media/dataEmpty.png": "/media/dataEmpty.png",
+    "media/dataGridEmpty.png": "/media/dataGridEmpty.png",
+    "media/development.png": "/media/development.png",
+    "media/dirEmpty.png": "/media/dirEmpty.png",
+    "media/dirLinkEmpty.png": "/media/dirLinkEmpty.png",
+    "media/empty.png": "/media/empty.png",
+    "media/errorImage.png": "/media/errorImage.png",
+    "media/fileLockEmpty.png": "/media/fileLockEmpty.png",
+    "media/fullSearchEmpty.png": "/media/fullSearchEmpty.png",
+    "media/guide.png": "/media/guide.png",
+    "media/initial.png": "/media/initial.png",
+    "media/libEmpty.png": "/media/libEmpty.png",
+    "media/loadFailedEmpty.png": "/media/loadFailedEmpty.png",
+    "media/logo.png": "/media/logo.png",
+    "media/noData.png": "/media/noData.png",
+    "media/notFoundPage.png": "/media/notFoundPage.png",
+    "media/searchEmpty.png": "/media/searchEmpty.png",
+    "media/selectableEmpty.png": "/media/selectableEmpty.png",
+    "media/showSearch.png": "/media/showSearch.png"
+  },
+  "entrypoints": [
+    "css/anyshare.sdk.css",
+    "js/anyshare.sdk.js"
+  ]
+}

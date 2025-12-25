@@ -1,0 +1,412 @@
+{
+ "menu": {
+    "Audit": "Kiểm toán",
+    "Test": "Bắt đầu quy trình",
+    "InitiateRealnameShare": "Bắt đầu yêu cầu chia sẻ cho người dùng cụ thể",
+    "InitiateAnonymousShare": "Bắt đầu yêu cầu chia sẻ cho bất kỳ người dùng nào",
+    "InitiateSync": "Bắt đầu yêu cầu đồng bộ vùng tài liệu",
+    "Flow": "Bắt đầu yêu cầu chuyển tài liệu",
+    "Arbitrarily": "Bắt đầu yêu cầu kiểm toán tùy ý",
+    "Token": "Cài đặt Token"
+  }, 
+  "common": {
+    "tabs": {
+      "applys": "Đơn của tôi",
+      "tasks": "Công việc của tôi",
+      "historys": "Đã xử lý"
+    },
+    "bizTypes": {
+      "name": "Loại đơn",
+      "all": "Tất cả",
+      "share": "Đơn chia sẻ",
+      "realname": "Đơn chia sẻ cho người dùng cụ thể",
+      "perm": "Đơn chia sẻ cho người dùng cụ thể",
+      "owner": "Đơn chia sẻ cho người dùng cụ thể",
+      "inherit": "Đơn chia sẻ cho người dùng cụ thể",
+      "secretRealName": "Đơn ủy quyền nội bộ",
+      "anonymous": "Đơn chia sẻ cho bất kỳ người dùng nào",
+      "sync": "Đơn đồng bộ vùng tài liệu",
+      "security": "Đơn định mức",
+      "flow": "Đơn chuyển văn bản / Đơn thu thập văn bản"
+    },
+    "dataBizTypes": {
+      "realname": "Đơn chia sẻ cho người dùng cụ thể",
+      "perm": "Đơn chia sẻ cho người dùng cụ thể",
+      "owner": "Đơn chia sẻ cho người dùng cụ thể",
+      "inherit": "Đơn chia sẻ cho người dùng cụ thể",
+      "secretRealName": "Đơn ủy quyền nội bộ",
+      "anonymous": "Đơn chia sẻ cho bất kỳ người dùng nào",
+      "sync": "Đơn đồng bộ vùng tài liệu",
+      "security": "Đơn định mức",
+      "flow": "Đơn chuyển văn bản / Đơn thu thập văn bản"
+    },
+    "auditStatuss": {
+      "auditStatus": "Trạng thái kiểm toán",
+      "all": "Tất cả",
+      "pending": "Đang chờ kiểm toán",
+      "pending2": "Đang chờ kiểm toán",
+      "pending-done": "Đã thông qua",
+      "reject": "Đã từ chối",
+      "cancel": "Đã từ chối",
+      "pass": "Đã thông qua",
+      "avoid": "Tự động thông qua",
+      "undone": "Đã thu hồi",
+      "failed": "Khởi tạo thất bại",
+      "sendback": "Đã trả lại",
+      "transfer": "Đã chuyển kiểm"
+    },
+    "search": "Tìm kiếm nội dung đơn",
+    "searches": "Tìm kiếm nội dung đơn, người khởi tạo",
+    "selectNum": "Đã chọn {num} mục",
+    "selectApply": "Đã chọn {num} đơn đề nghị",
+    "noDetail": "Chưa có chi tiết",
+    "surePass": "Chắc chắn đồng ý {num} đơn đề nghị đã chọn?",
+    "sureReject": "Chắc chắn từ chối {num} đơn đề nghị đã chọn?",
+    "handleAudit": "Đang xử lý: {num}%",
+    "noPrompt": "Không hiển thị lại",
+    "column": {
+      "apply": "Đơn đề nghị",
+      "docName": "Tên tài liệu",
+      "bizType": "Loại đơn đề nghị",
+      "docPath": "Đường dẫn tài liệu",
+      "abstract": "Nội dung đơn đề nghị",
+      "auditor": "Người kiểm toán",
+      "status": "Trạng thái",
+      "auditStatus": "Trạng thái kiểm toán",
+      "applyUserName": "Người khởi tạo",
+      "applyTime": "Thời gian khởi tạo",
+      "processTime": "Thời gian xử lý"
+    },
+    "empty": {
+      "apply": "Danh sách đơn đề nghị trống",
+      "todo": "Không có kiểm toán chờ xử lý",
+      "done": "Không có kiểm toán đã xử lý",
+      "none": "Xin lỗi, không tìm thấy nội dung liên quan"
+    },
+    "detail": {
+      "tab": {
+        "audit": "Kiểm toán",
+        "file": "Tệp"
+      },
+      "founding": {
+        "startTitle": "Bắt đầu của",
+        "realname": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+        "perm": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+        "owner": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+        "inherit": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+        "secretRealName": "Bắt đầu của ứng dụng ủy quyền nội bộ",
+        "anonymous": "Bắt đầu của ứng dụng chia sẻ cho bất kỳ người dùng nào",
+        "sync": "Bắt đầu của ứng dụng đồng bộ vùng tài liệu",
+        "security": "Bắt đầu của ứng dụng bảo mật cố định",
+        "flow": "Bắt đầu của ứng dụng chuyển văn bản / thu thập tài liệu",
+        "batch": {
+          "startTitle": "Bắt đầu của",
+          "realname": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+          "perm": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+          "owner": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+          "inherit": "Bắt đầu của ứng dụng chia sẻ cho người dùng cụ thể",
+          "secretRealName": "Bắt đầu của ứng dụng ủy quyền nội bộ",
+          "anonymous": "Bắt đầu của ứng dụng chia sẻ cho bất kỳ người dùng nào",
+          "sync": "Bắt đầu của ứng dụng đồng bộ vùng tài liệu",
+          "security": "Bắt đầu của ứng dụng bảo mật cố định",
+          "flow": "Bắt đầu của ứng dụng chuyển văn bản / thu thập tài liệu"
+        }
+      },
+      "applyTime": "Thời gian bắt đầu",
+      "accessorName": "Người truy cập",
+      "role": "Quyền",
+      "expiresAt": "Hết hạn vào",
+      "urlTitle": "Tiêu đề liên kết",
+      "password": "Mã trích xuất",
+      "accessLimit": "Giới hạn số lần mở",
+      "auditType": "Chế độ kiểm toán",
+      "auditTypes": {
+        "tjsh": "(Kiểm toán cùng cấp)",
+        "hqsh": "(Kiểm toán đồng thuận)",
+        "zjsh": "(Kiểm toán theo thứ tự)"
+      },
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "flow": "Quy trình",
+      "createApply": "Tạo ứng dụng",
+      "created": "Đã tạo",
+      "audit": "Kiểm toán",
+      "auditIdea": "Ý kiến kiểm toán",
+      "auditDate": "Ngày kiểm toán",
+      "auditMessage": "Vị trí mục tiêu không còn tồn tại",
+      "revoke": "Thu hồi ứng dụng",
+      "undone": "{} Đã thu hồi",
+      "undoneForProcDefDelete": "Quản trị viên đã xóa quy trình",
+      "delAuditFlow": "Xóa luồng kiểm toán",
+      "approvedAutomatically": "Tự động thông qua",
+      "rejectedAutomatically": "Tự động từ chối",
+      "backlog": "Chi tiết chờ xử lý",
+      "apply": "Chi tiết ứng dụng",
+      "done": "Chi tiết xử lý",
+      "status": {
+        "pending": "Đang kiểm toán",
+        "pending2": "Đang kiểm toán",
+        "pass": "Đã thông qua",
+        "avoid": "Tự động kiểm toán qua",
+        "reject": "Đã từ chối",
+        "flow": "Đang kiểm toán",
+        "end": "Kết thúc kiểm toán"
+      },
+      "operation": {
+        "placeholder": "Nhập ý kiến (tùy chọn)",
+        "requiredPlaceholder": "Nhập ý kiến (bắt buộc)",
+        "countersignPlaceholder": "Ghi chú phê duyệt (tùy chọn)",
+        "transferPlaceholder": "Ghi chú chuyển giao (tùy chọn)",
+        "remindPlaceholder": "Ghi chú nhắc nhở (tùy chọn)",
+        "sure": "Chắc chắn",
+        "cancel": "Hủy",
+        "pass": "Đồng ý",
+        "reject": "Từ chối",
+        "countersign": "Phê duyệt",
+        "countersignBtn": "Phê duyệt",
+        "transfer": "Chuyển giao",
+        "Transfer": "Chuyển giao",
+        "sendback": "Trả lại",
+        "sendbackTitle": "Trả lại cho",
+        "sendbackPlaceholder": "Lý do trả lại (tùy chọn)",
+        "sendbackRequiredPlaceholder":"Lý do trả lại (bắt buộc)",
+        "resubmit": "Gửi lại",
+        "more": "Thêm",
+        "add": "Thêm",
+        "selected": "Đã chọn",
+        "remind": "Nhắc nhở",
+        "Remind": "Nhắc nhở",
+        "revoke": "Thu hồi"
+      },
+      "sendback": {
+        "applyUser": "Sẽ trả lại cho người gửi",
+        "reason": ", Lý do trả lại:",
+        "backTo": "Đã trả lại cho {name}"
+      },
+      "remind": {
+        "user": "Người nhắc nhở:",
+        "selectPlaceholder": "Chọn người nhắc nhở",
+        "selectEmpty": "Vui lòng chọn người nhắc nhở.",
+        "comment": "Ghi chú nhắc nhở:",
+        "waitInfo": "Đã nhắc nhở đối phương, vui lòng chờ đợi",
+        "taskProcessed": "Bản ghi này đã không còn hiệu lực hoặc đã được duyệt.",
+        "userProcessed": "Người nhắc nhở đã xử lý xong đơn này.",
+        "usersNotFound": "Người nhắc nhở không còn tồn tại.",
+        "successInfo": "Nhắc nhở thành công"
+      },
+      "transfer": {
+        "overLimit": "Đã đạt đến số lần chuyển giao tối đa.",
+        "success": "Chuyển giao thành công",
+        "to": "Chuyển giao cho {name}",
+        "personnel": "Người chuyển giao.",
+        "status": "Đã chuyển giao",
+        "select": "Thêm người chuyển giao",
+        "hasTransferUser": "Người chuyển giao không thể bao gồm người đã chuyển giao",
+        "usersNotFound": "Người chuyển giao không còn tồn tại.",
+        "err": {
+          "title": "Không thể thực hiện thao tác này",
+          "transferred": "Bạn đã chuyển giao đơn này cho người khác."
+        }
+      },
+      "auditMsg": {
+        "title": "Chú ý",
+        "confirm": "Xác nhận",
+        "cancel": "Hủy",
+        "error": "Ghi chú bổ sung không được vượt quá 300 từ",
+        "countersignErrorTip": "Người phê duyệt không thể bao gồm người phê duyệt hiện tại của giai đoạn này",
+        "transferErrorTip": "Người chuyển giao không thể bao gồm người phê duyệt hiện tại của giai đoạn này",
+        "countersignApplyUserErrorTip": "Người phê duyệt không thể bao gồm người gửi đơn",
+        "transferApplyUserErrorTip": "Người chuyển giao không thể bao gồm người gửi đơn",
+        "agree": {
+          "yes": "Chắc chắn đồng ý đơn này chứ?",
+          "realname": "Xác nhận đồng ý đơn này chứ?",
+          "anonymous": "Xác nhận đồng ý đơn này chứ?",
+          "sync": "Xác nhận đồng ý đơn này chứ?",
+          "flow": "Xác nhận đồng ý đơn này chứ?"
+        },
+        "reject": {
+          "no": "Chắc chắn từ chối đơn này chứ? Sau khi từ chối, quy trình duyệt sẽ kết thúc.",
+          "realname": "Xác nhận từ chối đơn này chứ?",
+          "anonymous": "Xác nhận từ chối đơn này chứ?",
+          "sync": "Xác nhận từ chối đơn này chứ?",
+          "flow": "Xác nhận từ chối đơn này chứ?"
+        }
+      },
+      "revokeMsg": {
+        "confirmMSg": "Thu hồi thành công",
+        "cancelMsg": "Hủy thao tác thu hồi",
+        "info": {
+          "sureRevoke1": "Chắc chắn muốn thu hồi",
+          "sureRevoke2": "chứ?",
+          "realname": "Chắc chắn muốn thu hồi yêu cầu chia sẻ?",
+          "secretRealname": "Chắc chắn muốn thu hồi yêu cầu ủy quyền?",
+          "anonymous": "Chắc chắn muốn thu hồi yêu cầu chia sẻ?",
+          "sync": "Chắc chắn muốn thu hồi yêu cầu đồng bộ vùng tài liệu?",
+          "flow": "Chắc chắn muốn thu hồi yêu cầu chuyển vùng tài liệu / thu thập tài liệu?"
+        }
+      },
+      "dirEmpty": "Thư mục này trống",
+      "failedMsg": {
+        "realname": {
+          "noAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng hiện không có người kiểm duyệt phù hợp, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng cấp bí mật của người kiểm duyệt hiện không đủ, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên."
+        },
+        "perm": {
+          "noAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng hiện không có người kiểm duyệt phù hợp, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng cấp bí mật của người kiểm duyệt hiện không đủ, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên."
+        },
+        "owner": {
+          "noAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng hiện không có người kiểm duyệt phù hợp, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng cấp bí mật của người kiểm duyệt hiện không đủ, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên."
+        },
+        "inherit": {
+          "noAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng hiện không có người kiểm duyệt phù hợp, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng cấp bí mật của người kiểm duyệt hiện không đủ, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên."
+        },
+        "secretRealname": {
+          "noAuditor": "Quyền ủy quyền của bạn cần được kiểm duyệt, nhưng hiện không có người kiểm duyệt phù hợp, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Quyền ủy quyền của bạn cần được kiểm duyệt, nhưng cấp bí mật của người kiểm duyệt hiện không đủ, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên."
+        },
+        "anonymous": {
+          "noAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng hiện không có người kiểm duyệt phù hợp, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Chia sẻ của bạn cần được kiểm duyệt, nhưng cấp bí mật của người kiểm duyệt hiện không đủ, thao tác này sẽ không có hiệu lực, vui lòng liên hệ quản trị viên."
+        },
+        "sync": {
+          "noAuditor": "Hiện không có người kiểm duyệt phù hợp, không thể khởi động đồng bộ vùng tài liệu, vui lòng liên hệ quản trị viên.",
+          "noMatchingLevelAuditor": "Hiện không có người kiểm duyệt phù hợp, không thể khởi động đồng bộ vùng tài liệu, vui lòng liên hệ quản trị viên."
+        }
+      },
+      "countersign": {
+        "by": "Bởi",
+        "countersign": "Ký duyệt",
+        "level": "cấp",
+        "maxAdd": "Tối đa cho phép thêm",
+        "maxUnitsA": "người",
+        "maxUnitsCount": "lần",
+        "personnel": "Người ký duyệt.",
+        "maxAddErrCount": "Vượt quá số lần ký duyệt tối đa",
+        "addErrRepeat": "Có người dùng ký duyệt trùng lặp",
+        "addErrNotFound": "Có người dùng đã bị xóa"
+      }
+    },
+    "operation": {
+      "name": "Hoạt động",
+      "success": "Đã thông qua",
+      "details": "Xem",
+      "cancel": "Hủy",
+      "audit": "Kiểm duyệt",
+      "download": "Tải xuống",
+      "openFileLocation": "Mở vị trí tệp"
+    },
+    "auditor": {
+      "title": "Người kiểm duyệt",
+      "pending": "Đang chờ duyệt",
+      "pass": "Đã được chấp nhận",
+      "reject": "Đã bị từ chối",
+      "free": "Miễn kiểm duyệt",
+      "none": "Không có kiểm duyệt viên"
+    }
+  },
+  "share": {
+    "accessorName": "Người truy cập",
+    "role": "Vai trò",
+    "expiresAt": "Hết hạn vào",
+    "permanent": "Vĩnh viễn hiệu quả",
+    "auditStatus": "Trạng thái kiểm toán",
+    "copy": "Sao chép liên kết",
+    "shareLink": "Liên kết",
+    "linkCopied": "Đã sao chép địa chỉ liên kết",
+    "fileName": "Tên tệp:",
+    "folderName": "Tên thư mục:",
+    "deadline": "Hạn chót:",
+    "accessPassword": "Mã truy cập:",
+    "accessor": {
+      "all": "Tất cả người dùng",
+      "anonymous": "Người dùng ẩn danh"
+    },
+    "roleDetail": {
+      "delete": "Xóa",
+      "modify": "Sửa đổi",
+      "create": "Tạo mới",
+      "preview": "Xem trước",
+      "download": "Tải xuống",
+      "display": "Hiển thị",
+      "inherit": "Khôi phục: Quyền được kế thừa từ cấp trên",
+      "noInherit": "Vô hiệu hóa: Quyền được kế thừa từ cấp trên",
+      "cancel": "Hủy",
+      "deny": "Từ chối",
+      "owner": "Chủ sở hữu",
+      "cache": "Bộ nhớ đệm"
+    }
+  },
+  "sync": {
+    "targetPath": "Vị trí đồng bộ",
+    "mode": "Chế độ đồng bộ",
+    "modes": {
+      "sync": "Đồng bộ",
+      "copy": "Sao chép",
+      "move": "Di chuyển"
+    }
+  },
+  "flow": {
+    "targetPath": "Vị trí mục tiêu",
+    "source": "Tệp nguồn",
+    "remark": "Chú thích",
+    "title": "Tên"
+  },
+  "move": {
+    "errorMsg": "Hiện không hỗ trợ mở trên thiết bị di động, vui lòng đăng nhập từ máy tính để xem.",
+    "applyMsg": "Bạn không có quyền xem chi tiết ứng dụng này",
+    "auditMsg": "Bạn không có quyền kiểm toán công việc đang chờ kiểm toán này"
+  },
+  "message": {
+    "title": "Chú ý",
+    "errTitle": "Không thể thực hiện thao tác này",
+    "submitErr": "Gửi thất bại",
+    "pluginDisabled": "Dịch vụ không khả dụng, vui lòng liên hệ quản trị viên",
+    "docflowDisabled": "Quản trị viên chưa bật luồng tài liệu",
+    "doccollectDisabled": "Quản trị viên chưa bật thu thập tài liệu",
+    "info": "Thông tin",
+    "confirm": "Xác nhận",
+    "authorized": "Đăng nhập đã hết hạn",
+    "approved": "Đã duyệt",
+    "attachmentOverLimit": "Tối đa cho phép thêm 10 tệp đính kèm",
+    "serviceUnavailable": "Dịch vụ Workflow không khả dụng, vui lòng liên hệ quản trị viên",
+    "downloadError": "Không thể thực hiện thao tác tải xuống",
+    "openFileError": "Không thể mở tệp hiện tại",
+    "openFolderError": "Không thể mở thư mục hiện tại",
+    "openFilePathError": "Không thể mở vị trí tệp hiện tại",
+    "openFolderPathError": "Không thể mở vị trí thư mục hiện tại",
+    "fileNotExist": "Tệp <{}> không tồn tại",
+    "filesNotExist": "Tệp “{name}” đã không còn tồn tại",
+    "folderNotExist": "Thư mục <{}> không tồn tại",
+    "fileNotPrem": "Bạn không có quyền đọc tệp <{}>",
+    "fileNoDownloadPrem": "Bạn không có quyền tải xuống tệp “{name}”",
+    "fileNoPreviewPrem": "Bạn không có quyền xem trước tệp",
+    "folderNotPrem": "Bạn không có quyền đọc thư mục <{}>",
+    "taskNotPrem": "Bản ghi này đã hết hạn hoặc đã được người duyệt khác duyệt",
+    "csfLevel": "Cấp bí mật của bạn không đủ",
+    "csfLevelDetail": "Đối với {user}{apply} yêu cầu, cấp bí mật của bạn không đủ để duyệt",
+    "readingStrategies": "Vui lòng liên hệ quản trị viên để kiểm tra chiến lược đọc",
+    "readingControls": "Dưới sự kiểm soát chiến lược đọc (chỉ cho phép truy cập trực tuyến), tệp này không thể tải xuống",
+    "UndoFailed": "Không thể hoàn tác",
+    "UndoFailedNotTask": "Bản ghi này đã hết hạn hoặc đã được duyệt hoàn tất",
+    "UndoFailedNotTaskDetail": "{user}{apply} đã hết hạn hoặc đã được duyệt hoàn tất",
+    "auditErrorMsgStrategy": "Bước tiếp theo chưa cấu hình chiến lược duyệt, vui lòng liên hệ quản trị viên để cài đặt lại",
+    "auditErrorMsgAuditor": "Bước tiếp theo không có người duyệt phù hợp, vui lòng liên hệ quản trị viên để cài đặt lại",
+    "auditErrorMsgCsfLevel": "Bước tiếp theo không có người duyệt cùng cấp bí mật, vui lòng liên hệ quản trị viên để cài đặt lại",
+    "emptyIdea": "Ý kiến duyệt không thể trống",
+    "errorMsgNotFile": "Lỗi khi lấy tệp hoặc tệp không tồn tại",
+    "serverError": "Có lỗi xảy ra trên máy chủ, vui lòng thử lại sau",
+    "noNetwork": "Không thể kết nối mạng",
+    "batchHandle": "Duyệt hàng loạt thành công",
+    "frozen": "Tài khoản đã bị đóng băng",
+    "forbidden": "Tài khoản đã bị cấm",
+    "countersignApprovedError": "Đã duyệt qua yêu cầu này, không thể thêm lần nữa"
+  },
+  "selectFile": "Chọn tệp",
+  "attachment": {
+    "add": "Thêm tệp đính kèm"
+  },
+  "invalidParams": "Tham số không hợp lệ"
+}

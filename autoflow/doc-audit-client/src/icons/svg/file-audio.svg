@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+  <g fill="none" fill-rule="evenodd">
+    <path fill="#FFA434" d="M21 4h119.366a8 8 0 015.434 2.129l38.634 35.754A8 8 0 01187 47.755V188a8 8 0 01-8 8H21a8 8 0 01-8-8V12a8 8 0 018-8z"/>
+    <g fill="#FFF" transform="translate(46 59)">
+      <rect width="12" height="92" x="48" rx="6"/>
+      <rect width="12" height="60" x="24" y="15" rx="6"/>
+      <rect width="12" height="30" y="30" rx="6"/>
+      <rect width="12" height="60" x="72" y="15" rx="6"/>
+      <rect width="12" height="30" x="96" y="30" rx="6"/>
+    </g>
+  </g>
+</svg>

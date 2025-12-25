@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>审核</title>
+    <desc>Created with Sketch.</desc>
+    <g id="审核" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组-7" transform="translate(2.000000, 3.000000)" stroke="#000000">
+            <path d="M15.6308041,2.809363 L15.6308041,2 C15.6308041,0.8954305 14.7353736,4.87397833e-14 13.6308041,4.79616347e-14 L2,4.79616347e-14 C0.8954305,4.81645408e-14 -6.85250091e-14,0.8954305 -6.83897383e-14,2 L-6.83897383e-14,14.303381 C-6.84765122e-14,15.4079505 0.8954305,16.303381 2,16.303381 L6.1741204,16.303381 L6.1741204,16.303381" id="Path-10" stroke-width="1.2"></path>
+            <line x1="3.62860887" y1="6.20780285" x2="9.58333333" y2="6.20780285" id="Path-11-Copy" stroke-width="1.2"></line>
+            <line x1="3.74007188" y1="3.21498843" x2="12.2319994" y2="3.21498843" id="Path-11" stroke-width="1.2"></line>
+            <g id="编组-4" transform="translate(7.333333, 6.823785)">
+                <path d="M2,6 L9,6 C10.1045695,6 11,6.8954305 11,8 L11,9 L11,9 L0,9 L0,8 C-1.3527075e-16,6.8954305 0.8954305,6 2,6 Z" id="矩形"></path>
+                <path d="M6.69528489,2.21605386 L8,5.77715455 M3,5.77715455 L4.11807102,2" id="形状"></path>
+                <circle id="椭圆形" stroke-width="1.2" cx="5.5" cy="1.5" r="1.5"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

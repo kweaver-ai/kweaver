@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>系统</title>
+    <desc>Created with Sketch.</desc>
+    <g id="系统" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组-2">
+            <circle id="椭圆形" fill="#136FE3" cx="16" cy="16" r="16"></circle>
+            <g id="电脑" transform="translate(8.000000, 9.000000)" fill="#FFFFFF" fill-rule="nonzero">
+                <path d="M9,11 L9,12 L11,12 L11,14 L5,14 L5,12 L7,12 L7,11 L0,11 L0,0 L16,0 L16,11 L9,11 Z M8.99999999,9.00000001 L14,9.00000001 L14,2.00000001 L1.99999999,2.00000001 L1.99999999,9.00000001 L8.99999999,9.00000001 L8.99999999,9.00000001 Z" id="形状"></path>
+            </g>
+        </g>
+    </g>
+</svg>

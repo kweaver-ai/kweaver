@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="469px" height="447px" viewBox="0 0 469 447" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>繁体</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="469" height="447" rx="4"></rect>
+        <filter x="-2.2%" y="-2.3%" width="104.5%" height="104.7%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="繁体" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组">
+            <g id="Combined-Shape" fill-rule="nonzero">
+                <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                <rect stroke-opacity="0.05" stroke="#000000" stroke-width="1" stroke-linejoin="square" fill="#FFFFFF" fill-rule="evenodd" x="0.5" y="0.5" width="468" height="446" rx="4"></rect>
+            </g>
+            <text id="什麼是連續多級部門簽核？" font-family="SourceHanSansCN-Medium, Source Han Sans CN" font-size="13" font-weight="400" line-spacing="23" fill="#000000">
+                <tspan x="16" y="31">什麼是連續多級部門簽核？</tspan>
+            </text>
+            <text id="從發起者的直屬部門核准者開始，依次逐級向" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="13" font-weight="normal" line-spacing="23" fill="#000000">
+                <tspan x="16" y="55">從發起者的直屬部門核准者開始，依次逐級向上簽核，直到所設定的簽核終</tspan>
+                <tspan x="16" y="78">點。</tspan>
+            </text>
+            <text id="如圖：-若小江為簽核發起者，則小吳是小江" font-family="SourceHanSansCN-Medium, Source Han Sans CN" font-size="13" font-weight="400" line-spacing="23" fill="#000000">
+                <tspan x="16" y="117"> 如圖：</tspan>
+                <tspan x="57.925" y="117" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-weight="normal"></tspan>
+                <tspan x="16" y="140" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-weight="normal">若小江為簽核發起者，則小吳是小江的“直屬部門核准者”，小李是小江</tspan>
+                <tspan x="16" y="163" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-weight="normal">的“直屬部門向上一級核准者”</tspan>
+            </text>
+            <rect id="矩形" stroke="#B3CCEF" fill="#DCEAF9" x="80" y="191" width="174" height="28" rx="4"></rect>
+            <g id="编组-31" transform="translate(118.000000, 371.000000)">
+                <rect id="矩形备份-37" stroke="#B3CCEF" fill="#DCEAF9" x="0" y="0" width="174" height="28" rx="4"></rect>
+                <text id="小江" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="12" font-weight="normal" line-spacing="23" fill="#000000">
+                    <tspan x="73" y="14">小江</tspan>
+                </text>
+                <text id="發起者" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="12" font-weight="normal" line-spacing="23" fill="#0F6FE4">
+                    <tspan x="182" y="14">發起者</tspan>
+                </text>
+            </g>
+            <rect id="矩形备份-38" stroke="#B3CCEF" fill="#DCEAF9" x="118" y="311" width="174" height="28" rx="4"></rect>
+            <rect id="矩形备份-39" stroke="#B3CCEF" fill="#DCEAF9" x="99" y="251" width="185" height="28" rx="4"></rect>
+            <text id="公司最高級部門核准者：小賀" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="12" font-weight="normal" line-spacing="23" fill="#000000">
+                <tspan x="88" y="205">公司最高級部門核准者：小賀</tspan>
+            </text>
+            <text id="小江的直屬部門核准者：小吳" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="12" font-weight="normal" line-spacing="23" fill="#000000">
+                <tspan x="126" y="325">小江的直屬部門核准者：小吳</tspan>
+            </text>
+            <text id="小吳的上一級部門核准者：小李" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="12" font-weight="normal" line-spacing="23" fill="#000000">
+                <tspan x="107" y="265">小吳的上一級部門核准者：小李</tspan>
+            </text>
+            <polygon id="三角形" fill="#AEAEAE" transform="translate(66.500000, 204.964188) rotate(180.000000) translate(-66.500000, -204.964188) " points="66.5 201 72 208.928377 61 208.928377"></polygon>
+            <polygon id="三角形备份-2" fill="#AEAEAE" transform="translate(85.500000, 264.964188) rotate(180.000000) translate(-85.500000, -264.964188) " points="85.5 261 91 268.928377 80 268.928377"></polygon>
+            <polygon id="三角形备份-3" fill="#AEAEAE" transform="translate(104.500000, 324.964188) rotate(180.000000) translate(-104.500000, -324.964188) " points="104.5 321 110 328.928377 99 328.928377"></polygon>
+            <line x1="66.5" y1="209.5" x2="66.5" y2="389.5" id="直线-7" stroke-opacity="0.3" stroke="#000000" stroke-linecap="square" stroke-dasharray="3"></line>
+            <line x1="85.5" y1="268.5" x2="85.5" y2="389.5" id="直线-7备份" stroke-opacity="0.3" stroke="#000000" stroke-linecap="square" stroke-dasharray="3"></line>
+            <line x1="104.5" y1="330" x2="104.5" y2="389" id="直线-7备份-2" stroke-opacity="0.3" stroke="#000000" stroke-linecap="square" stroke-dasharray="3"></line>
+            <g id="编组-32" transform="translate(156.000000, 227.000000)" fill="#DCEAF9">
+                <circle id="椭圆形" cx="1.5" cy="1.5" r="1.5"></circle>
+                <circle id="椭圆形备份" cx="1.5" cy="7.5" r="1.5"></circle>
+                <circle id="椭圆形备份-2" cx="1.5" cy="13.5" r="1.5"></circle>
+            </g>
+            <text id="註：若當前匹配層級未找到部門核准者，則自" font-family="SourceHanSansCN-Regular, Source Han Sans CN" font-size="10" font-weight="normal" line-spacing="23" fill="#000000" fill-opacity="0.5">
+                <tspan x="16" y="419">註：若當前匹配層級未找到部門核准者，則自動跳過此層級</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.doc.dao.OutBoxDao">
+
+    <insert id="batchInsertMessage">
+        INSERT INTO t_wf_outbox (f_id, f_topic, f_message, f_create_time)
+        VALUES
+        <foreach collection="boxs" item="box" separator=",">
+            (#{box.id}, #{box.topic}, #{box.message}, #{box.createTime})
+        </foreach>
+    </insert>
+
+</mapper>

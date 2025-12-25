@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aishu.doc.audit.dao.DocAuditApplyDao">
+
+    <sql id="doc_audit_apply_columns">
+		t1.id, t1.biz_id, t1.doc_id, t1.doc_path, t1.doc_type, t1.csf_level, t1.biz_type, t1.apply_type,
+		t1.apply_detail, t1.proc_def_id, t1.proc_def_name,t1.proc_inst_id, t1.audit_type, t1.auditor,
+		t1.apply_user_id, t1.apply_user_name, t1.apply_time,t1.doc_names
+	</sql>
+
+	<select id="selectTodoApplyList" resultType="com.aishu.doc.audit.model.DocAuditApplyModel">
+		SELECT
+		t1.biz_id as id, t1.category_ as biz_type, t1.doc_id as doc_id, t1.doc_path as doc_path, t1.addition as apply_detail,
+		t1.proc_inst_id_ as proc_inst_id, t1.doc_name as doc_names, t1.proc_def_id_ as procDefId
+		FROM t_wf_ru_task t1
+		where t1.assignee_=#{userId}
+		and t1.biz_id is not null
+		<if test="types != null and types != ''">
+			and t1.category_ in
+			<foreach collection="types" item="type" open="(" separator="," close=")">
+				#{type}
+			</foreach>
+		</if>
+		<if test="abstracts != null and abstracts.length > 0 and abstracts != ''">
+			and
+			<foreach item="item" index="index" collection="abstracts" open="(" close=")" separator="or">
+				<choose>
+				<when test="dbType != null and dbType.indexOf('DM') == 0">
+					(locate(#{item}, CAST(json_query(json_query(json_query(json_query( t1.addition, '$.applyDetail' ),'$.workflow'),'$.abstract_info'),'$.text') AS char)) &gt; 0
+					or locate(#{item}, t1.doc_name) &gt; 0)
+				</when>
+				<otherwise>
+					(locate(#{item}, CAST(json_extract(json_extract(json_extract(json_extract( t1.addition, '$.applyDetail' ),'$.workflow'),'$.abstract_info'),'$.text') AS char)) &gt; 0
+					or locate(#{item}, t1.doc_name) &gt; 0)
+				</otherwise>
+				</choose>
+			</foreach>
+
+		</if>
+		<if test="applyUserNames != null and applyUserNames.length > 0 and applyUserNames != ''">
+			and
+			<foreach item="item" index="index" collection="applyUserNames" open="(" close=")" separator="or">
+				<choose>
+				<when test="dbType != null and dbType.indexOf('DM') == 0">
+					locate(#{item}, json_query(t1.addition,'$.applyUserName')) &gt; 0
+				</when>
+				<otherwise>
+					locate(#{item}, json_extract(t1.addition,'$.applyUserName')) &gt; 0
+				</otherwise>
+				</choose>
+			</foreach>
+		</if>
+		order by t1.create_time_ desc
+	</select>
+
+	<select id="selectTodoApplyCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_wf_ru_task t1
+		where t1.assignee_=#{userId}
+		and t1.biz_id is not null
+	</select>
+
+	<select id="selectTaskDefKeyByApplyID" resultType="java.lang.String">
+		select t1.task_def_key_ FROM t_wf_ru_task t1 where t1.biz_id=#{applyId} limit 1
+	</select>
+
+	<update id="updateRuTaskDocPath">
+		update t_wf_ru_task t1 set t1.doc_name=#{docName}, t1.doc_path=#{docPath} where t1.doc_id like #{docId}
+	</update>
+
+	<update id="updateRuTaskAddition">
+		update t_wf_ru_task t1 set t1.addition=#{applyDetail} where t1.proc_inst_id_=#{procInstId}
+	</update>
+
+	<select id="selectProcInstIDListByProcDefID" resultType="java.lang.String">
+		select distinct t1.proc_inst_id_ FROM t_wf_ru_task t1 where t1.proc_def_id_=#{procDefId}
+	</select>
+
+	<select id="selectToReminderList" resultType="com.aishu.doc.audit.model.DocAuditApplyModel">
+		SELECT
+		t1.biz_id as bizId, t1.proc_def_id_ as procDefId, t1.proc_def_id_ as auditType, t1.assignee_ as auditor, t1.create_time_ as applyTime 
+		FROM t_wf_ru_task t1 
+		WHERE t1.proc_def_id_=#{procDefId}
+	</select>
+
+	<!-- selectTaskIDByProcInstID --> 
+	<select id="selectTaskIDByProcInstID" resultType="com.aishu.doc.audit.model.DocAuditApplyModel">
+		select t1.id_ as id, t1.form_key_ as auditType, t1.assignee_ as auditor FROM t_wf_ru_task t1 where t1.proc_inst_id_=#{procInstId}
+	</select>
+</mapper>

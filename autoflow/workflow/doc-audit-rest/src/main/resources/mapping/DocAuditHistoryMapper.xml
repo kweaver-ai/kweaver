@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aishu.doc.audit.dao.DocAuditHistoryDao">
+
+    <sql id="doc_audit_history_columns">
+		t1.id, t1.biz_id, t1.doc_id, t1.doc_path, t1.doc_type, t1.csf_level, t1.biz_type, t1.apply_type,
+		t1.apply_detail, t1.proc_def_id, t1.proc_def_name,t1.proc_inst_id, t1.audit_type, t1.auditor,
+		t1.apply_user_id, t1.apply_user_name, t1.apply_time, t1.audit_status, t1.audit_result, t1.audit_msg,
+		t1.last_update_time,doc_names
+	</sql>
+
+	<select id="selectMyApplyList" resultType="com.aishu.doc.audit.model.DocAuditHistoryModel">
+		select
+		<include refid="doc_audit_history_columns"/>
+		from t_wf_doc_audit_history t1
+		where t1.apply_user_id=#{userId}
+		<if test="status == null">
+			and t1.audit_status != 5 and t1.audit_status != 9
+		</if>
+		<if test="status != null">
+			and t1.audit_status = #{status}
+		</if>
+		<if test="types != null and types != ''">
+			and t1.biz_type in
+			<foreach collection="types" item="type" open="(" separator="," close=")">
+				#{type}
+			</foreach>
+		</if>
+		<if test="abstracts != null and abstracts.length > 0 and abstracts != ''">
+			and
+			<foreach item="item" index="index" collection="abstracts" open="(" close=")" separator="or">
+				<choose>
+				<when test="dbType != null and dbType.indexOf('DM') == 0">
+					(locate(#{item}, CAST(json_query(json_query(json_query(t1.apply_detail,'$.workflow'),'$.abstract_info'),'$.text') AS char)) &gt; 0
+					or locate(#{item}, t1.doc_names) &gt; 0)
+				</when>
+				<otherwise>
+					(locate(#{item}, CAST(json_extract(json_extract(json_extract(t1.apply_detail,'$.workflow'),'$.abstract_info'),'$.text') AS char)) &gt; 0
+					or locate(#{item}, t1.doc_names) &gt; 0)
+				</otherwise>
+				</choose>
+			</foreach>
+		</if>
+		order by t1.audit_status asc, t1.last_update_time desc
+	</select>
+
+	<select id="selectDoneApplyList" resultType="com.aishu.doc.audit.model.DocAuditHistoryModel">
+		select
+		t.biz_id as id, t.category_ as biz_type, t.doc_id as doc_id, t.doc_path as doc_path, t.addition as apply_detail, t.proc_inst_id_ as proc_inst_id, t.status as audit_status,
+		t.doc_name as doc_names, t.end_time_ as lastUpdateTime, t.delete_reason_ as auditMsg
+		from t_wf_hi_taskinst t inner join (
+			select
+			t1.id_, t1.biz_id, t1.category_,
+			<choose>
+			<when test="dbType != null and dbType.indexOf('DM') == 0">
+			cast(t1.doc_id as varchar),
+			cast(t1.addition as varchar),
+			</when>
+			<otherwise>
+			t1.doc_id,
+			t1.addition,
+			</otherwise>
+			</choose>
+			t1.doc_path, t1.proc_inst_id_, t1.status, t1.doc_name, t1.end_time_
+			from t_wf_hi_taskinst t1
+			where t1.assignee_ = #{userId}
+			<if test="status == null || status == ''">
+				and t1.status != 5
+			</if>
+			<if test="status != null and status != ''">
+				<choose>
+					<when test="status == '80'">
+						and t1.status in ('1','3')
+					</when >
+					<otherwise>
+						and t1.status = #{status}
+					</otherwise>
+				</choose>
+			</if>
+			<if test="types != null and types != ''">
+				and t1.category_ in
+				<foreach collection="types" item="type" open="(" separator="," close=")">
+					#{type}
+				</foreach>
+			</if>
+			<if test="abstracts != null and abstracts.length > 0 and abstracts != ''">
+				and
+				<foreach item="item" index="index" collection="abstracts" open="(" close=")" separator="or">
+					<choose>
+					<when test="dbType != null and dbType.indexOf('DM') == 0">
+						(locate(#{item}, CAST(json_query(json_query(json_query(json_query( t1.addition, '$.applyDetail' ),'$.workflow'),'$.abstract_info'),'$.text') AS char)) &gt; 0
+						or locate(#{item},t1.doc_name) &gt; 0)
+					</when>
+					<otherwise>
+						(locate(#{item}, CAST(json_extract(json_extract(json_extract(json_extract( t1.addition, '$.applyDetail' ),'$.workflow'),'$.abstract_info'),'$.text') AS char)) &gt; 0
+						or locate(#{item},t1.doc_name) &gt; 0)
+					</otherwise>
+					</choose>
+				</foreach>
+			</if>
+			<if test="applyUserNames != null and applyUserNames.length > 0 and applyUserNames != ''">
+				and
+				<foreach item="item" index="index" collection="applyUserNames" open="(" close=")" separator="or">
+					<choose>
+					<when test="dbType != null and dbType.indexOf('DM') == 0">
+						locate(#{item}, json_query(t1.addition,'$.applyUserName')) &gt; 0
+					</when>
+					<otherwise>
+						locate(#{item}, json_extract(t1.addition,'$.applyUserName')) &gt; 0
+					</otherwise>
+					</choose>
+				</foreach>
+			</if>
+			and t1.delete_reason_ is not null and t1.delete_reason_ != ''
+			group by t1.biz_id, t1.category_,
+			<choose>
+			<when test="dbType != null and dbType.indexOf('DM') == 0">
+			cast(t1.doc_id as varchar),
+			cast(t1.addition as varchar),
+			</when>
+			<otherwise>
+			t1.doc_id,
+			t1.addition,
+			</otherwise>
+			</choose>
+			t1.doc_path, t1.proc_inst_id_, t1.status,t1.doc_name
+		) as t2 ON t.id_ = t2.id_
+		order by t.end_time_ desc
+	</select>
+
+	<select id="selectAuditCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_wf_hi_taskinst t1
+		where t1.assignee_=#{userId}
+		and (t1.delete_reason_ = 'completed' or t1.delete_reason_ is null)
+	</select>
+
+	<select id="selectAuditTaskByApplyIDAndTaskDefKey" resultType="com.aishu.doc.audit.model.DocAuditHistoryModel">
+		select t1.id_ as id, t1.task_def_key_ as procDefName, t1.assignee_ as auditor, t1.assignee_org_id as assigneeOrgId,
+		t1.delete_reason_ as auditResult, t1.form_key_ as auditType, t1.end_time_ as lastUpdateTime
+		from t_wf_hi_taskinst t1
+		where t1.biz_id=#{apply_id} and t1.task_def_key_=#{task_def_key}
+	</select>
+
+	<select id="selectTopExecutionIDByID" resultType="java.lang.String">
+		select t1.top_execution_id_ as topExecutionId from t_wf_hi_taskinst t1
+		where t1.id_=#{task_id}
+	</select>
+
+	<update id="updateHisTaskStatus">
+		update t_wf_hi_taskinst t1 set status=#{status} where t1.proc_inst_id_=#{procInstId} and t1.status != '7'
+	</update>
+
+	<update id="batchUpdateHisTaskStatus">
+		update t_wf_hi_taskinst t1 set status=#{status} where
+		<foreach collection = "idList" item = "ids" open = "(" separator = "or" close = ")">
+			t1.proc_inst_id_ in
+			<foreach collection = "ids" item = "id" open = "(" separator = "," close = ")">
+				#{id}
+			</foreach>
+		</foreach>
+	</update>
+
+	<update id="updateHisTaskDocPath">
+		update t_wf_hi_taskinst t1 set t1.doc_name=#{docName}, t1.doc_path=#{docPath} where t1.doc_id like #{docId}
+	</update>
+
+	<update id="updateHisTaskAddition">
+		update t_wf_hi_taskinst t1 set t1.addition=#{applyDetail} where t1.proc_inst_id_=#{procInstId}
+	</update>
+
+	<update id="updateHisTaskMessageId">
+		update t_wf_hi_taskinst t1 set t1.message_id=#{messageId} where t1.id_=#{id}
+	</update>
+
+	<update id="batchUpdateHisTaskMessageId">
+		update t_wf_hi_taskinst t1 set message_id=#{messageId} where t1.id_ in
+		<foreach collection = "ids" item = "id" open = "(" separator = "," close = ")">
+			#{id}
+		</foreach>
+	</update>
+
+	<select id="selectHisTaskAddition" resultType="java.lang.String">
+		select t1.addition as apply_detail from t_wf_hi_taskinst t1 where t1.proc_inst_id_=#{procInstId} limit 1
+	</select>
+
+	<insert id="insertHiTaskinst" parameterType="org.activiti.engine.impl.persistence.entity.HistoricTaskInstanceEntity">
+		INSERT INTO t_wf_hi_taskinst
+		(id_, proc_def_id_, task_def_key_, proc_inst_id_, execution_id_, name_, parent_task_id_,
+		description_, owner_, assignee_, start_time_, claim_time_, end_time_, duration_, delete_reason_,
+		priority_, due_date_, form_key_, category_, tenant_id_, proc_title, sender, pre_task_def_key,
+		pre_task_id, pre_task_def_name, action_type, top_execution_id_, sender_org_id, assignee_org_id,
+		proc_def_name, status, biz_id, doc_id, doc_name, doc_path, addition, message_id)
+		VALUES(
+			#{id}, #{processDefinitionId}, #{taskDefinitionKey}, #{processInstanceId}, #{executionId}, #{name}, #{parentTaskId},
+			#{description}, #{owner}, #{assignee}, #{startTime}, #{claimTime}, #{endTime}, #{durationInMillis}, #{deleteReason},
+			#{priority}, #{dueDate}, #{formKey}, #{category}, #{tenantId}, #{procTitle}, #{sender}, #{preTaskDefKey},
+		 	#{preTaskId}, #{preTaskDefName}, #{actionType}, #{topExecutionId}, #{senderOrgId}, #{assigneeOrgId},
+			#{processDefinitionName}, #{status}, #{bizId}, #{docId}, #{docName}, #{docPath}, #{addition}, #{messageId}
+		)
+	</insert>
+
+	<select id="selectAuditorByProInsID" resultType="java.lang.String">
+		select distinct t1.assignee_ as assignee from t_wf_hi_taskinst t1 where t1.proc_inst_id_=#{procInstId}
+	</select>
+	<!-- <insert id="insertHiTaskinst" parameterType="com.aishu.wf.core.engine.core.model.HistoryTaskModel">
+		INSERT INTO t_wf_hi_taskinst
+		(id_, proc_def_id_, task_def_key_, proc_inst_id_, execution_id_, name_, parent_task_id_,
+		description_, owner_, assignee_, start_time_, claim_time_, end_time_, duration_, delete_reason_,
+		priority_, due_date_, form_key_, category_, tenant_id_, proc_title, sender, pre_task_def_key,
+		pre_task_id, pre_task_def_name, action_type, top_execution_id_, sender_org_id, assignee_org_id,
+		proc_def_name, status, biz_id, doc_id, doc_name, doc_path, addition)
+		VALUES(
+			#{id}, #{procDefId}, #{taskDefKey}, #{procInstId}, #{executionId}, #{name}, #{parentTaskId},
+			#{description}, #{owner}, #{assignee}, #{startTime}, #{claimTime}, #{endTime}, #{duration}, #{deleteReason},
+			#{priority}, #{dueDate}, #{formKey}, #{category}, #{tenantId}, #{procTitle}, #{sender}, #{preTaskDefKey},
+		 	#{preTaskId}, #{preTaskDefName}, #{actionType}, #{topExecutionId}, #{senderOrgId}, #{assigneeOrgId},
+			#{procDefName}, #{status}, #{bizId}, #{docId}, #{docName}, #{docPath}, #{addition}
+		)
+	</insert> -->
+
+	<!-- updateHisTaskByApplyId --> 
+	<delete id="updateHisTaskByApplyId">
+		UPDATE t_wf_doc_audit_history SET audit_status=#{audit_status}, audit_result = #{audit_result}
+		WHERE biz_id = #{apply_id}
+	</delete>
+</mapper>

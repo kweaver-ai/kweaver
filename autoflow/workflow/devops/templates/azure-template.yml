@@ -1,0 +1,92 @@
+parameters:
+  - name: name
+    default: ''
+  - name: pool
+    default: ''
+  - name: containerName
+    default: ''
+  - name: registry
+    default: ''
+  - name: imageRepository
+    default: ''
+  - name: artifactName
+    default: ''
+  - name: dependencyArtifact
+    default: ''
+  - name: arch
+    default: ''
+  - name: buildImageJobName
+    default: ''
+  - name: buildProject
+    default: ''
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    container: ${{ parameters.containerName }}
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+      - script: |
+          echo "start"
+          mvn clean package -Dmaven.test.skip=true -pl :${{ parameters.buildProject }} -am
+        condition: succeeded()
+        displayName: 'Build'
+      - task: CopyFiles@2
+        inputs:
+          contents: |
+            ${{ parameters.buildProject }}/target/${{ parameters.buildProject }}-0.0.1.jar
+            ${{ parameters.buildProject }}/Dockerfile
+          targetFolder: $(Build.BinariesDirectory)
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: $(Build.BinariesDirectory)
+          artifactName: ${{parameters.artifactName}}
+      - script: |
+          pwd
+          rm -rf ./**
+          ls
+        displayName: 'Remove Source'
+        condition: always()
+  - job: ${{ parameters.buildImageJobName }}
+    displayName: ${{ parameters.buildImageJobName }}
+    dependsOn: ${{ parameters.name }}
+    pool:
+      name: ${{ parameters.pool }}
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          artifactName: ${{parameters.artifactName}}
+          downloadPath: $(Build.BinariesDirectory)
+      - script: |
+          set -ex
+
+          CURRENT_IMAGE="${{ parameters.registry }}/${{ parameters.imageRepository }}:$(CURRENT_TAG).${{ parameters.arch }}"
+          LATEST_IMAGE="${{ parameters.registry }}/${{ parameters.imageRepository }}:$(LATEST_TAG).${{ parameters.arch }}"
+
+          cd $(Build.BinariesDirectory)/${{parameters.artifactName}}/${{ parameters.buildProject }}
+          docker build -f ./Dockerfile -t $LATEST_IMAGE .
+          docker tag $LATEST_IMAGE $CURRENT_IMAGE
+
+          set +x
+          echo "##vso[task.setvariable variable=BuildAgentName;isOutput=true]$(Agent.Name)"
+          echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+          echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+
+        name: getAgentName
+        displayName: '生成镜像包并推送'
+      - script: |
+          ls
+          rm -rf ./**
+        displayName: 'Remove Source'
+        condition: always()
+      - script: |
+          IMAGE_PRE="${{ parameters.registry }}/${{ parameters.imageRepository }}"
+          docker images|grep $IMAGE_PRE|awk '{print$3}'|sort|uniq|xargs docker rmi -f
+          docker images
+        displayName: "Clearn Image"
+        condition: failed()

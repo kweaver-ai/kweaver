@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aishu.doc.datamigration.dao.DocShareHistoryDao">
+
+	<select id="selectAuditApplicationList" resultType="map">
+		select
+			t1.f_apply_id, t1.f_sharer_id, t1.f_doc_id, t1.f_create_date,
+			t1.f_accessor_id, t1.f_app_type, t1.f_detail
+		from anyshare.t_audit_application t1
+	</select>
+
+	<select id="selectAuditHistoryList" resultType="map">
+		select
+			t1.f_user_id, t1.f_doc_name, t1.f_is_dir, t1.f_csf_level, t1.f_request_date,
+		    t1.f_apply_id, t1.f_requester_name, t1.f_app_type, t1.f_detail,
+			(
+				case t1.f_audit_type
+				when 4 then 0
+				else (
+					select t2.f_audit_date from anyshare.t_audit_history t2
+					where t1.f_apply_id = t2.f_apply_id and t2.f_audit_date > 0
+				) end
+			) as f_audit_date,
+			(
+				select t2.f_user_id from anyshare.t_audit_history t2
+				where t1.f_apply_id = t2.f_apply_id and t2.f_audit_date > 0
+			) as f_auditor_id,
+			t1.f_veto_index,
+			t1.f_auditor_names
+		from anyshare.t_audit_history t1
+		where t1.f_audit_date =0
+	</select>
+
+	<select id="selectDocLibByGnsId" resultType="map">
+		select t1.f_doc_type,
+		case t1.f_doc_type when 1 then
+			(select t2.f_display_name from sharemgnt_db.t_user t2 where t2.f_user_id=t1.f_creater_id)
+		ELSE t1.f_name end as f_name
+		from anyshare.t_acs_doc t1
+		where t1.f_doc_id=#{id}
+	</select>
+
+	<select id="selectMetadataListByDocId" resultType="map">
+		select objectId as id, name from eofs.metadata
+		where #{id} like
+			  concat('%', objectId, '%')
+		  and basic_attr != '0'
+	</select>
+
+	<select id="selectMetadataById" resultType="map">
+		select basic_attr, csf_level from eofs.metadata where objectId=#{id}
+	</select>
+
+	<select id="selectUserNameById" resultType="java.lang.String">
+		select t.f_display_name from sharemgnt_db.t_user t where t.f_user_id=#{id}
+	</select>
+
+	<select id="selectDeptNameById" resultType="java.lang.String">
+		select t.f_name from sharemgnt_db.t_department t where t.f_department_id=#{id}
+	</select>
+
+	<select id="selectPersonGroupNameById" resultType="java.lang.String">
+		select t.f_group_name from sharemgnt_db.t_person_group t where t.f_group_id=#{id}
+	</select>
+
+	<select id="selectUserGroupNameById" resultType="java.lang.String">
+		select t.f_group_name from user_management.t_group t where t.f_group_id=#{id}
+	</select>
+
+	<insert id="insertHiProcinst" >
+		INSERT INTO `t_wf_hi_procinst`
+		(`id_`, `proc_inst_id_`, `business_key_`, `proc_def_id_`,
+		 `start_time_`, `end_time_`, `duration_`, `start_user_id_`,
+		 `start_act_id_`, `end_act_id_`, `super_process_instance_id_`,
+		 `delete_reason_`, `tenant_id_`, `name_`, `proc_title`,
+		 `proc_state`, `proc_def_name`, `start_user_name`, `starter_org_id`,
+		 `starter_org_name`, `starter`, `top_process_instance_id_`)
+		VALUES
+		(
+		 #{id}, #{procInstId}, #{businessKey}, #{procDefId}, #{startTime}, #{endTime},
+		 #{duration}, #{startUserId}, #{startActId}, #{endActId}, #{superProcessInstanceId},
+		 #{deleteReason}, #{tenantId}, #{name}, #{procTitle}, #{procState}, #{procDefName},
+		 #{startUserName}, #{starterOrgId}, #{starterOrgName}, #{starter}, #{topProcessInstanceId}
+		 )
+	</insert>
+
+	<insert id="insertHiTaskinst" >
+		INSERT INTO `t_wf_hi_taskinst`
+		(`id_`, `proc_def_id_`, `task_def_key_`, `proc_inst_id_`, `execution_id_`,
+		 `name_`, `parent_task_id_`, `description_`, `owner_`, `assignee_`,
+		 `start_time_`, `claim_time_`, `end_time_`, `duration_`, `delete_reason_`,
+		 `priority_`, `due_date_`, `form_key_`, `category_`, `tenant_id_`, `proc_title`,
+		 `sender`, `pre_task_def_key`, `pre_task_id`, `pre_task_def_name`, `action_type`,
+		 `top_execution_id_`, `send_user_name`, `sender_org_id`, `sender_org_name`,
+		 `assignee_user_name`, `assignee_org_id`, `assignee_org_name`, `assignee_user_id`,
+		 `send_user_id`, `proc_def_name`)
+		VALUES
+		(
+			#{id}, #{procDefId}, #{taskDefKey}, #{procInstId}, #{executionId}, #{name},
+			#{parentTaskId}, #{description}, #{owner}, #{assignee}, #{startTime},
+			#{claimTime}, #{endTime}, #{duration}, #{deleteReason}, #{priority}, #{dueDate},
+			#{formKey}, #{category}, #{tenantId}, #{procTitle}, #{sender}, #{preTaskDefKey},
+		 	#{preTaskId}, #{preTaskDefName}, #{actionType}, #{topExecutionId}, #{sendUserName},
+		 	#{senderOrgId}, #{senderOrgName}, #{assigneeUserName}, #{assigneeOrgId}, #{assigneeOrgName},
+			#{assigneeUserId}, #{sendUserId}, #{procDefName}
+		)
+	</insert>
+
+	<insert id="insertHiActinst" >
+		INSERT INTO `t_wf_hi_actinst`
+		(`id_`, `proc_def_id_`, `proc_inst_id_`, `execution_id_`, `act_id_`, `task_id_`,
+		 `call_proc_inst_id_`, `act_name_`, `act_type_`, `assignee_`, `start_time_`, `end_time_`,
+		 `duration_`, `tenant_id_`, `proc_title`, `sender`, `pre_act_id`, `pre_act_name`,
+		 `pre_act_inst_id`, `send_user_name`, `sender_org_id`, `sender_org_name`,
+		 `assignee_user_name`, `assignee_org_id`, `assignee_org_name`, `proc_def_name`)
+		VALUES
+		(
+			#{id}, #{procDefId}, #{procInstId}, #{executionId}, #{actId}, #{taskId},
+			#{callProcInstId}, #{actName}, #{actType}, #{assignee}, #{startTime}, #{endTime},
+			#{duration}, #{tenantId}, #{procTitle}, #{sender}, #{preActId}, #{preActName},
+			#{preActInstId}, #{sendUserName}, #{senderOrgId}, #{senderOrgName},
+			#{assigneeUserName}, #{assigneeOrgId}, #{assigneeOrgName}, #{procDefName}
+		)
+	</insert>
+
+	<insert id="insertHiIdentitylink" >
+		INSERT INTO `t_wf_hi_identitylink`
+		(`id_`, `group_id_`, `type_`, `user_id_`, `task_id_`, `proc_inst_id_`)
+		VALUES
+		(
+			#{id}, #{groupId}, #{type}, #{userId}, #{taskId}, #{procInstId}
+		)
+	</insert>
+
+	<insert id="insertHiVarinst" >
+		INSERT INTO `t_wf_hi_varinst`
+		(`id_`, `proc_inst_id_`, `execution_id_`, `task_id_`, `name_`, `var_type_`, `rev_`,
+		 `bytearray_id_`, `double_`, `long_`, `text_`, `text2_`, `create_time_`, `last_updated_time_`)
+		VALUES
+		(
+			#{id}, #{procInstId}, #{executionId}, #{taskId}, #{name}, #{varType}, #{rev},
+			#{bytearrayId}, #{double}, #{long}, #{text}, #{text2}, #{createTime}, #{lastUpdatedTime}
+		)
+	</insert>
+
+	<insert id="insertGeBytearray" >
+		INSERT INTO `t_wf_ge_bytearray`
+		(`id_`, `rev_`, `name_`, `deployment_id_`, `bytes_`, `generated_`)
+		VALUES
+		(
+			#{id}, #{rev}, #{name}, #{deploymentId}, #{bytes}, #{generated}
+		)
+	</insert>
+
+</mapper>

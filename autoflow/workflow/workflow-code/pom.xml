@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>workflow</artifactId>
+        <groupId>com.aishu</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>workflow-code</artifactId>
+    <name>workflow-code</name>
+    <version>${workflow.code}</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!-- redis连接池依赖 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+        <!--<dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>-->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>2.7.1</version>
+        </dependency>
+        <!-- mybatis-plus 数据持久化框架 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatisplus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.owasp.esapi</groupId>
+            <artifactId>esapi</artifactId>
+            <version>${esapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+        </dependency>
+        <!-- h2-jdbc -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.222</version>
+        </dependency>
+        <!-- commons管理 start -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>${commons-fileupload.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.17.Final</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- commons管理 end -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+
+        </dependency>
+        <!-- 引擎相关 start-->
+        <dependency>
+            <groupId>workflow-engine</groupId>
+            <artifactId>workflow-engine</artifactId>
+            <version>${workflow-engine.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-engine-${workflow-engine.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-bpmn-converter</groupId>
+            <artifactId>workflow-bpmn-converter</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-bpmn-converter-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-bpmn-layout</groupId>
+            <artifactId>workflow-bpmn-layout</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-bpmn-layout-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-bpmn-model</groupId>
+            <artifactId>workflow-bpmn-model</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-bpmn-model-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-json-converter</groupId>
+            <artifactId>workflow-json-converter</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-json-converter-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-process-validation</groupId>
+            <artifactId>workflow-process-validation</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-process-validation-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-image-generator</groupId>
+            <artifactId>workflow-image-generator</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-image-generator-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>workflow-spring</groupId>
+            <artifactId>workflow-spring</artifactId>
+            <version>${workflow.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-spring-${workflow.version}.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>workflow-thrift</groupId>
+            <artifactId>workflow-thrift</artifactId>
+            <version>1.0.7</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/workflow-thrift-1.0.7.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+            <version>3.1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.9.9</version>
+        </dependency>
+        <!-- kafka client -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+        <!-- 引擎相关 end -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.21</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+
+        <!-- swagger -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.5.22</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-models</artifactId>
+            <version>2.2.15</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+        <!-- knife4j接口文档依赖 -->
+        <!-- END -->
+        <!--thrift 相关资源-->
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>java-msq</groupId>
+            <artifactId>java-msq</artifactId>
+            <version>1.1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/java-msq-1.1.1.jar</systemPath>
+        </dependency>
+        <!-- tlqHTP2.0 -->
+        <!-- tlqHTP2.0 -->
+        <dependency>
+            <groupId>aishu.cn</groupId>
+            <artifactId>tlqHTP2.0</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../workflow-code/lib/tlq9client-2023-08-16.jar</systemPath>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.tongtech</groupId>
+                    <artifactId>fastjson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>aishu.cn</groupId>
+            <artifactId>tlqHTP2.0.2.1</artifactId>
+            <version>2.0.2.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../workflow-code/lib/tlq9client-2.0.2.1.jar</systemPath>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.tongtech</groupId>
+                    <artifactId>fastjson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>java-msq</groupId>
+            <artifactId>java-msq</artifactId>
+            <version>1.1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../workflow-code/lib/java-msq-1.1.1.jar</systemPath>
+        </dependency>
+        <!-- bemsq -->
+        <dependency>
+            <groupId>aishu.cn</groupId>
+            <artifactId>besmq-client</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/besmq-client.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.sproutsocial</groupId>
+            <artifactId>nsq-j</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <!-- 达梦数据库驱动 -->
+        <dependency>
+            <groupId>com.dameng</groupId>
+            <artifactId>DmJdbcDriver18</artifactId>
+            <version>8.1.2.192</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dameng</groupId>
+            <artifactId>DmDialect-for-hibernate5.4</artifactId>
+            <version>8.1.2.192</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>2.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.118.Final</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.26</version>
+        </dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-spatial-postgis-kingbase</artifactId>
+			<version>1.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/hibernate-spatial-postgis-kingbase-1.1.jar</systemPath>
+		</dependency>
+    </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://www.rzdata.net:8081/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <url>http://www.rzdata.net:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <build>
+        <finalName>workflow-code</finalName>
+        <resources>
+            <resource>
+                <targetPath>${project.build.directory}/classes</targetPath>
+                <directory>src/main/java</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <targetPath>${project.build.directory}/classes</targetPath>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <!-- <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <includes>
+                        <include>org/**/*</include>
+                    </includes>
+                </configuration>
+            </plugin> -->
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                <version>${spring.boot.version}</version>-->
+<!--                <configuration>-->
+<!--                    <mainClass>com.aishu.wf.core.WorkflowCodeApplication</mainClass>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>repackage</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+        </plugins>
+    </build>
+
+
+    <dependencyManagement>
+
+
+        <dependencies>
+
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>4.8.69</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-models</artifactId>
+                <version>1.5.22</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>32.1.2-jre</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.13.5</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.13.5</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.6</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.13.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio</artifactId>
+                <version>3.4.0</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+</project>

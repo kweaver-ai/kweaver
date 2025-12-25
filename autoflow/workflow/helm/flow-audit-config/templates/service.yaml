@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-audit-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: flow-audit-config
+spec:
+{{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+{{- end }}
+  ports:
+    - name: public-port
+      port: 9800
+      protocol: TCP
+  selector:
+    app: flow-audit-config
+  type: {{ .Values.service.type }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-audit-config-private
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: flow-audit-config
+spec:
+{{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+{{- end }}
+  ports:
+    - name: private-port
+      port: 9801
+      targetPort: 9801
+      protocol: TCP
+  selector:
+    app: flow-audit-config
+  type: {{ .Values.service.type }}

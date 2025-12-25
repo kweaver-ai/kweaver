@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:activiti="http://activiti.org/bpmn"
+    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.activiti.org/test">
+    <process id="Process_0gllsQDS" name="默认流程" isExecutable="true">
+        <startEvent id="sid-start-node" name="发起审核" />
+        <userTask id="UserTask_7x6FWNrt" name="审核" activiti:assignee="${assignee}" activiti:candidateUsers="">
+            <extensionElements>
+                <activiti:expandProperty id="dealType" value="tjsh" />
+            </extensionElements>
+            <multiInstanceLoopCharacteristics activiti:collection="${assigneeList}" activiti:elementVariable="assignee" />
+        </userTask>
+        <endEvent id="EndEvent_1wqgipp" name="流程结束" />
+        <sequenceFlow id="SequenceFlow_sid-start-nodeLINE" sourceRef="sid-start-node" targetRef="UserTask_7x6FWNrt" />
+        <sequenceFlow id="SequenceFlow_EndEvent" sourceRef="UserTask_7x6FWNrt" targetRef="EndEvent_1wqgipp" />
+    </process>
+    <bpmndi:BPMNDiagram id="MyDiagramcess_Process_0gllsQDS">
+        <bpmndi:BPMNPlane id="BPMNPlane_Process_0gllsQDS" bpmnElement="Process_0gllsQDS" />
+    </bpmndi:BPMNDiagram>
+</definitions>

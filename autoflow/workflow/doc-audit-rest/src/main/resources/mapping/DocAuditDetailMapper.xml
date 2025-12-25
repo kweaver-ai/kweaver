@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aishu.doc.audit.dao.DocAuditDetailDao">
+
+
+
+	<select id="selectTodeDtailList" resultType="com.aishu.doc.audit.model.DocAuditDetailModel">
+		SELECT * FROM t_wf_doc_audit_detail where apply_id=#{applyId}
+	</select>
+
+
+
+
+
+</mapper>

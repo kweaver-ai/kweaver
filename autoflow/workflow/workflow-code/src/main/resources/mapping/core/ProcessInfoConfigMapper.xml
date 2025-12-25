@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.engine.config.dao.ProcessInfoConfigDao">
+
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="ProcessInfoConfigColumns">
+	    <![CDATA[
+		process_model_sync_state,process_mgr_state,deployment_id,process_def_id,
+		process_handler_class_path,page_isshow_select_usertree,process_def_name,process_def_key,
+		process_type_id,process_type_name,process_page_url,process_page_info,
+		process_start_auth,process_start_isshow,process_start_order,create_user,create_user_name,create_time,
+		last_update_time,remark,tenant_id,process_mgr_isshow,other_sys_deal_status,aris_code,c_protocl,m_url,m_protocl
+	    ]]>
+	</sql>
+
+     <!--  流程配置和建模 -->
+     <select id="findConfigAndModelPage" resultType="com.aishu.wf.core.engine.config.model.ProcessInfoConfig">
+    	select <include refid="ProcessInfoConfigColumns" />,m.id_ as model_id
+		 from t_wf_process_info_config t left join t_wf_re_model m on t.deployment_id =m.deployment_id_
+    </select>
+     
+  	<select id="getPreTaskInstance"  resultType="string">
+ 		 select assignee_ from t_wf_hi_taskinst t where t.proc_inst_id_=#{processInstanceId} and pre_task_id=#{taskId} and end_time_ is not null
+  	</select>
+</mapper>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<!-- 不使用namespace的话sql搜索定位会比较方便 -->
+<mapper namespace="com.aishu.wf.core.engine.config.dao.Application2UserDao">
+	<!-- useGeneratedKeys="true" keyProperty="xxx" for sqlserver and mysql -->
+	<insert id="batchInsert" useGeneratedKeys="false" keyProperty="appId">
+		insert into t_wf_application_user (
+		app_id ,
+		user_id ,
+		remark
+		) values
+		<foreach collection="list" item="item" index="index" separator=",">
+    	  (#{item.appId,jdbcType=VARCHAR} ,#{item.userId,jdbcType=VARCHAR} ,#{item.remark,jdbcType=VARCHAR})
+		</foreach>
+	</insert>
+</mapper>
+

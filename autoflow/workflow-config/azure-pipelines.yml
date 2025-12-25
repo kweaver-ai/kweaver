@@ -1,0 +1,151 @@
+trigger:
+  branches:
+    include:
+      - MISSION
+      - feature/*
+      - hotfix/*
+
+parameters:
+  - name: TRIVY_EXIT_CODE
+    displayName: trivy exit code
+    type: number
+    default: 1
+    values:
+      - 0
+      - 1
+
+variables:
+  - group: global-dip
+  - name: imageRegistry
+    value: acr.aishu.cn
+  - name: imageRepository
+    value: dip/workflow-config
+  - name: poolNameAMD64
+    value: "anydata-centos7.7-x86_64"
+  - name: poolNameARM64
+    value: "anydata-centos7-arm"
+  - name: artifactName
+    value: Distribute
+
+
+resources:
+  repositories:
+    - repository: templatesAlias
+      type: git
+      name: ONE-Architecture\Yaml-Templates
+      ref: 'refs/heads/main'
+
+stages:
+  - stage: InitVariable
+    displayName: 初始化
+    jobs:
+      - job: InitVariable
+        pool: $(poolNameAMD64)
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+          - bash: |
+              set -ex
+              VERSION=`cat VERSION`
+
+              gitCommit="$(git rev-parse --short HEAD 2>/dev/null)"
+              
+              # 处理分支名称，将/替换为-
+              # 从refs/heads/feature/12345中提取feature/12345，然后将/替换为-
+              BRANCH_NAME=$(echo $(Build.SourceBranch) | sed 's#refs/heads/##' | tr '/' '-')
+              CURRENT_TAG="${VERSION}-${BRANCH_NAME}.${gitCommit}.$(Build.BuildId)"
+              LATEST_TAG="${VERSION}-${BRANCH_NAME}.${gitCommit}"
+
+              set +x
+              echo "##vso[task.setvariable variable=VERSION;isoutput=true]$VERSION"
+              set +x
+              echo "##vso[task.setvariable variable=CURRENT_TAG;isoutput=true]$CURRENT_TAG"
+              set +x
+              echo "##vso[task.setvariable variable=LATEST_TAG;isoutput=true]$LATEST_TAG"
+              
+            name: MyOutputVar
+
+  - stage: BuildImage
+    displayName: 镜像构建
+    dependsOn:
+      - InitVariable
+    variables:
+      VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.VERSION']]
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    jobs:
+      - template: devops/azure_templates/azure-template.yml
+        parameters:
+          name: DockerJobX86_ImageBuild
+          pool: $(poolNameAMD64)
+          registry: $(imageRegistry)
+          imageRepository: $(imageRepository)
+          arch: 'amd64'
+
+      - template: devops/azure_templates/azure-template.yml
+        parameters:
+          name: DockerJobARM_ImageBuild
+          pool: $(poolNameARM64)
+          registry: $(imageRegistry)
+          imageRepository: $(imageRepository)
+          arch: 'arm64'
+
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: amd64 # 可选值 amd64,arm64
+          pool: $(poolNameAMD64) # 代理池
+          dependsOnName: DockerJobX86_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[ dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.LATEST_IMAGE'] ] # 本地构建完镜像之后的全名
+          registry: ACRDockerRegistry # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 1 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[ dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.CURRENT_IMAGE'] ] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: arm64 # 可选值 amd64,arm64
+          pool: $(poolNameARM64) # 代理池
+          dependsOnName: DockerJobARM_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[ dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.LATEST_IMAGE'] ] # 本地构建完镜像之后的全名
+          registry: ACRDockerRegistry # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 2 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[ dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.CURRENT_IMAGE'] ] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+
+  - stage: MakeManifest
+    displayName: 制作多架构镜像
+    dependsOn: 
+      - InitVariable
+      - BuildImage
+    condition: succeeded()
+    variables:
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+      LATEST_IMAGE_AMD64: $[ stageDependencies.BuildImage.DockerJobX86_ImageBuild.outputs['getAgentName.LATEST_IMAGE'] ]
+      LATEST_IMAGE_ARM64: $[ stageDependencies.BuildImage.DockerJobARM_ImageBuild.outputs['getAgentName.LATEST_IMAGE'] ]
+      CURRENT_IMAGE_AMD64: $[ stageDependencies.BuildImage.DockerJobX86_ImageBuild.outputs['getAgentName.CURRENT_IMAGE'] ]
+      CURRENT_IMAGE_ARM64: $[ stageDependencies.BuildImage.DockerJobARM_ImageBuild.outputs['getAgentName.CURRENT_IMAGE'] ]
+    jobs:
+      - job: MakeManifest
+        displayName: 制作多架构镜像
+        workspace:
+          clean: all
+        pool: $(poolNameAMD64)
+        steps:
+          - checkout: none
+          - task: Docker@2
+            inputs:
+              command: login
+              containerRegistry: ACRDockerRegistry
+          - script: |
+              set -e
+              CURRENT_IMAGE="$(imageRegistry)/$(imageRepository):$(CURRENT_TAG)"
+              LATEST_IMAGE="$(imageRegistry)/$(imageRepository):$(LATEST_TAG)"
+
+              docker manifest create --amend $LATEST_IMAGE $(LATEST_IMAGE_AMD64) $(LATEST_IMAGE_ARM64)
+              docker manifest push --purge $LATEST_IMAGE
+              docker manifest create --amend $CURRENT_IMAGE $(CURRENT_IMAGE_AMD64) $(CURRENT_IMAGE_ARM64)
+              docker manifest push --purge $CURRENT_IMAGE

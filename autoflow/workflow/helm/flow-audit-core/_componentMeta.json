@@ -1,0 +1,104 @@
+{
+    "conponentDefineType": "helm/service",
+    "name": "flow-audit-core",
+    "version": "1.0.0",
+    "configSchema": {
+        "title": "flow-audit-core",
+        "description": "组件配置定义",
+        "type": "object",
+        "properties": {
+            "image":{
+                "type": "object",
+                "title": "镜像配置",
+                "properties":{
+                    "registry": {
+                        "type": "string",
+                        "title": "镜像注册地址"
+                    },
+                    "repository": {
+                        "type": "string",
+                        "title": "镜像仓库"
+                    },
+                    "tag": {
+                        "type": "string",
+                        "title": "镜像版本"
+                    },
+                    "pullPolicy": {
+                        "type": "string",
+                        "title": "镜像拉取策略"
+                    }
+                }
+            },
+            "resources": {
+                "type": "object",
+                "title": "容器资源控制",
+                "properties": {
+                    "requests": {
+                        "type": "object",
+                        "description": "容器运行需要的最小资源分配",
+                        "properties": {
+                            "memory": {
+                                "type": "string",
+                                "title": "内存"
+                            },
+                            "cpu": {
+                                "type": "string",
+                                "title": "cpu"
+                            }
+                        }
+                    },
+                    "limits": {
+                        "type": "object",
+                        "description": "容器运行最大资源限制",
+                        "properties": {
+                            "memory": {
+                                "type": "string",
+                                "title": "内存"
+                            },
+                            "cpu": {
+                                "type": "string",
+                                "title": "cpu"
+                            }
+                        }
+                    }
+                }
+            },
+            "replicaCount": {
+                "type": "number",
+                "title": "服务副本数"
+            }
+        }
+    },
+    "dependence": [
+        {
+            "name": "dip-dataflow-dm-pre"
+        },
+        {
+            "name": "rds"
+        },
+        {
+            "name": "mq"
+        },
+        {
+            "name": "redis"
+        },
+        {
+            "name": "user-management"
+        },
+        {
+            "name": "efast"
+        },
+        {
+            "name": "eacp"
+        },
+        {
+            "name": "hydra"
+        },
+        {
+            "name": "sharemgnt"
+        },
+        {
+            "name": "deploy-service"
+        }
+    ]
+}

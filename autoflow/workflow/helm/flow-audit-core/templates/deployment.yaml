@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flow-audit-core
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: flow-audit-core
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: flow-audit-core
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      - image: "{{ .Values.image.registry }}/{{ .Values.image.workflowconfig.repository }}:{{ .Values.image.workflowconfig.wctag }}"
+        imagePullPolicy: IfNotPresent
+        name: workflowconfig
+        resources:
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /conf/workflowconfig
+          name: workflowconfig-volume
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsGroup: 5000
+        runAsUser: 5000
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: workflowconfig-volume
+        - emptyDir: {}
+          name: tmp-logs
+        - name: service-access
+          secret:
+            secretName: cms-release-config-service-access
+      containers:
+        - name: flow-audit-core
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: flow-audit-core-config
+          ports:
+            - name: public-port
+              containerPort: 9800
+          volumeMounts:
+            - mountPath: /conf
+              name: workflowconfig-volume
+            - mountPath: /conf/service-access
+              name: service-access
+            - mountPath: /tmp
+              name: tmp-logs
+          startupProbe:
+            httpGet:
+              path: /api/doc-audit-rest/actuator/health/liveness
+              port: public-port
+            initialDelaySeconds: {{ .Values.service.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.startupProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /api/doc-audit-rest/actuator/health/readiness
+              port: public-port
+            initialDelaySeconds: {{ .Values.service.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.readinessProbe.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: /api/doc-audit-rest/actuator/health/liveness
+              port: public-port
+            initialDelaySeconds: {{ .Values.service.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.livenessProbe.failureThreshold }}

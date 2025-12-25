@@ -9,8 +9,8 @@ RUN mkdir /AnyShare/ \
 
 # 导入前端服务d
 COPY  build /AnyShare/StudioWebService/build/
-COPY ./StudioWebService/handlers/views /AnyShare/StudioWebService/build/
-COPY ./StudioWebService/handlers/tools /AnyShare/StudioWebService/build/
+COPY  handlers/views /AnyShare/StudioWebService/build/
+COPY  handlers/tools /AnyShare/StudioWebService/build/
 
 # node16忽略https证书
 ENV NODE_TLS_REJECT_UNAUTHORIZED=0

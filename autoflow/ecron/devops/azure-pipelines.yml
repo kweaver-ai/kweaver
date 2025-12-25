@@ -1,0 +1,382 @@
+trigger:
+  branches:
+    include:
+      - MISSION
+      - feature/*
+      - hotfix/*
+
+parameters:
+  - name: TRIVY_EXIT_CODE
+    displayName: trivy exit code
+    type: number
+    default: 1
+    values:
+      - 0
+      - 1
+  - name: SKIP_SONARQUBE
+    displayName: skip sonarqube
+    type: number
+    default: 0
+    values:
+      - 0
+      - 1
+
+variables:
+  - group: global-dip
+  - name: imageRegistry
+    value: acr.aishu.cn
+  - name: imageMgntRepository
+    value: dip/ecron-management
+  - name: imageAnalRepository
+    value: dip/ecron-analysis
+  - name: buildImage
+    value: "acr.aishu.cn/public/golang:1.23.7-ubuntu22.04.20241202-2-20250319.1"
+  - name: baseImage
+    value: "acr.aishu.cn/public/ubuntu:22.04.20241202"
+  - name: lintReportName
+    value: lint_report.xml
+  - name: utReportName
+    value: ut_report.xml
+  - name: coverageReportName
+    value: coverage_report.xml
+  - name: chartRepo
+    value: "https://acr.aishu.cn/api/chartrepo/dip/charts"
+  - name: chartName
+    value: "ecron"
+  - name: yqImage
+    value: "acr.aishu.cn/public/mikefarah/yq:4.26.1"
+  - name: poolNameAMD64
+    value: "anydata-centos7.7-x86_64"
+  - name: poolNameARM64
+    value: "anydata-centos7-arm"
+  - name: artifactName
+    value: Distribute
+
+resources:
+  containers:
+    - container: builder
+      endpoint: acr.aishu.cn
+      image: public/golang:1.23.7-ubuntu22.04.20241202-2-20250319.1
+    - container: dotnet
+      endpoint: acr.aishu.cn
+      image: wing-biz/euop/dotnet-runtime:3.1
+  repositories:
+    - repository: templatesAlias
+      type: git
+      name: ONE-Architecture\Yaml-Templates
+      ref: "refs/heads/main"
+    - repository: arPipelineTemplates
+      type: git
+      name: AnyRobot\PipelineTemplates
+      ref: "refs/heads/develop"
+
+stages:
+  - stage: InitVariable
+    displayName: 初始化
+    jobs:
+      - job: InitVariable
+        pool: $(poolNameAMD64)
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+          - bash: |
+              set -ex
+              VERSION=`cat VERSION`
+
+              gitCommit="$(git rev-parse --short HEAD 2>/dev/null)"
+              
+              # 处理分支名称，将/替换为-
+              # 从refs/heads/feature/12345中提取feature/12345，然后将/替换为-
+              BRANCH_NAME=$(echo $(Build.SourceBranch) | sed 's#refs/heads/##' | tr '/' '-')
+              CURRENT_TAG="${VERSION}-${BRANCH_NAME}.${gitCommit}.$(Build.BuildId)"
+              LATEST_TAG="${VERSION}-${BRANCH_NAME}.${gitCommit}"
+
+              set +x
+              echo "##vso[task.setvariable variable=VERSION;isoutput=true]$VERSION"
+              set +x
+              echo "##vso[task.setvariable variable=CURRENT_TAG;isoutput=true]$CURRENT_TAG"
+              set +x
+              echo "##vso[task.setvariable variable=LATEST_TAG;isoutput=true]$LATEST_TAG"
+              set +x
+              echo "##vso[task.setvariable variable=COMMIT_ID;isoutput=true]$gitCommit"
+              
+            name: MyOutputVar
+  - stage: CodeCheck
+    dependsOn:
+      - InitVariable
+    displayName: 代码检查
+    jobs:
+      - template: templates/ut_test.yml
+        parameters:
+          name: CodeCheck
+          displayName: 代码检查
+          pool: $(poolNameAMD64)
+          containerName: builder
+          artifactName: $(artifactName)
+      
+      - job: SonarQube
+        displayName: SonarQube扫描
+        workspace:
+          clean: all
+        pool:
+          name: $(poolNameAMD64)
+        dependsOn: CodeCheck
+        steps:
+          - checkout: self
+          - template: sonarqube-setps.yml@arPipelineTemplates
+            parameters:
+              SKIP_SONARQUBE: ${{ parameters.SKIP_SONARQUBE }}
+
+      - job: UploadReport
+        displayName: 上传检查报告
+        container: dotnet
+        dependsOn: CodeCheck
+        pool:
+          name: anydata-centos7.7-x86_64
+          demands:
+            - Agent.OSArchitecture -equals X64
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - checkout: none
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: $(artifactName)
+              downloadPath:  $(Build.SourcesDirectory)
+            displayName: Download binaryFileX86Artifact
+
+          - script: |
+              echo "Checking lint_report.xml..."
+              ls -l $(Build.SourcesDirectory)/$(artifactName)/report
+              cat $(Build.SourcesDirectory)/$(artifactName)/report/lint_report.xml
+            displayName: 'Validate lint_report.xml'
+
+          - task: PublishTestResults@2
+            displayName: Publish Lint Report
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/lint_report.xml'
+              searchFolder: '$(Build.SourcesDirectory)/$(artifactName)/report'
+              testRunTitle: 'Lint'
+              failTaskOnFailedTests: false
+          - task: BuildQualityChecks@8
+            displayName: Quality Gate Lint
+            inputs:
+              checkWarnings: true
+              warningFailOption: 'fixed'
+              warningThreshold: '10'
+              showStatistics: false
+              evaluateTaskWarnings: false
+              evaluateFileWarnings: true
+              warningFilesFolder: '$(Build.SourcesDirectory)/$(artifactName)'
+              warningFiles: '**/$(LintReportName)'
+              warningFileFilters: '/^.+<\/failure>.*?$/'
+              warningFilesArtifact: '$(artifactName)'
+
+          - task: PublishTestResults@2        # 发布单元测试报告
+            displayName: Publish UT Report
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: /$(Build.SourcesDirectory)/$(artifactName)/report/$(UTReportName)
+              testRunTitle: 'UT'
+              failTaskOnFailedTests: true
+          - task: BuildQualityChecks@8        # 设置UT质量卡点
+            displayName: Quality Gate UT
+            inputs:
+              checkWarnings: true
+              warningFailOption: 'fixed'
+              warningThreshold: '0'
+              showStatistics: false
+              evaluateTaskWarnings: false
+              evaluateFileWarnings: true
+              warningFilesFolder: '$(Build.SourcesDirectory)/$(artifactName)'
+              warningFiles: '**/$(UTReportName)'
+              warningFileFilters: '/^.+<\/failure>.*?$/'
+              warningFilesArtifact: '$(artifactName)'
+
+          - task: PublishCodeCoverageResults@1 # 发布代码覆盖率报告
+            displayName: Publish Coverage Report
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: $(Build.SourcesDirectory)/$(artifactName)/report/$(CoverageReportName)
+          - task: BuildQualityChecks@8         # 代码覆盖率质量卡点
+            displayName: Quality Gate Coverage
+            inputs:
+              coverageType: 'lines'
+              coverageFailOption: 'fixed'
+              checkCoverage: true
+              coverageThreshold: '30.0'
+
+          - script: |
+              cd $(Build.BinariesDirectory) && rm -rf ./**
+              cd $(Build.SourcesDirectory) && rm -rf ./**
+            condition: always()
+            displayName: Remove Resource
+  - stage: BuildImage
+    displayName: 镜像构建
+    dependsOn:
+      - InitVariable
+      - CodeCheck
+    variables:
+      VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.VERSION']]
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+    jobs:   
+      - template: templates/build.yml
+        parameters:
+          pool: $(poolNameAMD64)
+          imageRegistry: $(image.imageRegistry)
+          imageMgntRepository: $(image.imageMgntRepository)
+          imageAnalRepository: $(image.imageAnalRepository)
+          BuildJobNmae: DockerJobX86_Build
+          BuildImageJobName: DockerJobX86_ImageBuild
+          artifactName: ${{variables.artifactName}}
+          arch: amd64
+
+      - template: templates/build.yml
+        parameters:
+          pool: $(poolNameARM64)
+          imageRegistry: $(image.imageRegistry)
+          imageMgntRepository: $(image.imageMgntRepository)
+          imageAnalRepository: $(image.imageAnalRepository)
+          BuildJobNmae: DockerJobARM_Build
+          BuildImageJobName: DockerJobARM_ImageBuild
+          artifactName: ${{variables.artifactName}}
+          arch: arm64
+
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: amd64 # 可选值 amd64,arm64
+          pool: $(poolNameAMD64) # 代理池
+          dependsOnName: DockerJobX86_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.MGNT_CURRENT_IMAGE']] # 本地构建完镜像之后的全名(ManagementImageTagOut不带构建号，ManagementImageNameOut带构建号)
+          registry: ACRDockerRegistry # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 1 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.MGNT_LATEST_IMAGE']] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+          exitCode: ${{ parameters.TRIVY_EXIT_CODE }}
+
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: arm64 # 可选值 amd64,arm64
+          pool: $(poolNameARM64) # 代理池
+          dependsOnName: DockerJobARM_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.MGNT_CURRENT_IMAGE']] # 本地构建完镜像之后的全名
+          registry: ACRDockerRegistry # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 2 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.MGNT_LATEST_IMAGE']] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+          exitCode: ${{ parameters.TRIVY_EXIT_CODE }}
+         
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: amd64 # 可选值 amd64,arm64
+          pool: $(poolNameAMD64) # 代理池
+          dependsOnName: DockerJobX86_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.ANAL_CURRENT_IMAGE']] # 本地构建完镜像之后的全名(AnalysisImageTagOut不带构建号，AnalysisImageNameOut带构建号)
+          registry: ACRDockerRegistry # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 3 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[dependencies.DockerJobX86_ImageBuild.outputs['getAgentName.ANAL_LATEST_IMAGE']] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+          exitCode: ${{ parameters.TRIVY_EXIT_CODE }}
+         
+      - template: scan-and-push-image.yml@templatesAlias # 保持一致
+        parameters:
+          arch: arm64 # 可选值 amd64,arm64
+          pool: $(poolNameARM64) # 代理池
+          dependsOnName: DockerJobARM_ImageBuild # 构建docker镜像步骤所在job的名称，即getAgentName task所在job的名称，此示例中为BuildImage
+          imageName: $[dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.ANAL_CURRENT_IMAGE']] # 本地构建完镜像之后的全名
+          registry: ACRDockerRegistry # 连接到harbor的服务连接名
+          scanTimeout: 11m # trivy扫描的超时设置，默认值为5分钟(5m)
+          templateNo: 4 # 若同一个yaml中多次引用此template，此字段需要以1,2,3...的形式区分开来。为了保证template yml中job id的唯一性
+          hasSecondImage: 1 # 1代表同一个镜像存在第二个不同tag，此参数为可选参数，不填写时默认值为0
+          secondImageName: $[dependencies.DockerJobARM_ImageBuild.outputs['getAgentName.ANAL_LATEST_IMAGE']] # 此参数为可选参数，hasSecondImage为1时需要填写此字段，为镜像包含第二个tag的全名
+          exitCode: ${{ parameters.TRIVY_EXIT_CODE }}
+        
+  - stage: MakeManifest
+    displayName: 制作多架构镜像
+    dependsOn: 
+      - InitVariable
+      - BuildImage
+    condition: succeeded()
+    variables:
+      CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+      LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+
+      MGNT_LATEST_IMAGE_AMD64: $[ stageDependencies.BuildImage.DockerJobX86_ImageBuild.outputs['getAgentName.MGNT_LATEST_IMAGE'] ]
+      MGNT_LATEST_IMAGE_ARM64: $[ stageDependencies.BuildImage.DockerJobARM_ImageBuild.outputs['getAgentName.MGNT_LATEST_IMAGE'] ]
+      MGNT_CURRENT_IMAGE_AMD64: $[ stageDependencies.BuildImage.DockerJobX86_ImageBuild.outputs['getAgentName.MGNT_CURRENT_IMAGE'] ]
+      MGNT_CURRENT_IMAGE_ARM64: $[ stageDependencies.BuildImage.DockerJobARM_ImageBuild.outputs['getAgentName.MGNT_CURRENT_IMAGE'] ]
+
+      ANAL_LATEST_IMAGE_AMD64: $[ stageDependencies.BuildImage.DockerJobX86_ImageBuild.outputs['getAgentName.ANAL_LATEST_IMAGE'] ]
+      ANAL_LATEST_IMAGE_ARM64: $[ stageDependencies.BuildImage.DockerJobARM_ImageBuild.outputs['getAgentName.ANAL_LATEST_IMAGE'] ]
+      ANAL_CURRENT_IMAGE_AMD64: $[ stageDependencies.BuildImage.DockerJobX86_ImageBuild.outputs['getAgentName.ANAL_CURRENT_IMAGE'] ]
+      ANAL_CURRENT_IMAGE_ARM64: $[ stageDependencies.BuildImage.DockerJobARM_ImageBuild.outputs['getAgentName.ANAL_CURRENT_IMAGE'] ]
+    jobs:
+      - job: MakeManifest
+        displayName: 制作多架构镜像
+        workspace:
+          clean: all
+        pool: $(poolNameAMD64)
+        steps:
+          - checkout: none
+          - task: Docker@2
+            inputs:
+              command: login
+              containerRegistry: ACRDockerRegistry
+          - script: |
+              set -e
+              MGNT_CURRENT_IMAGE="$(imageRegistry)/$(imageMgntRepository):${CURRENT_TAG}"
+              MGNT_LATEST_IMAGE="$(imageRegistry)/$(imageMgntRepository):${LATEST_TAG}"
+              ANAL_CURRENT_IMAGE="$(imageRegistry)/$(imageAnalRepository):${CURRENT_TAG}"
+              ANAL_LATEST_IMAGE="$(imageRegistry)/$(imageAnalRepository):${LATEST_TAG}"
+
+              docker manifest create --amend $MGNT_CURRENT_IMAGE $(MGNT_CURRENT_IMAGE_AMD64) $(MGNT_CURRENT_IMAGE_ARM64)
+              docker manifest push --purge $MGNT_CURRENT_IMAGE
+              docker manifest create --amend $MGNT_LATEST_IMAGE $(MGNT_LATEST_IMAGE_AMD64) $(MGNT_LATEST_IMAGE_ARM64)
+              docker manifest push --purge $MGNT_LATEST_IMAGE
+
+              docker manifest create --amend $ANAL_CURRENT_IMAGE $(ANAL_CURRENT_IMAGE_AMD64) $(ANAL_CURRENT_IMAGE_ARM64)
+              docker manifest push --purge $ANAL_CURRENT_IMAGE
+              docker manifest create --amend $ANAL_LATEST_IMAGE $(ANAL_LATEST_IMAGE_AMD64) $(ANAL_LATEST_IMAGE_ARM64)
+              docker manifest push --purge $ANAL_LATEST_IMAGE
+
+  - stage: ChartPush
+    displayName: Chart构建
+    dependsOn:
+      - InitVariable
+    variables:
+        CURRENT_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.CURRENT_TAG']]
+        LATEST_TAG: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.LATEST_TAG']]
+        COMMIT_ID: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.COMMIT_ID']]
+
+    jobs:
+      - template: templates/chart.yml
+        parameters:
+          name: ECRON_MANAGEMENT_ChartPush
+          pool: $(poolNameAMD64)
+          chartName: ecron-management
+          registry: $(imageRegistry)
+          imageRepository: $(imageMgntRepository)
+          yqImage: $(yqImage)
+          latestTag: $(LATEST_TAG)
+          currentTag: $(CURRENT_TAG)
+          commitId: $(COMMIT_ID)
+
+      - template: templates/chart.yml
+        parameters:
+          name: ECRON_ANALYSIS_ChartPush
+          pool: $(poolNameAMD64)
+          chartName: ecron-analysis
+          registry: $(imageRegistry)
+          imageRepository: $(imageAnalRepository)
+          yqImage: $(yqImage)
+          latestTag: $(LATEST_TAG)
+          currentTag: $(CURRENT_TAG)
+          commitId: $(COMMIT_ID)

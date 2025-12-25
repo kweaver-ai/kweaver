@@ -1,0 +1,90 @@
+replicaCount: 1
+
+nodeSelector: {}
+
+namespace: ecron
+
+image:
+  registry: "acr.aishu.cn"
+  service:
+    repository: "as/ecron-management"
+    tag: 7.0.0
+    pullPolicy: IfNotPresent
+  rds:
+    repository: "as/ecron-db"
+    tag: 7.0.0
+    pullPolicy: IfNotPresent
+
+service:
+  enableDualStack: false
+  type: ClusterIP
+  port: 32345
+  language: zh_CN
+  webhook: /api/ecron-management/v1/executionresult
+  logger: stdout
+  sleep:
+    analysisLoad: 10
+    analysisRefresh: 10
+    jobStatusRefresh: 10
+    msmqClientOp: 10
+    dbClientPing: 30
+    lostImmediateJobExecute: 10
+    tokenRefresh: 10
+  sslOn: false
+  certFile: /sysvol/conf/ecron.crt
+  keyFile: /sysvol/conf/ecron.key
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 60
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 60
+    failureThreshold: 3
+  startupProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 60
+    failureThreshold: 10
+
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+
+depServices:
+  rds:
+    type: mysql
+    host: 127.0.0.1
+    port: 3309
+    user: "root"
+    password: "123456"
+    database: "ecron"
+    system_id: ""
+    maxConnections: 30
+    dbFormat: utf8
+    timeout: 10
+    readTimeout: 10
+    writeTimeout: 10
+  mq: {}
+
+  hydra:
+    publicHost: hydra-public
+    publicPort: 4444
+    publicProtocol: http
+    administrativeHost: hydra-admin
+    administrativePort: 4445
+    administrativeProtocol: http
+
+securityContext:
+  runAsUser: 5000
+  runAsGroup: 5000
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 100Mi
+  limits:
+    cpu: 6
+    memory: 2048Mi

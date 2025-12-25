@@ -1,0 +1,113 @@
+parameters:
+  - name: pool
+    default:
+  - name: imageRegistry
+    default:
+  - name: imageMgntRepository
+    default:
+  - name: imageAnalRepository
+    default:
+  - name: BuildJobNmae
+    default:
+  - name: BuildImageJobName
+    default:
+  - name: artifactName
+    default:
+  - name: arch
+    default:
+
+jobs:
+  - job: ${{parameters.BuildJobNmae}}
+    displayName: ${{parameters.BuildJobNmae}}
+    pool:
+      name: ${{parameters.pool}}
+    container: builder
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+      - script: |
+          set -ex
+          go env -w GOPROXY="http://goproxy.aishu.cn,direct"
+          go generate ./...
+          go mod tidy
+          go build -o ./bin/ecron-management ./management
+          go build -o ./bin/ecron-analysis ./analysis
+          strip -g ./bin/*
+          mkdir ./bin/management
+          mkdir ./bin/analysis
+          cp ./management/Dockerfile ./bin/management/
+          cp ./analysis/Dockerfile ./bin/analysis/
+          ls
+        workingDirectory: $(Build.SourcesDirectory)
+        displayName: Compile
+
+      - task: CopyFiles@2
+        displayName: Copy files to binaries directory
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)
+          contents: |
+            bin/**
+          targetFolder: $(Build.BinariesDirectory)
+      - script: |
+          set -ex
+          cd $(Build.SourcesDirectory) && ls && rm -rf ./**
+        condition: always()
+        displayName: Remove Resource
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: $(Build.BinariesDirectory)
+          artifactName: ${{parameters.artifactName}}
+
+  - job: ${{parameters.BuildImageJobName}}
+    displayName: ${{parameters.BuildImageJobName}}
+    pool:
+      name: ${{parameters.pool}}
+    dependsOn: ${{parameters.BuildJobNmae}}
+    steps:
+      - checkout: none
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          artifactName: ${{parameters.artifactName}}
+          downloadPath: $(Build.SourcesDirectory)
+      - script: |
+          set -ex
+          ls
+          pwd
+          MGNT_CURRENT_IMAGE="$(imageRegistry)/$(imageMgntRepository):${CURRENT_TAG}.${{ parameters.arch }}"
+          MGNT_LATEST_IMAGE="$(imageRegistry)/$(imageMgntRepository):${LATEST_TAG}.${{ parameters.arch }}"
+          ANAL_CURRENT_IMAGE="$(imageRegistry)/$(imageAnalRepository):${CURRENT_TAG}.${{ parameters.arch }}"
+          ANAL_LATEST_IMAGE="$(imageRegistry)/$(imageAnalRepository):${LATEST_TAG}.${{ parameters.arch }}"
+
+          cd ${{parameters.artifactName}}
+          chmod 757 -R ./bin
+
+          docker build -t $MGNT_CURRENT_IMAGE -f ./bin/management/Dockerfile .
+          docker tag $MGNT_CURRENT_IMAGE $MGNT_LATEST_IMAGE
+
+          docker build -t $ANAL_CURRENT_IMAGE -f ./bin/analysis/Dockerfile .
+          docker tag $ANAL_CURRENT_IMAGE $ANAL_LATEST_IMAGE
+
+          set +x  
+          echo "##vso[task.setvariable variable=BuildAgentName;isOutput=true]$(Agent.Name)"
+          echo "##vso[task.setvariable variable=MGNT_CURRENT_IMAGE;isoutput=true]${MGNT_CURRENT_IMAGE}";
+          echo "##vso[task.setvariable variable=MGNT_LATEST_IMAGE;isoutput=true]${MGNT_LATEST_IMAGE}";
+
+          echo "##vso[task.setvariable variable=ANAL_CURRENT_IMAGE;isoutput=true]${ANAL_CURRENT_IMAGE}";
+          echo "##vso[task.setvariable variable=ANAL_LATEST_IMAGE;isoutput=true]${ANAL_LATEST_IMAGE}";
+        name: getAgentName
+        displayName: Build docker image
+      - script: |
+          cd $(Build.BinariesDirectory) && ls && rm -rf ./**
+          cd $(Build.SourcesDirectory) && ls && rm -rf ./**
+        condition: always()
+        displayName: Remove Resource
+      - script: |
+          MGNT_IMAGE_PRE="$(imageRegistry)/$(imageMgntRepository)"
+          ANAL_IMAGE_PRE="$(imageRegistry)/$(imageAnalRepository)"
+          docker images|grep $MGNT_IMAGE_PRE|awk '{print$3}'|sort|uniq|xargs docker rmi -f
+          docker images|grep $ANAL_IMAGE_PRE|awk '{print$3}'|sort|uniq|xargs docker rmi -f
+          docker images
+        displayName: "Clearn Image"
+        condition: failed()

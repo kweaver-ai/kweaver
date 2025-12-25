@@ -1,0 +1,9 @@
+apiVersion: v1
+appVersion: "1.0.0"
+description: A Helm ecron analysis service chart for kubenetes
+name: ecron-analysis
+version: 1.0.1
+keywords:
+  - ecron
+  - analysis
+engine: gotpl

@@ -1,0 +1,131 @@
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: apps/v1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ .Release.Name }}
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: {{ .Release.Name }}
+          {{- if .Values.image.registry}}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.service.repository }}:{{ .Values.image.service.tag }}"
+          {{- else}}
+          image: "{{ .Values.image.service.repository }}:{{ .Values.image.service.tag }}"
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.service.pullPolicy }}
+          env:
+            {{- if .Values.depServices.rds.type }}
+              - name: DB_TYPE
+                value: {{ .Values.depServices.rds.type }}
+            {{- end}}
+            {{- if .Values.service.logger}}
+              - name: LOGOUT
+                value: {{ .Values.service.logger }}
+            {{- end}}
+            {{- if .Values.env.language}}
+              - name: LANG
+                value: {{ .Values.env.language }}
+              - name: LC_ALL
+                value: {{ .Values.env.language }}
+            {{- end}}
+            {{- if .Values.env.timezone}}
+              - name: TZ
+                value: {{ .Values.env.timezone }}
+            {{- end}}
+          ports:
+            - name: svc-port
+              containerPort: {{ .Values.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: svc-port
+            initialDelaySeconds: {{ .Values.service.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.readinessProbe.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: svc-port
+            initialDelaySeconds: {{ .Values.service.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.livenessProbe.failureThreshold }}
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: svc-port
+            initialDelaySeconds: {{ .Values.service.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.service.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.service.startupProbe.failureThreshold }}
+          securityContext:
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: {{ .Release.Name }}-yaml
+              mountPath: /sysvol/conf/service_conf
+            - name: {{ .Release.Name }}-secret
+              mountPath: /sysvol/conf/secret_conf
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+      dnsConfig:
+         options:
+           - name: single-request-reopen
+           - name: use-vc
+      volumes:
+        - name: {{ .Release.Name }}-yaml
+          configMap:
+            name: {{ .Release.Name }}-yaml
+            items:
+            - key: cronsvr.yaml
+              path: cronsvr.yaml
+            - key: mq_config.yaml
+              path: mq_config.yaml
+        - name: {{ .Release.Name }}-secret
+          secret:
+            secretName: {{ .Release.Name }}-secret
+            items:
+            - key: cronsvr-secret.yaml
+              path: cronsvr-secret.yaml

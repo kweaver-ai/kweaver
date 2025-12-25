@@ -1,0 +1,13 @@
+#ignore files or dirs here
+#file e.g.：*.exe *.json
+#dir e.g.：bin/
+*.exe
+# *.json
+*.o
+*.log
+*.xml
+.vscode/
+bin/
+build/
+*.tgz
+*.tar

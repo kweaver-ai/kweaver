@@ -1,0 +1,55 @@
+parameters:
+  - name: name
+    default: ''
+  - name: displayName
+    default: ''
+  - name: pool
+    default: ''
+  - name: containerName
+    default: ''
+  - name: artifactName
+    default: ''
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.name }}
+    condition: succeeded()
+    pool:
+      name: ${{ parameters.pool }}
+      demands:
+        - Agent.OSArchitecture -equals X64
+        - Agent.OS -equals Linux
+        - docker
+    container: ${{ parameters.containerName }}
+    workspace:
+      clean: all
+    steps:
+      - script: |
+          set -ex
+          go version
+          go env -w GOPROXY=https://goproxy.aishu.cn,direct
+          go env -w GOSUMDB=off
+          go generate ./...
+          mkdir report
+          ls -l
+          golangci-lint run --config .golangci.yml --out-format junit-xml ./... > $(Build.SourcesDirectory)/report/$(LintReportName)
+          go test -v -coverprofile=cover.out ./...  | go-junit-report > $(Build.SourcesDirectory)/report/$(UTReportName)
+          gocov convert cover.out | gocov-xml > $(Build.SourcesDirectory)/report/$(CoverageReportName)
+          ls $(Build.SourcesDirectory)/report
+        condition: succeeded()
+        displayName: 'UT Test'
+      - task: CopyFiles@2
+        inputs:
+          contents: |
+            report/**
+          targetFolder: $(Build.BinariesDirectory)
+      - task: PublishBuildArtifacts@1
+        inputs:
+          # 由于Pipeline机制，不同的job可能会在不同的workspace执行，所以需要通过artifact在job间传递文件
+          pathToPublish: $(Build.BinariesDirectory)
+          artifactName: ${{parameters.artifactName}}
+      - script: |
+          pwd
+          rm -rf $(Build.SourcesDirectory)/**
+        displayName: 'Remove source'
+        condition: always()

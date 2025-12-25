@@ -1,0 +1,18 @@
+steps:
+- task: DownloadSecureFile@1
+  name: sshKey
+  inputs:
+    secureFile: 'SSHKey'
+- script: |
+    # 添加SSH KEY
+    cd /root/.ssh && ls -al
+    echo Installing $(sshKey.secureFilePath) to ssh key...
+    chown root:root $(sshKey.secureFilePath)
+    chmod 600 $(sshKey.secureFilePath)
+    cp $(sshKey.secureFilePath) /root/.ssh/id_rsa
+    ssh-keyscan -t rsa devops.aishu.cn>> ~/.ssh/known_hosts
+    # 配置git config
+    git config --global url."ssh://devops.aishu.cn:22/AISHUDevOps/".insteadOf "https://devops.aishu.cn/AISHUDevOps/"
+    echo "machine devops.aishu.cn login dashuai.wang password $(System.AccessToken)" > /root/.netrc
+    cat /root/.netrc
+    export NETRC=/root/.netrc

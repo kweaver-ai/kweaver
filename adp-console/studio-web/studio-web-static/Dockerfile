@@ -8,7 +8,7 @@ WORKDIR /DIP/StudioWebStatic/
 COPY dist /DIP/StudioWebStatic/
 
 # 拷贝nginx配置文件
-COPY ./StudioWebStatic/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
 
 # 暴露端口
 EXPOSE 18800

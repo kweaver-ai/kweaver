@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: doc-audit-client
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: doc-audit-client
+spec:
+{{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+{{- end }}
+  ports:
+    - name: public-port
+      port: 1105
+      protocol: TCP           
+  selector:
+    app: doc-audit-client
+  type: {{ .Values.service.type }}

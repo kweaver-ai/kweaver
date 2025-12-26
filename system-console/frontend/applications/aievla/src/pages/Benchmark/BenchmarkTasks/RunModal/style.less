@@ -1,0 +1,67 @@
+.benchmark-task-run-modal-root {
+  .ad-universal-modal-content {
+    overflow-y: auto;
+  }
+
+  .ant-tree .ant-tree-treenode {
+    padding: 0;
+  }
+
+  .ant-divider-horizontal {
+    margin: 16px 0 12px;
+  }
+
+  .ant-tree-list-holder-inner {
+    margin-left: -24px;
+
+    // 悬停树节点去掉背景色
+    .ant-tree-node-content-wrapper {
+      padding: 0;
+      &:hover {
+        background-color: transparent;
+      }
+    }
+
+    // 被点击后去掉背景色
+    .ant-tree-node-content-wrapper.ant-tree-node-selected {
+      background-color: transparent;
+    }
+    // 根据输入框的距离，调整line线的高度
+    .ant-tree-switcher-leaf-line {
+      &::after {
+        height: 34px;
+      }
+      &::before {
+        height: 60px;
+        // left: 32px !important;
+      }
+    }
+    // 去掉树节点前的icon
+    .ant-tree-treenode:nth-child(1) {
+      .ant-tree-switcher :nth-child(1) {
+        display: none;
+      }
+    }
+  }
+
+  .ant-tree .ant-tree-treenode-leaf-last .ant-tree-switcher-leaf-line:before {
+    height: 34px !important;
+    // left: 32px !important;
+  }
+  .ant-tree-checkbox-inner {
+    top: 2px;
+  }
+
+  .ant-tree .ant-tree-treenode:not(:nth-child(1)) {
+    .ant-tree-checkbox {
+      top: 18px !important;
+      margin: 4px 8px 0;
+    }
+    .ant-tree-indent:nth-child(1) {
+      margin-right: 20px !important;
+    }
+  }
+  .ant-tree-checkbox-checked:after {
+    top: 2px !important;
+  }
+}

@@ -1,0 +1,36 @@
+.ad-icon-list {
+  &-item {
+    display: inline-flex !important;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: all 0.3s;
+
+    &-hideIcon {
+      width: 28px;
+      height: 28px;
+    }
+
+    &:hover {
+      border-color: var(--ad-border-color-base);
+    }
+
+    &-selected {
+      border-color: var(--ad-text-color-lower);
+
+      &:hover {
+        border-color: var(--ad-text-color-lower);
+      }
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    &-disabled {
+      cursor: not-allowed;
+    }
+  }
+}

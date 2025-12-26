@@ -1,0 +1,21 @@
+const images = [
+  "background/evaluation_card_bg.png",
+  "background/evaluation_detail_bg.png",
+  "file-icon/create.svg",
+  "file-icon/empty.svg",
+  "file-icon/evaluation_name.png",
+  "file-icon/evaluation_name.svg",
+  "file-icon/file_empty.svg",
+  "file-icon/not_found.svg",
+  "model-icon/aishu.svg",
+  "model-icon/baidu.svg",
+  "model-icon/chatglm.svg",
+  "model-icon/claude.svg",
+  "model-icon/deepseek.svg",
+  "model-icon/intern.svg",
+  "model-icon/llama.svg",
+  "model-icon/openai.svg",
+  "model-icon/other.svg",
+  "model-icon/qianxun.svg",
+  "model-icon/qwen.svg"
+];

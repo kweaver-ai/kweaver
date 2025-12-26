@@ -1,0 +1,28 @@
+.dataSet-tab {
+  // padding: 0 24px 24px 24px;
+  position: relative;
+  top: -40px;
+  .tab-item {
+    &.hovered {
+      color: var(--ant-primary-color);
+    }
+  }
+  .ant-tabs-tabpane {
+    height: calc(100% + 40px);
+  }
+
+  .ant-tabs-nav-list {
+    .ant-tabs-tab {
+      height: 40px !important;
+    }
+    .ant-tabs-tab-active {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 4px 4px 0px 0px;
+      border: 1px solid rgba(18, 110, 227, 0.1);
+    }
+  }
+
+  .ant-tabs-tab:hover {
+    color: #000;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "modelDefault": {
+    "title": "預設模型",
+    "subTitle": "設定默認模型後，若功能未配寘指定模型，則自動調用當前設定的默認模型。",
+    "pleaseEnterTheModelName": "請輸入模型名稱",
+    "modelName": "模型名稱",
+    "modelType": "模型類型",
+    "baseModel": "基礎模型",
+    "setting": "設定",
+    "currentDefault": "當前默認",
+    "setAsDefault": "設定為默認"
+  }
+}

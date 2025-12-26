@@ -1,0 +1,19 @@
+{
+  "common": {
+    "button": {
+      "Ok": "确定",
+      "Cancel": "取消",
+      "Create": "新建",
+      "Delete": "删除"
+    },
+    "modal": {
+      "footer": {
+        "cancel": "取消",
+        "ok": "确定",
+        "abandonSaving": "放弃保存",
+        "saveAndClose": "保存并关闭"
+      }
+    },
+    "last1Hour": "最近1小时"
+  }
+}

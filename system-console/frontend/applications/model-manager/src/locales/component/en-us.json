@@ -1,0 +1,30 @@
+{
+  "components": {
+    "button": {
+      "Ok": "Ok",
+      "Cancel": "Cancel",
+      "Create": "Create",
+      "Delete": "Delete"
+    },
+    "input": {
+      "search": "Search"
+    },
+    "modal": {
+      "footer": {
+        "cancel": "Cancel",
+        "ok": "Ok",
+        "abandonSaving": "Abandon saving",
+        "saveAndClose": "Save and close"
+      }
+    },
+    "table": {
+      "total": "Total {total} items",
+      "controller": {
+        "resetColumnWidth": "Reset column width",
+        "suitableAllColumnWidths": "Suitable for all column widths",
+        "selectAll": "Select All",
+        "checkBox": "Check Box"
+      }
+    }
+  }
+}

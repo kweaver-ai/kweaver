@@ -1,0 +1,25 @@
+.page-prompt-content-debug-preview-item-root {
+	width: 64px;
+	height: 64px;
+	padding: 4px;
+	position: relative;
+	margin-right: 8px;
+	margin-bottom: 6px;
+	border: var(--g-border);
+	border-radius: var(--g-border-radius);
+	.debug-preview-item-delete-button {
+		top: -5px;
+		right: -6px;
+		position: absolute;
+		cursor: pointer;
+		background-color: white;
+		display: none;
+		align-items: center;
+		justify-content: center;
+	}
+	&:hover {
+		.debug-preview-item-delete-button {
+			display: flex;
+		}
+	}
+}

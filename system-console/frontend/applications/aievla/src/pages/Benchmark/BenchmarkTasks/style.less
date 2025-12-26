@@ -1,0 +1,25 @@
+@background: var(--ad-select-bg-color) !important;
+@border:1px solid var(--ad-primary-color) !important;
+@none:none !important;
+.BenchMarkTask {
+  height: calc(100% - 82px);
+  .tag {
+    border: none;
+    padding: 4px 10px;
+  }
+  .selectedRow {
+    background-color: @background;
+
+    &:hover {
+      background-color: @background;
+    }
+    .ant-table-cell-fix-left,
+    td.ant-table-column-sort,
+    td.ant-table-cell-row-hover {
+      background-color: @background;
+    }
+  }
+  .ad-table-operate {
+    z-index: 10;
+  }
+}

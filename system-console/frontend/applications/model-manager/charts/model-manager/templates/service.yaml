@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- if .Values.service.enableDualStack }}
+  ipFamilyPolicy: PreferDualStack
+  ipFamilies:
+    - IPv6
+    - IPv4
+  {{- end }}
+  type: {{ .Values.service.type }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.ports.portHttp }}
+      targetPort: {{ .Values.service.ports.targetPortHttp }}
+      name: {{ .Values.service.ports.http }}
+    - protocol: TCP
+      port: {{ .Values.service.ports.portHttps }}
+      targetPort: {{ .Values.service.ports.targetPortHttps }}
+      name: {{ .Values.service.ports.https }}
+  selector:
+    app: {{ .Values.image.name }}

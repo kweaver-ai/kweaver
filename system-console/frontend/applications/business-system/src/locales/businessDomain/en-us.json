@@ -1,0 +1,60 @@
+{
+  "businessDomain": {
+    "title": "Business Domain",
+    "pleaseEnterTheBusinessDomainName": "please enter...",
+    "sorryNoFound": "Sorry, no results were found that meet the criteria",
+    "sortByBusinessDomainName": "Sort by business domain name",
+    "sortByCreation": "Sort by creation",
+    "deleteSuccess": "delete success",
+    "tableColumns": {
+      "name": "Name",
+      "operation": "Operation",
+      "associatedProduct": "Associated Product",
+      "menus": {
+        "edit": "Edit",
+        "basicInformation": "Basic Information",
+        "memberManagement": "Member Management",
+        "authorizationManagement": "Authorization",
+        "delete": "Delete"
+      },
+      "creator": "Creator",
+      "builtIn": "built-in",
+      "createdTime": "Created Time"
+    },
+    "cannotDelete": "Cannot delete",
+    "pleaseRemoveThemFirst": "There are related resources in this business domain, please remove them first before deleting them",
+    "drawer": {
+      "name_create": "Create Business Domain",
+      "name_edit": "Edit Business Domain",
+      "name_view": "View Business Domain",
+      "basicInformation": "Basic Information",
+      "addMember": "Add visitor",
+      "businessDomainAuthorization": "Business Domain Authorization",
+      "memberManagement": "Member Management",
+      "authorizationManagement": "Authorization",
+      "businessDomainName": "Business Domain Name",
+      "pleaseEnterTheBusinessDomainName": "please enter...",
+      "businessDomainIntroduction": "Business Domain Introduction",
+      "pleaseEnterTheBusinessDomainIntroduction": "please enter...",
+      "businessDomainNameAlreadyExists": "This business domain name already exists, please re-enter",
+      "associatedProduct": "Associated Product",
+      "pleaseSelectCorrespondingProduct": "Please select the corresponding product",
+      "businessDomainCreatedSuccessfully": "Business domain created successfully",
+      "businessDomainEditSuccessfully": "Business domain edit successfully",
+      "membersTip": "Please add the relevant users who will then be able to access this business domain.",
+      "member": "member",
+      "name": "name",
+      "builtIn": "built-in",
+      "allOrganizationalUsers": "All organizational users",
+      "permission": "permission",
+      "department": "From",
+      "group": "group",
+      "role": "role",
+      "app": "app",
+      "operation": "operation",
+      "removeMembers": "Remove Members",
+      "authorizationSuccessful": "Authorization successful",
+      "areYouSureRemove": "After removal, this member will lose this business domain permission. And it cannot be restored, are you sure you want to remove it?"
+    }
+  }
+}

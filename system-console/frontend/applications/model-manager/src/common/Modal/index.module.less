@@ -1,0 +1,40 @@
+.common-modal {
+	// 覆写 antd 的样式 --- start
+	.ant-modal-content {
+		padding: 0 !important;
+		.ant-modal-header {
+			height: 56px;
+			display: flex;
+			padding: 0 24px;
+			margin-bottom: 0;
+			align-items: center;
+			.ant-modal-title {
+				font-weight: 600;
+			}
+		}
+		.ant-modal-body {
+			max-height: 560px;
+			padding: 12px 24px;
+			overflow-y: auto;
+		}
+		.ant-modal-footer {
+			height: 46px;
+			display: flex;
+			margin-top: 0;
+			padding: 0 24px 12px 24px;
+			align-items: center;
+			justify-content: flex-end;
+		}
+		// 覆写 antd 的样式 --- end
+	}
+}
+
+.common-modal-close-button {
+	top: 6px;
+	right: 12px;
+	z-index: 1010;
+	font-size: 16px;
+	font-weight: 600;
+	position: absolute;
+	color: rgba(0, 0, 0, 0.45);
+}

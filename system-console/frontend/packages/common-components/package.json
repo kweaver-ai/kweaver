@@ -1,0 +1,62 @@
+{
+	"name": "common-components",
+	"version": "0.0.0",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./components": {
+			"types": "./dist/components/index.d.ts",
+			"import": "./dist/components/index.js"
+		},
+		"./utils": {
+			"types": "./dist/utils/index.d.ts",
+			"import": "./dist/utils/index.js"
+		},
+		"./hooks": {
+			"types": "./dist/hooks/index.d.ts",
+			"import": "./dist/hooks/index.js"
+		}
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "rslib build",
+		"dev": "cross-env NODE_ENV=development rslib build --watch"
+	},
+	"devDependencies": {
+		"@ant-design/icons": "5.6.1",
+		"@rsbuild/plugin-less": "1.1.1",
+		"@rsbuild/plugin-react": "1.1.1",
+		"@rslib/core": "0.5.4",
+		"@types/js-cookie": "3.0.6",
+		"@types/lodash": "4.17.16",
+		"@types/node": "22.13.10",
+		"@types/react": "18.3.18",
+		"antd": "5.25.1",
+		"axios": "1.8.3",
+		"classnames": "2.5.1",
+		"cross-env": "7.0.3",
+		"lodash": "4.17.21",
+		"react": "18.3.1",
+		"react-intl-universal": "2.12.0",
+		"typescript": "5.8.2"
+	},
+	"peerDependencies": {
+		"@ant-design/icons": "5.6.1",
+		"antd": "5.24.4",
+		"classnames": "2.5.1",
+		"cross-env": "7.0.3",
+		"react": ">=16.9.0",
+		"react-dom": ">=16.9.0",
+		"react-intl-universal": "2.12.0"
+	},
+	"dependencies": {
+		"js-cookie": "3.0.5"
+	}
+}

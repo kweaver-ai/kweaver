@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.image.name }}
+    spec:
+      dnsPolicy: ClusterFirst
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.service.ports.http }}
+              containerPort: {{ .Values.service.ports.portHttp }}
+            - name: {{ .Values.service.ports.https }}
+              containerPort: {{ .Values.service.ports.portHttps }}
+          volumeMounts:
+            - name: host-time
+              mountPath: /etc/localtime
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          livenessProbe:
+{{ toYaml .Values.probe.livenessProbe | indent 12 }}
+          readinessProbe:
+{{ toYaml .Values.probe.readinessProbe | indent 12 }}
+          startupProbe:
+{{ toYaml .Values.probe.startupProbe | indent 12 }}
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime

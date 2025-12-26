@@ -1,0 +1,56 @@
+.upload-tip {
+  position: sticky;
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding-left: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  font-weight: 400;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.65);
+  text-align: left;
+}
+
+.dataSet-files-versions {
+  height: calc(100% - 58px);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  .operation {
+    .ant-btn[disabled] {
+      cursor: not-allowed;
+      min-width: unset;
+      padding: 0;
+    }
+  }
+
+  .output-btn-disbled,
+  .delete-btn-disbled {
+    padding: 0px !important;
+  }
+
+  span.version-delete {
+    display: none;
+  }
+  .ant-select-item-option-active span.version-delete {
+    display: block;
+  }
+
+  .pathTree {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    height: 100%;
+    font-weight: 400;
+  }
+
+  .ant-table-tbody > tr.ant-table-row-selected > td {
+    background: #fff;
+  }
+}
+
+span.version-delete {
+  display: none;
+}
+.ant-select-item-option-active span.version-delete {
+  display: block;
+}

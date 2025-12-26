@@ -1,0 +1,43 @@
+.ConfigTip {
+  display: flex;
+
+  &-guide {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 999;
+  }
+
+  &-card {
+    width: 100%;
+
+    &-title {
+      .ant-checkbox-wrapper {
+        display: flex;
+        align-items: center;
+      }
+      label.ant-checkbox-wrapper {
+        margin-top: 0.1em;
+      }
+    }
+  }
+}
+
+.benchmark-config-drawer-tip-root {
+  .ant-drawer-content {
+    .ant-drawer-header {
+      background: #f9fafb !important;
+      padding: 12px 20px;
+    }
+  }
+  .ant-drawer-body {
+    padding: 20px;
+  }
+  .ant-drawer-header {
+    padding: 12px 20px;
+  }
+  .ant-drawer-content-wrapper {
+    box-shadow: 6px 1px 16px -8px rgba(0, 0, 0, 0.08), 9px 24px 28px 0 rgba(0, 0, 0, 0.05),
+      12px 48px 48px 16px rgba(0, 0, 0, 0.03) !important;
+  }
+}

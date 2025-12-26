@@ -1,0 +1,7 @@
+{
+  "enums": {
+    "administrator": "Administrator",
+    "developer": "Member",
+    "visitor": "Visitor"
+  }
+}

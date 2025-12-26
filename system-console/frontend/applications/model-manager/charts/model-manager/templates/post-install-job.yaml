@@ -1,0 +1,155 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-post-install-job
+  labels:
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}
+    version: {{ .Chart.Version }}
+  annotations:
+    # 注意，如果没有下面的这个注释的话，当前的这个Job就会被当成release的一部分
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ .Chart.Name }}
+        version: {{ .Chart.Version }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: "{{ .Values.image.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command:
+            - "sh"
+            - "-c"
+            - >
+              curl -H "Content-Type:application/json" -X PUT -f -d '
+              [
+                {
+                  "name": "mf-model-manager/prompt",
+                  "parent": "model-factory",
+                  "orderIndex": 1000,
+                  "app": {
+                    "textZHCN": "提示词",
+                    "textZHTW": "提示词",
+                    "textENUS": "Prompt"
+                  },
+                  "subapp": {
+                    "children": {
+                      "list1": {
+                        "parent": "mf-model-manager/prompt",
+                        "name": "list1",
+                        "orderIndex": 1010,
+                        "app": {
+                          "textZHCN": "提示词工程",
+                          "textZHTW": "提示詞工程",
+                          "textENUS": "Prompt Project",
+                          "icon": "//ip:port/mf-model-manager/prompt.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/mf-model-manager/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "mf-model-manager/model",
+                  "parent": "model-factory",
+                  "orderIndex": 4000,
+                  "app": {
+                    "textZHCN": "模型",
+                    "textZHTW": "模型",
+                    "textENUS": "Model"
+                  },
+                  "subapp": {
+                     "children": {
+                      "list2": {
+                        "parent": "mf-model-manager/model",
+                        "name": "list2",
+                        "orderIndex": 4010,
+                        "app": {
+                          "textZHCN": "模型管理",
+                          "textZHTW": "模型管理",
+                          "textENUS": "Model Management",
+                          "icon": "//ip:port/mf-model-manager/model-manager.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/mf-model-manager/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "resource-management",
+                  "parent": "settings",
+                  "orderIndex": 14000,
+                  "app": {
+                    "textZHCN": "资源管理",
+                    "textZHTW": "資源管理",
+                    "textENUS": "Resource Management"
+                  },
+                  "subapp": {
+                    "children": {
+                      "mf-model-manager/model/list2": {
+                        "parent": "resource-management",
+                        "name": "mf-model-manager/model/list2",
+                        "orderIndex": 14200,
+                        "app": {
+                          "textZHCN": "模型管理",
+                          "textZHTW": "模型管理",
+                          "textENUS": "Model Management",
+                          "icon": "//ip:port/mf-model-manager/model-manager.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/mf-model-manager/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      },
+                      "mf-model-manager/model/quota": {
+                        "parent": "resource-management",
+                        "name": "mf-model-manager/model/quota",
+                        "orderIndex": 14300,
+                        "app": {
+                          "textZHCN": "配额管理",
+                          "textZHTW": "配额管理",
+                          "textENUS": "Quota Management",
+                          "icon": "//ip:port/mf-model-manager/model-quota.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/mf-model-manager/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      },
+                      "mf-model-manager/model/default": {
+                        "parent": "resource-management",
+                        "name": "mf-model-manager/model/default",
+                        "orderIndex": 14400,
+                        "app": {
+                          "textZHCN": "默认模型",
+                          "textZHTW": "默认模型",
+                          "textENUS": "Default Model",
+                          "icon": "//ip:port/mf-model-manager/model-default.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/mf-model-manager/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]' http://studio-web-service:8877/api/workstation/v1/webapp

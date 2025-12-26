@@ -1,0 +1,33 @@
+.copy-prompt-tree-select-root {
+	// 覆写antd样式 --- start
+	.ant-select-tree-list-scrollbar {
+		width: 6px !important;
+		.ant-select-tree-list-scrollbar-thumb {
+			background-color: #c4c8cd !important;
+		}
+	}
+	.ant-select-tree-switcher-noop {
+		visibility: hidden;
+	}
+	.ant-select-tree-switcher {
+		&:hover::before {
+			background-color: transparent !important;
+		}
+	}
+	.ant-select-tree-node-content-wrapper {
+		margin-left: -18px;
+	}
+	.ant-select-tree-node-content-wrapper-open {
+		.select-tree-custom-tree-title-switcher {
+			transition: all 0.3s;
+			transform: rotate(90deg);
+		}
+	}
+	.ant-select-tree-node-content-wrapper-close {
+		.select-tree-custom-tree-title-switcher {
+			transition: all 0.3s;
+			transform: rotate(0deg);
+		}
+	}
+	// 覆写antd样式 --- end
+}

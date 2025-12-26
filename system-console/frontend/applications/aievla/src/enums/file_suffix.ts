@@ -1,0 +1,12 @@
+export const excelList = ['xlsx', 'et', 'xlsm', 'xlsb', 'xls', 'xltx', 'xltm', 'xlt', 'xml', 'ods', 'xla'];
+export const pptList = ['pptx', 'ppt', 'pot', 'pps', 'ppsx', 'pptm', 'potx', 'potm', 'ppsm', 'dps', 'odp', 'ppam', 'ppa'];
+export const wordList = ['doc', 'docx', 'dotx', 'dot', 'odt', 'wps', 'docm', 'dotm', 'ott'];
+export const txtList = ['txt', 'rtf', 'dic', 'log', 'md'];
+export const imgList = ['bmp', 'jpg', 'png', 'tif', 'gif', 'tga', 'raw', 'svg', 'webp', 'ico', 'jpeg', 'wmf', 'emf'];
+export const videoList = ['mp4', 'avi', 'flv', 'mkv', 'rmvb', 'rm', 'wif', 'vob', 'mpeg', 'mpg', 'asf', 'mov', 'wmv', '3gp', 'mts', 'mt2s'];
+export const audioList = ['mp3', 'wma', 'wav', 'ogg', 'm4a', 'flac', 'ape', 'aac', 'wv', 'mp2', 'ac3', 'mpc', 'mka', 'mpa', 'dts', 'mid'];
+export const aiList = ['ai'];
+export const psList = ['ps', 'psd', 'psb'];
+export const compressList = ['zip', '7z', 'rar', 'tgz', 'tar', 'gz', 'gz2', 'bz', 'bz2', 'iso', 'cab', 'tgz', 'uue', 'jar', 'ace', 'lzh', 'arj', 'gzip', 'rpm'];
+export const cadList = ['cad', 'dwg', 'dxf'];
+export const exeList = ['exe', 'msi', 'bat'];

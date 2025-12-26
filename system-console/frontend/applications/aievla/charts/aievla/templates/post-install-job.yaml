@@ -1,0 +1,112 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-post-install-job
+  labels:
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}
+    version: {{ .Chart.Version }}
+  annotations:
+    # 注意，如果没有下面的这个注释的话，当前的这个Job就会被当成release的一部分
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ .Chart.Name }}
+        version: {{ .Chart.Version }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: "{{ .Values.image.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command:
+            - "sh"
+            - "-c"
+            - >
+              curl -H "Content-Type:application/json" -X PUT -f -d '
+              [
+                {
+                  "name": "aievla",
+                  "parent": "root",
+                  "orderIndex": 6000,
+                  "bottom": true,
+                  "app": {
+                    "textZHCN": "智能评测",
+                    "textZHTW": "智慧評測",
+                    "textENUS": "Intelligent Evaluation"
+                  },
+                  "subapp": {
+                    "children": {
+                      "board": {
+                        "parent": "aievla",
+                        "name": "board",
+                        "orderIndex": 6010,
+                        "app": {
+                          "textZHCN": "榜单",
+                          "textZHTW": "榜單",
+                          "textENUS": "Leaderboard",
+                          "icon": "//ip:port/aievla/leaderboard.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/aievla/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      },
+                      "evaluation-data": {
+                        "parent": "aievla",
+                        "name": "evaluation-data",
+                        "orderIndex": 6020,
+                        "app": {
+                          "textZHCN": "测评数据集",
+                          "textZHTW": "測評數据集",
+                          "textENUS": "Evaluation Dataset",
+                          "icon": "//ip:port/aievla/evaluation-data.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/aievla/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      },
+                      "indicator": {
+                        "parent": "aievla",
+                        "name": "indicator",
+                        "orderIndex": 6030,
+                        "app": {
+                          "textZHCN": "测试指标",
+                          "textZHTW": "測試名額",
+                          "textENUS": "Indicators",
+                          "icon": "//ip:port/aievla/indicators.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/aievla/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      },
+                      "effect-evaluation": {
+                        "parent": "aievla",
+                        "name": "effect-evaluation",
+                        "orderIndex": 6040,
+                        "app": {
+                          "textZHCN": "效果测评",
+                          "textZHTW": "效果評測",
+                          "textENUS": "Effect Evaluation",
+                          "icon": "//ip:port/aievla/effect-evaluation.svg"
+                        },
+                        "subapp": {
+                          "entry": "//ip:port/aievla/index.html",
+                          "baseRouter": "",
+                          "activeRule": "/"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]' http://studio-web-service:8877/api/workstation/v1/webapp

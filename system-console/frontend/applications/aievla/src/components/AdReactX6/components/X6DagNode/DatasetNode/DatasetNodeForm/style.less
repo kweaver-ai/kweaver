@@ -1,0 +1,54 @@
+.DatasetNodeForm-steps {
+  width: unset;
+
+  .ant-steps-item-title {
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .ant-steps-item-icon {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    line-height: unset;
+
+    .ant-steps-icon {
+      display: inline-block;
+      line-height: 24px;
+      color: var(--ad-text-color) !important;
+    }
+  }
+}
+
+.datasetVersionId-form {
+  position: relative;
+
+  &::after {
+    display: block;
+    content: "1";
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    border: var(--ad-border);
+    color: var(--ad-text-color);
+    background: #F5F5F5;
+  }
+
+  &-borderL {
+    &::before {
+      display: block;
+      content: "";
+      position: absolute;
+      left: 12px;
+      bottom: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+
+}

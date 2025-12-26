@@ -1,0 +1,76 @@
+.common-rich-wrap {
+	border: var(--g-border);
+	border-radius: var(--g-border-radius);
+
+	.common-wang-editor-tool {
+		border-bottom: var(--g-border);
+		.w-e-toolbar {
+			border-radius: var(--g-border-radius) var(--g-border-radius) 0 0;
+		}
+	}
+
+	.common-wang-editor {
+		[data-slate-editor] {
+			padding: 10px;
+			border-top: none;
+		}
+		.w-e-text-container {
+			border-radius: var(--g-border-radius);
+		}
+		.w-e-text-placeholder {
+			top: 10px;
+		}
+	}
+	// reset.less 清除了默认样式, 富文本显示时需要还原
+	h1,
+	h2,
+	h3 {
+		margin: 0 !important;
+		font-weight: bold !important;
+	}
+
+	h1 {
+		font-size: 24px !important;
+	}
+
+	h2 {
+		font-size: 20px !important;
+	}
+
+	h3 {
+		font-size: 16px !important;
+	}
+
+	// 段落
+	p {
+		margin: 0 !important;
+	}
+
+	// 下划线、删除线、斜体
+	u {
+		text-decoration: underline;
+	}
+
+	s {
+		text-decoration: line-through;
+	}
+
+	em {
+		font-weight: normal;
+		font-style: italic;
+	}
+}
+
+.common-rich-wrap-preview {
+	border: none;
+	transition: all 1s;
+
+	.common-wang-editor-tool {
+		display: none;
+	}
+}
+.common-rich-wrap-edit {
+	.w-e-text-placeholder {
+		display: none !important;
+	}
+}

@@ -1,0 +1,69 @@
+.common-tree-folder-and-document-root {
+	// 覆写antd样式 --- start
+
+	.ant-tree-switcher {
+		margin-top: 4px;
+		position: absolute !important;
+		&:hover::before {
+			background-color: transparent !important;
+		}
+	}
+	.ant-tree-switcher-noop {
+		display: none;
+	}
+	.ant-tree-node-content-wrapper {
+		width: 100%;
+		margin-left: 20px;
+		position: relative !important;
+		.common-tree-custom-tree-title {
+			display: flex;
+			padding: 4px 0px;
+			position: relative;
+			align-items: center;
+			justify-content: space-between;
+			.common-tree-custom-tree-title-switcher {
+				top: 0;
+				left: -22px;
+				font-size: 12px;
+				position: absolute;
+			}
+			.common-tree-custom-tree-title-button {
+				display: none;
+				width: 24px;
+				height: 24px;
+				min-width: 24px;
+				min-height: 24px;
+			}
+			&:hover {
+				.common-tree-custom-tree-title-button {
+					display: inline-block;
+				}
+			}
+		}
+	}
+	.ant-tree-node-content-wrapper:has(.common-tree-custom-tree-not-switcher-title) {
+		margin-left: 8px;
+	}
+	// 如果有操作条就偏移50px
+	.ant-tree-node-content-wrapper:has(.common-tree-custom-tree-has-operate-title) {
+		width: calc(100% - 50px);
+	}
+	// 如果目录没有子元素，会被判定为normal元素，为这个元素做边距对齐
+	.ant-tree-node-content-wrapper-normal:has(.common-tree-custom-tree-document-title) {
+		margin-left: 8px;
+	}
+	// 文档节点的箭头指向
+	.ant-tree-treenode-switcher-open {
+		.common-tree-custom-tree-title-switcher {
+			transition: all 0.3s;
+			transform: rotate(90deg);
+		}
+	}
+	.ant-tree-treenode-switcher-close {
+		.common-tree-custom-tree-title-switcher {
+			transition: all 0.3s;
+			transform: rotate(0deg);
+		}
+	}
+	// 覆写antd样式 --- end
+}

@@ -1,0 +1,19 @@
+{
+  "common": {
+    "button": {
+      "Ok": "Ok",
+      "Cancel": "Cancel",
+      "Create": "Create",
+      "Delete": "Delete"
+    },
+    "modal": {
+      "footer": {
+        "cancel": "Cancel",
+        "ok": "Ok",
+        "abandonSaving": "Discard",
+        "saveAndClose": "Save and close"
+      }
+    },
+    "last1Hour": "Last 1 hour"
+  }
+}

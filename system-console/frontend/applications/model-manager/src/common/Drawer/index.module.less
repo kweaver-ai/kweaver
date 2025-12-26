@@ -1,0 +1,31 @@
+.common-drawer {
+	padding: 0;
+
+	// 覆写 antd 的样式 --- start
+	.ant-drawer-header {
+		height: 56px;
+		display: flex !important;
+		margin-bottom: 0;
+		align-items: center !important;
+		border-bottom: none !important;
+		.ant-drawer-title {
+			display: flex;
+			align-items: center;
+			font-weight: 600;
+		}
+	}
+	.ant-drawer-body {
+		padding: 12px 24px !important;
+	}
+	// 覆写 antd 的样式 --- end
+}
+
+.common-drawer-close-button {
+	top: 12px;
+	right: 12px;
+	z-index: 1010;
+	font-size: 16px;
+	font-weight: 600;
+	position: absolute;
+	color: rgba(0, 0, 0, 0.45);
+}

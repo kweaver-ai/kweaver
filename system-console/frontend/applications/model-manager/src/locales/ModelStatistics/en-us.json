@@ -1,0 +1,22 @@
+{
+  "modelStatistics": {
+    "title": "Model Statistics",
+    "header": {
+      "modelName": "Model Name",
+      "pleaseSelectModelName": "Please select a model name"
+    },
+    "usageCount": "usage count",
+    "once": "once",
+    "modelErrorRate": "Model call error rate",
+    "modelAverageTime": "Model call average time",
+    "tokenConsumption": "Token consumption",
+    "thousandTokens": "Thousand tokens",
+    "millionTokens": "Million tokens",
+    "modelCallTimeConsumption": "Model call time consumption",
+    "firstTokensTime": "Time consumption of the first tokens in the model",
+    "modelTimeAndFirstTime": "Model call time and first token time of the model",
+    "unitSeconds": "(Unit: seconds)",
+    "modelTokenRate": "Model token rate",
+    "modelQPS": "Model QPS"
+  }
+}

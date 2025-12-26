@@ -1,0 +1,136 @@
+trigger:
+  branches:
+    include:
+      - release/*
+pool:
+  name: AD_Typescript
+
+variables:
+  - group: global-dip
+  - name: chartName
+    value: business-system
+  - name: folder
+    value: applications/business-system
+  - name: artifactStagingName
+    value: artifactStaging
+  - name: imageNameNginx
+    value: business-system-frontend
+  - name: branchNameLower
+    value: $[lower(variables['Build.SourceBranchName'])]
+  - name: actualBranch
+    value: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
+  - name: actualBranchLower
+    value: $[lower(variables['actualBranch'])]
+  - name: chartRepo
+    value: 'https://acr.aishu.cn/api/chartrepo/dip/charts'
+
+resources:
+  containers:
+    - container: node
+      endpoint: acr.aishu.cn
+      image: 'ad/node:18.12.1'
+    - container: dotnet
+      endpoint: acr.aishu.cn
+      image: dotnet/runtime:latest
+
+jobs:
+  - job: BuildStaticFiles
+    displayName: 构建静态资源
+    container: node
+    steps:
+      - script: pnpm install --filter ./$(folder)
+        displayName: 安装依赖
+
+      - script: pnpm business-system:build
+        displayName: 打包
+
+      - task: CopyFiles@2
+        displayName: 复制打包产物、Coverage测试报告、覆盖率报告到BinariesDirectory
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)
+          Contents: |
+            ${{variables.folder}}/dist/**
+          TargetFolder: '$(Build.BinariesDirectory)'
+
+      - task: PublishBuildArtifacts@1
+        displayName: 发布打包产物、Coverage测试报告、覆盖率报告到BinariesDirectory
+        inputs:
+          PathtoPublish: '$(Build.BinariesDirectory)'
+          ArtifactName: ${{variables.artifactStagingName}}
+
+  - job: BuildDockerImage
+    displayName: 构建Docker镜像
+    dependsOn: BuildStaticFiles
+    workspace:
+      clean: all
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: 从BinariesDirectory下载打包产物、Coverage测试报告、覆盖率报告到
+        inputs:
+          artifactName: ${{variables.artifactStagingName}}
+          downloadPath: $(Build.BinariesDirectory)
+
+      - task: Docker@2
+        displayName: 登录Harbor
+        inputs:
+          containerRegistry: 'acr.aishu.cn'
+          command: 'login'
+
+      - bash: |
+          cp -r '$(Build.BinariesDirectory)/${{variables.artifactStagingName}}/${{variables.folder}}/dist' ./$(folder)/nginx
+          cd ./$(folder)/nginx
+
+          imageUri=acr.aishu.cn/dip/$(imageNameNginx):$(branchNameLower)
+          docker buildx build -t ${imageUri}_amd64 \
+          --file=./Dockerfile \
+          --platform=linux/amd64 . -o type=docker
+
+          docker buildx build -t ${imageUri}_arm64 \
+          --file=./Dockerfile \
+          --platform=linux/arm64 . -o type=docker
+
+          docker tag ${imageUri}_amd64 ${imageUri}_amd64-$(Build.BuildNumber)
+          docker tag ${imageUri}_arm64 ${imageUri}_arm64-$(Build.BuildNumber)
+
+          docker push ${imageUri}_amd64
+          docker push ${imageUri}_amd64-$(Build.BuildNumber)
+          docker push ${imageUri}_arm64
+          docker push ${imageUri}_arm64-$(Build.BuildNumber)
+          docker rmi ${imageUri}_amd64 ${imageUri}_amd64-$(Build.BuildNumber) ${imageUri}_arm64 ${imageUri}_arm64-$(Build.BuildNumber)
+
+          rm -rf /root/.docker/manifests/acr.aishu.cn_dip_$(imageNameNginx)*
+          docker manifest create --amend --insecure ${imageUri} ${imageUri}_amd64 ${imageUri}_arm64
+          docker manifest push --purge ${imageUri}
+          docker manifest create --amend --insecure ${imageUri}-$(Build.BuildNumber) ${imageUri}_amd64-$(Build.BuildNumber) ${imageUri}_arm64-$(Build.BuildNumber)
+          docker manifest push --purge ${imageUri}-$(Build.BuildNumber)
+        displayName: Build Image and push to harbor
+
+      - script: |
+          cd $(Build.ArtifactStagingDirectory) && rm -rf ./**
+          cd $(Build.BinariesDirectory) && rm -rf ./**
+          cd $(Build.SourcesDirectory) && rm -rf ./**
+        displayName: 'remove source'
+        condition: always()
+
+  - job: BuildChart
+    displayName: 构建Chart
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+        fetchDepth: 1
+      - script: |
+          set -e
+          chartVersion=$(branchNameLower)
+          if [[ $(actualBranchLower) == 'develop' ]] || [[ $(actualBranchLower) == feature/* ]] || [[ $(actualBranchLower) == bugfix/* ]]
+          then
+            chartVersion=5.0.0-$(branchNameLower)
+          fi
+          echo "新chartVersion为" $chartVersion
+          sed -i "s/appVersion: .*/appVersion: ${chartVersion}/g" ./$(folder)/charts/$(chartName)/Chart.yaml
+          sed -i "s/version: .*/version: ${chartVersion}/g" ./$(folder)/charts/$(chartName)/Chart.yaml
+          sed -i "s/tag: .*/tag: $(branchNameLower)/g" ./$(folder)/charts/$(chartName)/values.yaml
+          helm package ./$(folder)/charts/$(chartName)
+          chartfilename=`ls | grep tgz`
+          curlOptions="-s -u $(registry.username):$(registry.password) -H \"Content-Type:multipart/form-data\""
+          curl ${curlOptions} -F "chart=@$chartfilename" -X POST $(chartRepo)

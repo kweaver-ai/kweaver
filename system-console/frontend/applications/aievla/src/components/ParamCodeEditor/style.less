@@ -1,0 +1,71 @@
+// 字体
+@ad-font: PingFangSC-Regular, 'PingFang SC', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Helvetica,
+Arial, 'Hiragino Sans GB', 'Source Han Sans', 'Noto Sans CJK Sc', 'Microsoft YaHei', 'Microsoft Jhenghei', sans-serif;
+
+.c-param-editor {
+  position: relative;
+
+  &-copy {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    z-index: 10;
+  }
+
+  &-disabled {
+    .CodeMirror {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  .CodeMirror {
+    border: var(--ad-border);
+    border-radius: 0px 0px 3px 3px;
+    font-size: 14px;
+    color: var(--ad-text-color);
+    font-family: @ad-font;
+  }
+
+  .cm-number {
+    color: var(--ad-text-color)
+  }
+
+  .CodeMirror-linenumbers {
+    min-width: 40px;
+  }
+
+  .CodeMirror-linenumber {
+    text-align: center;
+  }
+
+  // 选中样式
+  .CodeMirror-focused .CodeMirror-selected {
+    background: #8cb8e6;
+  }
+
+  .CodeMirror-line::selection,
+  .CodeMirror-line > span::selection,
+  .CodeMirror-line > span > span::selection {
+    background: #8cb8e6;
+  }
+
+  .CodeMirror-line::-moz-selection,
+  .CodeMirror-line > span::-moz-selection,
+  .CodeMirror-line > span > span::-moz-selection {
+    background: #8cb8e6;
+  }
+
+  .CodeMirror-placeholder {
+    color: var(--ad-disabled-color) !important;
+  }
+
+  .ad-param-highlight {
+    color: var(--ad-text-color) !important;
+    background-color: rgba(250, 173, 20, 0.25);
+  }
+
+  .CodeMirror-gutters {
+    border-right: 1px solid #d9d9d9;
+    background-color: #fff;
+  }
+}

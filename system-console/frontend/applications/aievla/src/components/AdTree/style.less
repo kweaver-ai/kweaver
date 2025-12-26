@@ -1,0 +1,62 @@
+.ad-tree.ant-tree {
+  .ant-tree-treenode {
+    display: flex;
+    align-items: center;
+  }
+
+  .ant-tree-switcher {
+    display: flex;
+    align-items: center;
+    line-height: unset;
+    width: unset;
+    margin-right: 8px;
+  }
+
+  .ant-tree-switcher-noop {
+    visibility: hidden;
+  }
+
+  .ad-treeNode-noIndent {
+    .ant-tree-switcher-noop {
+      display: none;
+    }
+  }
+
+  .ant-tree-node-content-wrapper {
+    display: flex;
+    line-height: unset;
+
+    .ant-tree-title {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &.ant-tree-node-selected {
+      background-color: var(--ad-select-bg-color);
+
+      &:hover {
+        background-color: var(--ad-select-bg-color);
+      }
+    }
+  }
+
+  //.ant-tree-indent-unit.ant-tree-indent-unit-end {
+  .ant-tree-indent-unit {
+    &::before {
+      display: block;
+      position: absolute;
+      top: 0;
+      right: 18px;
+      bottom: -4px;
+      border-right: 1px solid #d9d9d9;
+      content: '';
+    }
+  }
+
+
+  &.ad-tree-noHover {
+    .ant-tree-node-content-wrapper:hover {
+      background-color: transparent;
+    }
+  }
+}

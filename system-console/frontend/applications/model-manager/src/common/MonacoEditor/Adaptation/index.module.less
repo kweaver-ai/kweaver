@@ -1,0 +1,35 @@
+.common-monaco-editor-adaptation {
+	:global {
+		.var-highlight {
+			color: var(--g-primary-color) !important;
+			border-radius: 3px !important;
+			background: rgba(var(--g-primary-color-rgb), 0.06) !important;
+		}
+		.wordHighlightText {
+			background-color: transparent !important;
+		}
+		.decorationsOverviewRuler {
+			display: none !important;
+		}
+	}
+}
+.common-monaco-editor-adaptation-placeholder {
+	top: 2px;
+	left: 48px;
+	z-index: 2;
+	color: rgba(0, 0, 0, 0.25);
+	position: absolute;
+}
+.common-monaco-editor-adaptation-border {
+	border: 1px solid #d9d9d9;
+	border-radius: 8px;
+	padding: 4px 11px 11px 0;
+}
+
+.common-monaco-editor-adaptation-disabled {
+	:global {
+		.monaco-editor .cursors-layer .cursor {
+			opacity: 0 !important;
+		}
+	}
+}

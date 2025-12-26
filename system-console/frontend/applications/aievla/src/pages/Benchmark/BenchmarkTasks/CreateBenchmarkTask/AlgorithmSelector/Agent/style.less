@@ -1,0 +1,34 @@
+@border:1px solid #d9d9d9 !important;
+.agentRoot {
+  overflow-y: hidden;
+  overflow-x: hidden;
+  .loading {
+    height: 175px;
+    position: static !important;
+  }
+  .search-input {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 33;
+    border: @border;
+  }
+  .content {
+    border: 1px solid red;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+  .ad-empty-box {
+    height: 172px;
+    margin-top: -33px !important;
+  }
+  .checkBox-col:not(:last-child) {
+    padding-bottom: 16px;
+  }
+  .bottom-box {
+    width: 100%;
+    border-top: @border;
+    padding: 8px 12px 9px;
+    background-color: #ffffff;
+  }
+}

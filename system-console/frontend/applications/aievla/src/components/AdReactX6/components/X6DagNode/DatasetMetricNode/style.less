@@ -1,0 +1,30 @@
+.x6-node {
+  .DatasetMetricNode {
+    width: 280px;
+    padding: 12px;
+    position: relative;
+
+    &-delete {
+      width: 100%;
+      text-align: right;
+      visibility: hidden;
+      position: absolute;
+      right: 0;
+      top: -22px;
+    }
+
+    &:hover {
+      .DatasetMetricNode-delete {
+        visibility: visible;
+      }
+    }
+  }
+
+  &.x6-node-selected {
+    .DatasetMetricNode {
+      &-delete {
+        visibility: visible;
+      }
+    }
+  }
+}

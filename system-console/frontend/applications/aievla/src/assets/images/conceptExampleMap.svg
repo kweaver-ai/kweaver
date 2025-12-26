@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400px" height="130px" viewBox="0 0 400 130" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 8备份</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="配置意图-查看示例备份" transform="translate(0.000000, -268.000000)">
+            <g id="编组-8备份" transform="translate(0.000000, 268.000000)">
+                <rect id="矩形" stroke-opacity="0.1" stroke="#000000" fill="#FFFFFF" x="0.5" y="0.5" width="399" height="129"></rect>
+                <g id="编组-7" transform="translate(94.000000, 23.000000)">
+                    <path id="路径-6" d="M61.0477684,32.80186 L150.293,64.792 L151.980351,60.0850172 L161.336372,69.5469073 L148.099947,70.9105643 L149.786,66.204 L60.5416288,34.2138879 L61.0477684,32.80186 Z" transform="translate(111.140336, 51.507874) rotate(-19.790387) translate(-111.140336, -51.507874) " fill="#000000" fill-rule="nonzero"></path>
+                    <path d="M20,68 C9,68 0,59 0,48 C0,37 9,28 20,28 C31,28 40,37 40,48 C40,59.1 31.1,68 20,68 L20,68 Z" id="路径" stroke="#FFFFFF" stroke-width="2" fill="#FAAD14" fill-rule="nonzero"></path>
+                    <text id="人员" font-family="PingFangSC-Medium, PingFang SC" font-size="14" font-weight="400" fill="#333333">
+                        <tspan x="6" y="15">人员</tspan>
+                    </text>
+                    <path d="M173,49 C173,38 182,29 193,29 C204,29 213,38 213,49 C213,60.1 204.1,69 193,69 C182,69 173,60 173,49 Z" id="路径" fill="#126EE3" fill-rule="nonzero"></path>
+                    <text id="企业" font-family="PingFangSC-Medium, PingFang SC" font-size="14" font-weight="400" fill="#333333">
+                        <tspan x="179" y="16">企业</tspan>
+                    </text>
+                    <text id="所属" font-family="PingFangSC-Medium, PingFang SC" font-size="14" font-weight="400" fill="#333333">
+                        <tspan x="91.595769" y="39">所属</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

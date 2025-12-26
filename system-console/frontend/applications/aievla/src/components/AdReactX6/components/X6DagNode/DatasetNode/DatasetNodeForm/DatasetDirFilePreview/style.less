@@ -1,0 +1,58 @@
+.DatasetDirFilePreview {
+  &-wrapper {
+    width: 100%;
+    //border: 1px solid var(--ad-border-color-base);
+    background: #fff;
+
+  }
+
+  &-borderL {
+    position: relative;
+
+    &::before {
+      display: block;
+      content: "";
+      position: absolute;
+      left: -24px;
+      bottom: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.1);
+
+    }
+  }
+
+  &-left {
+    padding: 12px;
+    width: 239px;
+    height: 100%;
+    overflow: auto;
+  }
+
+  &-right {
+    padding: 12px;
+    border-left: 1px solid var(--ad-border-color-base);
+    height: 100%;
+    position: relative;
+  }
+
+  &-step {
+    position: relative;
+
+    &::before {
+      display: block;
+      content: "2";
+      position: absolute;
+      left: -36px;
+      top: 0;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      text-align: center;
+      line-height: 24px;
+      border: var(--ad-border);
+      color: var(--ad-text-color);
+      background: #F5F5F5;
+    }
+  }
+}

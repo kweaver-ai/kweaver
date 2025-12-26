@@ -1,0 +1,37 @@
+.page-evaluation-data-detail {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	overflow-x: auto;
+}
+
+.page-evaluation-data-detail-title {
+	width: 100%;
+	display: flex;
+	min-height: 228px;
+	padding-top: 20px;
+	padding-bottom: 46px;
+	justify-content: center;
+	background: url('@/assets/images/background/evaluation_detail_bg.png');
+	background-size: 100% 100%;
+	border-bottom: var(--g-border);
+}
+
+.page-evaluation-data-detail-title-tabs {
+	left: 0;
+	bottom: -46px;
+	height: 46px;
+	position: absolute;
+	// 覆写antd样式 --- start
+	.ant-tabs-nav {
+		margin-bottom: 0;
+	}
+	// 覆写antd样式 --- end
+}
+
+.page-evaluation-data-detail-content {
+	width: 100%;
+	overflow: hidden;
+	overflow-y: auto;
+}

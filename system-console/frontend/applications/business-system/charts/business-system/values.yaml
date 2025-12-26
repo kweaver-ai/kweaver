@@ -1,0 +1,68 @@
+# Default values for kg-studio.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+namespace: anydata
+
+image:
+  registry: acr.aishu.cn
+  repository: /dip/business-system-frontend
+  tag: 1.0.2.3
+  pullPolicy: IfNotPresent
+  name: business-system-frontend
+
+service:
+  enableDualStack: false
+  type: ClusterIP
+  ports:
+    portHttp: 80
+    targetPortHttp: 80
+    portHttps: 443
+    targetPortHttps: 443
+    http: http
+    https: https
+
+
+nodeSelector: {}
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 250Mi
+  limits:
+    cpu: 2
+    memory: 2Gi
+
+probe:
+  livenessProbe:
+    tcpSocket:
+      port: 80
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    tcpSocket:
+      port: 80
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    tcpSocket:
+      port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+ingress:
+  rps:
+    limit: 2000 # rps：每秒多少请求 超过之后就报错 https status: 503
+  
+  
+  

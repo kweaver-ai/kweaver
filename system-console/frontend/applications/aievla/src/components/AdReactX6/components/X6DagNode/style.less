@@ -1,0 +1,82 @@
+.ad-x6-dag-node {
+  position: relative;
+  display: inline-block;
+  background: var(--ad-white);
+  border-radius: 10px;
+  border: 1px solid var(--ad-border-color-base);
+  //transition: all .3s;
+
+  &:hover {
+    border: 2px solid var(--ad-text-color);
+
+    .ad-x6-dag-node-add {
+      visibility: visible;
+      //display: block;
+    }
+  }
+
+  &-add {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(45%, -50%);
+    visibility: hidden;
+    //display: none;
+    line-height: 1;
+    background-color: #fff;
+
+    .anticon {
+      color: var(--ad-text-color-lower);
+    }
+  }
+
+  &-left-port {
+    position: relative;
+
+    &::before {
+      display: block;
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, 19px);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      border: var(--ad-border);
+    }
+  }
+
+  &-right-port {
+    position: relative;
+
+    &::after {
+      display: block;
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      transform: translate(50%, 19px);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      border: var(--ad-border);
+    }
+  }
+
+  &-highlight {
+    border: 2px solid var(--ad-text-color);
+  }
+
+}
+
+.x6-node-selected .ad-x6-dag-node {
+  border: 2px solid var(--ad-text-color);
+
+  .ad-x6-dag-node-add {
+    visibility: visible;
+    //display: block;
+  }
+}

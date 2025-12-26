@@ -1,0 +1,41 @@
+{
+  "editor.tabSize": 2,
+  "window.zoomLevel": 0,
+  "editor.fontSize": 14,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "biomejs.biome",
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+   "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit"
+  },
+  "cSpell.ignoreWords": [
+    "Kiki",
+    "antv",
+    "katex",
+    "rslib",
+    "aishu",
+    "buildx",
+    "ahooks",
+    "aievla",
+    "Pathto",
+    "Rspack",
+    "Rsbuild",
+    "QIANKUN",
+    "Iconfont",
+    "rsdoctor",
+    "traptitech",
+    "opensource",
+    "wangeditor"
+  ]
+}

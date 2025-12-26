@@ -1,0 +1,58 @@
+{
+  "businessDomain": {
+    "title": "业务域",
+    "pleaseEnterTheBusinessDomainName": "搜索名称",
+    "sorryNoFound": "抱歉，没有找到符合条件的结果",
+    "sortByBusinessDomainName": "按模型名称排序",
+    "sortByCreation": "按模型创建时间排序",
+    "deleteSuccess": "删除成功",
+    "tableColumns": {
+      "name": "名称",
+      "operation": "操作",
+      "associatedProduct": "所属产品",
+      "menus": {
+        "edit": "编辑",
+        "basicInformation": "基本信息",
+        "authorizationManagement": "授权管理",
+        "delete": "删除"
+      },
+      "creator": "创建者",
+      "builtIn": "内置",
+      "createdTime": "创建时间"
+    },
+    "cannotDelete": "无法删除",
+    "pleaseRemoveThemFirst": "此业务域中存有相关资源，请先移除后，才可删除",
+    "drawer": {
+      "name_create": "新建业务域",
+      "name_edit": "编辑业务域",
+      "name_view": "查看业务域",
+      "basicInformation": "基本信息",
+      "authorizationManagement": "授权管理",
+      "addMember": "添加访问者",
+      "businessDomainAuthorization": "业务域授权",
+      "businessDomainName": "业务域名称",
+      "pleaseEnterTheBusinessDomainName": "请输入业务域名称",
+      "businessDomainIntroduction": "业务域简介",
+      "pleaseEnterTheBusinessDomainIntroduction": "请输入业务域简介",
+      "businessDomainNameAlreadyExists": "此业务域名称已存在，请重新输入",
+      "associatedProduct": "所属产品",
+      "pleaseSelectCorrespondingProduct": "请选择所属产品",
+      "businessDomainCreatedSuccessfully": "业务域创建成功",
+      "businessDomainEditSuccessfully": "业务域编辑成功",
+      "membersTip": "请将能访问此域的相关用户添加进来，未添加的用户无法访问此业务域",
+      "member": "成员",
+      "name": "名称",
+      "builtIn": "内置",
+      "allOrganizationalUsers": "所有组织用户",
+      "permission": "权限",
+      "department": "来自",
+      "group": "用户组",
+      "role": "角色",
+      "app": "应用账号",
+      "operation": "操作",
+      "removeMembers": "移除成员",
+      "authorizationSuccessful": "授权成功",
+      "areYouSureRemove": "移除后，此成员将失去此业务域权限。且不可恢复，确定要移除吗？"
+    }
+  }
+}

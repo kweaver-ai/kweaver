@@ -1,0 +1,26 @@
+.DiagramModal {
+  &-title {
+    padding-left: 8px;
+    position: relative;
+
+    &::before {
+      display: block;
+      content: "";
+      width: 1px;
+      height: 16px;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--ad-primary-color);
+    }
+  }
+
+  &-arrow {
+    width: 160px;
+    height: 30px;
+    padding-bottom: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--ad-heading-color);
+  }
+}

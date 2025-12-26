@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 35</title>
+    <defs>
+        <linearGradient x1="50.264892%" y1="128.062987%" x2="49.4646924%" y2="5.3012987%" id="linearGradient-1">
+            <stop stop-color="#7FD2FF" stop-opacity="0" offset="16.92%"></stop>
+            <stop stop-color="#7ACBFE" stop-opacity="0.113" offset="24.63%"></stop>
+            <stop stop-color="#6CB7FC" stop-opacity="0.2782" offset="35.9%"></stop>
+            <stop stop-color="#5597F8" stop-opacity="0.4756" offset="49.37%"></stop>
+            <stop stop-color="#346AF2" stop-opacity="0.6979" offset="64.53%"></stop>
+            <stop stop-color="#0B32EB" stop-opacity="0.9381" offset="80.92%"></stop>
+            <stop stop-color="#0022E9" offset="85.15%"></stop>
+        </linearGradient>
+        <linearGradient x1="87.66074%" y1="2.9723913%" x2="29.9207692%" y2="93.6723913%" id="linearGradient-2">
+            <stop stop-color="#7FD2FF" stop-opacity="0" offset="16.92%"></stop>
+            <stop stop-color="#7ACBFE" stop-opacity="0.113" offset="24.63%"></stop>
+            <stop stop-color="#6CB7FC" stop-opacity="0.2782" offset="35.9%"></stop>
+            <stop stop-color="#5597F8" stop-opacity="0.4756" offset="49.37%"></stop>
+            <stop stop-color="#346AF2" stop-opacity="0.6979" offset="64.53%"></stop>
+            <stop stop-color="#0B32EB" stop-opacity="0.9381" offset="80.92%"></stop>
+            <stop stop-color="#0022E9" offset="85.15%"></stop>
+        </linearGradient>
+        <linearGradient x1="-0.0101886792%" y1="49.8328475%" x2="100.143962%" y2="49.8328475%" id="linearGradient-3">
+            <stop stop-color="#7FD2FF" stop-opacity="0" offset="16.92%"></stop>
+            <stop stop-color="#7ACBFE" stop-opacity="0.113" offset="24.63%"></stop>
+            <stop stop-color="#6CB7FC" stop-opacity="0.2782" offset="35.9%"></stop>
+            <stop stop-color="#5597F8" stop-opacity="0.4756" offset="49.37%"></stop>
+            <stop stop-color="#346AF2" stop-opacity="0.6979" offset="64.53%"></stop>
+            <stop stop-color="#0B32EB" stop-opacity="0.9381" offset="80.92%"></stop>
+            <stop stop-color="#0022E9" offset="85.15%"></stop>
+        </linearGradient>
+        <linearGradient x1="-23.5118068%" y1="55.2132391%" x2="69.7842576%" y2="41.1739198%" id="linearGradient-4">
+            <stop stop-color="#7FD2FF" stop-opacity="0" offset="16.92%"></stop>
+            <stop stop-color="#7ACBFE" stop-opacity="0.113" offset="24.63%"></stop>
+            <stop stop-color="#6CB7FC" stop-opacity="0.2782" offset="35.9%"></stop>
+            <stop stop-color="#5597F8" stop-opacity="0.4756" offset="49.37%"></stop>
+            <stop stop-color="#346AF2" stop-opacity="0.6979" offset="64.53%"></stop>
+            <stop stop-color="#0B32EB" stop-opacity="0.9381" offset="80.92%"></stop>
+            <stop stop-color="#0022E9" offset="85.15%"></stop>
+        </linearGradient>
+        <linearGradient x1="37.5740814%" y1="37.6278132%" x2="88.0537534%" y2="90.2233546%" id="linearGradient-5">
+            <stop stop-color="#7FD2FF" offset="16.92%"></stop>
+            <stop stop-color="#7ACBFE" stop-opacity="0.887" offset="24.63%"></stop>
+            <stop stop-color="#6CB7FC" stop-opacity="0.7218" offset="35.9%"></stop>
+            <stop stop-color="#5597F8" stop-opacity="0.5244" offset="49.37%"></stop>
+            <stop stop-color="#346AF2" stop-opacity="0.3021" offset="64.53%"></stop>
+            <stop stop-color="#0B32EB" stop-opacity="0.06193244" offset="80.92%"></stop>
+            <stop stop-color="#0022E9" stop-opacity="0" offset="85.15%"></stop>
+        </linearGradient>
+        <linearGradient x1="79.8694591%" y1="0.316115702%" x2="35.4826024%" y2="50.1518595%" id="linearGradient-6">
+            <stop stop-color="#7FD2FF" stop-opacity="0" offset="16.92%"></stop>
+            <stop stop-color="#7ACBFE" stop-opacity="0.113" offset="24.63%"></stop>
+            <stop stop-color="#6CB7FC" stop-opacity="0.2782" offset="35.9%"></stop>
+            <stop stop-color="#5597F8" stop-opacity="0.4756" offset="49.37%"></stop>
+            <stop stop-color="#346AF2" stop-opacity="0.6979" offset="64.53%"></stop>
+            <stop stop-color="#0B32EB" stop-opacity="0.9381" offset="80.92%"></stop>
+            <stop stop-color="#0022E9" offset="85.15%"></stop>
+        </linearGradient>
+        <linearGradient x1="0.000332701237%" y1="50.0208237%" x2="99.9308749%" y2="50.0208237%" id="linearGradient-7">
+            <stop stop-color="#7FD2FF" offset="4.126309%"></stop>
+            <stop stop-color="#7ACBFE" offset="13.28%"></stop>
+            <stop stop-color="#6CB7FC" offset="26.67%"></stop>
+            <stop stop-color="#5597F8" offset="42.66%"></stop>
+            <stop stop-color="#346AF2" offset="60.67%"></stop>
+            <stop stop-color="#0B32EB" offset="80.13%"></stop>
+            <stop stop-color="#0022E9" offset="85.15%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="配置" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="LLM" transform="translate(-2302.000000, -456.000000)" fill-rule="nonzero">
+            <g id="编组-62" transform="translate(2260.000000, 284.000000)">
+                <g id="编组-3" transform="translate(24.000000, 61.000000)">
+                    <g id="编组-17" transform="translate(12.000000, 106.000000)">
+                        <g id="编组-3" transform="translate(6.875000, 3.000000)">
+                            <g id="编组-35" transform="translate(0.000000, 2.000000)">
+                                <path d="M3.77679261,10.7025141 L0.591024798,10.7025141 C0.27388954,10.7025141 0,10.4430398 0,10.1114893 L0,4.04267368 L3.77679261,10.7025141 Z" id="路径" fill="url(#linearGradient-1)"></path>
+                                <path d="M10.6096159,7.1563653 L12.2241226,9.90967594 C12.3826903,10.1835655 12.2961988,10.5439465 12.0223093,10.7169293 L6.78957755,13.7873752 L10.6096159,7.1563653 Z" id="路径" fill="url(#linearGradient-2)"></path>
+                                <path d="M3.96419072,3.06243743 L5.53545176,0.294711552 C5.69401939,0.00640677287 6.05440037,-0.0800846609 6.32828991,0.0784829677 L11.6042674,3.07685267 L3.96419072,3.06243743 Z" id="路径" fill="url(#linearGradient-3)"></path>
+                                <path d="M7.81305952,4.37422418 L1.64333724,4.37422418 L3.45965735,7.50233104 C3.45965735,7.50233104 3.71913165,6.49326431 4.7714441,5.59951949 C6.31387467,4.28773275 9.70145582,4.37422418 9.70145582,4.37422418 L7.81305952,4.37422418 Z" id="路径" fill="url(#linearGradient-4)" opacity="0.6"></path>
+                                <path d="M3.09927638,6.92572148 L6.19855276,12.086377 L8.01487287,9.04476161 C8.01487287,9.04476161 7.02022138,9.33306638 5.70843463,8.90060922 C3.79120785,8.25192346 2.11904013,5.29679947 2.11904013,5.29679947 L3.09927638,6.92572148 Z" id="路径" fill="url(#linearGradient-5)" opacity="0.6"></path>
+                                <path d="M7.64007665,9.66461688 L10.6528616,4.44630037 L7.10671281,4.33097846 C7.10671281,4.33097846 7.84189,5.05174041 8.1013643,6.42118811 C8.46174527,8.41049109 6.68867088,11.3079541 6.68867088,11.3079541 L7.64007665,9.66461688 Z" id="路径" fill="url(#linearGradient-6)" opacity="0.6"></path>
+                                <path d="M0.129737151,4.38863942 L5.42012985,13.5567314 C5.76609559,14.1477562 6.61659469,14.1477562 6.96256042,13.5567314 L12.2529531,4.38863942 C12.5989189,3.79761462 12.1664617,3.06243743 11.4889455,3.06243743 L0.908160055,3.06243743 C0.216228585,3.06243743 -0.216228585,3.79761462 0.129737151,4.38863942 Z M2.75331064,4.44630037 L9.61496439,4.44630037 C10.0618368,4.44630037 10.3357263,4.92200326 10.1194978,5.31121471 L6.68867088,11.2502932 C6.4724423,11.6395046 5.91024798,11.6395046 5.69401939,11.2502932 L2.26319252,5.31121471 C2.03254869,4.92200326 2.30643823,4.44630037 2.75331064,4.44630037 Z" id="形状" fill="url(#linearGradient-7)"></path>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

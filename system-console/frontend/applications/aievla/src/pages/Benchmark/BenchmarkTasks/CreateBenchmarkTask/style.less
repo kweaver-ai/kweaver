@@ -1,0 +1,119 @@
+.createBenchmarkTask {
+  height: 100%;
+
+  .ad-badge .ant-badge .ant-badge-status-text {
+    padding-top: 1px;
+  }
+
+  .loading-mask {
+    display: none;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.3);
+    text-align: center;
+
+    &.spinning {
+      display: block;
+    }
+
+    .spin-content-box {
+      margin-top: 20%;
+    }
+  }
+
+  .ant-form-item:not(:nth-child(4)) {
+    .ant-form-item-row {
+      width: 850px;
+    }
+  }
+
+  .ant-form-item:nth-child(4) {
+    .ant-form-item-row {
+      .ant-col-6 {
+        padding-right: 6px;
+        margin-right: -6px;
+      }
+    }
+  }
+
+  &-content {
+    flex-flow: column;
+    align-items: center;
+    overflow-x: auto;
+    min-width: 1000px;
+    overflow-y: hidden;
+
+    &-box {
+      &-form {
+        max-height: calc(100% - 60px);
+        overflow-y: 'auto';
+        overflow-x: hidden;
+
+        textarea.ant-input {
+          max-width: 637px;
+        }
+      }
+
+      .previewBox {
+        position: relative;
+        .copy-box {
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          z-index: 10;
+        }
+      }
+      .footer-content-box {
+        width: 630px;
+        text-align: left;
+        align-items: center;
+      }
+      .ant-progress-inner {
+        height: 3px;
+      }
+      .ant-upload-span {
+        cursor: pointer;
+      }
+      .errorBox {
+        justify-content: right;
+        padding-right: 200px;
+      }
+
+      .c-param-editor {
+        &-disabled {
+          .CodeMirror {
+            background-color: #fff;
+          }
+        }
+      }
+
+      .ant-form-item-extra {
+        margin-top: 16px;
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.45);
+      }
+      .ant-upload-list-item {
+        margin-top: 16px;
+      }
+
+      .list::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        margin-right: 4px;
+        transform: translateY(-2px);
+        background-color: rgba(0, 0, 0, 0.45);
+      }
+
+      .ant-upload-list-item-card-actions-btn {
+        min-width: 24px;
+      }
+    }
+  }
+}

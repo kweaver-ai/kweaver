@@ -1,0 +1,13 @@
+{
+  "modelDefault": {
+    "title": "Default Model",
+    "subTitle": "After setting the default model, if the specified model is not configured for the function, the currently set default model will be automatically called.",
+    "pleaseEnterTheModelName": "please enter the model name",
+    "modelName": "Model Name",
+    "modelType": "Model Type",
+    "baseModel": "Base Model",
+    "setting": "Setting",
+    "currentDefault": "Current default",
+    "setAsDefault": "Set as default"
+  }
+}

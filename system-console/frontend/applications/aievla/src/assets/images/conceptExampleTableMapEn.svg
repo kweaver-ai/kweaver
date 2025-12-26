@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400px" height="130px" viewBox="0 0 400 130" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 8备份 2</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="配置意图-查看示例备份" transform="translate(-72.000000, -510.000000)">
+            <g id="编组-8备份-2" transform="translate(72.000000, 510.000000)">
+                <rect id="矩形" stroke-opacity="0.1" stroke="#000000" fill="#FFFFFF" x="0.5" y="0.5" width="399" height="129"></rect>
+                <g id="编组-7" transform="translate(91.000000, 23.000000)">
+                    <path id="路径-6" d="M64.0477684,32.80186 L153.293,64.792 L154.980351,60.0850172 L164.336372,69.5469073 L151.099947,70.9105643 L152.786,66.204 L63.5416288,34.2138879 L64.0477684,32.80186 Z" transform="translate(114.140336, 51.507874) rotate(-19.790387) translate(-114.140336, -51.507874) " fill="#000000" fill-rule="nonzero"></path>
+                    <path d="M23,68 C12,68 3,59 3,48 C3,37 12,28 23,28 C34,28 43,37 43,48 C43,59.1 34.1,68 23,68 L23,68 Z" id="路径" stroke="#FFFFFF" stroke-width="2" fill="#FAAD14" fill-rule="nonzero"></path>
+                    <text id="Person" font-family="PingFangSC-Medium, PingFang SC" font-size="14" font-weight="400" fill="#333333">
+                        <tspan x="0" y="15">Person</tspan>
+                    </text>
+                    <path d="M176,49 C176,38 185,29 196,29 C207,29 216,38 216,49 C216,60.1 207.1,69 196,69 C185,69 176,60 176,49 Z" id="路径" fill="#126EE3" fill-rule="nonzero"></path>
+                    <text id="Enterprise" font-family="PingFangSC-Medium, PingFang SC" font-size="14" font-weight="400" fill="#333333">
+                        <tspan x="162" y="16">Enterprise</tspan>
+                    </text>
+                    <text id="belong" font-family="PingFangSC-Medium, PingFang SC" font-size="14" font-weight="400" fill="#333333">
+                        <tspan x="83.595769" y="39">belong</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

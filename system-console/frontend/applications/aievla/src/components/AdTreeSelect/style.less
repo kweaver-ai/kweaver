@@ -1,0 +1,35 @@
+.ant-tree-select-dropdown {
+  .ant-select-tree.ant-select-tree-show-line {
+    .ant-select-tree-switcher-noop {
+      visibility: hidden;
+    }
+
+    .ant-select-tree-node-content-wrapper {
+      &.ant-select-tree-node-selected {
+        background-color: var(--ad-select-bg-color);
+
+        &:hover {
+          background-color: var(--ad-select-bg-color);
+        }
+      }
+    }
+
+    .ant-select-tree-list {
+      .ant-select-tree-list-holder {
+        > div {
+          overflow: unset !important;
+        }
+      }
+    }
+
+    .ant-select-tree-indent-unit {
+
+      &::before {
+        display: inline-block;
+        content: "";
+        border-right: var(--ad-border);
+      }
+
+    }
+  }
+}

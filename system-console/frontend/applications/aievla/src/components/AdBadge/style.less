@@ -1,0 +1,23 @@
+.ad-badge {
+  display: inline-block;
+  max-width: 100%;
+
+  .ant-badge {
+    display: flex;
+    align-items: center;
+
+    .ant-badge-status-dot {
+      top: unset;
+    }
+
+    .ant-badge-status-text {
+      font-size: 12px;
+      color: var(--ad-text-color-lower);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+.detailBoxRoot {
+  padding: 0 0 40px;
+  overflow-y: auto;
+  .ant-btn {
+    height: 28px;
+    padding: 2px 8px;
+  }
+  .ant-btn > .anticon + span {
+    margin-left: 3px;
+  }
+  .noData {
+    flex-flow: column;
+    align-items: center;
+  }
+
+  .ant-table-thead > tr > th {
+    padding: 4px 16px;
+  }
+  .ant-table-tbody > tr > td {
+    padding: 7px 16px;
+  }
+
+  .ant-table .ant-table-thead > tr > th {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.85); // 0.65
+    font-size: 13px;
+    background-color: #fff;
+  }
+  .ant-table:not(.ant-table-bordered) .ant-table-thead > tr:nth-child(1) > th {
+    border-top: none;
+  }
+}

@@ -1,0 +1,35 @@
+.page-prompt {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	.page-prompt-list {
+		width: 320px;
+		min-width: 320px;
+		height: 100%;
+	}
+	.page-prompt-content {
+		height: 100%;
+		width: calc(100% - 320px);
+		.page-prompt-content-preview-and-debug {
+			width: 100%;
+			display: flex;
+			height: calc(100% - 48px);
+		}
+		.page-prompt-content-debug {
+			height: 100%;
+			// padding: 24px;
+			position: relative;
+			border-left: var(--g-border);
+		}
+		.page-prompt-content-dragLine {
+			top: 0;
+			bottom: 0;
+			left: -7px;
+			width: 14px;
+			z-index: 100;
+			cursor: col-resize;
+			position: absolute;
+			background: transparent;
+		}
+	}
+}

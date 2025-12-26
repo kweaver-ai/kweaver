@@ -1,0 +1,60 @@
+{
+  "businessDomain": {
+    "title": "業務域",
+    "pleaseEnterTheBusinessDomainName": "搜索名稱",
+    "sorryNoFound": "抱歉，沒有找到符合條件的結果",
+    "sortByBusinessDomainName": "按業務域名稱排序",
+    "sortByCreation": "按業務域創建時間排序",
+    "deleteSuccess": "刪除成功",
+    "tableColumns": {
+      "modelName": "名稱",
+      "operation": "操作",
+      "associatedProduct": "所屬產品",
+      "menus": {
+        "edit": "編輯",
+        "basicInformation": "基本資訊",
+        "memberManagement": "成員管理",
+        "authorizationManagement": "授權管理",
+        "delete": "刪除"
+      },
+      "creator": "創建者",
+      "builtIn": "內寘",
+      "createdTime": "創建時間"
+    },
+    "cannotDelete": "無法删除",
+    "pleaseRemoveThemFirst": "此業務域中存有相關資源，請先移除後，才可删除",
+    "drawer": {
+      "name_create": "新建業務域",
+      "name_edit": "編輯業務域",
+      "name_view": "查看業務域",
+      "basicInformation": "基本資訊",
+      "addMember": "添加訪問者",
+      "businessDomainAuthorization": "業務域授權",
+      "memberManagement": "成員管理",
+      "authorizationManagement": "授權管理",
+      "businessDomainName": "業務域名稱",
+      "pleaseEnterTheBusinessDomainName": "請輸入業務域名稱",
+      "businessDomainIntroduction": "業務域簡介",
+      "pleaseEnterTheBusinessDomainIntroduction": "請輸入業務域簡介",
+      "businessDomainNameAlreadyExists": "此業務域名稱已存在，請重新輸入",
+      "associatedProduct": "所屬產品",
+      "pleaseSelectCorrespondingProduct": "請選擇所屬產品",
+      "businessDomainCreatedSuccessfully": "業務域編輯成功",
+      "businessDomainEditSuccessfully": "业务域编辑成功",
+      "membersTip": "請將能訪問此域的相關用戶添加進來，未添加的用戶無法訪問此業務域",
+      "member": "成員",
+      "name": "名稱",
+      "builtIn": "內寘",
+      "allOrganizationalUsers": "所有組織用戶",
+      "permission": "權限",
+      "department": "來自",
+      "group": "用戶組",
+      "role": "角色",
+      "app": "應用帳號",
+      "operation": "操作",
+      "removeMembers": "移除成員",
+      "authorizationSuccessful": "授權成功",
+      "areYouSureRemove": "移除後，此成員將失去此業務域許可權。 且不可恢復，確定要移除嗎？"
+    }
+  }
+}

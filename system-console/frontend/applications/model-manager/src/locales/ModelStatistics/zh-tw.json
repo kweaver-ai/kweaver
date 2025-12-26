@@ -1,0 +1,22 @@
+{
+  "modelStatistics": {
+    "title": "模型統計",
+    "header": {
+      "modelName": "模型名稱",
+      "pleaseSelectModelName": "請選擇模型名稱"
+    },
+    "usageCount": "使用次數",
+    "once": "次",
+    "modelErrorRate": "模型調用錯誤率",
+    "modelAverageTime": "模型調用平均耗時",
+    "tokenConsumption": "Tokens消耗",
+    "thousandTokens": "千tokens",
+    "millionTokens": "百萬tokens",
+    "modelCallTimeConsumption": "模型調用耗時",
+    "firstTokensTime": "模型首Tokens耗時",
+    "modelTimeAndFirstTime": "模型調用耗時與模型首Tokens耗時",
+    "unitSeconds": "（單位：秒）",
+    "modelTokenRate": "模型Token速率",
+    "modelQPS": "模型 QPS"
+  }
+}

@@ -1,0 +1,17 @@
+# Local
+.DS_Store
+*.local
+*.log*
+
+# Dist
+node_modules
+
+# Profile
+.rspack-profile-*/
+
+# IDE
+!.vscode/extensions.json
+.idea
+
+.cache
+.VSCodeCounter

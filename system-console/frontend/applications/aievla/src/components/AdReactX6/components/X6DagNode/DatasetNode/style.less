@@ -1,0 +1,47 @@
+.x6-node {
+  .ad-x6-dag-dataset-node {
+    .ad-x6-dag-dataset-item {
+      height: 32px;
+      padding: 0 12px;
+      background: rgba(0, 0, 0, 0.02);
+      transition: all .3s;
+
+      &-delete {
+        display: none;
+      }
+
+      &:hover {
+        background: rgba(18, 110, 227, 0.06);
+
+        .ad-x6-dag-dataset-item-delete {
+          display: inline-flex;
+        }
+      }
+    }
+  }
+}
+
+.DatasetNode-hover-border {
+  position: relative;
+  cursor: pointer;
+
+  &::after {
+    display: block;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--ad-disabled-color);
+    transition: all .3s;
+  }
+
+  &:hover {
+    &::after {
+      width: 100%;
+    }
+  }
+}
+
+

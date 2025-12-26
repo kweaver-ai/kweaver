@@ -1,0 +1,31 @@
+@border: 1px solid var(--ad-line-color);
+.PromptDetails {
+  .loading-mask {
+    position: absolute;
+    z-index: 10;
+    left: 308px;
+    top: 0;
+    width: calc(100% - 308px);
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.3);
+    text-align: center;
+  }
+  &-vars-table {
+    .ant-table-thead > tr > th {
+      background-color: #fafafa;
+    }
+
+    .ad-table-header {
+      border-top: @border;
+    }
+  }
+
+  .CodeMirror pre.CodeMirror-line {
+    padding: 0px 8px;
+  }
+
+  &-promptEditor {
+    border: @border;
+    border-radius: 2px;
+  }
+}

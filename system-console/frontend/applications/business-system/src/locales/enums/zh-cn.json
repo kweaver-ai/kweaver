@@ -1,0 +1,7 @@
+{
+  "enums": {
+    "administrator": "管理员",
+    "developer": "成员",
+    "visitor": "访问者"
+  }
+}

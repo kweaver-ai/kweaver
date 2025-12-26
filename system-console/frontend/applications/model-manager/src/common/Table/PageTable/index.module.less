@@ -1,0 +1,46 @@
+.common-table-page-table-column-title {
+	user-select: none;
+	font-size: 13px !important;
+	font-weight: 400 !important;
+
+	// 覆写 antd 的样式 --- start
+	.ant-table-cell-fix-right-first {
+		right: 0 !important;
+	}
+	.ant-table-column-sorters {
+		justify-content: flex-start;
+		.ant-table-column-title {
+			flex: none;
+			margin-right: 10px;
+		}
+	}
+	.ant-pagination {
+		margin-bottom: 0;
+	}
+	// 覆写 antd 的样式 --- end
+
+	// 覆写 react-resizable 的样式 --- start
+	:global {
+		.react-resizable-handle-se {
+			right: 0;
+			bottom: 8px;
+			cursor: ew-resize;
+		}
+		.react-resizable-handle {
+			width: 12px;
+			height: 20px;
+			padding: 0;
+			visibility: hidden;
+			background-image: none;
+			border-right: 1px solid #d9d9d9;
+		}
+	}
+	&:hover {
+		:global {
+			.react-resizable-handle {
+				visibility: visible;
+			}
+		}
+	}
+	// 覆写 react-resizable 的样式 --- end
+}

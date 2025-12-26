@@ -1,0 +1,58 @@
+.header {
+    height: 63px;
+    border-bottom: 1px solid #e0e0e0;
+    line-height: 63px;
+    text-align: right;
+    z-index: 1;
+
+    & .header-layout {
+        display: inline-block;
+        height: 30px;
+        line-height: 30px;
+        margin-left: 20px;
+        border: none;
+        background-color: #f9f9f9;
+        color: #000;
+
+        & .header-icon {
+            padding: 0 10px;
+
+            &:hover {
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+.index-header {
+    position: relative;
+    height: 64px;
+    margin: 0 auto;
+    line-height: 64px;
+    width: 560px;
+
+    & .index-nav-logo {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        width: 400px;
+        height: 64px;
+        background-repeat: no-repeat;
+        background-position: 10px 8px;
+    }
+
+    & .nav-language-cn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin-right: 20px;
+    }
+
+    & .nav-language-other {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin-right: 20px;
+    }
+}

@@ -1,0 +1,219 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "deploy-web-service",
+        "version": "1.0.0",
+        "description": "deploy-web-service 服务"
+    },
+    "servers": [{
+        "url": "https://127.0.0.1/api/deploy-web-service/v1"
+    }],
+    "paths": {
+        "/deploy-web-service/v1/oemconfig": {
+            "get": {
+                "description": "获取个性化服务信息",
+                "parameters": [{
+                        "description": "section",
+                        "in": "query",
+                        "name": "section",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "option",
+                        "in": "query",
+                        "name": "option",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [],
+                                    "type": "object",
+                                    "properties": {
+                                        "theme": {
+                                            "description": "主题色",
+                                            "type": "string"
+                                        },
+                                        "showPortalBanner": {
+                                            "description": "是否显示banner",
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "请求成功"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/RespStd400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/RespStd401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/RespStd403"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/RespStd500"
+                    }
+                },
+                "summary": "deploy-web-service",
+                "tags": [
+                    "个性化服务"
+                ]
+            }
+        }
+    },
+    "components": {
+        "responses": {
+            "RespStd400": {
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "Err400000000": {
+                                "$ref": "#/components/examples/Err400000000"
+                            }
+                        },
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                },
+                "description": "非法请求"
+            },
+            "RespStd401": {
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "Err401029000": {
+                                "$ref": "#/components/examples/Err401029000"
+                            }
+                        },
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                },
+                "description": "非法请求"
+            },
+            "RespStd403": {
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "Err403029000": {
+                                "$ref": "#/components/examples/Err403029000"
+                            }
+                        },
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                },
+                "description": "非法请求"
+            },
+            "RespStd500": {
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "Code500000000": {
+                                "description": "可能是服务器代码问题或者环境问题导致的，\n可以联系开发团队了解具体原因。\n",
+                                "summary": "服务器错误",
+                                "value": {
+                                    "cause": "cause",
+                                    "code": 500000000,
+                                    "detail": {
+                                        "xx": "xx"
+                                    },
+                                    "message": "xxxxx"
+                                }
+                            }
+                        },
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                },
+                "description": "服务器错误"
+            }
+        },
+        "examples": {
+            "Err400000000": {
+                "description": "以下原因均会导致该错误\n- 未提供必须参数\n- 参数类型错误\n- 参数结构不正确\n- 枚举不存在\n- 参数值不符合要求\n`detail`中会说明不正确的参数名称\n",
+                "summary": "参数错误",
+                "value": {
+                    "code": 400000000,
+                    "detail": {
+                        "invalid_params": [
+                            "param1",
+                            "param2"
+                        ]
+                    },
+                    "message": "Invalid request."
+                }
+            },
+            "Err401029000": {
+                "description": "-未授权\n `cause`中会详细说明",
+                "summary": "未授权",
+                "value": {
+                    "code": 401029000,
+                    "cause": "reason",
+                    "message": "Not authorized."
+                }
+            },
+            "Err403029000": {
+                "description": "-不允许此操作\n -权限错误\n `cause`中会详细说明",
+                "summary": "无权限",
+                "value": {
+                    "code": 403029000,
+                    "cause": "reason",
+                    "message": "No permission to access this service."
+                }
+            }
+        },
+        "schemas": {
+            "Error": {
+                "description": "错误",
+                "properties": {
+                    "cause": {
+                        "description": "供开发者查看的错误信息",
+                        "type": "string"
+                    },
+                    "code": {
+                        "description": "供开发者查看的错误信息",
+                        "type": "integer"
+                    },
+                    "detail": {
+                        "description": "错误辅助信息",
+                        "type": "object"
+                    },
+                    "message": {
+                        "description": "可以直接展示给终端用户的错误信息",
+                        "example": false,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "type": "object"
+            }
+        }
+    },
+    "tags": [{
+        "name": "deploy-web-service",
+        "description": ""
+    }],
+    "security": [{
+        "OAuth2.0": []
+    }]
+}

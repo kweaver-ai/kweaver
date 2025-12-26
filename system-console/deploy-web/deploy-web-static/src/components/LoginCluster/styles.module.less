@@ -1,0 +1,84 @@
+
+.index-panel {
+    border: 0;
+    position: relative;
+
+    iframe {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: 1;
+    }
+
+    & .loading {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-radius: 999px;
+        margin: 0 auto;
+        top: 35%;
+        zoom: -99;
+    }
+
+    & .loading span {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border: 2px solid transparent;
+        border-top: 2px solid rgb(146, 163, 208);
+        border-radius: 999px;
+        top: -4px;
+        left: -4px;
+        animation: rotate 1s infinite linear;
+    }
+}
+
+.tip-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -110px;
+    margin-left: -64px;
+    width: 128px;
+}
+
+.img {
+    display: block;
+    width: 128px;
+    height: 128px;
+}
+
+.img-loginerr {
+    display: block;
+    width: 480px;
+    height: 280px;
+    position: relative;
+    left: -176px;
+    top: -96px;
+}
+
+.go-back-button {
+    margin-top: 16px;
+    width: 200px;
+    height: 30px;
+}
+
+.text {
+    position: absolute;
+    left: -86px;
+    top: 128px;
+    width: 310px;
+    color: rgba(0, 0, 0, 0.55);
+    text-align: center;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

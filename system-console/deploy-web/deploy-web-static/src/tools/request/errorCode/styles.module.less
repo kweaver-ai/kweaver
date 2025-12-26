@@ -1,0 +1,28 @@
+.error-code-container{
+    display: flex;
+    flex-direction: column;
+    max-height: 385px;
+    overflow-y: auto;
+    .res-error-content{
+        padding-right: 5px;
+        .common-btn-style {
+            padding: 0px;
+            color: #1890FF;
+        }
+        .error-spot:first-child {
+            margin-top: 0px;
+        }
+        .error-spot {
+            word-break: break-all;
+            margin-top: 8px;
+            .error-title {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+            .error-content {
+                white-space: pre-wrap;
+                margin-bottom: 0px;
+            }
+        }
+    }
+}

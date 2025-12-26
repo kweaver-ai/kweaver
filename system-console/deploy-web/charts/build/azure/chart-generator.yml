@@ -1,0 +1,77 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - doc/*
+  - docs/*
+  - perf/*
+  - refactor/*
+  - style/*
+  - build/*
+  - revert/*
+  - ci/*
+  - workflow/*
+
+variables:
+  - group: ict-config
+  - group: proton-global-config
+  - name: Build.Clean
+    value: 'all'
+
+parameters:
+- name: DeployWebStatic
+  displayName: DeployWebStatic镜像tag(示例:alpha.1，feature-65535-with-comment)
+  type: string
+  default: alpha.1
+- name: DeployWebService
+  displayName: DeployWebService镜像tag(示例:alpha.1，feature-65535-with-comment)
+  type: string
+  default: alpha.1
+- name: ProtonApplication
+  displayName: ProtonApplication镜像tag(示例:alpha.1，feature-65535-with-comment)
+  type: string
+  default: alpha.1
+- name: StaticResourceManagement
+  displayName: StaticResourceManagement镜像tag(示例:alpha.1，feature-65535-with-comment)
+  type: string
+  default: alpha.1
+
+pool:
+  name: ASDeployment
+  demands:
+    - Agent.OS -equals Linux
+    - Agent.OSArchitecture -equals X64
+    - docker
+    - curl
+
+steps:
+- task: PostBuildCleanup@3
+
+- checkout: self
+
+- task: Docker@2
+  displayName: 登录容器仓库
+  inputs:
+    containerRegistry: ProtonACR
+    command: login
+
+- task: Bash@3
+  inputs:
+    filePath: 'build/scripts/build_tools/build_chart.sh'
+  displayName: "build_chart"
+  env:
+    DOCKER_HUB_PASSWORD: $(DOCKER_HUB_PASSWORD)
+    DOCKER_HUB_USER: $(DOCKER_HUB_USER)
+    REGISTRY_PASSWORD: $(registry.password)
+    REGISTRY_USERNAME: $(registry.username)
+    RELEASE_VERSION: $(release_version)
+    SERVICE_VERSION: $(version)
+    BRANCH_NAME: $(Build.SourceBranch)
+    BUILD_NUMBER: $(Build.BuildId)
+    BUILD_ARCH: $(arch)
+    DeployWebStatic: ${{parameters.DeployWebStatic}}
+    DeployWebService: ${{parameters.DeployWebService}}
+    ProtonApplication: ${{parameters.ProtonApplication}}
+    StaticResourceManagement: ${{parameters.StaticResourceManagement}}

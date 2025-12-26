@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Noto Sans SC';
+    font-style: normal;
+    font-weight: 400;
+    src: local("Arial"),
+        local("SimSun"),
+        local("Microsoft Yahei");
+    unicode-range: U+002d;
+}

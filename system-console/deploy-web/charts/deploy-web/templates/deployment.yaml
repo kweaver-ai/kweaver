@@ -1,0 +1,161 @@
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: apps/v1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ include "template.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "template.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.stratege }}
+  strategy:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{ if not .Values.maxReplicaCount}}
+  replicas: {{ .Values.replicaCount }}
+  {{- else }}
+  replicas: {{ min .Values.replicaCount .Values.maxReplicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "template.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/rules: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "template.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.dnsConfig }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "template.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      - name: depservice
+        configMap:
+          name: {{ include "template.fullname" $}}
+      containers:
+        - name: deploy-web-service
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.deploy_web_service.repository }}:{{ .Values.image.deploy_web_service.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/alive
+              port: 18080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/ready
+              port: 18080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+              - echo
+              - no startupProbe
+            failureThreshold: 30
+            periodSeconds: 10
+          command: 
+          - "node"
+          args:
+            - /AnyShare/DeployWebService/build/bundle.js
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - name: depservice
+            mountPath: "/etc/globalConfig/depservice"
+          env:
+          - name: TZ
+            value: "{{ $.Values.env.timezone }}"
+          - name: LANG
+            value: {{ $.Values.service.language | default "zh_CN" }}
+          {{- range $k, $v := $.Values.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+        - name: deploy-web-static
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.deploy_web_static.repository }}:{{ .Values.image.deploy_web_static.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/alive
+              port: 18800
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health/ready
+              port: 18800
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+              - echo
+              - no startupProbe
+            failureThreshold: 30
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - name: depservice
+            mountPath: "/etc/globalConfig/depservice"
+          env:
+          - name: TZ
+            value: "{{ $.Values.env.timezone }}"
+          - name: LANG
+            value: {{ $.Values.service.language | default "zh_CN" }}
+          {{- range $k, $v := $.Values.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+        {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}
+              topologyKey: kubernetes.io/hostname
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

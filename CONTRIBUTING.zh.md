@@ -136,6 +136,7 @@ git checkout -b fix/bug-description
 - 编写清晰、可维护的代码
 - 遵循项目的代码结构和架构模式
 - 添加适当的注释和文档
+- 添加标准文件头（参见下方 [源代码文件头规范](#-源代码文件头规范)）
 
 ### 4. 编写测试
 
@@ -300,6 +301,122 @@ git push origin feature/my-feature
 1. **批准**: 一旦批准，维护者将合并你的 PR
    - PR 将使用 squash merge 或 rebase merge 合并，以保持线性历史
    - 请在请求审查前确保你的分支是最新的
+
+---
+
+## 📝 源代码文件头规范
+
+本节定义了 **kweaver.ai** 开源项目中使用的标准源代码文件头。
+
+目标是确保：
+
+- 明确的版权归属
+- 明确的许可证（Apache License 2.0）
+- 一致且可读的文件文档
+
+> **说明**：我们使用 "The kweaver.ai Authors" 而不是个人作者名。
+> Git 历史记录已经追踪了所有贡献者，这种方式更易于维护。
+
+### 标准文件头（Go / C / Java）
+
+所有核心源文件使用以下文件头：
+
+```go
+// Copyright 2025 The kweaver.ai Authors.
+//
+// Licensed under the Apache License, Version 2.0.
+// See the LICENSE file in the project root for details.
+```
+
+### 各语言变体
+
+#### Python
+
+```python
+# Copyright 2025 The kweaver.ai Authors.
+#
+# Licensed under the Apache License, Version 2.0.
+# See the LICENSE file in the project root for details.
+```
+
+#### JavaScript / TypeScript
+
+```ts
+/**
+ * Copyright 2025 The kweaver.ai Authors.
+ *
+ * Licensed under the Apache License, Version 2.0.
+ * See the LICENSE file in the project root for details.
+ */
+```
+
+#### Shell
+
+```bash
+#!/usr/bin/env bash
+# Copyright 2025 The kweaver.ai Authors.
+# Licensed under the Apache License, Version 2.0.
+# See the LICENSE file in the project root for details.
+```
+
+#### HTML / XML
+
+```html
+<!--
+  Copyright 2025 The kweaver.ai Authors.
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for details.
+-->
+```
+
+### 派生或 Fork 的文件（可选）
+
+如果文件最初来自其他项目，可以在许可证头后添加来源说明（仅用于关键文件）：
+
+```go
+// Copyright 2025 The kweaver.ai Authors.
+//
+// Licensed under the Apache License, Version 2.0.
+// See the LICENSE file in the project root for details.
+//
+// This file is derived from [original-project](https://github.com/org/repo)
+```
+
+这是可选的，但建议添加以保持透明度和社区信任。
+
+### 适用范围
+
+文件头**推荐**用于：
+
+- 核心逻辑和业务代码
+- 公共 API 和接口
+- 库和 SDK
+- CLI 工具和实用程序
+
+文件头**可选**用于：
+
+- 单元测试和测试夹具
+- 示例和演示
+- 生成的文件（protobuf、OpenAPI 等）
+- 配置文件（YAML、JSON、TOML）
+- 文档文件（Markdown 等）
+
+### 为什么不写个人作者名？
+
+遵循主流开源项目（Kubernetes、TensorFlow 等）的做法：
+
+- **Git 历史**已经提供了所有贡献者的完整准确记录
+- 个人作者列表**难以维护**，容易过时
+- 使用 "The kweaver.ai Authors" 确保所有文件的**一致归属**
+- 贡献者通过项目的 **CONTRIBUTORS** 文件和 git log 获得认可
+
+### 许可证要求
+
+所有仓库**必须**包含一个 `LICENSE` 文件，其中包含 Apache License 2.0 的完整文本。
+
+### 指导原则
+
+> 如果一个文件预计会被复用、fork 或长期维护，它就值得拥有一个清晰明确的文件头。
 
 ---
 

@@ -256,7 +256,7 @@ git push origin feature/my-feature --force-with-lease
 >
 > - 使用 `--force-with-lease` 而不是 `--force`，以避免覆盖其他人的工作。
 > - 确保在 rebase 前你在你的功能分支上。
-> - 如果你想跟踪上游仓库，可以添加：`git remote add upstream https://github.com/AISHU-Technology/kweaver.git`
+> - 如果你想跟踪上游仓库，可以添加：`git remote add upstream https://github.com/kweaver-ai/kweaver.git`
 
 ### 8. 推送到你的 Fork
 
@@ -324,7 +324,7 @@ cd kweaver
 1. **添加上游远程仓库：**
 
 ```bash
-git remote add upstream https://github.com/AISHU-Technology/kweaver.git
+git remote add upstream https://github.com/kweaver-ai/kweaver.git
 ```
 
 1. **设置开发环境：**

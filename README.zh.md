@@ -12,8 +12,8 @@ KWeaver 开源的辅助决策型 AI 应用平台，提供围绕业务场景开�
 - 📖 [文档](ontology/README.zh.md) - 本体引擎完整文档
 - 🤝 [贡献指南](CONTRIBUTING.zh.md) - 项目贡献指南
 - 📄 [许可证](LICENSE.txt) - Apache License 2.0
-- 🐛 [报告 Bug](https://github.com/AISHU-Technology/kweaver/issues) - 报告问题或 Bug
-- 💡 [功能建议](https://github.com/AISHU-Technology/kweaver/issues) - 提出新功能建议
+- 🐛 [报告 Bug](https://github.com/kweaver-ai/kweaver/issues) - 报告问题或 Bug
+- 💡 [功能建议](https://github.com/kweaver-ai/kweaver/issues) - 提出新功能建议
 
 而 AI 应用是为特定业务场景提供的智能决策程序，依托 ADP 架构，整合业务域中的Data Agent 、业务知识网络等核心能力，通过自定义Chat和Board的可视化方式，实现从询问、分析、建议、行动到反馈的端到端业务闭环。
 
@@ -81,7 +81,7 @@ kweaver/
 1. **克隆代码库**
 
 ```bash
-git clone https://github.com/AISHU-Technology/kweaver.git
+git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/ontology
 ```
 
@@ -234,7 +234,7 @@ server/
 - **技术支持**: AISHU ADP研发团队
 - **文档**: [本体引擎文档](ontology/README.zh.md)
 - **贡献指南**: [贡献指南](CONTRIBUTING.zh.md)
-- **问题反馈**: [GitHub Issues](https://github.com/AISHU-Technology/kweaver/issues)
+- **问题反馈**: [GitHub Issues](https://github.com/kweaver-ai/kweaver/issues)
 - **许可证**: [Apache License 2.0](LICENSE.txt)
 
 ---

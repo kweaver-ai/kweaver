@@ -257,7 +257,7 @@ git push origin feature/my-feature --force-with-lease
 >
 > - Use `--force-with-lease` instead of `--force` to avoid overwriting others' work.
 > - Make sure you're on your feature branch before rebasing.
-> - If you prefer to track the upstream repository, you can add it: `git remote add upstream https://github.com/AISHU-Technology/kweaver.git`
+> - If you prefer to track the upstream repository, you can add it: `git remote add upstream https://github.com/kweaver-ai/kweaver.git`
 
 ### 8. Push to Your Fork
 
@@ -325,7 +325,7 @@ cd kweaver
 1. **Add upstream remote:**
 
 ```bash
-git remote add upstream https://github.com/AISHU-Technology/kweaver.git
+git remote add upstream https://github.com/kweaver-ai/kweaver.git
 ```
 
 1. **Set up the development environment:**

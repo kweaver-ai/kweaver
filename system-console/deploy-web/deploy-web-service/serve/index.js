@@ -18,8 +18,10 @@ import {
 } from "../handlers/tools";
 import RedisStore from "connect-redis";
 import logger from "../common/logger";
+import { registryClient } from "./helper";
 
 export async function main() {
+    await registryClient();
     // deploy-web-core-service不使用session
     if (process.env.type === "core") {
         createServer();

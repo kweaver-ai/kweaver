@@ -37,7 +37,7 @@ export const registryClient = async () => {
     try {
         logger.info("开始调用注册客户端接口");
         await fetchParse(
-            `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients/${clientID}`,
+            `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients`,
             {
                 timeout: 1000 * 6,
                 method: "POST",

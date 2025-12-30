@@ -1,5 +1,5 @@
 import logger from "../common/logger";
-import { configData } from "../handlers/tools";
+import { configData, fetchParse } from "../handlers/tools";
 
 export const registryClient = async () => {
     const clientID = "c127f8c0-39da-4a8b-9b60-7540175a7b01";

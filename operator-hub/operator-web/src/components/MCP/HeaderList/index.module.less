@@ -1,0 +1,58 @@
+// 定义列宽变量
+@key-width: calc(50% - 30px);
+@value-width: calc(50% - 30px);
+@operation-width: 60px;
+@row-height: 32px; // 保持行高一致
+
+.header-list-container {
+  width: 100%;
+
+  // 统一的行样式 (Flex 布局)
+  .header-row,
+  .data-row {
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  // 表头样式
+  .header-row {
+    background-color: #fafafa; // 浅灰色背景
+    color: rgba(0, 0, 0, 0.88); // 文本颜色
+    font-weight: 500;
+    line-height: @row-height;
+    border-top: 1px solid #f0f0f0; // 边框
+    padding: 0 8px; // 左右内边距
+  }
+
+  // 数据行样式
+  .data-row {
+    padding: 7px 8px; // 上下内边距，适应输入框高度
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  // 列样式定义
+  .key-col {
+    width: @key-width;
+    height: @row-height;
+    padding-right: 16px;
+    margin-bottom: 0;
+  }
+
+  .value-col {
+    width: @value-width;
+    height: @row-height;
+    padding-right: 16px;
+    margin-bottom: 0;
+  }
+
+  .operation-col {
+    width: @operation-width;
+    padding-right: 4px;
+  }
+}
+
+.add-button {
+  height: 22px;
+  padding: 0;
+}

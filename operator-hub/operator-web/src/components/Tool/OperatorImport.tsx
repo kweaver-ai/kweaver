@@ -1,5 +1,5 @@
 import { Modal, Button, message, Form, Select } from 'antd';
-import { convertTool, getOperatorList, postToolBox } from '@/apis/agent-operator-integration';
+import { convertTool, getOperatorMarketList } from '@/apis/agent-operator-integration';
 import { useMicroWidgetProps } from '@/hooks';
 import { useEffect, useState } from 'react';
 import { OperatorStatusType } from '../OperatorList/types';
@@ -15,10 +15,11 @@ export default function OperatorImport({ closeModal, toolBoxInfo, getFetchTool }
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const { data } = await getOperatorList({
+        const { data } = await getOperatorMarketList({
           page: 1,
           page_size: -1,
           status: OperatorStatusType.Published,
+          metadata_type: toolBoxInfo.metadata_type,
         });
         setOperatorList(data);
       } catch (error: any) {
@@ -35,7 +36,9 @@ export default function OperatorImport({ closeModal, toolBoxInfo, getFetchTool }
       getFetchTool?.();
       handleCancel();
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
@@ -50,6 +53,8 @@ export default function OperatorImport({ closeModal, toolBoxInfo, getFetchTool }
   return (
     <Modal
       title="算子导入工具"
+      centered
+      maskClosable={false}
       open={true}
       onCancel={handleCancel}
       footer={null}
@@ -68,11 +73,11 @@ export default function OperatorImport({ closeModal, toolBoxInfo, getFetchTool }
         </Form.Item>
         <Form.Item noStyle>
           <div style={{ textAlign: 'right' }}>
-            <Button style={{ marginRight: '12px' }} onClick={() => closeModal?.()}>
-              取消
-            </Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" className="dip-mr-8 dip-w-74">
               确定
+            </Button>
+            <Button className="dip-w-74" onClick={() => closeModal?.()}>
+              取消
             </Button>
           </div>
         </Form.Item>

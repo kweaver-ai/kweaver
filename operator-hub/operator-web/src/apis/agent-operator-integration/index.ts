@@ -1,5 +1,11 @@
 import { get, del, post, put } from '@/utils/http';
-import type { BoxToolListResponse, GlobalToolListResponse, ToolListParams } from './type';
+import type {
+  BoxToolListResponse,
+  GlobalToolListResponse,
+  ToolListParams,
+  FunctionExecuteRequest,
+  FunctionExecuteResponse,
+} from './type';
 
 const apis = {
   operatorDel: '/api/agent-operator-integration/v1/operator/delete',
@@ -40,6 +46,10 @@ export function getOperatorInfo(params: any) {
   return get(`${apis.operatorInfo}/${params?.operator_id}`, { params });
 }
 
+export function getOperatorInfoById(operatorId: string) {
+  return get(`${apis.operatorInfo}/${operatorId}`);
+}
+
 export function getOperatorMarketInfo(params: any) {
   return get(`${apis.operatorMarketList}/${params?.operator_id}`, { params });
 }
@@ -59,6 +69,11 @@ export function postOperatorRegiste(data: any) {
       'Content-Type': 'multipart/form-data',
     },
   });
+}
+
+// 注册算子-不限制headers
+export function postOperatorRegisterWithoutHeader(data: any) {
+  return post(`${apis.operatorRegiste}`, { body: data });
 }
 
 export function postOperatorStatus(data: any) {
@@ -226,4 +241,19 @@ export function impexExport(params: any) {
 
 export function impexImport(data: any, type: string) {
   return post(`${apis.impexImport}/${type}`, { body: data });
+}
+
+// 获取函数代码模板
+export function getToolBoxTemplate(template_type: 'python' = 'python') {
+  return get(`${apis.toolBoxIntegrationBaseUrl}/template/${template_type}`);
+}
+
+// 函数块执行接口
+export function postFunctionExecute(data: FunctionExecuteRequest): Promise<FunctionExecuteResponse> {
+  return post(`${apis.toolBoxIntegrationBaseUrl}/function/execute`, { body: data });
+}
+
+// 获取工具详情
+export function getToolDetail(box_id: string, tool_id: string) {
+  return get(`${apis.toolBox}/${box_id}/tool/${tool_id}`);
 }

@@ -1,0 +1,85 @@
+.param-form {
+  width: 100%;
+
+  .form-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+
+    thead {
+      th {
+        background: #fafafa;
+        padding: 12px 8px;
+        font-weight: 600;
+        text-align: left;
+        border-bottom: 2px solid #e8e8e8;
+
+        &:first-child {
+          padding-left: 16px;
+          border-radius: 8px 0 0 0;
+        }
+
+        &:last-child {
+          padding-right: 16px;
+          border-radius: 0 8px 0 0;
+        }
+      }
+    }
+
+    tbody {
+      td {
+        padding: 0 8px;
+        vertical-align: baseline;
+        // border-bottom: 1px solid #f0f0f0;
+
+        &:first-child {
+          padding-left: 16px;
+          border-radius: 8px 0 0 8px;
+        }
+
+        &:last-child {
+          padding-right: 16px;
+          border-radius: 0 8px 8px 0;
+        }
+
+        .error {
+          color: rgb(255, 68, 30);
+        }
+      }
+    }
+  }
+
+  .name-field {
+    width: 300px;
+  }
+
+  .type-field {
+    width: 140px;
+  }
+
+  .required-field {
+    width: 60px;
+  }
+
+  .description-field {
+    width: 300px;
+  }
+
+  .action-field {
+    width: 80px;
+    text-align: left;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  .add-row-icon {
+    margin-right: 4px;
+  }
+}

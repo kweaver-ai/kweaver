@@ -56,7 +56,9 @@ export default function McpDetail() {
             });
       setMcpInfo({ ...base_info, ...connection_info });
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     } finally {
       setLoading(false);
     }
@@ -98,7 +100,9 @@ export default function McpDetail() {
       setMcpToolList(tools);
       setSelectedTool(tools[0]);
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     } finally {
       setLoading(false);
     }

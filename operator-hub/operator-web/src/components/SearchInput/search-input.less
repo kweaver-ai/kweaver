@@ -1,24 +1,23 @@
-
 .operator-search-input {
   &:global(.@{ant-prefix}-input-affix-wrapper) {
     height: 32px;
     padding: 4px 11px 4px 8px;
     border-radius: 4px;
 
-  & > input.@{ant-prefix}-input {
-    height: 22px;
-    color: #000;
-    line-height: 22px;
-  }
+    & > input.@{ant-prefix}-input {
+      height: 22px;
+      color: #000;
+      line-height: 22px;
+    }
 
-  &:not(.@{ant-prefix}-input-affix-wrapper-disabled):hover {
-    border-color: #779eea;
+    &:not(.@{ant-prefix}-input-affix-wrapper-disabled):hover {
+      border-color: #779eea;
+    }
+    &:focus {
+      border-color: #779eea;
+      box-shadow: 0 0 0 2px rgba(119, 158, 234, 0.35);
+    }
   }
-  &:focus {
-    border-color: #779eea;
-    box-shadow: 0 0 0 2px rgba(119, 158, 234, 0.35);
-  }
-}
 }
 .operator-search-input {
   .@{ant-prefix}-input-clear-icon {
@@ -43,9 +42,9 @@
   .@{ant-prefix}-input-affix-wrapper-focused {
     border-color: #779eea;
   }
-  .@{ant-prefix}-input {
-    background-color: rgb(239, 240, 243);
-  }
+  // .@{ant-prefix}-input {
+  //   background-color: rgb(239, 240, 243);
+  // }
   .@{ant-prefix}-input-clear-icon {
     height: 16px;
     color: #000;
@@ -58,4 +57,3 @@
     }
   }
 }
-

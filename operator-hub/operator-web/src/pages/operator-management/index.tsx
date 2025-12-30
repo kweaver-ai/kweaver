@@ -1,5 +1,8 @@
 import { lazy } from 'react';
 import { createRouteApp } from '@/utils/qiankun-entry-generator';
+import { initMonacoEditor } from '@/components/CodeEditor';
+import { ActionEnum } from '@/components/IDEWorkspace/types';
+import { OperatorTypeEnum } from '@/components/OperatorList/types';
 
 const routeComponents = {
   OperatorList: lazy(() => import('@/components/OperatorList')),
@@ -7,6 +10,7 @@ const routeComponents = {
   McpDetail: lazy(() => import('@/components/MCP/McpDetail')),
   OperatorDetailFlow: lazy(() => import('@/components/MyOperator/OperatorDetailFlow')),
   OperatorDetail: lazy(() => import('@/components/Operator/OperatorDetail')),
+  IDEWorkspace: lazy(() => import('@/components/IDEWorkspace')),
 };
 
 const routes = [
@@ -34,7 +38,23 @@ const routes = [
     path: '/details/:id/log/:recordId',
     element: <routeComponents.OperatorDetailFlow />,
   },
+  {
+    path: '/ide/toolbox/:toolboxId/tool/create',
+    element: <routeComponents.IDEWorkspace action={ActionEnum.Create} operatorType={OperatorTypeEnum.Tool} />,
+  },
+  {
+    path: '/ide/toolbox/:toolboxId/tool/:toolId/edit',
+    element: <routeComponents.IDEWorkspace action={ActionEnum.Edit} operatorType={OperatorTypeEnum.Tool} />,
+  },
+  {
+    path: '/ide/operator/create',
+    element: <routeComponents.IDEWorkspace action={ActionEnum.Create} operatorType={OperatorTypeEnum.Operator} />,
+  },
+  {
+    path: '/ide/operator/:operatorId/edit',
+    element: <routeComponents.IDEWorkspace action={ActionEnum.Edit} operatorType={OperatorTypeEnum.Operator} />,
+  },
 ];
 
-const { bootstrap, mount, unmount } = createRouteApp(routes);
+const { bootstrap, mount, unmount } = createRouteApp(routes, { customConfig: initMonacoEditor });
 export { bootstrap, mount, unmount };

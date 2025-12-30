@@ -68,6 +68,7 @@ function setupAppConfig(props?: any, container?: any) {
     toast: message,
     theme,
     businessDomainID,
+    container,
   });
 
   // 设置dip-components所需的信息

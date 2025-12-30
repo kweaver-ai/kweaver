@@ -1,12 +1,16 @@
-import { Button, message, Form, Select, Input, Table, Drawer, Radio } from 'antd';
+import { Button, message, Form, Select, Input, Table, Drawer, Radio, Tooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { getOperatorCategory, mcpSSE, postMCP, putMCP } from '@/apis/agent-operator-integration';
 import { useMicroWidgetProps } from '@/hooks';
 import { useEffect, useState } from 'react';
 import TextArea from 'antd/es/input/TextArea';
 import { useNavigate } from 'react-router-dom';
+import EmptyIcon from '@/assets/icons/empty.svg';
 import { OperateTypeEnum } from '../OperatorList/types';
 import SkillsSection from './ConfigSection/Sections/SkillsSection';
+import HeaderList from './HeaderList';
 import { McpCreationTypeEnum, McpModeTypeEnum } from './types';
+import { OperatorTypeEnum } from '@/components/OperatorList/types';
 
 export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) {
   const microWidgetProps = useMicroWidgetProps();
@@ -46,6 +50,8 @@ export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) 
   }, []);
 
   const onFinish = async () => {
+    await form.validateFields();
+
     if (duplicateCount > 0) {
       message.error(`${duplicateCount} 个工具已重名，请修改`);
       return false;
@@ -60,22 +66,27 @@ export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) 
         handleCancel();
       } else {
         const { mcp_id } = await postMCP(values);
-        navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${OperateTypeEnum.Edit}&back=${btoa(location.pathname)}`);
+        navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${OperateTypeEnum.Edit}`);
       }
 
       message.success(mcpInfo?.mcp_id ? '编辑成功' : '创建成功');
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
   const getMcpSSE = async () => {
+    await form.validateFields(['url']);
     try {
-      const { url, mode } = form.getFieldsValue();
-      const { tools } = await mcpSSE({ url, mode });
+      const { url, mode, headers } = form.getFieldsValue();
+      const { tools } = await mcpSSE({ url, mode, headers });
       setDataSource(tools);
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
@@ -110,16 +121,17 @@ export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) 
       onClose={handleCancel}
       footer={
         <div style={{ textAlign: 'right', padding: '10px 0' }}>
-          <Button style={{ marginRight: '12px' }} onClick={() => closeModal?.()}>
-            取消
-          </Button>
           <Button
             type="primary"
+            className="dip-w-74 dip-mr-8"
             onClick={() => {
               onFinish();
             }}
           >
             确定
+          </Button>
+          <Button onClick={() => closeModal?.()} className="dip-w-74">
+            取消
           </Button>
         </div>
       }
@@ -130,25 +142,29 @@ export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) 
       <Form
         {...layout}
         form={form}
-        style={{ maxHeight: '630px', overflow: 'auto' }}
         initialValues={initialValues}
         onValuesChange={handleValuesChange}
-        className="create-mcp-form"
+        className="create-mcp-form dip-mt-0"
       >
         <Form.Item label="新建方式" name="creation_type">
           <Radio.Group disabled={mcpInfo?.mcp_id}>
-            <Radio value={McpCreationTypeEnum.Custom}>连接MCP服务</Radio>
-            <Radio value={McpCreationTypeEnum.ToolImported}>从工具箱导入</Radio>
+            <Radio value={McpCreationTypeEnum.Custom}>连接已有MCP服务</Radio>
+            <Radio value={McpCreationTypeEnum.ToolImported}>
+              从工具箱添加
+              <Tooltip title="您可以从工具箱添加工具，以MCP的协议对外提供使用">
+                <QuestionCircleOutlined className="dip-ml-8 dip-text-color-45 dip-font-16" />
+              </Tooltip>
+            </Radio>
           </Radio.Group>
         </Form.Item>
-        <Form.Item label="服务名称" name="name" rules={[{ required: true, message: '请输入名称' }]}>
-          <Input maxLength={50} />
+        <Form.Item label="MCP 服务名称" name="name" rules={[{ required: true, message: '请输入名称' }]}>
+          <Input maxLength={50} placeholder="请输入" />
         </Form.Item>
 
-        <Form.Item label="服务描述" name="description" rules={[{ required: true, message: '请输入描述' }]}>
-          <TextArea rows={4} placeholder="请尽量详细描述主要功能和使用场景。描述将展示给用户" />
+        <Form.Item label="MCP 服务描述" name="description" rules={[{ required: true, message: '请输入描述' }]}>
+          <TextArea rows={4} placeholder="请输入" />
         </Form.Item>
-        <Form.Item label="服务类型" name="category" rules={[{ required: true, message: '请选择服务类型' }]}>
+        <Form.Item label="MCP 服务类型" name="category" rules={[{ required: true, message: '请选择服务类型' }]}>
           <Select>
             {categoryType?.map((item: any) => (
               <Select.Option key={item.category_type} value={item.category_type}>
@@ -168,19 +184,40 @@ export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) 
           </Form.Item>
         )}
         {creationType === McpCreationTypeEnum.Custom && (
-          <Form.Item label="URL">
-            <Form.Item name="url" noStyle rules={[{ required: true, message: '请输入' }]}>
-              <Input placeholder={`请输入`} style={{ width: '533px' }} />
-            </Form.Item>
+          <>
+            <Form.Item label="URL" required>
+              <div className="dip-flex">
+                <Form.Item name="url" className="dip-flex-1" rules={[{ required: true, message: '请输入' }]}>
+                  <Input placeholder={`请输入`} />
+                </Form.Item>
 
-            <Button style={{ marginLeft: '12px' }} onClick={() => getMcpSSE()}>
-              解析
-            </Button>
-          </Form.Item>
+                <Button style={{ marginLeft: '12px' }} className="dip-w-74" onClick={() => getMcpSSE()}>
+                  解析
+                </Button>
+              </div>
+            </Form.Item>
+            <Form.Item label="Header列表" name="headers">
+              <HeaderList value={mcpInfo?.headers} />
+            </Form.Item>
+          </>
         )}
+
         <Form.Item label="工具列表">
           {creationType === McpCreationTypeEnum.Custom ? (
-            <Table dataSource={dataSource} columns={columns} bordered size="small" />
+            <Table
+              dataSource={dataSource}
+              columns={columns}
+              bordered
+              size="small"
+              locale={{
+                emptyText: (
+                  <div className="dip-flex-column-center">
+                    <EmptyIcon className="dip-mb-8" style={{ fontSize: 108 }} />
+                    <div className="dip-mb-24 dip-text-color-45 dip-font-13">暂无数据，请先解析URL地址</div>
+                  </div>
+                ),
+              }}
+            />
           ) : (
             <SkillsSection
               updateSkills={updateSkills}

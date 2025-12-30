@@ -1,9 +1,11 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Dropdown, Button, Menu, message, Modal } from 'antd';
-import { EllipsisOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { useLocation } from 'react-router-dom';
+import { Dropdown, Button, Menu, message } from 'antd';
+import { EllipsisOutlined } from '@ant-design/icons';
 import './style.less';
 import { delOperator, postOperatorStatus } from '@/apis/agent-operator-integration';
+import { MetadataTypeEnum } from '@/apis/agent-operator-integration/type';
 import {
   OperateTypeEnum,
   OperatorInfoTypeEnum,
@@ -16,14 +18,15 @@ import RunFormModal from '../MyOperator/RunFormModal';
 import EditOperatorModal from '../MyOperator/EditOperatorModal';
 import { useNavigate } from 'react-router-dom';
 import { useMicroWidgetProps } from '@/hooks';
+import { confirmModal } from '@/utils/modal';
 import PermConfigMenu from '../OperatorList/PermConfigMenu';
 import { postResourceOperation } from '@/apis/authorization';
 import { PublishedPermModal } from '../OperatorList/PublishedPermModal';
 import ExportButton from '../OperatorList/ExportButton';
-const { confirm } = Modal;
 
 const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchInfo }) => {
-  const { activeTab, record, activeKey } = params;
+  const { activeTab, record } = params;
+  const location = useLocation();
   const microWidgetProps = useMicroWidgetProps();
   const [isRunFormOpen, setIsRunFormOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -36,13 +39,9 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
   };
 
   const handlePreview = (record: any, type: string) => {
-    const { operator_id, version, extend_info } = record;
+    const { operator_id } = record;
 
-    navigate(
-      `/operator-detail?operator_id=${operator_id}&version=${version}&action=${type}&activeKey=${activeKey}&back=${btoa(
-        location.pathname
-      )}`
-    );
+    navigate(`/operator-detail?operator_id=${operator_id}&action=${type}`);
   };
 
   const logPreview = (record: any) => {
@@ -55,7 +54,6 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
       await postOperatorStatus([
         {
           operator_id: record?.operator_id,
-          version: record?.version,
           status,
         },
       ]),
@@ -65,7 +63,9 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
         PublishedPermModal({ ...params, activeTab: OperatorTypeEnum.Operator }, microWidgetProps);
       }
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
@@ -76,11 +76,13 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
           operator_id: record?.operator_id,
           version: record?.version,
         },
-      ]),
-        message.success('删除成功');
+      ]);
+      message.success('删除成功');
       fetchInfo?.();
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
   const closeModal = (val?: any) => {
@@ -100,10 +102,8 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
   };
 
   const showDeleteConfirm = () => {
-    confirm({
+    confirmModal({
       title: '删除算子',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '请确认是否删除此算子？',
       onOk() {
         handleDelete();
@@ -113,10 +113,8 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
   };
 
   const showOfflineConfirm = () => {
-    confirm({
+    confirmModal({
       title: '下架算子',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '下架后，引用了该算子的智能体或工作流会失效，此操作不可撤回。',
       onOk() {
         handleStatus(record, OperatorStatusType.Offline, '下架成功');
@@ -142,6 +140,15 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
     }
   };
 
+  // 跳转到ide编辑页面
+  const handleEditInIDE = () => {
+    navigate(`/ide/operator/${record?.operator_id}/edit`, {
+      state: {
+        from: location.pathname + location.search,
+      },
+    });
+  };
+
   return (
     <>
       <Dropdown
@@ -152,7 +159,13 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
               <Menu.Item onClick={() => handlePreview(record, OperateTypeEnum.Edit)}>查看</Menu.Item>
             )}
 
-            {record?.operator_info?.operator_type === OperatorInfoTypeEnum.Basic &&
+            {record?.metadata_type === MetadataTypeEnum.Function &&
+              permissionCheckInfo?.includes(PermConfigTypeEnum.Modify) && (
+                <Menu.Item onClick={handleEditInIDE}>在IDE中编辑</Menu.Item>
+              )}
+
+            {record?.metadata_type === MetadataTypeEnum.OpenAPI &&
+              record?.operator_info?.operator_type === OperatorInfoTypeEnum.Basic &&
               permissionCheckInfo?.includes(PermConfigTypeEnum.Modify) && (
                 <Menu.Item onClick={() => setIsEditOpen(true)}>编辑</Menu.Item>
               )}
@@ -166,7 +179,8 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
                 )}
               </>
             )}
-            {record?.operator_info?.operator_type !== OperatorInfoTypeEnum.Basic &&
+            {record?.metadata_type === MetadataTypeEnum.OpenAPI &&
+              record?.operator_info?.operator_type !== OperatorInfoTypeEnum.Basic &&
               permissionCheckInfo?.includes(PermConfigTypeEnum.Modify) && (
                 <Menu.Item onClick={() => setIsFlowOpen(true)}>编辑</Menu.Item>
               )}
@@ -179,7 +193,7 @@ const OperatorDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, f
 
             {permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
               <Menu.Item>
-                <ExportButton params={params} />
+                <ExportButton params={params} extension=".adp" />
               </Menu.Item>
             )}
 

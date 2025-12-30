@@ -36,9 +36,9 @@ export default function EditToolModal({ closeModal, fetchInfo, selectedTool, noE
         formData.append('name', values.name);
         formData.append('description', values.description);
         formData.append('use_rule', values.use_rule);
+        formData.append('metadata_type', selectedTool?.metadata_type);
         const file = values.data?.file;
         if (file) {
-          formData.append('metadata_type', 'openapi');
           formData.append('data', file);
         }
 
@@ -106,50 +106,53 @@ export default function EditToolModal({ closeModal, fetchInfo, selectedTool, noE
         <Form.Item label="工具规则" name="use_rule">
           <TextArea rows={4} placeholder="请输入" />
         </Form.Item>
-        <Form.Item label="更新数据" name="data">
-          <Upload
-            accept=".yaml,.yml,.json"
-            maxCount={1}
-            fileList={fileList}
-            onRemove={handleRemove}
-            beforeUpload={file => {
-              const isLt5M = file.size / 1024 / 1024 < 5;
-              if (!isLt5M) {
-                message.info('上传的文件大小不能超过5MB');
-                setTimeout(() => {
-                  form.setFieldsValue({ data: undefined });
-                }, 10);
-                return false;
-              }
-              const fileExtension = file?.name?.split('.')?.pop()?.toLowerCase() || '';
-              const isSupportedFormat = ['yaml', 'yml', 'json'].includes(fileExtension);
-              if (!isSupportedFormat) {
-                message.info('上传格式不正确，只能是yaml或json格式的文件');
+        {selectedTool?.resource_object !== 'operator' && (
+          <Form.Item label="更新数据" name="data">
+            <Upload
+              accept=".yaml,.yml,.json"
+              maxCount={1}
+              fileList={fileList}
+              onRemove={handleRemove}
+              beforeUpload={file => {
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.info('上传的文件大小不能超过5MB');
+                  setTimeout(() => {
+                    form.setFieldsValue({ data: undefined });
+                  }, 10);
+                  return false;
+                }
+                const fileExtension = file?.name?.split('.')?.pop()?.toLowerCase() || '';
+                const isSupportedFormat = ['yaml', 'yml', 'json'].includes(fileExtension);
+                if (!isSupportedFormat) {
+                  message.info('上传格式不正确，只能是yaml或json格式的文件');
 
-                setTimeout(() => {
-                  form.setFieldsValue({ data: undefined });
-                }, 10);
+                  setTimeout(() => {
+                    form.setFieldsValue({ data: undefined });
+                  }, 10);
+                  return false;
+                }
+                setFileList([file]);
                 return false;
-              }
-              setFileList([file]);
-              return false;
-            }}
-          >
-            <ul
-              style={{ listStyle: 'inside disc', color: 'rgba(0, 0, 0, 0.45)' }}
-              className="dip-pl-8"
-              onClick={e => e.stopPropagation()}
+              }}
             >
-              <li>
-                <span style={{ marginLeft: '-8px' }}>上传使用OpenAPI 3.0协议的JSON或YAML文件</span>
-              </li>
-              <li>
-                <span style={{ marginLeft: '-8px' }}>文件大小不能超过5M</span>
-              </li>
-            </ul>
-            <Button icon={<UploadOutlined />}>上传</Button>
-          </Upload>
-        </Form.Item>
+              <ul
+                style={{ listStyle: 'inside disc', color: 'rgba(0, 0, 0, 0.45)' }}
+                className="dip-pl-8"
+                onClick={e => e.stopPropagation()}
+              >
+                <li>
+                  <span style={{ marginLeft: '-8px' }}>上传使用OpenAPI 3.0协议的JSON或YAML文件</span>
+                </li>
+                <li>
+                  <span style={{ marginLeft: '-8px' }}>文件大小不能超过5M</span>
+                </li>
+              </ul>
+              <Button icon={<UploadOutlined />}>上传</Button>
+            </Upload>
+          </Form.Item>
+        )}
+
         <Form.Item noStyle>
           <div style={{ textAlign: 'right' }}>
             <Button type="primary" htmlType="submit" className="dip-mr-8 dip-w-74">

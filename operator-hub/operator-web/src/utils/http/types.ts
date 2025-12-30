@@ -26,6 +26,7 @@ export interface OptionsType {
   params?: Record<string, any>;
   resHeader?: boolean;
   returnFullResponse?: boolean;
+  responseType?: string;
 }
 
 export const config: ConfigType = {

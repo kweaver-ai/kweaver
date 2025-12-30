@@ -1,15 +1,14 @@
 import type React from 'react';
-import { Button, message, Modal } from 'antd';
-import { EllipsisOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { Button, message } from 'antd';
 import './style.less';
 import { mapReleaseAction } from '@/apis/agent-operator-integration';
 import { OperatorStatusType, OperatorTypeEnum, PermConfigShowType, PermConfigTypeEnum } from '../OperatorList/types';
 import { useState } from 'react';
+import { confirmModal } from '@/utils/modal';
 import CreateMcpModal from './CreateMcpModal';
 import PermConfigMenu from '../OperatorList/PermConfigMenu';
 import { PublishedPermModal } from '../OperatorList/PublishedPermModal';
 import { useMicroWidgetProps } from '@/hooks';
-const { confirm } = Modal;
 
 const McpDetailButton: React.FC<{
   detailInfo: any;
@@ -32,7 +31,9 @@ const McpDetailButton: React.FC<{
         PublishedPermModal({ record: detailInfo, activeTab: OperatorTypeEnum.MCP }, microWidgetProps);
       }
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     } finally {
       setButtonLoading(false);
     }
@@ -43,10 +44,8 @@ const McpDetailButton: React.FC<{
   };
 
   const showOfflineConfirm = () => {
-    confirm({
+    confirmModal({
       title: '下架MCP',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '下架后，引用了该MCP的智能体或工作流会失效，此操作不可撤回。',
       onOk() {
         changeMcpStatus(OperatorStatusType.Offline, '下架成功');

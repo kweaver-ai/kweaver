@@ -1,0 +1,95 @@
+// 定义常用颜色
+@text-color-secondary: rgba(0, 0, 0, 0.45); // antd 默认次要文本色
+@border-color-base: #d9d9d9; // antd 默认边框色
+@background-color-light: #fafafa; // antd 默认浅背景色
+
+.modal-content {
+  padding-top: 8px;
+
+  .source-button {
+    height: 56px;
+    justify-content: flex-start;
+  }
+
+  .source-button-checked-icon {
+    color: var(--custom-theme-color);
+  }
+
+  .source-button-selected {
+    border-color: var(--custom-theme-color);
+  }
+}
+
+.info-tip {
+  margin-bottom: 24px;
+  padding: 16px;
+  color: rgba(102, 102, 102, 1);
+  background-color: rgba(249, 250, 251, 1);
+}
+
+.tip-text {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.doc-link-button {
+  display: block;
+  text-align: center;
+  padding: 8px 0;
+  background-color: @background-color-light;
+  border-radius: 4px;
+}
+
+.upload-text {
+  color: rgba(102, 102, 102, 1);
+}
+
+.info-box {
+  margin-bottom: 16px;
+  color: @text-color-secondary;
+  font-size: 14px;
+
+  // 链接组
+  .link-group {
+    margin-top: 8px;
+  }
+
+  .ai-data-info {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .info-icon {
+    font-size: 14px;
+    margin-left: 4px;
+    cursor: pointer;
+  }
+}
+
+.file-dragger {
+  padding: 24px 0 !important;
+  border-style: dashed !important;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: var(--custom-theme-color) !important;
+  }
+
+  // 拖拽区域内的内容
+  .upload-placeholder {
+    padding: 8px;
+    .upload-icon {
+      display: block;
+      font-size: 32px;
+      color: @text-color-secondary;
+      margin-bottom: 8px;
+    }
+  }
+}
+
+// 导入模式选择区域
+.import-mode-area {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid @border-color-base;
+}

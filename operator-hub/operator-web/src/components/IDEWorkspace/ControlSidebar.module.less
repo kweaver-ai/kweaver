@@ -1,0 +1,22 @@
+.container {
+  width: 80px;
+  border-left: solid 1px rgba(0, 0, 0, 0.1);
+  background: rgba(250, 250, 250, 1);
+
+  :global {
+    .@{ant-prefix}-menu-item {
+      width: 64px !important;
+      height: fit-content !important;
+      margin-left: 8px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .@{ant-prefix}-menu-item-selected svg {
+      color: inherit !important;
+    }
+  }
+
+  .icon {
+    color: #979797;
+  }
+}

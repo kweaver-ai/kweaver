@@ -1,9 +1,9 @@
 import type React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useState, useCallback, startTransition, useEffect, useMemo } from 'react';
-import { Button, Select, Space, Tabs, Dropdown, Empty, message, Tooltip } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
-import type { TabsProps, SelectProps, MenuProps } from 'antd';
+import { Button, Select, Space, Tabs, Empty, message } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import type { TabsProps, SelectProps } from 'antd';
 import '../OperatorList/style.less';
 import { useMicroWidgetProps } from '@/hooks';
 import SearchInput from '../SearchInput';
@@ -19,17 +19,17 @@ import {
 import empty from '@/assets/images/empty2.png';
 import { postResourceTypeOperation } from '@/apis/authorization';
 import AuthorizeIcon from '@/assets/images/authorize.svg';
-import { componentsPermConfig, transformArray } from '@/utils/permConfig';
-import OperatorCard from '../OperatorList/OperatorCard';
-import CreateMenu from '../OperatorList/CreateMenu';
-import { OperatorStatusType, OperatorTypeEnum, PermConfigTypeEnum } from '../OperatorList/types';
 import ImportIcon from '@/assets/images/import.svg';
-import ImportModal from '../OperatorList/ImportModal';
+import { componentsPermConfig, transformArray } from '@/utils/permConfig';
+import OperatorCard from './OperatorCard';
+import CreateMenu from './CreateMenu';
+import { OperatorStatusType, OperatorTypeEnum, PermConfigTypeEnum } from './types';
+import { getOperatorTypeName } from './utils';
+import ImportMcpServiceModal from '@/components/MCP/ImportMcpServiceModal';
+import ImportToolboxAndOperatorModal from '@/components/OperatorList/ImportToolboxAndOperatorModal';
 
-const OperatorList: React.FC<{ isPluginMarket?: boolean; activeKey?: string }> = ({
-  isPluginMarket = false,
-  activeKey,
-}) => {
+const OperatorList: React.FC<{ isPluginMarket?: boolean }> = ({ isPluginMarket = false }) => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>(searchParams.get('activeTab') || OperatorTypeEnum.MCP);
   const [publishStatus, setPublishStatus] = useState<string>('');
@@ -43,7 +43,12 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean; activeKey?: string }> =
   const [loading, setLoading] = useState<boolean>(false);
   const [categoryType, setCategoryType] = useState<any>([]);
   const [permConfigInfo, setPermConfigInfo] = useState<any>({});
-  const [importModalOpen, setImportModalOpen] = useState<boolean>(false);
+  // 导入弹窗状态
+  const [importModalOpen, setImportModalOpen] = useState<{ mcp: boolean; toolbox: boolean; operator: boolean }>({
+    mcp: false,
+    toolbox: false,
+    operator: false,
+  });
 
   const tabItems: TabsProps['items'] = [
     { key: OperatorTypeEnum.MCP, label: 'MCP' },
@@ -62,12 +67,6 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean; activeKey?: string }> =
       ].filter(option => !(activeTab === OperatorTypeEnum.ToolBox && option.value === OperatorStatusType.Editing)),
     [activeTab]
   );
-
-  const items = [
-    { label: '配置MCP服务的权限', key: OperatorTypeEnum.MCP },
-    { label: '配置工具的权限', key: OperatorTypeEnum.ToolBox },
-    { label: '配置算子的权限', key: OperatorTypeEnum.Operator },
-  ].filter(item => permConfigInfo[item.key]?.includes(PermConfigTypeEnum.Authorize));
 
   // 处理搜索输入 - 使用 startTransition 优化
   const handleSearchChange = useCallback((val: string) => {
@@ -166,7 +165,9 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean; activeKey?: string }> =
         });
       }
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     } finally {
       setLoading(false);
     }
@@ -200,83 +201,88 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean; activeKey?: string }> =
     }
   };
 
-  const handleMenuClick: MenuProps['onClick'] = e => {
-    componentsPermConfig({ id: '*', name: '', type: e.key }, microWidgetProps);
+  const handleMenuClick = () => {
+    componentsPermConfig({ id: '*', name: '', type: activeTab || OperatorTypeEnum.MCP }, microWidgetProps);
   };
 
   return (
     <div className="operator-list">
-      {!isPluginMarket && (
-        <div style={{ paddingTop: '20px' }}>
-          {(permConfigInfo?.[OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Create) ||
-            permConfigInfo?.[OperatorTypeEnum.ToolBox]?.includes(PermConfigTypeEnum.Create) ||
-            permConfigInfo?.[OperatorTypeEnum.Operator]?.includes(PermConfigTypeEnum.Create)) && (
-            <>
-              <Dropdown
-                overlay={<CreateMenu fetchInfo={fetchInfo} permConfigInfo={permConfigInfo} />}
-                getPopupContainer={() => microWidgetProps.container}
-              >
-                <Button type="primary" icon={<PlusOutlined />}>
-                  新建
-                </Button>
-              </Dropdown>
-              <Tooltip title="通过导入JSON配置文件直接创建MCP服务/工具/算子" placement="top">
-                <Button style={{ marginLeft: '8px' }} icon={<ImportIcon />} onClick={() => setImportModalOpen(true)}>
-                  导入
-                </Button>
-              </Tooltip>
-            </>
-          )}
-          {(permConfigInfo?.[OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Authorize) ||
-            permConfigInfo?.[OperatorTypeEnum.ToolBox]?.includes(PermConfigTypeEnum.Authorize) ||
-            permConfigInfo?.[OperatorTypeEnum.Operator]?.includes(PermConfigTypeEnum.Authorize)) && (
-            <Dropdown menu={{ items, onClick: handleMenuClick }} getPopupContainer={() => microWidgetProps.container}>
-              <Button icon={<AuthorizeIcon />} style={{ marginLeft: '8px' }}>
-                权限配置
-              </Button>
-            </Dropdown>
-          )}
-        </div>
-      )}
       <div className="operator-list-title">
         {/* 头部 */}
         <Tabs className="operator-list-tabs" activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
 
-        <div className="operator-list-filter">
-          <Space size="middle" style={{ flexShrink: 0, flexWrap: 'wrap' }}>
-            <Space>
-              <div>类型：</div>
-              <Select value={category} onChange={categoryChange} style={{ width: 120 }}>
-                {categoryType?.map((item: any) => (
-                  <Select.Option key={item.category_type} value={item.category_type}>
-                    {item.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Space>
+        {!isPluginMarket && (
+          <div>
+            {
+              // 检查当前标签页是否有创建权限
+              permConfigInfo?.[activeTab || OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Create) && (
+                <>
+                  <CreateMenu fetchInfo={fetchInfo} activeTab={activeTab} />
+                  <Button
+                    style={{ marginLeft: '8px' }}
+                    icon={<ImportIcon />}
+                    onClick={() => {
+                      setImportModalOpen({
+                        mcp: (activeTab || OperatorTypeEnum.MCP) === OperatorTypeEnum.MCP,
+                        toolbox: activeTab === OperatorTypeEnum.ToolBox,
+                        operator: activeTab === OperatorTypeEnum.Operator,
+                      });
+                    }}
+                  >
+                    导入
+                    {getOperatorTypeName(activeTab)}
+                  </Button>
+                </>
+              )
+            }
+            {
+              // 检查当前标签页是否有授权权限
+              permConfigInfo?.[activeTab || OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Authorize) && (
+                <Button icon={<AuthorizeIcon />} style={{ marginLeft: '8px' }} onClick={handleMenuClick}>
+                  权限配置
+                </Button>
+              )
+            }
+          </div>
+        )}
+      </div>
 
-            {!isPluginMarket && (
-              <Space>
-                <div>发布状态：</div>
-                <Select
-                  value={publishStatus}
-                  onChange={handleStatusChange}
-                  style={{ width: 120 }}
-                  options={statusOptions}
-                />
-              </Space>
-            )}
-
-            <SearchInput value={searchText} placeholder="搜索名称" onSearch={handleSearchChange} allowClear />
-            <Button icon={<ReloadOutlined />} onClick={() => fetchInfo()} style={{ border: 'none' }} />
+      {/* 筛选项 */}
+      <div className="operator-list-filter dip-mb-8">
+        <Space size={16} style={{ flexShrink: 0, flexWrap: 'wrap' }}>
+          <Space>
+            <div>类型：</div>
+            <Select value={category} onChange={categoryChange} style={{ width: 120 }}>
+              {categoryType?.map((item: any) => (
+                <Select.Option key={item.category_type} value={item.category_type}>
+                  {item.name}
+                </Select.Option>
+              ))}
+            </Select>
           </Space>
-        </div>
+
+          {!isPluginMarket && (
+            <Space>
+              <div>发布状态：</div>
+              <Select
+                value={publishStatus}
+                onChange={handleStatusChange}
+                style={{ width: 120 }}
+                options={statusOptions}
+              />
+            </Space>
+          )}
+        </Space>
+        <Space>
+          <SearchInput value={searchText} placeholder="搜索名称" onSearch={handleSearchChange} allowClear />
+          <Button icon={<ReloadOutlined />} onClick={() => fetchInfo()} style={{ border: 'none' }} />
+        </Space>
       </div>
       {operatorList?.length ? (
         <div style={{ height: !isPluginMarket ? 'calc(100vh - 195px)' : 'calc(100vh - 145px)' }}>
           <OperatorCard
             loading={loading}
-            params={{ activeTab, isPluginMarket, activeKey }}
+            params={{ activeTab, isPluginMarket }}
             fetchInfo={fetchInfo}
             hasMore={hasMore}
             operatorList={operatorList}
@@ -286,15 +292,53 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean; activeKey?: string }> =
       ) : (
         <Empty image={<img src={empty} />} className="operator-list-empty" />
       )}
-      {importModalOpen && (
-        <ImportModal
-          closeModal={() => {
-            setImportModalOpen(false);
-          }}
-          fetchInfo={fetchInfo}
-          permConfigInfo={permConfigInfo}
-        />
-      )}
+
+      {
+        // 导入MCP服务弹窗
+        importModalOpen.mcp && (
+          <ImportMcpServiceModal
+            onCancel={() => {
+              setImportModalOpen(prev => ({
+                ...prev,
+                mcp: false,
+              }));
+            }}
+            onOk={() => {
+              fetchInfo();
+              // 导入成功后刷新列表
+              setImportModalOpen(prev => ({
+                ...prev,
+                mcp: false,
+              }));
+            }}
+          />
+        )
+      }
+
+      {
+        // 导入工具框和算子弹窗
+        (importModalOpen.toolbox || importModalOpen.operator) && (
+          <ImportToolboxAndOperatorModal
+            activeTab={activeTab as any}
+            onCancel={() => {
+              setImportModalOpen(prev => ({
+                ...prev,
+                toolbox: false,
+                operator: false,
+              }));
+            }}
+            onOk={() => {
+              // 导入成功后刷新列表
+              fetchInfo();
+              setImportModalOpen(prev => ({
+                ...prev,
+                toolbox: false,
+                operator: false,
+              }));
+            }}
+          />
+        )
+      }
     </div>
   );
 };

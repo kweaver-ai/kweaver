@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useMemo, useCallback } from 'react';
-import { Card, Row, Col, Typography, theme, Avatar } from 'antd';
+import { Card, Row, Col, Typography, theme, Avatar, Tooltip } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useMediaQuery } from 'react-responsive';
 import './style.less';
@@ -15,8 +15,16 @@ import ToolDropdown from '../Tool/ToolDropdown';
 import McpDropdown from '../MCP/McpDropdown';
 import StatusTag from '../OperatorList/StatusTag';
 import { useNavigate } from 'react-router-dom';
+import styles from './OperatorCard.module.less';
+import { metadataTypeMap } from './metadata-type';
 
 const { Title, Paragraph } = Typography;
+
+const CardTag = ({ children }: { children: React.ReactNode }) => (
+  <Tooltip title={children}>
+    <div className={styles['card-tag']}>{children}</div>
+  </Tooltip>
+);
 
 const OperatorCard: React.FC<{
   params: any;
@@ -27,7 +35,7 @@ const OperatorCard: React.FC<{
   loading: boolean;
 }> = ({ params, operatorList, fetchInfo, hasMore, fetchMoreData, loading }) => {
   const { token } = theme.useToken();
-  const { activeTab, isPluginMarket, activeKey } = params;
+  const { activeTab, isPluginMarket } = params;
   const navigate = useNavigate();
 
   // 使用 react-responsive 检测屏幕尺寸
@@ -53,18 +61,16 @@ const OperatorCard: React.FC<{
   }, [columns]);
 
   const handlePreview = (record: any) => {
-    const { operator_id, version, mcp_id, box_id } = record;
+    const { operator_id, mcp_id, box_id } = record;
     const type = isPluginMarket ? OperateTypeEnum.View : OperateTypeEnum.Edit;
     if (activeTab === OperatorTypeEnum.ToolBox) {
-      navigate(`/tool-detail?box_id=${box_id}&action=${type}&activeKey=${activeKey}&back=${btoa(location.pathname)}`);
+      navigate(`/tool-detail?box_id=${box_id}&action=${type}`);
     }
     if (activeTab === OperatorTypeEnum.Operator) {
-      navigate(
-        `/operator-detail?operator_id=${operator_id}&version=${version}&action=${type}&activeKey=${activeKey}&back=${btoa(location.pathname)}`
-      );
+      navigate(`/operator-detail?operator_id=${operator_id}&action=${type}`);
     }
     if (activeTab === OperatorTypeEnum.MCP) {
-      navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${type}&activeKey=${activeKey}&back=${btoa(location.pathname)}`);
+      navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${type}`);
     }
   };
 
@@ -108,7 +114,7 @@ const OperatorCard: React.FC<{
                       }}
                       onClick={() => handlePreview(item)}
                     >
-                      <div>
+                      <div className="dip-position-r">
                         {activeTab === OperatorTypeEnum.ToolBox && (
                           <ToolIcon style={{ width: '38px', height: '38px', borderRadius: '8px' }} />
                         )}
@@ -117,6 +123,9 @@ const OperatorCard: React.FC<{
                         )}
                         {activeTab === OperatorTypeEnum.Operator && (
                           <OperatorIcon style={{ width: '38px', height: '38px', borderRadius: '8px' }} />
+                        )}
+                        {[OperatorTypeEnum.ToolBox, OperatorTypeEnum.Operator].includes(activeTab) && (
+                          <CardTag>{metadataTypeMap[item.metadata_type]}</CardTag>
                         )}
                       </div>
 

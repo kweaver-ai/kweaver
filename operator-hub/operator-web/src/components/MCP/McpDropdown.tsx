@@ -1,6 +1,6 @@
 import type React from 'react';
-import { Dropdown, Button, Menu, message, Modal } from 'antd';
-import { EllipsisOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { Dropdown, Button, Menu, message } from 'antd';
+import { EllipsisOutlined } from '@ant-design/icons';
 import './style.less';
 import { delMCP, mapReleaseAction } from '@/apis/agent-operator-integration';
 import { useMicroWidgetProps } from '@/hooks';
@@ -10,13 +10,13 @@ import CreateMcpModal from './CreateMcpModal';
 import { useState } from 'react';
 import PermConfigMenu from '../OperatorList/PermConfigMenu';
 import { postResourceOperation } from '@/apis/authorization';
+import { confirmModal } from '@/utils/modal';
 import { PublishedPermModal } from '../OperatorList/PublishedPermModal';
 import ExportButton from '../OperatorList/ExportButton';
-const { confirm } = Modal;
 
 const McpDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchInfo }) => {
   const microWidgetProps = useMicroWidgetProps();
-  const { record, activeTab, activeKey } = params;
+  const { record, activeTab } = params;
   const navigate = useNavigate();
   const [createToolOpen, setCreateToolOpen] = useState(false);
   const [permissionCheckInfo, setIsPermissionCheckInfo] = useState<Array<PermConfigTypeEnum>>();
@@ -25,23 +25,23 @@ const McpDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchI
     try {
       await delMCP({
         mcp_id: record?.mcp_id,
-      }),
-        message.success('删除成功');
+      });
+      message.success('删除成功');
       fetchInfo?.();
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
   const handlePreview = (type: string) => {
     const { mcp_id } = record;
-    navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${type}&activeKey=${activeKey}&back=${btoa(location.pathname)}`);
+    navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${type}`);
   };
 
   const showDeleteConfirm = () => {
-    confirm({
+    confirmModal({
       title: '删除MCP',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '请确认是否删除此MCP？',
       onOk() {
         handleDelete();
@@ -51,10 +51,8 @@ const McpDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchI
   };
 
   const showOfflineConfirm = () => {
-    confirm({
+    confirmModal({
       title: '下架MCP',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '下架后，引用了该MCP的智能体或工作流会失效，此操作不可撤回。',
       onOk() {
         handleStatus(OperatorStatusType.Offline, '下架成功');
@@ -74,7 +72,9 @@ const McpDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchI
         PublishedPermModal({ ...params, activeTab: OperatorTypeEnum.MCP }, microWidgetProps);
       }
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
@@ -120,7 +120,7 @@ const McpDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchI
 
             {permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
               <Menu.Item>
-                <ExportButton params={params} />
+                <ExportButton params={params} extension=".adp" />
               </Menu.Item>
             )}
 

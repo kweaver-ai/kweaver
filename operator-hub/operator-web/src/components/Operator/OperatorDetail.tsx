@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Layout, Typography, message } from 'antd';
+import { useSearchParams } from 'react-router-dom';
+import { Layout, message } from 'antd';
 import './style.less';
 import { getOperatorInfo, getOperatorMarketInfo } from '@/apis/agent-operator-integration';
 import { OperateTypeEnum, OperatorTypeEnum, PermConfigTypeEnum } from '../OperatorList/types';
@@ -9,32 +9,31 @@ import DebugResult from '../OperatorList/DebugResult';
 import DetailHeader from '../OperatorList/DetailHeader';
 import { postResourceOperation } from '@/apis/authorization';
 
-const { Sider, Content } = Layout;
+const { Content } = Layout;
 
 export default function OperatorDetail() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const operator_id = searchParams.get('operator_id') || '';
-  const version = searchParams.get('version') || '';
   const action = searchParams.get('action') || '';
   const [operatorInfo, setOperatorInfo] = useState<any>({});
   const [permissionCheckInfo, setIsPermissionCheckInfo] = useState<Array<PermConfigTypeEnum>>();
 
   useEffect(() => {
     fetchInfo({});
-    resourceOperation()
+    resourceOperation();
   }, []);
   const fetchInfo = async (data?: any) => {
     try {
       const params = {
         operator_id,
-        version,
       };
       const data =
         action === OperateTypeEnum.View ? await getOperatorMarketInfo(params) : await getOperatorInfo(params);
       setOperatorInfo(data);
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 

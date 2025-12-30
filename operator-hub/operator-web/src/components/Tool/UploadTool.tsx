@@ -1,14 +1,11 @@
-import { Button, message, Upload, Dropdown, Space, Menu } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { message, Upload, Dropdown, Menu } from 'antd';
 import { postTool } from '@/apis/agent-operator-integration';
-import { useMicroWidgetProps } from '@/hooks';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import OperatorImport from './OperatorImport';
 import ImportFailed from './ImportFailed';
 
-export default function UploadTool({ getFetchTool, toolBoxInfo }: any) {
-  const microWidgetProps = useMicroWidgetProps();
+export default function UploadTool({ getFetchTool, toolBoxInfo, children, placement }: any) {
   const [searchParams] = useSearchParams();
   const [isImportOpen, setIsImportOpen] = useState<boolean>(false);
   const box_id = searchParams.get('box_id') || '';
@@ -24,7 +21,9 @@ export default function UploadTool({ getFetchTool, toolBoxInfo }: any) {
       setDataSourceError(failures || []);
       getFetchTool();
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
   const closeModal = () => {
@@ -34,6 +33,7 @@ export default function UploadTool({ getFetchTool, toolBoxInfo }: any) {
   return (
     <>
       <Dropdown
+        placement={placement || 'bottom'}
         overlay={
           <Menu>
             <Menu.Item>
@@ -57,20 +57,15 @@ export default function UploadTool({ getFetchTool, toolBoxInfo }: any) {
                   return true;
                 }}
               >
-                从本地导入
+                选择OpeanAPI格式的文件导入
               </Upload>
             </Menu.Item>
 
-            <Menu.Item onClick={() => setIsImportOpen(true)}>从算子导入</Menu.Item>
+            <Menu.Item onClick={() => setIsImportOpen(true)}>从已有算子导入</Menu.Item>
           </Menu>
         }
       >
-        <a onClick={e => e.preventDefault()}>
-          <Space>
-            导入
-            <DownOutlined />
-          </Space>
-        </a>
+        {children}
       </Dropdown>
       {isImportOpen && <OperatorImport closeModal={closeModal} toolBoxInfo={toolBoxInfo} getFetchTool={getFetchTool} />}
       {Boolean(dataSourceError?.length) && (

@@ -42,12 +42,13 @@ function getHttpBaseUrl() {
 
 const createHttpRequest = curry((method: string, url: string, options: OptionsType | undefined) => {
   const fullUrl = `${getHttpBaseUrl()}${url}`;
-  const { body, headers, timeout = 60000, params, returnFullResponse } = options || {};
+  const { body, headers, timeout = 60000, params, returnFullResponse, ...restOptions } = options || {};
 
   const CancelToken = axios.CancelToken;
   let cancel: (message?: string) => void;
 
   const axiosConfig = {
+    ...restOptions,
     method: method.toLowerCase(),
     url: fullUrl,
     data: body,

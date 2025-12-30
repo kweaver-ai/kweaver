@@ -3,20 +3,20 @@ import { message } from 'antd';
 import { downloadFile } from '@/utils/file';
 import { OperatorTypeEnum } from './types';
 
-export default function ExportButton({ params }: any) {
+export default function ExportButton({ params, extension = '' }: any) {
   const { activeTab, record } = params;
   const type = activeTab === OperatorTypeEnum.ToolBox ? 'toolbox' : activeTab;
   const id =
     activeTab === OperatorTypeEnum.ToolBox
       ? record.box_id
       : activeTab === OperatorTypeEnum.MCP
-      ? record.mcp_id
-      : record.operator_id;
+        ? record.mcp_id
+        : record.operator_id;
   const value = { type, id };
   const handleExportAgent = async () => {
     try {
       const data = await impexExport(value);
-      downloadFile(data, params.record.name);
+      downloadFile(data, params.record.name + extension);
       message.success('导出成功');
     } catch (ex: any) {
       if (ex.description) {

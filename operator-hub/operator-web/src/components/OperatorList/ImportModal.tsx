@@ -3,10 +3,10 @@ import { UploadOutlined } from '@ant-design/icons';
 import { impexImport } from '@/apis/agent-operator-integration';
 import { useMicroWidgetProps } from '@/hooks';
 import { useState } from 'react';
-import { OperatorTypeEnum, PermConfigTypeEnum } from './types';
+import { OperatorTypeEnum } from './types';
 import styles from './ImportModal.module.less';
 
-export default function ImportModal({ closeModal, fetchInfo, permConfigInfo }: any) {
+export default function ImportModal({ closeModal, fetchInfo, activeTab }: any) {
   const microWidgetProps = useMicroWidgetProps();
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<any>([]); // 管理上传文件列表
@@ -25,17 +25,20 @@ export default function ImportModal({ closeModal, fetchInfo, permConfigInfo }: a
       await form.validateFields();
 
       setLoading(true);
-      const { data, mode, type } = form.getFieldsValue();
+      const { data, mode } = form.getFieldsValue();
       const formData = new FormData();
       formData.append('data', data?.file);
       if (mode) formData.append('mode', mode);
       try {
-        await impexImport(formData, type);
+        // activeTab 与后端 type 的映射：mcp→mcp，tool_box→toolbox，operator→operator；因此需去掉下划线
+        await impexImport(formData, activeTab?.replace('_', '') || OperatorTypeEnum.MCP);
         message.success('导入成功');
         fetchInfo?.();
         handleCancel();
       } catch (error: any) {
-        message.error(error?.description);
+        if (error?.description) {
+          message.error(error?.description);
+        }
       } finally {
         setLoading(false);
       }
@@ -47,17 +50,6 @@ export default function ImportModal({ closeModal, fetchInfo, permConfigInfo }: a
       form.setFieldsValue({ data: undefined });
     }, 10);
     setFileList([]);
-  };
-
-  // 计算默认值
-  const getDefaultValue = () => {
-    if (permConfigInfo?.[OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Create)) {
-      return 'mcp';
-    } else if (permConfigInfo?.[OperatorTypeEnum.ToolBox]?.includes(PermConfigTypeEnum.Create)) {
-      return 'toolbox';
-    } else if (permConfigInfo?.[OperatorTypeEnum.Operator]?.includes(PermConfigTypeEnum.Create)) {
-      return 'operator';
-    } else return '';
   };
 
   return (
@@ -72,23 +64,6 @@ export default function ImportModal({ closeModal, fetchInfo, permConfigInfo }: a
       className={styles['import-modal']}
     >
       <Form {...layout} form={form} className="dip-mt-24">
-        <Form.Item label="导入类型" name="type" required initialValue={getDefaultValue()}>
-          <Radio.Group>
-            {permConfigInfo?.[OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Create) && (
-              <Radio value="mcp" className="dip-mr-16">
-                MCP
-              </Radio>
-            )}
-            {permConfigInfo?.[OperatorTypeEnum.ToolBox]?.includes(PermConfigTypeEnum.Create) && (
-              <Radio value="toolbox" className="dip-mr-16">
-                工具
-              </Radio>
-            )}
-            {permConfigInfo?.[OperatorTypeEnum.Operator]?.includes(PermConfigTypeEnum.Create) && (
-              <Radio value="operator">算子</Radio>
-            )}
-          </Radio.Group>
-        </Form.Item>
         <Form.Item label="导入模式" name="mode" required initialValue="create">
           <Radio.Group>
             <Radio

@@ -1,22 +1,22 @@
 import type React from 'react';
-import { Dropdown, Button, Menu, message, Modal } from 'antd';
-import { EllipsisOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { Dropdown, Button, Menu, message } from 'antd';
+import { EllipsisOutlined } from '@ant-design/icons';
 import './style.less';
 import { boxToolStatus, delToolBox } from '@/apis/agent-operator-integration';
 import { useMicroWidgetProps } from '@/hooks';
 import { useNavigate } from 'react-router-dom';
 import { OperateTypeEnum, OperatorStatusType, OperatorTypeEnum, PermConfigTypeEnum } from '../OperatorList/types';
-import CreateToolModal from './CreateToolBoxModal';
+import EditToolBoxModal from './EditToolBoxModal';
 import { useState } from 'react';
 import PermConfigMenu from '../OperatorList/PermConfigMenu';
 import { postResourceOperation } from '@/apis/authorization';
+import { confirmModal } from '@/utils/modal';
 import { PublishedPermModal } from '../OperatorList/PublishedPermModal';
 import ExportButton from '../OperatorList/ExportButton';
-const { confirm } = Modal;
 
 const ToolDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetchInfo }) => {
   const microWidgetProps = useMicroWidgetProps();
-  const { activeTab, record, activeKey } = params;
+  const { activeTab, record } = params;
   const navigate = useNavigate();
   const [createToolOpen, setCreateToolOpen] = useState(false);
   const [permissionCheckInfo, setIsPermissionCheckInfo] = useState<Array<PermConfigTypeEnum>>();
@@ -32,19 +32,19 @@ const ToolDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetch
         message.success('删除成功');
       fetchInfo?.();
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
   const handlePreview = (type: string) => {
     const { box_id } = record;
-    navigate(`/tool-detail?box_id=${box_id}&action=${type}&activeKey=${activeKey}&back=${btoa(location.pathname)}`);
+    navigate(`/tool-detail?box_id=${box_id}&action=${type}`);
   };
 
   const showDeleteConfirm = () => {
-    confirm({
+    confirmModal({
       title: '删除工具',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '请确认是否删除此工具？',
       onOk() {
         handleDelete();
@@ -54,10 +54,8 @@ const ToolDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetch
   };
 
   const showOfflineConfirm = () => {
-    confirm({
+    confirmModal({
       title: '下架工具',
-      getContainer: microWidgetProps?.container,
-      icon: <ExclamationCircleFilled />,
       content: '下架后，引用了该工具的智能体或工作流会失效，此操作不可撤回。',
       onOk() {
         handleStatus(OperatorStatusType.Offline, '下架成功');
@@ -77,7 +75,9 @@ const ToolDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetch
         PublishedPermModal({ ...params, activeTab: OperatorTypeEnum.ToolBox }, microWidgetProps);
       }
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
@@ -119,7 +119,7 @@ const ToolDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetch
 
             {permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
               <Menu.Item>
-                <ExportButton params={params} />
+                <ExportButton params={params} extension=".adp" />
               </Menu.Item>
             )}
 
@@ -146,7 +146,7 @@ const ToolDropdown: React.FC<{ params: any; fetchInfo: any }> = ({ params, fetch
       >
         <Button type="text" icon={<EllipsisOutlined />} onClick={resourceOperation} />
       </Dropdown>
-      {createToolOpen && <CreateToolModal closeModal={closeToolModal} toolBoxInfo={record} fetchInfo={fetchInfo} />}
+      {createToolOpen && <EditToolBoxModal closeModal={closeToolModal} toolBoxInfo={record} fetchInfo={fetchInfo} />}
     </>
   );
 };

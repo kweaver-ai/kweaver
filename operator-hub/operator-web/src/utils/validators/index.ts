@@ -13,3 +13,11 @@ export function validateName(name: string, allowNumberStart: boolean = false) {
     return regex.test(name);
   }
 }
+
+// 校验参数名称是否符合要求：只能包含字母、数字和下划线，且必须以字母开头
+export function validateParamName(name: string) {
+  // ^[a-zA-Z] - 以字母开头
+  // [a-zA-Z0-9_]*$ - 后续可以是字母、数字或下划线
+  const regex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+  return regex.test(name);
+}

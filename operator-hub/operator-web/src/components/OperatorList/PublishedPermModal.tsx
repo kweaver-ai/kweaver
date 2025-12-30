@@ -22,6 +22,7 @@ export const PublishedPermModal = (params: any, microWidgetProps: any) => {
 
   success({
     title: '发布成功',
+    centered: true,
     getContainer: microWidgetProps?.container,
     content: (
       <div>
@@ -30,10 +31,7 @@ export const PublishedPermModal = (params: any, microWidgetProps: any) => {
     ),
     okCancel: true,
     onOk() {
-      componentsPermConfig(
-        { id, name, type: activeTab },
-        microWidgetProps
-      );
+      componentsPermConfig({ id, name, type: activeTab }, microWidgetProps);
     },
     okText: '权限配置',
     cancelText: '暂不配置',

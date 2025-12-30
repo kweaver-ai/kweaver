@@ -1,39 +1,74 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Typography, Tag, Space } from 'antd';
 import { ClockCircleOutlined, LeftOutlined } from '@ant-design/icons';
 import './style.less';
 import { formatTime } from '@/utils/operator';
 import ToolIcon from '@/assets/images/tool-icon.svg';
+import ToolBgPng from '@/assets/images/tool-bg.png';
+import OperatorBgPng from '@/assets/images/operator-bg.png';
+import MCPBgPng from '@/assets/images/mcp-bg.png';
+import { MetadataTypeEnum } from '@/apis/agent-operator-integration/type';
 import { OperateTypeEnum, OperatorTypeEnum } from './types';
 import StatusTag from './StatusTag';
 import OperatorName from './OperatorName';
 import McpDetailButton from '../MCP/McpDetailButton';
 import OperatorDetailButton from '../Operator/OperatorDetailButton';
 import ToolDetailButton from '../Tool/ToolDetailButton';
-import classNames from 'classnames';
+import { metadataTypeMap } from './metadata-type';
 
-export default function DetailHeader({ fetchInfo, type, detailInfo, permissionCheckInfo }: any) {
+export default function DetailHeader({
+  fetchInfo,
+  type,
+  detailInfo,
+  permissionCheckInfo,
+  getFetchTool,
+  navigateToCreateToolInIDE,
+}: any) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const activeKey = searchParams.get('activeKey') || '';
   const action = searchParams.get('action') || '';
 
   const [expanded, setExpanded] = useState(false);
 
+  // 返回到列表页面
+  const handleBackToList = () => {
+    navigate(`/?activeTab=${type}`);
+  };
+
+  const metadataTypeLabel = useMemo(() => {
+    return detailInfo?.metadata_type ? metadataTypeMap[detailInfo?.metadata_type as MetadataTypeEnum] : '';
+  }, [detailInfo?.metadata_type]);
+
   return (
     <div
-      className={classNames(`operator-detail-header`, {
-        'tool-header-bg': type === OperatorTypeEnum.ToolBox,
-        'operator-header-bg': type === OperatorTypeEnum.Operator,
-        'mcp-header-bg': type === OperatorTypeEnum.MCP,
-      })}
+      className="operator-detail-header"
+      style={
+        type === OperatorTypeEnum.ToolBox
+          ? { backgroundImage: `url(${ToolBgPng})` }
+          : type === OperatorTypeEnum.Operator
+            ? { backgroundImage: `url(${OperatorBgPng})` }
+            : type === OperatorTypeEnum.MCP
+              ? { backgroundImage: `url(${MCPBgPng})` }
+              : {}
+      }
     >
-      <div className="operator-detail-nav">
-        <span
-          className="operator-detail-nav-back"
-          onClick={() => navigate(`/?activeTab=${type}&activeKey=${activeKey}`)}
+      {[OperatorTypeEnum.ToolBox, OperatorTypeEnum.Operator].includes(type) && metadataTypeLabel && (
+        <div
+          style={{
+            background: 'rgb(206, 153, 101)',
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            borderBottomLeftRadius: 10,
+          }}
+          className="dip-font-12 dip-pt-4 dip-pb-4 dip-pl-8 dip-pr-8 dip-c-white"
         >
+          {metadataTypeLabel}
+        </div>
+      )}
+      <div className="operator-detail-nav">
+        <span className="operator-detail-nav-back" onClick={handleBackToList}>
           <span style={{ marginRight: '6px', fontSize: '12px' }}>
             <LeftOutlined />
           </span>
@@ -41,7 +76,7 @@ export default function DetailHeader({ fetchInfo, type, detailInfo, permissionCh
         </span>
       </div>
       <div style={{ display: 'flex' }}>
-        <div style={{ width: '76%' }}>
+        <div className="dip-flex-1 dip-overflow-hidden">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div
               style={{
@@ -57,9 +92,6 @@ export default function DetailHeader({ fetchInfo, type, detailInfo, permissionCh
             </div>
             <div style={{ paddingLeft: '20px', width: '275px' }}>
               <StatusTag status={detailInfo?.status} />
-              <Tag style={{ opacity: '0.5', marginLeft: '10px' }}>
-                <OperatorName type={type} />
-              </Tag>
             </div>
           </div>
           <Typography.Paragraph
@@ -95,6 +127,9 @@ export default function DetailHeader({ fetchInfo, type, detailInfo, permissionCh
                 detailInfo={detailInfo}
                 fetchInfo={fetchInfo}
                 permissionCheckInfo={permissionCheckInfo}
+                goBack={handleBackToList}
+                getFetchTool={getFetchTool}
+                navigateToCreateToolInIDE={navigateToCreateToolInIDE}
               />
             )}
             {type === OperatorTypeEnum.MCP && (

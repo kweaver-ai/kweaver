@@ -54,9 +54,9 @@ export async function handleError({
   }
 
   if (status >= 500) {
-    if(data?.description) {
-      reject(data)
-      return
+    if (data?.description) {
+      reject(data);
+      return;
     }
     const message = getServerErrorMsg(status);
     config.toast?.warning(message);

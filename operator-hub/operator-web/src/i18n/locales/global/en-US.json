@@ -1,0 +1,8 @@
+{
+  "global": {
+    "existTitle": "Are you sure to quit the current operation?",
+    "exitContent": "Current configuration not saved. The configured content will not be retrived if you abandon the save. Please exercise caution when performing this operation!",
+    "saveClose": "Save and close",
+    "abandon": "Give up saving"
+  }
+}

@@ -19,7 +19,9 @@ export default function RunFormModal({ closeRunModal, selectoperator }: any) {
         const step = data?.steps?.[0]?.parameters?.fields;
         setFields(step);
       } catch (error: any) {
-        message.error(error?.description);
+        if (error?.description) {
+          message.error(error?.description);
+        }
       }
     };
     fetchConfig();
@@ -36,7 +38,9 @@ export default function RunFormModal({ closeRunModal, selectoperator }: any) {
       message.info('开始运行...');
     } catch (error: any) {
       message.destroy();
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
   };
 
@@ -71,6 +75,7 @@ export default function RunFormModal({ closeRunModal, selectoperator }: any) {
   return (
     <Modal
       title="算子运行"
+      centered
       open={true}
       onCancel={handleCancel}
       footer={null}
@@ -83,6 +88,7 @@ export default function RunFormModal({ closeRunModal, selectoperator }: any) {
           <Form.Item
             key={index}
             name={field.key}
+            initialValue={field.default}
             label={
               <div>
                 {field.name}
@@ -102,10 +108,12 @@ export default function RunFormModal({ closeRunModal, selectoperator }: any) {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Space>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" className="dip-w-74">
               确定
             </Button>
-            <Button onClick={handleCancel}>取消</Button>
+            <Button className="dip-w-74" onClick={handleCancel}>
+              取消
+            </Button>
           </Space>
         </div>
       </Form>

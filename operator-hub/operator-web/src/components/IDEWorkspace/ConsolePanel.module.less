@@ -1,0 +1,32 @@
+.container {
+  background: rgb(245, 245, 249);
+
+  .header {
+    height: 56px;
+    border-bottom: solid 1px rgba(29, 28, 35, 0.08);
+
+    .clear-icon {
+      width: 32px;
+      height: 32px;
+      color: rgba(15, 21, 40, 0.82);
+
+      &:hover {
+        background: rgba(87, 104, 161, 0.08);
+      }
+    }
+  }
+
+  .content {
+    height: calc(100% - 56px);
+    overflow-y: auto;
+
+    .time {
+      color: rgb(166, 166, 166);
+    }
+
+    .stdout {
+      color: rgb(51, 51, 51);
+      white-space: pre-wrap;
+    }
+  }
+}

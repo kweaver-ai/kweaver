@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, Typography, message } from 'antd';
 import Form from '@rjsf/antd';
@@ -12,6 +12,8 @@ import { generateJsonSchema } from '@/utils/operator';
 import { useMicroWidgetProps } from '@/hooks';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import ModelSettingsPopover from './settingsPopover';
+import { getFormConfig } from './utils';
+import JsonTextAreaWidget from './JsonTextAreaWidget';
 
 const { Text } = Typography;
 
@@ -25,9 +27,27 @@ export default function DebugResult({ selectedTool, type }: any) {
   const microWidgetProps = useMicroWidgetProps();
   const abortController: any = useRef();
   const [debugSettings, setDebugSettings] = useState<any>({});
-  const uiSchema = {};
   const debugSettingsRef = useRef(debugSettings);
   const [dataFormatJson, setDataFormatJson] = useState(true);
+  const [inputHasError, setInputHasError] = useState<Record<string, boolean>>({});
+
+  const { schema: modifiedSchema, uiSchema: modifiedUiSchema } = useMemo(() => getFormConfig(schema), [schema]);
+  // 自定义 widgets(解决object、array格式，但是未定义key和items的问题)
+  const widgets = useMemo(
+    () => ({
+      JsonTextAreaWidget: (widgetProps: any) => (
+        <JsonTextAreaWidget
+          {...widgetProps}
+          onValidationError={(error: Record<string, boolean>) => setInputHasError(prev => ({ ...prev, ...error }))}
+        />
+      ),
+    }),
+    [selectedTool]
+  );
+
+  useEffect(() => {
+    setInputHasError({});
+  }, [selectedTool]);
 
   // Schema初始化逻辑
   useEffect(() => {
@@ -86,8 +106,10 @@ export default function DebugResult({ selectedTool, type }: any) {
       }
 
       setTestResult(mockResult);
-    } catch (error) {
-      message.error(error?.description);
+    } catch (error: any) {
+      if (error?.description) {
+        message.error(error?.description);
+      }
     } finally {
       setLoading(false);
     }
@@ -95,6 +117,11 @@ export default function DebugResult({ selectedTool, type }: any) {
 
   // 执行测试
   const handleRunTest = async () => {
+    if (Object.values(inputHasError).some(Boolean)) {
+      message.info('格式错误，请修正后重试');
+      return;
+    }
+
     const currentSettings = debugSettingsRef.current;
     if (currentSettings.stream && currentSettings.mode === StreamModeType.HTTP) {
       httpDebugRun();
@@ -228,7 +255,7 @@ export default function DebugResult({ selectedTool, type }: any) {
     setDataFormatJson(!settings?.stream);
   };
 
-  return (
+  return selectedTool?.name ? (
     <div className="debug-result">
       <div className="space-y-4">
         <Text strong style={{ marginBottom: '10px', display: 'block' }}>
@@ -240,9 +267,10 @@ export default function DebugResult({ selectedTool, type }: any) {
           </Text>
           <div className="bg-gray-50 p-4 rounded">
             <Form
-              schema={schema}
-              uiSchema={uiSchema}
+              schema={modifiedSchema}
+              uiSchema={modifiedUiSchema}
               formData={formData}
+              widgets={widgets}
               onChange={({ formData }) => setFormData(formData)}
               validator={validator}
               showErrorList={false}
@@ -304,5 +332,5 @@ export default function DebugResult({ selectedTool, type }: any) {
         )}
       </div>
     </div>
-  );
+  ) : null;
 }

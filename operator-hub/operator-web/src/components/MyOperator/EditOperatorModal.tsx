@@ -53,9 +53,9 @@ export default function EditOperatorModal({ closeModal, operatorInfo, fetchInfo 
       formData.append('description', values.description);
       formData.append('operator_info', JSON.stringify(values.operator_info));
       formData.append('operator_execute_control', JSON.stringify(values.operator_execute_control));
+      formData.append('metadata_type', operatorInfo.metadata_type);
       const file = values.data?.file;
       if (file) {
-        formData.append('metadata_type', 'openapi');
         formData.append('data', file);
       }
 
@@ -170,7 +170,10 @@ export default function EditOperatorModal({ closeModal, operatorInfo, fetchInfo 
         <Form.Item
           label="超时时间(ms)"
           name={['operator_execute_control', 'timeout']}
-          rules={[{ required: true, message: '请输入超时时间' }]}
+          rules={[
+            { required: true, message: '请输入超时时间' },
+            { type: 'integer', min: 1, message: '超时时间必须为大于0的整数' },
+          ]}
         >
           <InputNumber placeholder={`请输入`} style={{ width: '100%' }} />
         </Form.Item>

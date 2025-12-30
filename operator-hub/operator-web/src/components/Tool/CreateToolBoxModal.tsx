@@ -1,29 +1,52 @@
-import { Modal, Button, message, Upload, Form, Select, Input, Tooltip } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import { editToolBox, getOperatorCategory, postToolBox } from '@/apis/agent-operator-integration';
-import { useMicroWidgetProps } from '@/hooks';
+import React, { useState, useEffect, useMemo } from 'react';
+import classNames from 'classnames';
+import { Modal, Form, Input, Select, Radio, Typography, message } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import OpenAPIIcon from '@/assets/icons/open-api.svg';
+import FuncIcon from '@/assets/icons/func.svg';
+import { getOperatorCategory, postToolBox } from '@/apis/agent-operator-integration';
+import { MetadataTypeEnum } from '@/apis/agent-operator-integration/type';
 import { validateName } from '@/utils/validators';
-import { useEffect, useState } from 'react';
-import TextArea from 'antd/es/input/TextArea';
-import { useNavigate } from 'react-router-dom';
-import { OperateTypeEnum } from '../OperatorList/types';
+import styles from './CreateToolBoxModal.module.less';
+import { metadataTypeMap } from '@/components/OperatorList/metadata-type';
 
-export default function CreateToolModal({ closeModal, toolBoxInfo, fetchInfo }: any) {
-  const microWidgetProps = useMicroWidgetProps();
-  const navigate = useNavigate();
+const { Text } = Typography;
+const { TextArea } = Input;
+
+interface CreateToolBoxModalProps {
+  onCancel: () => void;
+  onOk: (boxInfo: {
+    box_id: string;
+    box_name: string;
+    box_category: string;
+    box_description: string;
+    metadata_type: MetadataTypeEnum;
+  }) => void;
+}
+
+const CreateToolBoxModal: React.FC<CreateToolBoxModalProps> = ({ onCancel, onOk }) => {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState<any>([]); // 管理上传文件列表
-  const initialValues = {
-    metadata_type: 'openapi',
-    ...toolBoxInfo,
-  };
-  const layout = {
-    labelCol: { span: 24 },
-  };
+
   const [categoryType, setCategoryType] = useState<any>([]);
-  const handleCancel = () => {
-    closeModal?.();
-  };
+  const [metadataType, setMetadataType] = useState<MetadataTypeEnum | undefined>(undefined);
+
+  const radioOptions = useMemo(
+    () => [
+      {
+        key: MetadataTypeEnum.OpenAPI,
+        icon: OpenAPIIcon,
+        title: metadataTypeMap[MetadataTypeEnum.OpenAPI],
+        desc: '接入现有的 HTTP 服务，支持导入 OpenAPI 规范',
+      },
+      {
+        key: MetadataTypeEnum.Function,
+        icon: FuncIcon,
+        title: metadataTypeMap[MetadataTypeEnum.Function],
+        desc: '在线编写自定义代码逻辑，无需管理服务器，由平台托管运行',
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -31,7 +54,7 @@ export default function CreateToolModal({ closeModal, toolBoxInfo, fetchInfo }: 
         const data = await getOperatorCategory();
         setCategoryType(data);
         form.setFieldsValue({
-          box_category: toolBoxInfo?.category_type || data[0]?.category_type,
+          box_category: data[0]?.category_type,
         });
       } catch (error: any) {
         console.error(error);
@@ -40,173 +63,70 @@ export default function CreateToolModal({ closeModal, toolBoxInfo, fetchInfo }: 
     fetchConfig();
   }, []);
 
-  const onFinish = async (values: any) => {
-    if (toolBoxInfo?.box_id) {
-      try {
-        const { data, box_name, box_desc, box_svc_url, box_category } = values;
-        const formData = new FormData();
-        formData.append('box_name', box_name);
-        formData.append('box_desc', box_desc);
-        formData.append('box_svc_url', box_svc_url);
-        formData.append('box_category', box_category);
-        const file = data?.file;
-        if (file) {
-          formData.append('metadata_type', 'openapi');
-          formData.append('data', file);
-        }
-        const { edit_tools } = await editToolBox(toolBoxInfo?.box_id, formData);
-        if (edit_tools?.length) {
-          Modal.success({
-            title: '编辑成功',
-            centered: true,
-            getContainer: () => microWidgetProps.container,
-            content: (
-              <div>
-                <div className="dip-mb-12">以下 {edit_tools?.length} 个工具更新成功：</div>
-                <TextArea
-                  readOnly
-                  rows={4}
-                  value={edit_tools?.map(({ name }: any) => name)?.join('\n')}
-                  style={{
-                    whiteSpace: 'pre',
-                  }}
-                />
-              </div>
-            ),
-          });
-        } else {
-          message.success('编辑成功');
-        }
-        handleCancel();
-        fetchInfo?.();
-      } catch (error: any) {
-        if (error?.description) {
-          Modal.info({
-            centered: true,
-            title: '无法编辑工具箱',
-            content: error.description,
-            getContainer: () => microWidgetProps.container,
-          });
-        }
-      }
-      return false;
-    }
-    const { data, box_name, box_desc, box_svc_url, box_category, metadata_type } = values;
-    const formData = new FormData();
-    formData.append('data', data?.file);
-    if (box_name) formData.append('box_name', box_name);
-    if (box_desc) formData.append('box_desc', box_desc);
-    if (box_svc_url) formData.append('box_svc_url', box_svc_url);
-    if (box_category) formData.append('box_category', box_category);
-    if (metadata_type) formData.append('metadata_type', metadata_type);
+  const handleConfirm = async () => {
     try {
-      const { box_id } = await postToolBox(formData);
-      message.success('新建成功');
-      navigate(`/tool-detail?box_id=${box_id}&action=${OperateTypeEnum.Edit}&back=${btoa(location.pathname)}`);
+      const values = await form.validateFields();
+      const { box_id } = await postToolBox(values);
+      onOk({ ...values, box_id });
     } catch (error: any) {
-      message.error(error?.description);
+      if (error?.description) {
+        message.error(error?.description);
+      }
     }
-  };
-
-  const handleRemove = () => {
-    setTimeout(() => {
-      form.setFieldsValue({ data: undefined });
-    }, 10);
-    setFileList([]);
   };
 
   return (
     <Modal
+      open
       centered
-      title={toolBoxInfo?.box_id ? '编辑工具箱' : '新建工具'}
-      open={true}
-      onCancel={handleCancel}
-      footer={null}
-      width={660}
-      getContainer={() => microWidgetProps.container}
+      maskClosable={false}
+      title="新建工具箱"
+      onCancel={onCancel}
+      onOk={handleConfirm}
+      okText="确定"
+      cancelText="取消"
+      width={640}
+      okButtonProps={{
+        className: 'dip-w-74',
+      }}
+      cancelButtonProps={{
+        className: 'dip-w-74',
+      }}
+      footer={(_, { OkBtn, CancelBtn }) => (
+        <>
+          <OkBtn />
+          <CancelBtn />
+        </>
+      )}
     >
-      <Form
-        {...layout}
-        form={form}
-        // name="upload_form"
-        onFinish={onFinish}
-        initialValues={initialValues}
-        style={{ marginTop: '30px' }}
-      >
-        {!toolBoxInfo?.box_id && (
-          <Form.Item name="data" label="上传文件" rules={[{ required: true, message: '请上传文件' }]}>
-            <Upload
-              // customRequest={customRequest}
-              accept=".yaml,.yml,.json"
-              maxCount={1}
-              fileList={fileList}
-              // showUploadList={false}
-              onRemove={handleRemove}
-              beforeUpload={file => {
-                const isLt5M = file.size / 1024 / 1024 < 5;
-                if (!isLt5M) {
-                  message.info('上传的文件大小不能超过5MB');
-                  setTimeout(() => {
-                    form.setFieldsValue({ data: undefined });
-                  }, 10);
-                  return false;
+      <Form form={form} layout="vertical" className={styles['toolbox-form']} autoComplete="off">
+        <Form.Item
+          required
+          label="工具箱名称"
+          name="box_name"
+          rules={[
+            {
+              validator: (_, value) => {
+                if (!value) {
+                  return Promise.reject('请输入工具箱名称');
                 }
-                const fileExtension = file?.name?.split('.')?.pop()?.toLowerCase() || '';
-                const isSupportedFormat = ['json', 'yaml', 'yml'].includes(fileExtension);
-                if (!isSupportedFormat) {
-                  message.info('上传格式不正确，只能是yaml或json格式的文件');
 
-                  setTimeout(() => {
-                    form.setFieldsValue({ data: undefined });
-                  }, 10);
-                  return false;
+                if (!validateName(value, true)) {
+                  return Promise.reject('仅支持输入中文、字母、数字、下划线');
                 }
-                setFileList([file]);
-                return false;
-              }}
-            >
-              <Button icon={<UploadOutlined />}>上传</Button>
-            </Upload>
-          </Form.Item>
-        )}
-
-        <Form.Item name="metadata_type" hidden={true}>
-          <Input defaultValue="openapi" />
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Input placeholder="请输入" showCount maxLength={50} />
         </Form.Item>
-        {toolBoxInfo?.box_id && (
-          <>
-            <Form.Item
-              required
-              label="工具箱名称"
-              name="box_name"
-              rules={[
-                {
-                  validator: (_, value) => {
-                    if (!value) {
-                      return Promise.reject('请输入工具箱名称');
-                    }
 
-                    if (!validateName(value, true)) {
-                      return Promise.reject('仅支持输入中文、字母、数字、下划线');
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <Input maxLength={50} showCount />
-            </Form.Item>
+        <Form.Item label="工具箱描述" name="box_desc" rules={[{ required: true, message: '请输入描述' }]}>
+          <TextArea rows={4} maxLength={255} placeholder="请输入" />
+        </Form.Item>
 
-            <Form.Item label="工具箱描述" name="box_desc" rules={[{ required: true, message: '请输入描述' }]}>
-              <TextArea rows={4} maxLength={255} placeholder="请尽量详细描述主要功能和使用场景。描述将展示给用户" />
-            </Form.Item>
-            <Form.Item label="工具箱服务地址" name="box_svc_url" rules={[{ required: true, message: '请输入' }]}>
-              <Input placeholder={`请输入`} />
-            </Form.Item>
-          </>
-        )}
-
-        <Form.Item label="工具箱类型" name="box_category" rules={[{ required: true, message: '请选择类型' }]}>
+        <Form.Item label="工具箱业务类型" name="box_category" rules={[{ required: true, message: '请选择类型' }]}>
           <Select>
             {categoryType?.map((item: any) => (
               <Select.Option key={item.category_type} value={item.category_type}>
@@ -216,64 +136,50 @@ export default function CreateToolModal({ closeModal, toolBoxInfo, fetchInfo }: 
           </Select>
         </Form.Item>
 
-        {toolBoxInfo?.box_id && (
-          <Form.Item label="更新数据" name="data">
-            <Upload
-              accept=".yaml,.yml,.json"
-              maxCount={1}
-              fileList={fileList}
-              onRemove={handleRemove}
-              beforeUpload={file => {
-                const isLt5M = file.size / 1024 / 1024 < 5;
-                if (!isLt5M) {
-                  message.info('上传的文件大小不能超过5MB');
-                  setTimeout(() => {
-                    form.setFieldsValue({ data: undefined });
-                  }, 10);
-                  return false;
-                }
-                const fileExtension = file?.name?.split('.')?.pop()?.toLowerCase() || '';
-                const isSupportedFormat = ['yaml', 'yml', 'json'].includes(fileExtension);
-                if (!isSupportedFormat) {
-                  message.info('上传格式不正确，只能是yaml或json格式的文件');
-
-                  setTimeout(() => {
-                    form.setFieldsValue({ data: undefined });
-                  }, 10);
-                  return false;
-                }
-                setFileList([file]);
-                return false;
-              }}
-            >
-              <ul
-                style={{ listStyle: 'inside disc', color: 'rgba(0, 0, 0, 0.45)' }}
-                className="dip-pl-8"
-                onClick={e => e.stopPropagation()}
+        <Form.Item
+          labelCol={{ span: 24 }}
+          className={styles['tech-type-item']}
+          label={
+            <div className="dip-flex-space-between dip-w-100">
+              <span>工具箱技术选型</span>
+              <Text type="secondary" className={styles['label-tip']} style={{ marginRight: '-12px' }}>
+                <InfoCircleOutlined className="dip-mr-8" />
+                选择后不支持修改
+              </Text>
+            </div>
+          }
+          name="metadata_type"
+          rules={[{ required: true, message: '请选择' }]}
+        >
+          <Radio.Group className={styles['card-radio-group']} onChange={e => setMetadataType(e.target.value)}>
+            {radioOptions.map(({ key, title, desc, icon: Icon }) => (
+              <Radio.Button
+                key={key}
+                value={key}
+                className={classNames(styles['card-radio-item'], {
+                  [styles['card-radio-item-checked']]: metadataType === key,
+                })}
               >
-                <li>
-                  <span style={{ marginLeft: '-8px' }}>上传使用OpenAPI 3.0协议的JSON或YAML文件</span>
-                </li>
-                <li>
-                  <span style={{ marginLeft: '-8px' }}>文件大小不能超过5M</span>
-                </li>
-              </ul>
-              <Button icon={<UploadOutlined />}>上传</Button>
-            </Upload>
+                <div className={styles['card-content']}>
+                  <div className={styles['card-title']}>
+                    <Icon className="dip-font-20 dip-mr-8" />
+                    {title}
+                  </div>
+                  <div className={styles['card-desc']}>{desc}</div>
+                </div>
+              </Radio.Button>
+            ))}
+          </Radio.Group>
+        </Form.Item>
+
+        {metadataType === MetadataTypeEnum.OpenAPI && (
+          <Form.Item label="工具箱服务地址" name="box_svc_url" rules={[{ required: true, message: '请输入' }]}>
+            <Input placeholder={`请输入`} />
           </Form.Item>
         )}
-
-        <Form.Item noStyle>
-          <div style={{ textAlign: 'right' }}>
-            <Button type="primary" htmlType="submit" className="dip-mr-8 dip-w-74">
-              确定
-            </Button>
-            <Button className="dip-w-74" onClick={() => closeModal?.()}>
-              取消
-            </Button>
-          </div>
-        </Form.Item>
       </Form>
     </Modal>
   );
-}
+};
+
+export default CreateToolBoxModal;

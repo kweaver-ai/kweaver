@@ -87,7 +87,6 @@ export interface QuotaControl {
   burst_capacity?: number;
 }
 
-
 export interface ToolListParams {
   page?: number;
   page_size?: number;
@@ -107,4 +106,20 @@ export interface GlobalToolListResponse {
   has_next: boolean;
   has_prev: boolean;
   data: ToolInfoNew[];
+}
+
+export enum MetadataTypeEnum {
+  OpenAPI = 'openapi',
+  Function = 'function',
+}
+
+export interface FunctionExecuteRequest {
+  code: string; // 函数代码
+  event: object; // 函数事件参数
+}
+export interface FunctionExecuteResponse {
+  stdout: string; // 标准输出
+  stderr: string; // 标准错误输出
+  result: object; // 函数执行结果
+  metrics: object; // 函数执行指标
 }

@@ -34,7 +34,7 @@ export enum PermConfigTypeEnum {
   Unpublish = 'unpublish',
   Authorize = 'authorize',
   PublicAccess = 'public_access',
-  Execute = 'execute'
+  Execute = 'execute',
 }
 
 export enum PermConfigShowType {
@@ -43,5 +43,5 @@ export enum PermConfigShowType {
 
 export enum StreamModeType {
   SSE = 'sse',
-  HTTP = 'http'
+  HTTP = 'http',
 }

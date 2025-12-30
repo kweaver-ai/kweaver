@@ -1,0 +1,61 @@
+# 算子平台API文档规范：满足OpenAPI 3.0.0规范(https://openapi.apifox.cn/), 及算子平台要求必填字段
+openapi: 3.0.0 # 必填. 这个字符串必须是开放API规范版本号提到的符合语义化版本号规范的版本号。
+info: # 必填. 提供关于API的元数据，包括标题、版本、描述等。
+  title: "DIP算子服务公有接口协议" # 必填. 如果是从工具箱入口导入，该字段默认为工具箱名称，要求为：中文、英文、数字、下划线组成。
+  version: "1.0.0"
+  description: "DIP算子服务公有接口协议RESTful API集合,用于集群外部服务调用, 需接口认证信息" # 非必填，默认值为info.title. 如果是从工具箱入口导入，该字段默认为工具箱描述
+servers: # 必填. 服务器信息
+  - url: "http://localhost:9000/api/agent-operator-integration/v1" # 必填. 服务器URL
+
+paths: # 必填. API路径项，定义了API的不同路径和操作。
+  "/operators/{operator_id}": # 必填. API路径，支持路径参数。
+    get: # 必填. HTTP方法，如GET、POST等。
+      summary: "获取算子详情" # 必填. 操作的简短描述。
+      description: "返回指定算子的详细信息" # 非必填，默认值为summary。该字段用于描述算子/工具的详细功能和行为。
+      parameters: # 非必填，当路径参数或查询参数存在时使用。
+        - name: "operator_id" # 必填. 参数名，如id、name等。
+          in: "path" # 必填. 参数位置，可选参数：path、query、header、cookie。
+          description: "算子ID" # 非必填，默认值为name。该字段用于描述参数的详细信息。
+          required: true # 必填. 是否必填，默认值为false。当in为path时，该字段值要必须为true。
+          schema: # 必填. 参数类型定义，使用JSON Schema格式。
+            type: "string" # 必填. 参数类型，如string、integer等。
+        - name: operator_name # 非必填，默认值为name。该字段用于描述参数的详细信息。
+          in: "query" # 必填. 参数位置，可选参数：path、query、header、cookie。
+          description: "算子名称" # 非必填，默认值为name。该字段用于描述参数的详细信息。
+          required: false # 必填. 是否必填，默认值为false。当in为path时，该字段值要必须为true。
+          schema: # 必填. 参数类型定义，使用JSON Schema格式。
+            type: "array" # 必填. 参数类型，如string、integer等。如果类型为array, 则items为数组元素类型。
+            items: # 非必填，当type为array时items必填。
+              type: "string" # 必填. 数组元素类型，如string、integer等。
+      requestBody: # 非必填，当操作需要请求体时使用。
+        required: true # 非必填，默认值为false。当操作需要请求体时，该字段值要必须为true。
+        content: # 必填. 请求体内容定义，包括媒体类型和模型。
+          "application/json": # 必填. 媒体类型，如application/json等。
+            schema: # 必填. 请求体模型定义，使用JSON Schema格式。
+              type: "object" # 必填. 模型类型，如object、array等。
+              properties: # 必填. 模型属性定义，包括属性名和属性类型。
+                operator_name: # 必填. 属性名，如id、name等。
+                  type: "string" # 必填. 属性类型，如string、integer等。
+      responses: # 必填. 操作的响应定义，包括状态码和响应模型。
+        "200": # 必填. 状态码，如200、404等。
+          description: "成功" # 必填. 状态码的简短描述。
+          content: # 必填. 响应内容定义，包括媒体类型和模型。
+            "application/json": # 必填. 媒体类型，如application/json等。
+              schema: # 必填. 响应模型定义，使用JSON Schema格式。
+                type: "array" # 必填. 模型类型，如object、array等。
+                items: # 非必填，当type为array时使用。
+                  $ref: "#/components/schemas/Operator" # 必填. 引用已定义的模型。
+components: # 必填. 组件定义，包括模型、参数、响应等。
+  schemas: # 必填. 模型定义，用于描述API的数据结构。
+    Operator: # 必填. 模型名称，用于引用。
+      type: "object" # 必填. 模型类型，如object、array等。
+      properties: # 必填. 模型属性定义，包括属性名和属性类型。
+        name: # 必填. 属性名，如id、name等。
+          type: "string" # 必填. 属性类型，如string、integer等。
+        version: # 必填. 属性名，如id、name等。
+          type: "string" # 必填. 属性类型，如string、integer等。
+        type: # 必填. 属性名，如id、name等。
+          type: "string" # 必填. 属性类型，如string、integer等。
+        description: # 必填. 属性名，如id、name等。
+          type: "string" # 必填. 属性类型，如string、integer等。
+

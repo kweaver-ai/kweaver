@@ -1,59 +1,41 @@
-import { Menu } from 'antd';
-import ToolIcon from '@/assets/images/tool.svg';
-import OperatorIcon from '@/assets/images/operator.svg';
-import McpIcon from '@/assets/images/mcp.svg';
+import { Button, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { MetadataTypeEnum } from '@/apis/agent-operator-integration/type';
 import { OperatorStatusType, OperatorTypeEnum, PermConfigTypeEnum } from './types';
 import { useState } from 'react';
-import CreateModal from '../Operator/CreateModal';
-import CreateToolModal from '../Tool/CreateToolBoxModal';
+import CreateOperatorModal from '../Operator/CreateOperatorModal';
 import OperatorFlowPanel from '../MyOperator/OperatorFlowPanel';
 import CreateMcpModal from '../MCP/CreateMcpModal';
-import CreateOperatorModal from '../Operator/CreateOperatorModal';
+import CreateToolboxModal from '../Tool/CreateToolBoxModal';
 import ImportFailed from '../Tool/ImportFailed';
 import { PublishedPermModal } from './PublishedPermModal';
 import { useMicroWidgetProps } from '@/hooks';
 import { postResourceOperation } from '@/apis/authorization';
+import { getOperatorTypeName } from './utils';
 
-export default function CreateMenu({ fetchInfo, permConfigInfo }: any) {
+export default function CreateMenu({ fetchInfo, activeTab }: any) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const microWidgetProps = useMicroWidgetProps();
   const [createToolOpen, setCreateToolOpen] = useState(false);
   const [createMcpOpen, setCreateMcpOpen] = useState(false);
-  const [openCreate, setOpenCreate] = useState(false);
+  const [createOperatorOpen, setCreateOperatorOpen] = useState(false);
   const [isFlowOpen, setIsFlowOpen] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [dataSourceError, setDataSourceError] = useState([]);
 
-  const closeModal = () => {
-    setOpenCreate(false);
-  };
-  const closeToolModal = () => {
-    setCreateToolOpen(false);
-  };
   const closeMcpModal = () => {
     setCreateMcpOpen(false);
   };
 
-  const isModal = (data?: any) => {
-    const { type, open } = data;
-    if (type === '1') {
-      setIsCreateOpen(open);
-    } else {
-      setIsFlowOpen(open);
-    }
-  };
   const closeFlowOpen = (val?: any) => {
     setIsFlowOpen(false);
-    closeModal();
+    setCreateOperatorOpen(false);
     fetchInfo?.();
     const { status, operator_id, title: name } = val;
     if (status === OperatorStatusType.Published) {
       resourceOperation({ operator_id, name });
     }
-  };
-  const closeCreateOpen = (data?: any) => {
-    setIsCreateOpen(false);
-    closeModal();
-    setDataSourceError(data || []);
   };
 
   const resourceOperation = async (record: any) => {
@@ -76,72 +58,64 @@ export default function CreateMenu({ fetchInfo, permConfigInfo }: any) {
     }
   };
 
+  // 新建工具箱成功
+  const handleCreateSuccess = (boxInfo: {
+    box_id: string;
+    box_name: string;
+    box_category: string;
+    box_description: string;
+    metadata_type: MetadataTypeEnum;
+  }) => {
+    message.success(
+      boxInfo.metadata_type === MetadataTypeEnum.OpenAPI
+        ? '新建工具箱成功，您可以继续导入工具'
+        : '新建工具箱成功，您可以继续新建工具'
+    );
+    setCreateToolOpen(false);
+    navigate(`/tool-detail?box_id=${boxInfo.box_id}&action=edit`);
+  };
+
+  // 跳转到IDE新建算子页面
+  const jumpToCreateOperatorPage = () => {
+    navigate('/ide/operator/create', {
+      state: {
+        from: location.pathname + location.search,
+      },
+    });
+  };
+
   return (
     <>
-      <Menu className="create-operator-menu">
-        {(permConfigInfo?.[OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Create) ||
-          permConfigInfo?.[OperatorTypeEnum.ToolBox]?.includes(PermConfigTypeEnum.Create)) && (
-          <div className="create-operator-menu-title">在Data agent 的技能中使用</div>
-        )}
-        {permConfigInfo?.[OperatorTypeEnum.MCP]?.includes(PermConfigTypeEnum.Create) && (
-          <Menu.Item
-            key={OperatorTypeEnum.MCP}
-            onClick={() => {
-              setCreateMcpOpen(true);
-            }}
-          >
-            <div style={{ display: 'flex' }}>
-              <McpIcon style={{ width: '32px', height: '32px', borderRadius: '8px', marginRight: '6px' }} />
-              <div style={{ marginLeft: '5px' }}>
-                <div className="create-operator-menu-name">MCP 服务</div>
-                <div className="create-operator-menu-desc">通过标准化协议（MCP）实现多工具统一管理与智能调用</div>
-              </div>
-            </div>
-          </Menu.Item>
-        )}
-        {permConfigInfo?.[OperatorTypeEnum.ToolBox]?.includes(PermConfigTypeEnum.Create) && (
-          <Menu.Item
-            key={OperatorTypeEnum.ToolBox}
-            onClick={() => {
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={() => {
+          switch (activeTab) {
+            case OperatorTypeEnum.Operator:
+              setCreateOperatorOpen(true);
+              break;
+            case OperatorTypeEnum.ToolBox:
               setCreateToolOpen(true);
-            }}
-          >
-            <div style={{ display: 'flex' }}>
-              <ToolIcon style={{ width: '32px', height: '32px', borderRadius: '8px', marginRight: '6px' }} />
-              <div style={{ marginLeft: '5px' }}>
-                <div className="create-operator-menu-name">工具</div>
-                <div className="create-operator-menu-desc">实现特定功能或任务的模块</div>
-              </div>
-            </div>
-          </Menu.Item>
-        )}
-        {permConfigInfo?.[OperatorTypeEnum.Operator]?.includes(PermConfigTypeEnum.Create) && (
-          <>
-            <div className="create-operator-menu-title" style={{ borderTop: '1px solid #E4E6ED', paddingTop: '6px' }}>
-              在数据管道中使用
-            </div>
-            <Menu.Item
-              key={OperatorTypeEnum.Operator}
-              onClick={() => {
-                setOpenCreate(true);
-              }}
-            >
-              <div style={{ display: 'flex' }}>
-                <OperatorIcon style={{ width: '32px', height: '32px', borderRadius: '8px', marginRight: '6px' }} />
-                <div style={{ marginLeft: '5px' }}>
-                  <div className="create-operator-menu-name">算子</div>
-                  <div className="create-operator-menu-desc">在数据处理场景中，执行特定操作的最小单位</div>
-                </div>
-              </div>
-            </Menu.Item>
-          </>
-        )}
-      </Menu>
-      {openCreate && <CreateModal closeModal={closeModal} isModal={isModal} />}
-      {createToolOpen && <CreateToolModal closeModal={closeToolModal} />}
+              break;
+            default:
+              setCreateMcpOpen(true);
+              break;
+          }
+        }}
+      >
+        新建
+        {getOperatorTypeName(activeTab)}
+      </Button>
+      {createOperatorOpen && (
+        <CreateOperatorModal
+          onCancel={() => setCreateOperatorOpen(false)}
+          onOpenFlowEditor={() => setIsFlowOpen(true)}
+          onOpenCreateOperatorPage={jumpToCreateOperatorPage}
+        />
+      )}
+      {createToolOpen && <CreateToolboxModal onCancel={() => setCreateToolOpen(false)} onOk={handleCreateSuccess} />}
       {createMcpOpen && <CreateMcpModal closeModal={closeMcpModal} />}
       {isFlowOpen && <OperatorFlowPanel closeModal={closeFlowOpen} />}
-      {isCreateOpen && <CreateOperatorModal closeModal={closeCreateOpen} fetchInfo={fetchInfo} />}
       {Boolean(dataSourceError?.length) && (
         <ImportFailed
           dataSource={dataSourceError}

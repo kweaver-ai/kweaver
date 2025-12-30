@@ -23,6 +23,7 @@ export default function ImportFailed({ closeModal, dataSource }: any) {
   return (
     <Modal
       title="导入失败列表"
+      centered
       open={true}
       onCancel={handleCancel}
       footer={null}

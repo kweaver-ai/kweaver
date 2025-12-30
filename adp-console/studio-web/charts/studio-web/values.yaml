@@ -45,17 +45,13 @@ env:
 image:
   studio_web_static:
     pullPolicy: ifNotPresent
-    repository: ict/studio-web-static
-    tag: -mission
-  deploy_web_tproxy:
-    pullPolicy: ifNotPresent
-    repository: ict/deploy-web-tproxy
+    repository: dip/studio-web-static
     tag: -mission
   pullPolicy: IfNotPresent
   registry: acr.aishu.cn
   studio_web_service:
     pullPolicy: ifNotPresent
-    repository: ict/studio-web-service
+    repository: dip/studio-web-service
     tag: -mission
   studio_web_backend:
     pullPolicy: ifNotPresent
@@ -71,7 +67,7 @@ nodeSelector: {}
 podAnnotations: {}
 podSecurityContext: {}
 replicaCount: 1
-resources: 
+resources:
   limits:
     cpu: 2
     memory: 400M

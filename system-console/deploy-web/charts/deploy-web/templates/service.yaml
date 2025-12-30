@@ -48,3 +48,4 @@ spec:
     name: app
   selector:
     {{- include "template.selectorLabels" $ | nindent 4 }}
+

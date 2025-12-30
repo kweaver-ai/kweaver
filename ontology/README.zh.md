@@ -60,7 +60,7 @@ kweaver/
 #### 1. 克隆代码库
 
 ```bash
-git clone https://github.com/AISHU-Technology/kweaver.git
+git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/ontology
 ```
 

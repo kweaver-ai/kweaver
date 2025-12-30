@@ -60,7 +60,7 @@ Provides efficient knowledge graph query services. Main features include:
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/AISHU-Technology/kweaver.git
+git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/ontology
 ```
 

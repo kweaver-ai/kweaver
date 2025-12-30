@@ -137,6 +137,7 @@ git checkout -b fix/bug-description
 - Write clean, maintainable code
 - Follow the project's code structure and architecture patterns
 - Add appropriate comments and documentation
+- Include standard file headers (see [Source Code Header Guidelines](#-source-code-header-guidelines) below)
 
 ### 4. Write Tests
 
@@ -257,7 +258,7 @@ git push origin feature/my-feature --force-with-lease
 >
 > - Use `--force-with-lease` instead of `--force` to avoid overwriting others' work.
 > - Make sure you're on your feature branch before rebasing.
-> - If you prefer to track the upstream repository, you can add it: `git remote add upstream https://github.com/AISHU-Technology/kweaver.git`
+> - If you prefer to track the upstream repository, you can add it: `git remote add upstream https://github.com/kweaver-ai/kweaver.git`
 
 ### 8. Push to Your Fork
 
@@ -304,6 +305,125 @@ git push origin feature/my-feature
 
 ---
 
+## 📝 Source Code Header Guidelines
+
+This section defines the standard source code file header used across **kweaver.ai** open-source projects.
+
+The goal is to ensure:
+
+- clear copyright ownership
+- clear licensing (Apache License 2.0)
+- consistent and readable file documentation
+
+> **Note**: We use "The kweaver.ai Authors" instead of individual author names.
+> Git history already tracks all contributors, and this approach is easier to maintain.
+
+### Standard Header (Go / C / Java)
+
+Use the following header for all core source files:
+
+```go
+// Copyright The kweaver.ai Authors.
+//
+// Licensed under the Apache License, Version 2.0.
+// See the LICENSE file in the project root for details.
+```
+
+### Language-Specific Variants
+
+#### Python
+
+```python
+# Copyright The kweaver.ai Authors.
+#
+# Licensed under the Apache License, Version 2.0.
+# See the LICENSE file in the project root for details.
+```
+
+#### JavaScript / TypeScript
+
+```ts
+/**
+ * Copyright The kweaver.ai Authors.
+ *
+ * Licensed under the Apache License, Version 2.0.
+ * See the LICENSE file in the project root for details.
+ */
+```
+
+#### Shell
+
+```bash
+#!/usr/bin/env bash
+# Copyright The kweaver.ai Authors.
+# Licensed under the Apache License, Version 2.0.
+# See the LICENSE file in the project root for details.
+```
+
+#### HTML / XML
+
+```html
+<!--
+  Copyright The kweaver.ai Authors.
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for details.
+-->
+```
+
+### Derived or Forked Files (Optional)
+
+If a file was originally derived from another project, you may add an origin note
+after the license header (for key files only):
+
+```go
+// Copyright The kweaver.ai Authors.
+//
+// Licensed under the Apache License, Version 2.0.
+// See the LICENSE file in the project root for details.
+//
+// This file is derived from [original-project](https://github.com/org/repo)
+```
+
+This is optional but recommended for transparency and community trust.
+
+### Scope
+
+Headers are **recommended** for:
+
+- core logic and business code
+- public APIs and interfaces
+- libraries and SDKs
+- CLI tools and utilities
+
+Headers are **optional** for:
+
+- unit tests and test fixtures
+- examples and demos
+- generated files (protobuf, OpenAPI, etc.)
+- configuration files (YAML, JSON, TOML)
+- documentation files (Markdown, etc.)
+
+### Why No Individual Author Names?
+
+Following the practice of major open-source projects (Kubernetes, TensorFlow, etc.):
+
+- **Git history** already provides a complete and accurate record of all contributors
+- Individual author lists are **hard to maintain** and often become outdated
+- Using "The kweaver.ai Authors" ensures **consistent attribution** across all files
+- Contributors are recognized through the project's **CONTRIBUTORS** file and git log
+
+### License Requirement
+
+All repositories **must** include a `LICENSE` file containing the full text of
+the Apache License, Version 2.0.
+
+### Guiding Principle
+
+> If a file is expected to be reused, forked, or maintained long-term,
+> it deserves a clear and explicit header.
+
+---
+
 ## 🏗 Development Setup
 
 ### Prerequisites
@@ -325,7 +445,7 @@ cd kweaver
 1. **Add upstream remote:**
 
 ```bash
-git remote add upstream https://github.com/AISHU-Technology/kweaver.git
+git remote add upstream https://github.com/kweaver-ai/kweaver.git
 ```
 
 1. **Set up the development environment:**

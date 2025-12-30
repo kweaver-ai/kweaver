@@ -12,8 +12,8 @@ KWeaver is an open-source AI application platform for decision support, designed
 - 📖 [Documentation](ontology/README.md) - Complete documentation for Ontology Engine
 - 🤝 [Contributing](CONTRIBUTING.md) - Guidelines for contributing to the project
 - 📄 [License](LICENSE.txt) - Apache License 2.0
-- 🐛 [Report Bug](https://github.com/AISHU-Technology/kweaver/issues) - Report a bug or issue
-- 💡 [Request Feature](https://github.com/AISHU-Technology/kweaver/issues) - Suggest a new feature
+- 🐛 [Report Bug](https://github.com/kweaver-ai/kweaver/issues) - Report a bug or issue
+- 💡 [Request Feature](https://github.com/kweaver-ai/kweaver/issues) - Suggest a new feature
 
 AI applications are intelligent decision programs for specific business scenarios. Based on the ADP architecture, they integrate core capabilities such as Data Agents and business knowledge networks in the business domain. Through customizable Chat and Board visualization methods, they achieve end-to-end business closed loops from inquiry, analysis, suggestion, action to feedback.
 
@@ -81,7 +81,7 @@ Provides efficient knowledge graph query services. Main features include:
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/AISHU-Technology/kweaver.git
+git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/ontology
 ```
 
@@ -234,7 +234,7 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 - **Technical Support**: AISHU ADP R&D Team
 - **Documentation**: [Ontology Engine Documentation](ontology/README.md)
 - **Contributing**: [Contributing Guide](CONTRIBUTING.md)
-- **Issues**: [GitHub Issues](https://github.com/AISHU-Technology/kweaver/issues)
+- **Issues**: [GitHub Issues](https://github.com/kweaver-ai/kweaver/issues)
 - **License**: [Apache License 2.0](LICENSE.txt)
 
 ---

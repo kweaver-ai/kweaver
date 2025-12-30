@@ -322,7 +322,7 @@ git push origin feature/my-feature
 所有核心源文件使用以下文件头：
 
 ```go
-// Copyright 2025 The kweaver.ai Authors.
+// Copyright The kweaver.ai Authors.
 //
 // Licensed under the Apache License, Version 2.0.
 // See the LICENSE file in the project root for details.
@@ -333,7 +333,7 @@ git push origin feature/my-feature
 #### Python
 
 ```python
-# Copyright 2025 The kweaver.ai Authors.
+# Copyright The kweaver.ai Authors.
 #
 # Licensed under the Apache License, Version 2.0.
 # See the LICENSE file in the project root for details.
@@ -343,7 +343,7 @@ git push origin feature/my-feature
 
 ```ts
 /**
- * Copyright 2025 The kweaver.ai Authors.
+ * Copyright The kweaver.ai Authors.
  *
  * Licensed under the Apache License, Version 2.0.
  * See the LICENSE file in the project root for details.
@@ -354,7 +354,7 @@ git push origin feature/my-feature
 
 ```bash
 #!/usr/bin/env bash
-# Copyright 2025 The kweaver.ai Authors.
+# Copyright The kweaver.ai Authors.
 # Licensed under the Apache License, Version 2.0.
 # See the LICENSE file in the project root for details.
 ```
@@ -363,7 +363,7 @@ git push origin feature/my-feature
 
 ```html
 <!--
-  Copyright 2025 The kweaver.ai Authors.
+  Copyright The kweaver.ai Authors.
   Licensed under the Apache License, Version 2.0.
   See the LICENSE file in the project root for details.
 -->
@@ -374,7 +374,7 @@ git push origin feature/my-feature
 如果文件最初来自其他项目，可以在许可证头后添加来源说明（仅用于关键文件）：
 
 ```go
-// Copyright 2025 The kweaver.ai Authors.
+// Copyright The kweaver.ai Authors.
 //
 // Licensed under the Apache License, Version 2.0.
 // See the LICENSE file in the project root for details.

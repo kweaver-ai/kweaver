@@ -2,17 +2,13 @@ import logger from "../common/logger";
 import { configData, fetchParse } from "../handlers/tools";
 
 export const registryClient = async () => {
-    const clientID = "c127f8c0-39da-4a8b-9b60-7540175a7b01";
-    const clientSecret = "u8MOdN3rd5WZ";
     const { hydra } = configData.Module2Config;
     const access_scheme = "https";
     const access_host = "10.4.111.129";
     const access_port = "443";
     const access_path = "";
     const payload = {
-        client_id: clientID,
         client_name: "deploy-web",
-        client_secret: clientSecret,
         redirect_uris: [
             `${access_scheme}://${access_host}:${access_port}${access_path}/interface/deployweb/oauth/login/callback`,
         ],
@@ -35,8 +31,29 @@ export const registryClient = async () => {
         },
     };
     try {
+        logger.info("获取已注册的deploy-web client");
+        const { text: clients } = await fetchParse(
+            `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients?client_name=deploy-web`,
+            {
+                timeout: 0,
+                method: "GET",
+            }
+        );
+        logger.info("获取已注册的deploy-web client成功");
+        clients.forEach(async (client) => {
+            await fetchParse(
+                `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients/${client.client_id}`,
+                {
+                    timeout: 0,
+                    method: "DELETE",
+                }
+            );
+            logger.info(`删除client, client_id: ${client.client_id}`);
+        });
         logger.info("开始调用注册客户端接口");
-        await fetchParse(
+        const {
+            text: { client_id, client_secret },
+        } = await fetchParse(
             `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients`,
             {
                 timeout: 1000 * 6,
@@ -44,7 +61,9 @@ export const registryClient = async () => {
                 body: JSON.stringify(payload),
             }
         );
-        logger.info("调用注册客户端接口成功");
+        logger.info(
+            `调用注册客户端接口成功, client_id: ${client_id}, client_secret: ${client_secret}`
+        );
     } catch (e) {
         logger.info("调用注册客户端接口失败");
         logger.info(e);

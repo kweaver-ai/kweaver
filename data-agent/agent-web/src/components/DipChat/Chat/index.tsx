@@ -9,7 +9,7 @@ import ResizeObserver from '@/components/ResizeObserver';
 import { useDipChatStore } from '../store';
 import _ from 'lodash';
 import { nanoid } from 'nanoid';
-import { AiInputRef, AiInputValue } from '../components/AiInput/interface';
+import type { AiInputRef, AiInputValue } from '../components/AiInput/interface';
 import ScrollBarContainer from '@/components/ScrollBarContainer';
 import { getAgentInputDisplayFields, getChatItemRoleByMode, getTempAreaEnable } from '../utils';
 import DipIcon from '@/components/DipIcon';
@@ -21,13 +21,15 @@ import TempArea from './TempArea';
 import RightSideBar from './RightSideBar';
 import { useMicroWidgetProps } from '@/hooks';
 import AgentDescription from './AgentDescription';
-import { ChatBody, FileItem } from '../interface';
+import type { ChatBody, FileItem } from '../interface';
 import DebuggerProcess from './DebuggerProcess';
 import AgentInputParamDrawer from './AgentInputParamDrawer';
 import FilePreview from '../components/FilePreview';
 import ColorLoading from '@/components/DipChat/components/ColorLoading';
 import intl from 'react-intl-universal';
 import { getFileExtension } from '@/utils/doc';
+import { getParam } from '@/utils/handle-function';
+import dayjs from 'dayjs';
 
 const DipChat = () => {
   const microWidgetProps = useMicroWidgetProps();
@@ -110,6 +112,7 @@ const DipChat = () => {
       role: 'user',
       content: value.inputValue,
       loading: false,
+      updateTime: dayjs().valueOf(),
     });
     cloneChatList.push({
       key: nanoid(),
@@ -150,7 +153,12 @@ const DipChat = () => {
                   if (preRouteIsMicroApp === 'true') {
                     microWidgetProps.navigate(preRoute ?? '/studio/home');
                   } else {
-                    navigate(preRoute ?? '/');
+                    let url = preRoute ?? '/';
+                    const filterParams = getParam('filterParams');
+                    if (filterParams) {
+                      url += `?filterParams=${filterParams}`;
+                    }
+                    navigate(url);
                   }
                 }
               }}
@@ -366,7 +374,7 @@ const DipChat = () => {
                   ...agentDetails.config,
                   debug,
                 }}
-                autoSize={debug && { minRows: 1, maxRows: 6 }}
+                autoSize={{ minRows: 1, maxRows: 6 }}
                 tempFileList={tempFileList.filter(item => item.checked)}
                 onPreviewFile={(file: FileItem) => {
                   setDipChatStore({

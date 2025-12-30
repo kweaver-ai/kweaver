@@ -1,7 +1,6 @@
 import styles from './index.module.less';
 import { useDipChatStore } from '@/components/DipChat/store';
 import PanelFooter from '@/components/DipChat/Chat/BubbleList/PanelFooter';
-import React from 'react';
 import classNames from 'classnames';
 import Logo from '@/components/Logo';
 import SqlToolPanel from './SqlToolPanel';
@@ -11,7 +10,7 @@ import NGQLToolPanel from './NGQLToolPanel';
 import Markdown from '@/components/Markdown';
 import { Collapse, Skeleton } from 'antd';
 import ShinyText from '@/components/animation/ShinyText';
-import { ChatBody, DipChatItemContentProgressType, DipChatItemContentType } from '@/components/DipChat/interface';
+import type { ChatBody, DipChatItemContentProgressType, DipChatItemContentType } from '@/components/DipChat/interface';
 import DipIcon from '@/components/DipIcon';
 import _ from 'lodash';
 import InterruptFormPanel from './InterruptFormPanel';
@@ -24,6 +23,7 @@ import { nanoid } from 'nanoid';
 import { getChatItemRoleByMode } from '@/components/DipChat/utils';
 import intl from 'react-intl-universal';
 import LLMPanel from './LLMPanel';
+import dayjs from 'dayjs';
 
 const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   const {
@@ -188,6 +188,7 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
                     role: 'user',
                     content: item,
                     loading: false,
+                    updateTime: dayjs().valueOf(),
                   });
                   cloneChatList.push({
                     key: nanoid(),

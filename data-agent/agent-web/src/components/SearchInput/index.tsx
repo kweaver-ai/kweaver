@@ -15,7 +15,6 @@ import _ from 'lodash';
 export interface SearchInputProps extends InputProps {
   onIconClick?: Function; // 点击icon回调
   onClear?: Function; // 清空搜索框回调
-  autoWidth?: boolean; // width: 100%
   iconPosition?: 'start' | 'end'; // 搜索图标的位置, 前 | 后
   debounce?: boolean; // 是否启用防抖， 默认不启用
   debounceWait?: number; // 防抖的延迟时间，默认 300 ms
@@ -29,7 +28,6 @@ const createDebounceChange = (wait: number) =>
 const SearchInputFunc: React.ForwardRefRenderFunction<unknown, SearchInputProps> = (props, ref) => {
   const {
     className = '',
-    autoWidth,
     iconPosition = 'start',
     onChange,
     onPressEnter,
@@ -65,10 +63,10 @@ const SearchInputFunc: React.ForwardRefRenderFunction<unknown, SearchInputProps>
       // 触发onChange事件
       const event = {
         target: { value },
-        type: 'change'
+        type: 'change',
       } as React.ChangeEvent<HTMLInputElement>;
       handleChange(event);
-    }
+    },
   }));
 
   // 输入框变化
@@ -121,7 +119,7 @@ const SearchInputFunc: React.ForwardRefRenderFunction<unknown, SearchInputProps>
   const iconConfig = {
     [iconPosition === 'start' ? 'prefix' : 'suffix']: (
       <IconFont type="icon-sousuo" className="s-input-icon" onClick={onPrefixClick} />
-    )
+    ),
   };
 
   return (
@@ -129,7 +127,7 @@ const SearchInputFunc: React.ForwardRefRenderFunction<unknown, SearchInputProps>
       value={inputValue}
       ref={inputRef}
       allowClear={allowClear}
-      className={classNames('ad-search-input', className, { 'input-w-272': !autoWidth })}
+      className={classNames('ad-search-input', className)}
       onChange={handleChange}
       onPressEnter={onPressEnter}
       onCompositionStart={handleCompositionStart}

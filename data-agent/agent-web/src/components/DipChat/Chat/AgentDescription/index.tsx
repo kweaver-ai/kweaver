@@ -2,13 +2,13 @@ import styles from './index.module.less';
 import { useDipChatStore } from '@/components/DipChat/store';
 import _ from 'lodash';
 import AgentIcon from '@/components/AgentIcon';
-import React from 'react';
 import Markdown from '@/components/Markdown';
 import classNames from 'classnames';
-import { Col, Row } from 'antd';
 import { nanoid } from 'nanoid';
 import { getChatItemRoleByMode } from '@/components/DipChat/utils';
-import { ChatBody } from '@/components/DipChat/interface';
+import type { ChatBody } from '@/components/DipChat/interface';
+import dayjs from 'dayjs';
+
 const AgentDescription = () => {
   const {
     dipChatStore: { agentDetails, chatList, agentAppType, aiInputValue },
@@ -33,7 +33,7 @@ const AgentDescription = () => {
                   role: 'user',
                   content: item.question,
                   loading: false,
-                  // fileList: aiInputValue.fileList,
+                  updateTime: dayjs().valueOf(),
                 });
                 cloneChatList.push({
                   key: nanoid(),

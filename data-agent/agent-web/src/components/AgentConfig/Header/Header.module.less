@@ -40,4 +40,21 @@
     display: flex;
     gap: 12px;
   }
+
+  .tabItem {
+    cursor: pointer;
+    user-select: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    transition: all .2s;
+  }
+
+  .activeTab {
+    background: rgba(var(--dip-primary-color-rgb), 0.06);
+  }
+
+  .disabledTab {
+    cursor: not-allowed;
+    color: var(--dip-text-color-25);
+  }
 }

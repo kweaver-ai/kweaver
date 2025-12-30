@@ -112,6 +112,7 @@ export default defineConfig({
 
   // ========== 性能优化配置 ==========
   performance: {
+    removeConsole: true, // 移除生产环境的 console.log
     removeMomentLocale: true, // 移除moment的locale文件，减小包大小
   },
 

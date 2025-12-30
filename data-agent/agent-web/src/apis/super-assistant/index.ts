@@ -147,6 +147,48 @@ export const markReadConversation = async (app_key: string, conversation_id: str
   }
 };
 
+/** 获取会话的session状态 */
+export const getConversationSessionStatus = async (data: {
+  agent_id: string;
+  agent_version: string;
+  conversation_id: string;
+}) => {
+  try {
+    const res = await put(`${agentAppV1BaseUrl}/conversation/session/${data.conversation_id}`, {
+      body: {
+        agent_id: data.agent_id,
+        agent_version: data.agent_version,
+        action: 'get_info_or_create',
+      },
+    });
+    return res;
+  } catch (error: any) {
+    message.error(error.description);
+    return false;
+  }
+};
+
+/** 恢复会话session */
+export const recoverConversationSession = async (data: {
+  agent_id: string;
+  agent_version: string;
+  conversation_id: string;
+}) => {
+  try {
+    const res = await put(`${agentAppV1BaseUrl}/conversation/session/${data.conversation_id}`, {
+      body: {
+        agent_id: data.agent_id,
+        agent_version: data.agent_version,
+        action: 'recover_lifetime_or_create',
+      },
+    });
+    return res;
+  } catch (error: any) {
+    message.error(error.description);
+    return false;
+  }
+};
+
 /** 初始化已有会话的Session */
 export const initConversationSession = async (data: {
   agent_id: string;

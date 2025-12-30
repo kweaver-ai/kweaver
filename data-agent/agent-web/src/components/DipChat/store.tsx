@@ -1,6 +1,6 @@
-import React, { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, type PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import useLatestState from '@/hooks/useLatestState';
-import {
+import type {
   DipChatProps,
   SendChatPram,
   DipChatContextType,
@@ -13,15 +13,14 @@ import { useDeepCompareEffect, useMicroWidgetProps, useStreamingOut, useBusiness
 import _ from 'lodash';
 import dayjs from 'dayjs';
 import {
-  createConversation,
   getChatUrl,
   getConversationDetailsById,
   getConversationList,
-  GetConversationListOption,
-  initConversationSession,
+  type GetConversationListOption,
+  getConversationSessionStatus,
   markReadConversation,
+  recoverConversationSession,
   stopConversation,
-  updateConversation,
 } from '@/apis/super-assistant';
 import { getParam, isJSONString } from '@/utils/handle-function';
 import ViewStore from './components/ViewStore';
@@ -46,8 +45,9 @@ import {
   handleAgentConfigFileExt,
 } from '@/components/DipChat/utils';
 import { getAgentsByPost, getAllFileExt } from '@/apis/agent-factory';
-import { PlanItemType } from '@/components/DipChat/Chat/BubbleList/PlanPanel';
+import type { PlanItemType } from '@/components/DipChat/Chat/BubbleList/PlanPanel';
 import { nanoid } from 'nanoid';
+import AgentNotExist from '@/components/AgentNotExist';
 
 const initStoreData: DipChatState = {
   activeConversationKey: '',
@@ -89,7 +89,6 @@ const initStoreData: DipChatState = {
   singleStreamResult: [],
   toolAutoExpand: true,
   logQueryAgentDetails: {},
-  emptyConversationKey: '',
 };
 
 const DipChatContext = createContext({} as DipChatContextType);
@@ -116,10 +115,16 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
     debug = false,
     onSaveAgent,
     customSpaceId,
-    // onValidateAgentConfig,
   } = props;
   const mounted = useRef(false);
-  const [response, send, stop] = useStreamingOut();
+  const [response, send, stop] = useStreamingOut({
+    onOpen: () => {
+      if (!debug) {
+        // 每次发起chat接口时，重新获取一次conversationList，因为会话创建由后端创建了
+        getConversationData();
+      }
+    },
+  });
   const [store, setStore, getStore, resetStore] = useLatestState<DipChatState>({
     ...initStoreData,
     chatList: defaultChatList,
@@ -133,10 +138,11 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
     conversationCollapsed: agentAppType !== 'super-assistant',
   });
   const [allFileExtData, setAllFileExtData] = useState({});
+  const [agentDetailsLoading, setAgentDetailsLoading] = useState(true);
   const conversationTimer = useRef<any>(null);
   const newChatListRef = useRef<DipChatItem[]>([]);
   const conversationSessionTimer = useRef<any>(null);
-  const conversationSessionExpiredTime = useRef<any>({});
+  const conversationSessionExpiredTime = useRef<any>('');
 
   useEffect(() => {
     if (debug) {
@@ -200,10 +206,7 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
           mode: 'normal', // 普通场景的Agent 全部对应常规模式
         },
       });
-      if (debug && !mounted.current) {
-        // debug模式调用getConversationData，目的是创建空会话, 当前只有debug模式才会从外部传进来agentDetails
-        getConversationData();
-      }
+      setAgentDetailsLoading(false);
     } else {
       // 超级助手应用场景
       if (agentAppType === 'super-assistant') {
@@ -225,6 +228,7 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
   /** 初始化超级助手应用场景 */
   const initSuperAssistantBotId = async () => {
     const res = await getSuperAssistantConfig();
+    setAgentDetailsLoading(false);
     if (res) {
       setDipChatStore(res);
       defaultSendChatOnce();
@@ -238,6 +242,7 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
       agentVersion,
       customSpaceId,
     });
+    setAgentDetailsLoading(false);
     if (res) {
       // 更新Header头路径为Agent的名字
       const agentDetails = _.get(res, 'agentDetails');
@@ -293,6 +298,7 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
       return;
     }
     const { chatList, botIds, agentAppType, agentAppKey, activeConversationKey, toolAutoExpand } = getStore();
+    let currentConversationId: string = '';
     newChatListRef.current = _.cloneDeep(chatList);
     const newSingleStreamResult = [];
     if (newChatListRef.current.length > 0) {
@@ -300,7 +306,7 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
         handleResponseError(newChatListRef.current, response);
       } else if (response.content) {
         const contentObj = JSON.parse(response.content);
-
+        currentConversationId = contentObj.conversation_id;
         // 供调试用，用于开发和测试快速查看流式返回的完整结果
         newSingleStreamResult.push(contentObj);
 
@@ -359,10 +365,14 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
       singleStreamResult: newSingleStreamResult,
       ...toolAutoExpandUpdateObj,
     });
+
+    // 流式过程中发现当前没有选中一个conversation的话，则根据流式返回的conversation_id去选中会话，因为默认由流式接口来创建会话
+    if (!activeConversationKey && currentConversationId) {
+      handleConversation(currentConversationId);
+    }
+
     // 流式结束后要做的事情
     if (!response.generating) {
-      console.log('+++++流式结束了++++', activeConversationKey, newSingleStreamResult[0]?.conversation_id);
-      const currentConversationId = _.get(newSingleStreamResult[0], 'conversation_id', '');
       if (
         !debug &&
         activeConversationKey &&
@@ -377,9 +387,6 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
         };
         markRead();
       }
-      if (debug) {
-        getConversationData();
-      }
       setTimeout(() => {
         setDipChatStore({ chatListAutoScroll: false });
         newChatListRef.current = [];
@@ -387,12 +394,37 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
     }
   }, [response]);
 
+  // 监听当前选中的会话有效期
+  useEffect(() => {
+    if (store.activeConversationKey) {
+      const getStatus = async () => {
+        const { activeConversationKey, agentDetails, debug } = getStore();
+        const res = await getConversationSessionStatus({
+          conversation_id: activeConversationKey,
+          agent_id: agentDetails.id,
+          agent_version: debug ? 'v0' : agentDetails.version,
+        });
+        if (res) {
+          // console.log('查询会话状态', res);
+          const expireTime = dayjs().add(res.ttl, 'second').format('YYYY-MM-DD HH:mm:ss');
+          // console.log('会话有效期：', expireTime);
+          conversationSessionExpiredTime.current = expireTime;
+          openConversationSessionTimer();
+        }
+      };
+      getStatus();
+    }
+    return () => {
+      closeConversationSessionTimer();
+    };
+  }, [store.activeConversationKey]);
+
   /** 会话列表数据逻辑处理 */
   const handleConversation = (conversation_id: string) => {
     const url = new URL(window.location.href);
     url.searchParams.set('conversation_id', conversation_id);
     // 使用history API更新URL而不刷新页面
-    window.history.pushState({}, '', url.toString());
+    window.history.replaceState({}, '', url.toString());
     setDipChatStore({
       activeConversationKey: conversation_id,
     });
@@ -422,18 +454,12 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
   const openConversationSessionTimer = () => {
     closeConversationSessionTimer();
     conversationSessionTimer.current = setInterval(() => {
-      // console.log(conversationSessionExpiredTime.current, '过期时间');
-      const { activeConversationKey, emptyConversationKey, agentDetails } = getStore();
-      if (!_.isEmpty(agentDetails) && !_.isEmpty(conversationSessionExpiredTime.current)) {
-        if (activeConversationKey && conversationSessionExpiredTime.current[activeConversationKey]) {
-          if (dayjs().valueOf() >= dayjs(conversationSessionExpiredTime.current[activeConversationKey]).valueOf()) {
-            updateConversationSession(activeConversationKey);
-          }
-        }
-        if (emptyConversationKey && conversationSessionExpiredTime.current[emptyConversationKey]) {
-          if (dayjs().valueOf() >= dayjs(conversationSessionExpiredTime.current[emptyConversationKey]).valueOf()) {
-            updateConversationSession(emptyConversationKey);
-          }
+      const { activeConversationKey, agentDetails } = getStore();
+      if (activeConversationKey && !_.isEmpty(agentDetails) && !_.isEmpty(conversationSessionExpiredTime.current)) {
+        const remain = dayjs(conversationSessionExpiredTime.current).diff(dayjs(), 'second');
+        // console.log('当前选中对话session有效期剩余：', remain);
+        if (remain <= 30) {
+          updateConversationSession(activeConversationKey);
         }
       }
     }, 1000);
@@ -460,8 +486,6 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
       agentAppKey,
       tempFileList,
       debug,
-      emptyConversationKey,
-      chatList,
     } = getStore();
 
     if (!streamGenerating) {
@@ -493,19 +517,6 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
 
       if (activeConversationKey) {
         params.body.conversation_id = activeConversationKey;
-      } else {
-        params.body.conversation_id = emptyConversationKey;
-        setDipChatStore({
-          activeConversationKey: emptyConversationKey,
-        });
-      }
-
-      // 非Debug模式下 第一次QA，需要把用户的Q作为会话标题 更新空会话的标题
-      if (!debug && chatList.length === 0 && params.body.query) {
-        updateConversation(agentAppKey, params.body.conversation_id, {
-          title: params.body.query,
-        });
-        handleConversation(params.body.conversation_id);
       }
 
       // 是否带上文件，看有没有开启临时区域  决定文件如何传递
@@ -571,12 +582,17 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
             agent_version: 'v0', // v0 可以获取到最新的保存但是未发布的Agent配置
             input: {
               ...paramsBody,
-              // history,
             },
             conversation_id,
             stream: true,
             inc_stream: true,
             executor_version: agentAppType === 'super-assistant' ? 'v1' : 'v2',
+            chat_option: {
+              is_need_history: true,
+              is_need_doc_retrival_post_process: true,
+              is_need_progress: true,
+              enable_dependency_cache: false,
+            },
           };
         }
         // 说明要恢复对话
@@ -599,6 +615,12 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
           stream: true,
           inc_stream: true,
           executor_version: agentAppType === 'super-assistant' ? 'v1' : 'v2',
+          chat_option: {
+            is_need_history: true,
+            is_need_doc_retrival_post_process: true,
+            is_need_progress: true,
+            enable_dependency_cache: true,
+          },
         };
       };
       const reqBody = getReqBody();
@@ -609,9 +631,6 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
       });
       if (!debug) {
         clearTempAreaFileChecked();
-        setTimeout(() => {
-          getConversationData();
-        }, 0);
       }
     }
   };
@@ -635,68 +654,35 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
   };
 
   const getConversationData = async (params: GetConversationListOption = { size: 10 }) => {
-    const { agentAppKey, conversationListModalOpen, agentDetails } = getStore();
+    const { agentAppKey, conversationListModalOpen } = getStore();
     const res: any = await getConversationList(agentAppKey, params);
     if (res) {
       const { entries, total } = res;
-      // 如果会话列表中没有一个空对话的话，那么需要主动创建，目的是永远保证有一个空会话可用
-      const emptyItem = entries.find((item: any) => item.message_index === 0 && !item.temparea_id);
-      if (!emptyItem) {
-        const res: any = await createConversation(agentAppKey, {
-          agent_id: agentDetails.id,
-          agent_version: debug ? 'v0' : agentDetails.version,
-          executor_version: agentAppType === 'super-assistant' ? 'v1' : 'v2',
-        });
-        if (res) {
-          conversationSessionExpiredTime.current = {
-            ...conversationSessionExpiredTime.current,
-            [res.id]: dayjs().add(res.ttl, 'second').format('YYYY-MM-DD HH:mm:ss'),
-          };
-          getConversationData();
-        }
-        return;
-      }
-      if (!debug) {
-        const key = getParam('conversation_id') ?? '';
-        const groupData = handleConversationGroup(entries.filter((item: any) => item.id !== emptyItem.id));
-        const items: any = groupData.filter(ii => ii.children.length > 0);
-        setDipChatStore({
-          conversationItems: items,
-          conversationItemsTotal: total,
-          activeConversationKey: key,
-          emptyConversationKey: emptyItem.id,
-        });
-        if (!conversationListModalOpen) {
-          const hasProcessing = entries.some((item: any) => item.status === 'processing');
-          if (hasProcessing) {
-            // 清理之前的定时器，避免多个定时器同时运行
-            if (conversationTimer.current) {
-              clearTimeout(conversationTimer.current);
-            }
-            conversationTimer.current = setTimeout(() => {
-              getConversationData();
-            }, 2000);
-          } else {
-            // 如果没有正在处理的对话，清理定时器
-            if (conversationTimer.current) {
-              clearTimeout(conversationTimer.current);
-              conversationTimer.current = null;
-            }
+      const key = getParam('conversation_id') ?? '';
+      const groupData = handleConversationGroup(entries);
+      const items: any = groupData.filter(ii => ii.children.length > 0);
+      setDipChatStore({
+        conversationItems: items,
+        conversationItemsTotal: total,
+        activeConversationKey: key,
+      });
+      if (!conversationListModalOpen) {
+        const hasProcessing = entries.some((item: any) => item.status === 'processing');
+        if (hasProcessing) {
+          // 清理之前的定时器，避免多个定时器同时运行
+          if (conversationTimer.current) {
+            clearTimeout(conversationTimer.current);
+          }
+          conversationTimer.current = setTimeout(() => {
+            getConversationData();
+          }, 2000);
+        } else {
+          // 如果没有正在处理的对话，清理定时器
+          if (conversationTimer.current) {
+            clearTimeout(conversationTimer.current);
+            conversationTimer.current = null;
           }
         }
-      } else {
-        setDipChatStore({
-          emptyConversationKey: emptyItem.id,
-        });
-      }
-
-      if (agentAppType !== 'super-assistant') {
-        // 如果没有获取过空会话Session有效期，那么需要获取一下
-        if (!conversationSessionExpiredTime.current[emptyItem.id]) {
-          updateConversationSession(emptyItem.id);
-        }
-        // 获取到会话数据之后，开启会话Session有效期的监听定时器
-        openConversationSessionTimer();
       }
     }
   };
@@ -705,8 +691,11 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
     if (agentAppType === 'super-assistant') {
       return !_.isEmpty(store.botIds) && children;
     }
-    if (agentAppType === 'common' || agentAppType === 'wenshu') {
-      return !_.isEmpty(store.agentDetails) && children;
+    if ((agentAppType === 'common' || agentAppType === 'wenshu') && !agentDetailsLoading) {
+      if (_.isEmpty(store.agentDetails)) {
+        return <AgentNotExist />;
+      }
+      return children;
     }
   };
   const openSideBar = (chatItemIndex: number) => {
@@ -732,26 +721,21 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
   const updateConversationSession = async (conversation_id: string) => {
     closeConversationSessionTimer();
     const { agentDetails, debug } = getStore();
-    const initRes = await initConversationSession({
+    const initRes = await recoverConversationSession({
       agent_id: agentDetails.id,
       agent_version: debug ? 'v0' : agentDetails.version,
       conversation_id,
     });
     if (initRes) {
-      conversationSessionExpiredTime.current = {
-        ...conversationSessionExpiredTime.current,
-        [conversation_id]: dayjs().add(initRes.ttl, 'second').format('YYYY-MM-DD HH:mm:ss'),
-      };
+      conversationSessionExpiredTime.current = dayjs().add(initRes.ttl, 'second').format('YYYY-MM-DD HH:mm:ss');
       openConversationSessionTimer();
     }
   };
 
   const getConversationDetailsByKey: DipChatContextType['getConversationDetailsByKey'] = (key: string) =>
+    // eslint-disable-next-line no-async-promise-executor
     new Promise(async resolve => {
       const { agentAppKey, botIds } = getStore();
-      if (agentAppType !== 'super-assistant') {
-        updateConversationSession(key);
-      }
       const res: any = await getConversationDetailsById(agentAppKey, key);
       if (res && res.Messages) {
         let recoverConversation = false;
@@ -795,6 +779,7 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
               role: 'user',
               content: content.text,
               fileList,
+              updateTime: item.update_time,
             });
           }
           if (item.origin === 'assistant') {
@@ -916,14 +901,6 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
               params.body.custom_querys = values;
               sendChat(params);
             });
-            // .catch(errorInfo => {
-            //   console.log('errorInfo', errorInfo);
-            //   debugger;
-            //   setDipChatStore({
-            //     showAgentInputParamsDrawer: true,
-            //     agentInputParamsFormErrorFields: errorInfo.errorFields,
-            //   });
-            // });
           } else {
             sendChat(params);
           }

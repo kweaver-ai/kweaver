@@ -2,11 +2,12 @@ import { memo, useState, useEffect, useMemo, useRef } from 'react';
 import intl from 'react-intl-universal';
 import { isEqual } from 'lodash';
 import classNames from 'classnames';
-import { Card, Dropdown, Tooltip, Checkbox } from 'antd';
+import { Card, Dropdown, Tooltip, Checkbox, Popover } from 'antd';
 import { EllipsisOutlined, CloseOutlined } from '@ant-design/icons';
 import UserAvatar from './UserAvatar';
 import { computeColumnCount, minCardWidth, maxCardWidth, gap, rowHeight, loadingMoreRowHeight } from './utils';
 import styles from './index.module.less';
+import dayjs from 'dayjs';
 
 export { computeColumnCount, minCardWidth, maxCardWidth, gap, rowHeight, loadingMoreRowHeight };
 
@@ -148,7 +149,26 @@ const BaseCard = ({
                     </Tooltip>
                     {nameSuffixIcon ? <span className="dip-flex-shrink-0">{nameSuffixIcon}</span> : null}
                   </div>
-                  {nameSuffixStatus ? <span className="dip-flex-shrink-0">{nameSuffixStatus}</span> : null}
+                  {nameSuffixStatus ? (
+                    <Popover
+                      open={item?.status === 'published_edited' ? undefined : false}
+                      placement="right"
+                      content={
+                        <div className="dip-p-12">
+                          <div>
+                            <span>上一版本：</span>
+                            <span>{item?.version}</span>
+                          </div>
+                          <div>
+                            <span>{intl.get('dataAgent.publishTime')}</span>
+                            <span>{dayjs(item?.published_at).format('YYYY/MM/DD HH:mm:ss')}</span>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <span className="dip-flex-shrink-0">{nameSuffixStatus}</span>
+                    </Popover>
+                  ) : null}
                 </div>
                 {/* 卡片描述 */}
                 <Tooltip title={profile}>

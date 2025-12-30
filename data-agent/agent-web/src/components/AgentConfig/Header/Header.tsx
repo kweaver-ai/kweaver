@@ -1,31 +1,46 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate, useBlocker } from 'react-router-dom';
 import classNames from 'classnames';
 import intl from 'react-intl-universal';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button, Modal } from 'antd';
-import { useNavigationBlocker } from '@/hooks';
+import { useMicroWidgetProps, useNavigationBlocker } from '@/hooks';
 import { useAgentConfig } from '../AgentConfigContext';
-import { getAgentManagementPerm } from '@/apis/agent-factory';
 import { PublishSettingsModal, PublishModeEnum } from '@/components/AgentPublish';
 import AgentIcon from '@/components/AgentIcon';
 import styles from './Header.module.less';
+import { getParam } from '@/utils/handle-function';
+import qs from 'qs';
 
 interface HeaderProps {
   // 是否是模板的编辑页面
   isEditTemplate?: boolean;
   showDebugger: boolean;
   onToggleDebugger: (show: boolean) => void;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  refreshTraceAnalysis: () => void;
+  userPermissions: any;
+  isSkillAgent: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ isEditTemplate = false, showDebugger, onToggleDebugger }) => {
+const Header: React.FC<HeaderProps> = ({
+  isEditTemplate = false,
+  showDebugger,
+  onToggleDebugger,
+  activeTab,
+  onTabChange,
+  refreshTraceAnalysis,
+  userPermissions,
+  isSkillAgent,
+}) => {
+  const microWidgetProps = useMicroWidgetProps();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { state, actions } = useAgentConfig();
   const [isSaving, setIsSaving] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
   const [publishModalVisible, setPublishModalVisible] = useState(false);
-  const [hasPublishPermission, setHasPublishPermission] = useState<boolean>(false); // 是否有发布权限
 
   const isTemplate = useMemo(() => searchParams.get('mode') === 'editTemplate', [searchParams]);
 
@@ -39,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ isEditTemplate = false, showDebugger, o
           console.log('保存失败');
           return false;
         } else {
-          return true;
+          return result || true;
         }
       } catch (error) {
         console.error('保存Agent出错:', error);
@@ -86,25 +101,10 @@ const Header: React.FC<HeaderProps> = ({ isEditTemplate = false, showDebugger, o
     if (redirectUrl) {
       location.replace(redirectUrl);
     } else {
-      navigate('/');
+      const filterParams = getParam('filterParams');
+      navigate(filterParams ? `/?filterParams=${filterParams}` : '/');
     }
   };
-
-  useEffect(() => {
-    // 获取发布权限
-    const fetchPublishPerm = async () => {
-      try {
-        const {
-          agent: { publish: publishAgentPerm },
-          agent_tpl: { publish: publishTemplatePerm },
-        } = await getAgentManagementPerm();
-
-        setHasPublishPermission(isEditTemplate ? publishTemplatePerm : publishAgentPerm);
-      } catch {}
-    };
-
-    fetchPublishPerm();
-  }, []);
 
   const handlePublishClick = async () => {
     let agentId = state.id;
@@ -143,6 +143,92 @@ const Header: React.FC<HeaderProps> = ({ isEditTemplate = false, showDebugger, o
     onToggleDebugger(!showDebugger);
   };
 
+  const renderRightBtn = () => {
+    if (activeTab === 'trace-analysis') {
+      return (
+        <div style={{ minWidth: 360, display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <Button type="primary" onClick={refreshTraceAnalysis}>
+            刷新
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <div style={{ minWidth: 360, display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+        {/* 编辑模板页面 屏蔽调试 */}
+        <Button
+          className="dip-min-width-72"
+          onClick={async () => {
+            const res = await handleSave();
+            if (res) {
+              const params: any = {
+                id: res,
+                version: 'v0',
+                agentAppType: 'common',
+              };
+              window.open(`${microWidgetProps.history.getBasePath}/usage?${qs.stringify(params)}`);
+            }
+          }}
+          disabled={isSaving}
+        >
+          去使用
+        </Button>
+        {!isTemplate && (
+          <Button className="dip-min-width-72" onClick={handleToggleDebugger}>
+            {showDebugger ? intl.get('dataAgent.config.closeDebugger') : intl.get('dataAgent.config.openDebugger')}
+          </Button>
+        )}
+        <Button
+          className="dip-min-width-72"
+          onClick={() => {
+            handleSave();
+          }}
+          disabled={isSaving}
+        >
+          {isSaving ? intl.get('dataAgent.config.saving') : intl.get('dataAgent.config.save')}
+        </Button>
+        {userPermissions.hasPublishPermission && (
+          <Button type="primary" className="dip-min-width-72" onClick={handlePublishClick}>
+            {intl.get('dataAgent.publish')}
+          </Button>
+        )}
+      </div>
+    );
+  };
+
+  const renderTab = () => {
+    // 有查看轨迹分析权限
+    // 不是模板
+    // 只要发布过 不是发布为技能Agent
+    if (!isTemplate && userPermissions.hasTraceAnalysisPermission && state.is_published && !isSkillAgent) {
+      return (
+        <div className="dip-flex-align-center">
+          <div
+            className={classNames(styles.tabItem, {
+              [styles.activeTab]: activeTab === 'agent-config',
+            })}
+            onClick={() => onTabChange('agent-config')}
+          >
+            {intl.get('dataAgent.config.agentConfig')}
+          </div>
+          <div
+            className={classNames(styles.tabItem, {
+              [styles.activeTab]: activeTab === 'trace-analysis',
+              [styles.disabledTab]: !state.id,
+            })}
+            onClick={() => {
+              if (state.id) {
+                onTabChange('trace-analysis');
+              }
+            }}
+          >
+            {intl.get('dataAgent.config.traceAnalysis')}
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <>
       <header
@@ -160,6 +246,7 @@ const Header: React.FC<HeaderProps> = ({ isEditTemplate = false, showDebugger, o
           <AgentIcon avatar_type={state.avatar_type} avatar={state.avatar} name={state.name} size={24} />
           <div>{state.name || intl.get('dataAgent.config.untitled')}</div>
         </div>
+        {renderTab()}
         <div className={styles.headerRight}>
           {process.env.NODE_ENV === 'development' && (
             <Button
@@ -171,21 +258,7 @@ const Header: React.FC<HeaderProps> = ({ isEditTemplate = false, showDebugger, o
               查看配置Store
             </Button>
           )}
-          {/* 编辑模板页面 屏蔽调试 */}
-          {!isTemplate && (
-            <Button className="dip-min-width-72" onClick={handleToggleDebugger}>
-              {showDebugger ? intl.get('dataAgent.config.closeDebugger') : intl.get('dataAgent.config.openDebugger')}
-            </Button>
-          )}
-
-          <Button className="dip-min-width-72" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? intl.get('dataAgent.config.saving') : intl.get('dataAgent.config.save')}
-          </Button>
-          {hasPublishPermission && (
-            <Button type="primary" className="dip-min-width-72" onClick={handlePublishClick}>
-              {intl.get('dataAgent.publish')}
-            </Button>
-          )}
+          {renderRightBtn()}
         </div>
       </header>
 

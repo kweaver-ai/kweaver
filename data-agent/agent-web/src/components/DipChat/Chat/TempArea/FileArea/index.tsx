@@ -7,19 +7,19 @@ import { Button, Checkbox, message, Spin, Tooltip } from 'antd';
 import DipIcon from '@/components/DipIcon';
 import DipButton from '@/components/DipButton';
 import { FileTypeIcon, getFileExtension } from '@/utils/doc';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { TempFileTypeEnum } from '@/apis/intelli-search/type';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useDipChatStore } from '@/components/DipChat/store';
 import { checkFileStatus } from '@/apis/agent-app';
-import { FileItem } from '@/components/DipChat/interface';
+import type { FileItem } from '@/components/DipChat/interface';
 import intl from 'react-intl-universal';
 import { addFileToTemp, createTemp, getTempFiles, removeTempFile } from '@/apis/agent-app';
-import { updateConversation } from '@/apis/super-assistant';
+import { createConversation, updateConversation } from '@/apis/super-assistant';
 import { getConversationByKey, getTempAreaConfigFromAgent } from '@/components/DipChat/utils';
 const FileArea = ({ onPreviewFile }: any) => {
   const {
-    dipChatStore: { agentDetails, tempFileList, agentAppKey, conversationItems, activeConversationKey },
+    dipChatStore: { agentDetails, tempFileList, agentAppKey, conversationItems, activeConversationKey, debug },
     setDipChatStore,
     getDipChatStore,
     getConversationData,
@@ -79,7 +79,7 @@ const FileArea = ({ onPreviewFile }: any) => {
       id: file.id,
       type: TempFileTypeEnum.Doc,
     }));
-    checkFileIndexStatus(reqParams, (progress: number, fileStatusData: any) => {
+    checkFileIndexStatus(reqParams, (_progress: number, fileStatusData: any) => {
       const { tempFileList } = getDipChatStore();
       const newTempFileList = tempFileList.map(file => {
         const target = fileStatusData.find((item: any) => item.id === file.id);
@@ -221,7 +221,7 @@ const FileArea = ({ onPreviewFile }: any) => {
     const url = new URL(window.location.href);
     url.searchParams.set('conversation_id', conversation_id);
     // 使用history API更新URL而不刷新页面
-    window.history.pushState({}, '', url.toString());
+    window.history.replaceState({}, '', url.toString());
     setDipChatStore({
       activeConversationKey: conversation_id,
     });
@@ -229,8 +229,9 @@ const FileArea = ({ onPreviewFile }: any) => {
   };
 
   const onNewUploadChange = (files: FileItem[]): Promise<boolean> =>
+    // eslint-disable-next-line no-async-promise-executor
     new Promise(async resolve => {
-      const { activeConversationKey, emptyConversationKey } = getDipChatStore();
+      const { activeConversationKey } = getDipChatStore();
       const agent_id = agentDetails!.id;
       const agent_version = agentDetails!.version;
       const filesParam = files.map(item => ({
@@ -242,16 +243,23 @@ const FileArea = ({ onPreviewFile }: any) => {
         const res: any = await createTemp({ source: filesParam, agent_id, agent_version });
         if (res) {
           tempAreaInit.current = true;
-          if (activeConversationKey || emptyConversationKey) {
-            await updateConversation(agentAppKey, activeConversationKey || emptyConversationKey, {
+          if (activeConversationKey) {
+            await updateConversation(agentAppKey, activeConversationKey, {
               temparea_id: res.id,
               title: activeConversation?.label || '新会话',
             });
-          }
-          if (!activeConversationKey) {
-            handleConversation(emptyConversationKey);
-          } else {
             getConversationData();
+          } else {
+            const conversationRes = await createConversation(agentAppKey, {
+              temparea_id: res.id,
+              agent_id: agentDetails.id,
+              agent_version: debug ? 'v0' : agentDetails.version,
+              executor_version: 'v2',
+            });
+            if (conversationRes) {
+              const conversation_id = conversationRes.id;
+              handleConversation(conversation_id);
+            }
           }
           resolve(true);
         } else {

@@ -25,7 +25,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"] // 路径映射，@ 指向 src 目录
-    }
+    },
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src"]
 }

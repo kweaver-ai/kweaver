@@ -199,9 +199,8 @@ $greeting + " from Dolphin Language" -> finalMessage
 - 支持的参数
   - `model`: 指定使用的模型
   - `system_prompt`: 系统提示词
-  - `output`: 输出格式（"json", "jsonl", "list_str", "obj/ObjectType"）
+  - `output`: 输出格式（"json", "jsonl", "list_str"）
   - `history`: 是否使用历史对话（布尔值，默认false）
-  - `ttc_mode`: TTC模式设置
   - `no_cache`: 是否禁用缓存（布尔值，默认false）
 
 **注意**：`/prompt/` 块**不支持** `tools` 参数。如需工具调用能力，请使用 `/judge/` 或 `/explore/` 块。
@@ -231,7 +230,6 @@ $greeting + " from Dolphin Language" -> finalMessage
   - `model`: 指定使用的模型
   - `system_prompt`: 系统提示词
   - `history`: 是否使用历史对话（布尔值）
-  - `ttc_mode`: TTC模式设置
   - `no_cache`: 是否禁用缓存（布尔值）
 
 - 工具调用格式：Agent在推理过程中使用 `=>#tool_name: {"param": "value"}` 格式调用工具
@@ -267,7 +265,6 @@ $greeting + " from Dolphin Language" -> finalMessage
   - `model`: 指定使用的模型
   - `tools`: 可用工具列表
   - `history`: 是否使用历史对话（布尔值）
-  - `ttc_mode`: TTC模式设置
   - `prompt_skillcall`: 判断模式选择（"true"|"false"，默认"true"）
     - "true": 使用自定义prompt进行工具判断
     - "false": 使用LLM的function calling能力进行工具判断
@@ -679,27 +676,77 @@ $allConcepts
 @getSampleData(conceptNames=$conceptInfos) -> sampledData
 @getDataSourceSchemas(conceptNames=$conceptInfos) -> schemas
 ```
-### **9.4 概念提取和数据获取**
+### **9.5 json数据生成和获取**
 
 ```
-@getAllConcepts() -> allConcepts
-
-/prompt/(model="v3", output="list_str")根据要解决问题的描述以及 concepts 描述，返回所有可能要用到的概念名称
-
-要解决的问题：
-```
-$query
-```
-
-concepts 描述：
-```
-$allConcepts
+/prompt/(output="json") 随机生成一段用户信息，结构为json，例如`{"name":"张三丰","age":30}` -> user_info
+$user_info['answer'] -> object_str
+json.loads($object_str)["name"] -> name
+/prompt/(output="jsonl") 随机生成一个用户信息列表，结构为array[object],输出结构样例为：`[{"name":"张三丰","age":30},[{"name":"朱元璋","age":26}]]`，你要严格按照样例格式进行输出 -> user_info_list
+$user_info_list['answer'] -> jsonl_str
+json.loads($jsonl_str)[0] -> column
+/prompt/(output="list_str") 随机生成一段数字列表，结构为array[str],输出结构样例为：`[1,2,3,4]`，你要严格按照样例格式进行输出 -> num_list
+$num_list['answer'] -> list_str
+json.loads($list_str) -> list_num
+$list_num[0] -> num
 ```
 
-只输出概念名称列表 -> conceptInfos
+### **9.6 撰写任务**
 
-@getSampleData(conceptNames=$conceptInfos) -> sampledData
-@getDataSourceSchemas(conceptNames=$conceptInfos) -> schemas
+```
+/prompt/(flags='{{"debug": true}}')请将以下原始query改写成多个更适合搜索引擎搜索的问题。改写时请注意以下几点：
+1. 确保每个改写后的问题简洁明了，包含核心关键词。
+2. 针对不同角度或细分领域生成问题，以覆盖更广泛的搜索结果。
+3. 避免使用模糊或过于宽泛的表述，尽量具体化。
+4. 如果原始问题涉及复杂概念，可以拆解为多个简单问题。
+5. 生成的数量控制在3-5个之间。
+6. 改写后的问题以列表格式返回。
+示例：
+原始问题: 如何提高英语口语能力？
+参考资料: 英语口语学习需要大量练习和适当方法，包括听力训练、模仿发音、参加语言交换、使用学习应用等。初学者和进阶学习者有不同的学习重点。
+改写后的问题：
+["提高英语口语能力的最佳方法","适合初学者的英语口语练习技巧","英语听力训练对口语提升的作用","语言交换平台推荐及使用方法","进阶学习者如何突破英语口语瓶颈"]
+直接生成改写后的问题list不要生成其他内容和解释。
+原始问题: $query
+改写后的问题：->sub_querys
+eval($sub_querys.answer)->search_querys
+#只取前2个 方便联调，实际数量不确定,可以设置成
+$search_querys[:2]->search_querys
+''->ref
+/for/ $search_query in $search_querys:
+  @zhipu_search_tool(query=$search_query)->result
+  $result['answer']['choices'][0]['message']['tool_calls'] -> result
+  /if/ len($result[1]['search_result']) > 0:
+    $result[1]['search_result']->search_result
+  else:
+    []->search_result
+  /end/
+  $search_result>>search_results
+  ''->sub_ref
+  /for/ $page in $search_result:
+      $sub_ref+$page['content']->sub_ref
+  /end/
+  $sub_ref[:5000] -> sub_ref
+  $ref+$sub_ref ->ref
+/end/
+''->page
+''->sub_ref
+''->result
+''->search_result
+''->sub_querys
+''->search_query
+
+/if/ $ref == '':
+    /prompt/请忽略其他提示词，直接输出：没有找到相关资料  -> answer
+else:
+    /prompt/(history=True)请根据问题和参考资料完成撰写任务。
+    <参考资料> $ref </参考资料>
+    <任务> $query </任务>
+    要求：
+    1. 尽可能详细
+
+    撰写内容:->answer
+/end/
 ```
 
 ---

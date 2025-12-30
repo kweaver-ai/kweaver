@@ -449,11 +449,11 @@ const AdLLMSelect: React.FC<AdLLmModelSelectProps> = props => {
     if (!model) return;
 
     const testData = {
-      model_config: {
-        ...model?.model_config,
-        ..._.omit(model, 'model_config', 'icon', 'model_id', 'model_series', 'model_url'),
-      },
-      model_series: model?.model_series,
+      // model_config: {
+      //   ...model?.model_config,
+      //   ..._.omit(model, 'model_config', 'icon', 'model_id', 'model_series', 'model_url'),
+      // },
+      // model_series: model?.model_series,
       model_id: model?.model_id,
     };
 

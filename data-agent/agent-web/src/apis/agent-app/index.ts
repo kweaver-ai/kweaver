@@ -1,11 +1,5 @@
 import { del, post, put, get } from '@/utils/http';
-import {
-  AddFileToTempParams,
-  CreateTempParams,
-  CreateTempResponse,
-  CreateTempResponseSourceType,
-  TempFileType,
-} from './interface';
+import type { AddFileToTempParams, CreateTempParams, CreateTempResponseSourceType, TempFileType } from './interface';
 import { message } from 'antd';
 
 const apiBaseUrl = '/api/agent-app/v1';
@@ -101,3 +95,154 @@ export async function getTempFiles(id: string): Promise<TempFileType[] | false> 
     return false;
   }
 }
+
+// 获取Agent可观测指标数据
+export const getAgentObservabilityMetrics = async (
+  agentId: string,
+  params: {
+    agent_version: string;
+    start_time: number;
+    end_time: number;
+  }
+) => {
+  try {
+    const res = await post(`${apiBaseUrl}/observability/agent/${agentId}/detail`, { body: params });
+    return res;
+  } catch (error) {
+    console.log(error);
+    message.error('获取可观测数据失败');
+    return false;
+  }
+};
+
+// 获取Agent可观测页面的对话列表
+export const getAgentObservabilityConversationList = async (
+  agentKey: string,
+  params: {
+    agent_id: string;
+    agent_version: string;
+    start_time: number;
+    end_time: number;
+    title: string;
+    page: number;
+    size: number;
+  }
+) => {
+  try {
+    const res = await post(`${apiBaseUrl}/observability/agent/${agentKey}/conversation`, { body: params });
+    return res;
+  } catch (error) {
+    console.log(error);
+    message.error('获取可观测数据失败');
+    return false;
+  }
+};
+
+// 获取Agent可观测页面对话的session列表
+export const getAgentObservabilitySessionList = async (
+  agentId: string,
+  conversationId: string,
+  params: {
+    agent_id: string;
+    agent_version: string;
+    start_time: number;
+    end_time: number;
+    page: number;
+    size: number;
+  }
+) => {
+  try {
+    const res = await post(`${apiBaseUrl}/observability/agent/${agentId}/conversation/${conversationId}/session`, {
+      body: params,
+    });
+    return res;
+  } catch (error) {
+    console.log(error);
+    message.error('获取可观测数据失败');
+    return false;
+  }
+};
+
+// // 获取Agent可观测页面对话的session 指标
+export const getAgentObservabilitySessionMetric = async (
+  agentId: string,
+  conversationId: string,
+  sessionId: string,
+  params: {
+    agent_id: string;
+    agent_version: string;
+    start_time: number;
+    end_time: number;
+  }
+) => {
+  try {
+    const res = await post(
+      `${apiBaseUrl}/observability/agent/${agentId}/conversation/${conversationId}/session/${sessionId}/detail`,
+      {
+        body: params,
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+    message.error('获取可观测数据失败');
+    return false;
+  }
+};
+
+// 获取Agent可观测页面的对话的session的run列表
+export const getAgentObservabilityRunList = async (
+  agentId: string,
+  conversationId: string,
+  sessionId: string,
+  params: {
+    agent_id: string;
+    agent_version: string;
+    start_time: number;
+    end_time: number;
+    page: number;
+    size: number;
+  }
+) => {
+  try {
+    const res = await post(
+      `${apiBaseUrl}/observability/agent/${agentId}/conversation/${conversationId}/session/${sessionId}/run`,
+      {
+        body: params,
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+    message.error('获取可观测数据失败');
+    return false;
+  }
+};
+
+// 获取Agent可观测页面的对话的session的run详情
+export const getAgentObservabilityRunDetail = async (
+  agentId: string,
+  conversationId: string,
+  sessionId: string,
+  runId: string,
+  params: {
+    agent_id: string;
+    agent_version: string;
+    start_time: number;
+    end_time: number;
+  }
+) => {
+  try {
+    const res = await post(
+      `${apiBaseUrl}/observability/agent/${agentId}/conversation/${conversationId}/session/${sessionId}/run/${runId}/detail`,
+      {
+        body: params,
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+    message.error('获取可观测数据失败');
+    return false;
+  }
+};

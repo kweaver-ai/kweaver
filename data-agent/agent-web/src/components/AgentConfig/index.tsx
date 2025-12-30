@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import intl from 'react-intl-universal';
-import { omit } from 'lodash';
+import _, { omit } from 'lodash';
 import classNames from 'classnames';
 import { useSearchParams } from 'react-router-dom';
 import { message, Spin, Splitter } from 'antd';
@@ -10,6 +10,8 @@ import {
   getPublishedTemplateDetail,
   getPublishedAgentInfoList,
   getTemplateDetail,
+  getAgentManagementPerm,
+  getPublishedAgentInfo,
 } from '@/apis/agent-factory';
 import { getToolBoxMarketList } from '@/apis/agent-operator-integration';
 import { getMCPServerTools } from '@/apis/agent-operator-integration/mcp';
@@ -19,6 +21,7 @@ import ConfigSection from './ConfigSection/ConfigSection';
 import Header from './Header/Header';
 import { hiddenBuildInFields, transformAgentInput } from './ConfigSection/utils';
 import styles from './AgentConfig.module.less';
+import TraceAnalysis from './TraceAnalysis';
 
 const asyncComponents = {
   AgentDebuggerArea: lazy(() => import('./AgentDebuggerArea')),
@@ -44,6 +47,51 @@ const AgentConfig: React.FC = () => {
   const [initialAgentData, setInitialAgentData] = React.useState<any | null>(null);
   const [loading, setLoading] = React.useState(!!(agentId || templateId));
   const [sizes, setSizes] = useState<Array<string | number>>(['50%', '50%']);
+
+  const [activeTab, setActiveTab] = useState('agent-config');
+  const [refreshTraceAnalysis, setRefreshTraceAnalysis] = useState(false);
+
+  const [userPermissions, setUserPermissions] = useState({
+    hasPublishPermission: false,
+    hasTraceAnalysisPermission: false,
+  });
+  const [isSkillAgent, setIsSkillAgent] = useState(true); // 当前Agent是否技能Agent
+
+  const isEditTemplate = Boolean(templateId) && mode === 'editTemplate';
+
+  // 获取是不是技能Agent
+  useEffect(() => {
+    const fetchAgentPublishedInfo = async (id: string) => {
+      const info: any = await getPublishedAgentInfo(id);
+      const { publish_to_where, publish_to_bes } = info || {};
+      if (_.isEmpty(publish_to_where) && publish_to_bes.length === 1 && publish_to_bes[0] === 'skill_agent') {
+        // 说明当前Agent只发布为技能Agent
+        setIsSkillAgent(true);
+      } else {
+        setIsSkillAgent(false);
+      }
+    };
+    if (agentId) {
+      fetchAgentPublishedInfo(agentId);
+    }
+  }, []);
+
+  // 获取用户权限
+  useEffect(() => {
+    const fetchPublishPerm = async () => {
+      const {
+        agent: { publish: publishAgentPerm, see_trajectory_analysis },
+        agent_tpl: { publish: publishTemplatePerm },
+      } = await getAgentManagementPerm();
+      setUserPermissions(prevState => ({
+        ...prevState,
+        hasPublishPermission: isEditTemplate ? publishTemplatePerm : publishAgentPerm,
+        hasTraceAnalysisPermission: see_trajectory_analysis ?? false,
+      }));
+    };
+
+    fetchPublishPerm();
+  }, []);
 
   // 获取skillAgent最新的输入参数
   // 逻辑：遍历新的input，判断旧的input中是否存在 name & type相同的参数，如果有 则enable、map_type、map_value、required、input_name、input_type 都使用旧的值，其它使用新值；如果不存在，则使用新值；
@@ -233,11 +281,20 @@ const AgentConfig: React.FC = () => {
     <AgentConfigProvider initialData={initialAgentData}>
       <div className={styles.pageLayout} ref={containerRef}>
         <Header
-          isEditTemplate={Boolean(templateId) && mode === 'editTemplate'}
+          isEditTemplate={isEditTemplate}
           showDebugger={showDebugger}
           onToggleDebugger={handleToggleDebugger}
+          activeTab={activeTab}
+          onTabChange={tab => {
+            setActiveTab(tab);
+          }}
+          refreshTraceAnalysis={() => {
+            setRefreshTraceAnalysis(!refreshTraceAnalysis);
+          }}
+          userPermissions={userPermissions}
+          isSkillAgent={isSkillAgent}
         />
-        <div className={styles.pageContent}>
+        <div className={styles.pageContent} style={{ display: activeTab === 'agent-config' ? 'flex' : 'none' }}>
           <Splitter onResize={setSizes}>
             <Splitter.Panel size={sizes[0]} min={showDebugger ? '25%' : '30%'}>
               <Sidebar />
@@ -257,6 +314,16 @@ const AgentConfig: React.FC = () => {
               </Splitter.Panel>
             )}
           </Splitter>
+        </div>
+        <div
+          className="dip-flex-item-full-height dip-w-100"
+          style={{ display: activeTab === 'trace-analysis' ? 'block' : 'none' }}
+        >
+          <TraceAnalysis
+            refreshTraceAnalysis={refreshTraceAnalysis}
+            userPermissions={userPermissions}
+            isSkillAgent={isSkillAgent}
+          />
         </div>
       </div>
     </AgentConfigProvider>

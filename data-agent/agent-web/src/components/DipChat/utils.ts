@@ -1,15 +1,15 @@
 import _ from 'lodash';
-import { PlanSearchType } from './Chat/BubbleList/PlanPanel';
+import type { PlanSearchType } from './Chat/BubbleList/PlanPanel';
 import { nanoid } from 'nanoid';
-import { AiInputValue } from './components/AiInput/interface';
-import {
+import type { AiInputValue } from './components/AiInput/interface';
+import type {
   AgentAppType,
   ConversationItemType,
   DipChatItemContentProgressType,
   DipChatItemContentType,
 } from '@/components/DipChat/interface';
-import { EChartsOption } from 'echarts';
-import { TableColumnsType } from 'antd';
+import type { EChartsOption } from 'echarts';
+import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import { isJSONString } from '@/utils/handle-function';
 import { removeInvalidCodeBlocks } from '@/components/Markdown/utils';
@@ -388,7 +388,7 @@ const getTableColumnByTableData = (tableData: any) => {
     fixed: 'left',
     dataIndex: 'index',
     title: '序号',
-    render: (text: any, record: any, index: number) => index + 1,
+    render: (_text: any, _record: any, index: number) => index + 1,
   });
   return columns;
 };
@@ -436,10 +436,10 @@ const ngqlData2TableData = (data: any) => {
       fixed: 'left',
       dataIndex: 'index',
       title: '序号',
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1,
     });
   }
-  console.log(tableColumns, tableData, 'tableColumns, tableData');
+  // console.log(tableColumns, tableData, 'tableColumns, tableData');
   return {
     tableColumns: _.uniqBy(tableColumns, 'dataIndex'),
     tableData,

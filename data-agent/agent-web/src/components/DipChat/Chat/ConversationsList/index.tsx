@@ -1,7 +1,7 @@
 import styles from './index.module.less';
 import { useEffect, useRef, useState } from 'react';
-import { Button, Dropdown, message, Modal, Spin, Tooltip } from 'antd';
-import { EditOutlined, LeftOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Button, Dropdown, message, Modal, Popover, Spin, Tooltip } from 'antd';
+import { ClockCircleOutlined, EditOutlined, LeftOutlined, LoadingOutlined, MessageOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import { useDipChatStore } from '@/components/DipChat/store';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -9,7 +9,7 @@ import DipIcon from '@/components/DipIcon';
 import DipButton from '@/components/DipButton';
 import { deleteConversationById, markReadConversation } from '@/apis/super-assistant';
 import ScrollBarContainer from '@/components/ScrollBarContainer';
-import { ConversationItemType } from '@/components/DipChat/interface';
+import type { ConversationItemType } from '@/components/DipChat/interface';
 import EllipsisOutlined from '@/assets/icons/ellipsis.svg';
 import EditNameModal from './EditNameModal';
 import { getParam } from '@/utils/handle-function';
@@ -17,6 +17,7 @@ import { scrollIntoViewForContainer } from '@/utils/handle-function';
 import intl from 'react-intl-universal';
 import { useMicroWidgetProps } from '@/hooks';
 import ConversationListModal from '../ConversationListModal';
+import dayjs from 'dayjs';
 
 const ConversationList = ({ startNewConversation, className }: any) => {
   const microWidgetProps = useMicroWidgetProps();
@@ -149,12 +150,16 @@ const ConversationList = ({ startNewConversation, className }: any) => {
           id={item.key}
         >
           {item.unRead && <div className={styles.unRead} />}
-          <div className={classNames('dip-flex-item-full-width dip-ellipsis dip-text-color-85')} title={item.label}>
+          <MessageOutlined className="dip-text-color-45" />
+          <div
+            className={classNames('dip-ml-8 dip-flex-item-full-width dip-ellipsis dip-text-color-85')}
+            title={item.label}
+          >
             {item.label}
           </div>
           {item.status === 'processing' && (
             <Tooltip title={intl.get('dipChat.taskInProgress')}>
-              <Spin size="small" indicator={<LoadingOutlined style={{ fontSize: 14 }} spin />} />
+              <Spin className="dip-ml-8" size="small" indicator={<LoadingOutlined style={{ fontSize: 14 }} spin />} />
             </Tooltip>
           )}
           <Dropdown
@@ -188,6 +193,12 @@ const ConversationList = ({ startNewConversation, className }: any) => {
               icon={<EllipsisOutlined />}
             />
           </Dropdown>
+          <Popover
+            placement="right"
+            content={<div className="dip-p-12">更新时间：{dayjs(item.timestamp).format('YYYY-MM-DD HH:mm:ss')}</div>}
+          >
+            <Button size="small" type="text" className={classNames(styles.btn)} icon={<ClockCircleOutlined />} />
+          </Popover>
         </div>
       );
     });
@@ -213,7 +224,12 @@ const ConversationList = ({ startNewConversation, className }: any) => {
                 if (preRouteIsMicroApp === 'true') {
                   microWidgetProps.navigate(preRoute ?? '/studio/home');
                 } else {
-                  navigate(preRoute ?? '/');
+                  let url = preRoute ?? '/';
+                  const filterParams = getParam('filterParams');
+                  if (filterParams) {
+                    url += `?filterParams=${filterParams}`;
+                  }
+                  navigate(url);
                 }
               }
             }}

@@ -2,7 +2,7 @@
 
 import intl from 'react-intl-universal';
 import { getBotIdByAgentKey } from '@/apis/super-assistant';
-import { DipChatState, DipChatItem, DipChatContextType } from './interface';
+import type { DipChatState, DipChatItem, DipChatContextType } from './interface';
 import { getAgentDetailInUsagePage } from '@/apis/agent-factory';
 import {
   getDeepSearchModePlanReport,
@@ -17,11 +17,11 @@ import {
   isGeneratePlan,
 } from './utils';
 import _ from 'lodash';
-import { UseTypeOutResponse } from '@/hooks/useStreamingOut';
+import type { UseTypeOutResponse } from '@/hooks/useStreamingOut';
 import { isJSONString } from '@/utils/handle-function';
-import { PlanItemType } from '@/components/DipChat/Chat/BubbleList/PlanPanel';
+import type { PlanItemType } from '@/components/DipChat/Chat/BubbleList/PlanPanel';
 import { nanoid } from 'nanoid';
-import { GetStateAction } from '@/hooks/useLatestState';
+import type { GetStateAction } from '@/hooks/useLatestState';
 import dayjs from 'dayjs';
 
 /** 获取超级助手配置基础信息 */

@@ -1,10 +1,11 @@
 // 定义状态类型
-import { GetStateAction } from '@/hooks/useLatestState';
-import { AiInputValue } from './components/AiInput/interface';
+// 定义状态类型
+import type { GetStateAction } from '@/hooks/useLatestState';
+import type { AiInputValue } from './components/AiInput/interface';
 import { TempFileTypeEnum } from '@/apis/intelli-search/type';
-import { FormInstance, TableColumnsType } from 'antd';
-import { EChartsOption } from 'echarts';
-import { GetConversationListOption } from '@/apis/super-assistant';
+import type { FormInstance, TableColumnsType } from 'antd';
+import type { EChartsOption } from 'echarts';
+import type { GetConversationListOption } from '@/apis/super-assistant';
 
 type ToolArgsType = {
   key: 'field' | 'value';
@@ -121,6 +122,7 @@ export type DipChatItem = {
   error?: string; // 储存对话过程接口报错信息
   fileList?: FileItem[]; // role 为user的时候 fileList可能会存在数据
   sourceData?: any; // 流式接口返回的原始数据
+  updateTime?: number;
 };
 
 export type ConversationItemType = {
@@ -130,6 +132,7 @@ export type ConversationItemType = {
   temparea_id: string;
   children?: ConversationItemType[];
   unRead: boolean;
+  timestamp: number;
 };
 
 export type PreviewFileType = {
@@ -188,8 +191,6 @@ export type DipChatState = {
   singleStreamResult: any[]; // 供调试用，用于开发和测试快速查看流式返回的完整结果
   toolAutoExpand: boolean; // 是否自动展开工具
   logQueryAgentDetails: Record<string, any>; // 日志查询智能体详情
-  // 5.0.0.3 新加
-  emptyConversationKey: string; // 空会话的key
 };
 
 export type TempFileType = {

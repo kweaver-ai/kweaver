@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { CSSProperties, ReactNode, useMemo } from 'react';
+import React, { type CSSProperties, type ReactNode, useMemo } from 'react';
 import styles from './index.module.less';
 import bg from '@/assets/images/gradient-container-bg.png';
 interface GradientContainerProps {

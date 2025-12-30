@@ -1,12 +1,12 @@
 import DipModal from '@/components/DipModal';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getConversationList, markReadConversation } from '@/apis/super-assistant';
 import { handleConversationGroup } from '@/components/DipChat/assistant';
 import styles from './index.module.less';
 import classNames from 'classnames';
 import SearchInput from '@/components/SearchInput';
 import ScrollBarContainer from '@/components/ScrollBarContainer';
-import { ConversationItemType, DipChatItem } from '@/components/DipChat/interface';
+import type { ConversationItemType, DipChatItem } from '@/components/DipChat/interface';
 import { Button, Spin, Splitter } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useDipChatStore } from '@/components/DipChat/store';
@@ -56,8 +56,7 @@ const ConversationListModal = ({ onClose, agentAppKey, startNewConversation }: a
     setLoading(false);
     if (res) {
       const { entries } = res;
-      const emptyItem = entries.find((item: any) => item.message_index === 0 && !item.temparea_id);
-      setConversationList(entries.filter((item: any) => item.id !== emptyItem?.id));
+      setConversationList(entries);
       const hasProcessing = entries.some((item: any) => item.status === 'processing');
       if (hasProcessing) {
         if (timer.current) {
@@ -170,6 +169,7 @@ const ConversationListModal = ({ onClose, agentAppKey, startNewConversation }: a
           })}
           key={item.key}
           id={item.key}
+          timestamp={item.timestamp}
           activeKey={activeKey}
           unRead={item.unRead}
           label={item.label}

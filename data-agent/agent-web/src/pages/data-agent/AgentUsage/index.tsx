@@ -3,9 +3,9 @@ import { useMicroWidgetProps } from '@/hooks';
 import { useEffect, useMemo } from 'react';
 import { getParam } from '@/utils/handle-function';
 import { useLocation } from 'react-router-dom';
-import { AiInputValue } from '@/components/DipChat/components/AiInput/interface';
+import type { AiInputValue } from '@/components/DipChat/components/AiInput/interface';
 import _ from 'lodash';
-import { DipChatItem } from '@/components/DipChat/interface';
+import type { DipChatItem } from '@/components/DipChat/interface';
 import { nanoid } from 'nanoid';
 
 const AgentUsage = () => {

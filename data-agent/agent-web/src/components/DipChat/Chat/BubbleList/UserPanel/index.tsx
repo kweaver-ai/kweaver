@@ -1,15 +1,16 @@
 import styles from './index.module.less';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDipChatStore } from '@/components/DipChat/store';
 import _ from 'lodash';
 import { FileTypeIcon, getFileExtension } from '@/utils/doc';
 import classNames from 'classnames';
-import { Col, Collapse, Row, Button, GetRef } from 'antd';
+import { Col, Collapse, Row, Button, type GetRef } from 'antd';
 import PanelFooter from '../PanelFooter';
 import { nanoid } from 'nanoid';
 import { Sender } from '@ant-design/x';
 import { getChatItemRoleByMode } from '@/components/DipChat/utils';
 import intl from 'react-intl-universal';
+import dayjs from 'dayjs';
 
 const UserPanel = ({ chatItemIndex, readOnly }: any) => {
   const {
@@ -19,7 +20,7 @@ const UserPanel = ({ chatItemIndex, readOnly }: any) => {
     closeSideBar,
   } = useDipChatStore();
   const chatItem = chatList[chatItemIndex];
-  const { content, fileList } = chatItem;
+  const { content, fileList, updateTime } = chatItem;
   const [isEdit, setIsEdit] = useState(false);
   const [inputValue, setInputValue] = useState(content);
   const senderRef = useRef<GetRef<typeof Sender>>(null);
@@ -88,7 +89,16 @@ const UserPanel = ({ chatItemIndex, readOnly }: any) => {
   };
   const renderFooter = () => {
     if (!isEdit) {
-      return <PanelFooter className="dip-mt-8" chatItemIndex={chatItemIndex} onEdit={onEdit} />;
+      return (
+        <div className="dip-flex-align-center dip-mt-8">
+          {updateTime && (
+            <span style={{ marginRight: 32 }} className="dip-text-color-45 dip-font-12">
+              {dayjs(updateTime).format('YYYY-MM-DD HH:mm:ss')}
+            </span>
+          )}
+          <PanelFooter chatItemIndex={chatItemIndex} onEdit={onEdit} />
+        </div>
+      );
     }
   };
 
@@ -105,6 +115,7 @@ const UserPanel = ({ chatItemIndex, readOnly }: any) => {
       content: inputValue,
       loading: false,
       fileList: fileList ?? [],
+      updateTime: dayjs().valueOf(),
     });
 
     newChatList.push({

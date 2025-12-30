@@ -510,14 +510,13 @@ const RoleInstruction: React.FC = () => {
 
   // 当 dolphin 值变化时，同步检查表单中已选值是否仍然有效
   useEffect(() => {
-    if (isDolphinMode && form) {
+    const fieldsToUpdate: Record<string, any> = { ...state.config.output?.variables };
+    if (isDolphinMode) {
       const formValues = form.getFieldsValue();
       const optionValues = options.map(opt => opt.value);
-      const fieldsToUpdate: Record<string, any> = { ...state.config.output?.variables };
       let needUpdate = false;
-
       // 检查最终输出结果
-      if (formValues.answer_var && !optionValues.includes(formValues.answer_var)) {
+      if (fieldsToUpdate.answer_var && !optionValues.includes(fieldsToUpdate.answer_var)) {
         fieldsToUpdate.answer_var = undefined;
         needUpdate = true;
       }
@@ -534,8 +533,15 @@ const RoleInstruction: React.FC = () => {
         // 更新到 context
         actions.updateOutput({ ...formValues, ...fieldsToUpdate } as any);
       }
+    } else {
+      // 说明切换到角色指令模式
+      if (fieldsToUpdate.answer_var !== 'answer') {
+        fieldsToUpdate.answer_var = 'answer';
+        form.setFieldsValue({ answer_var: undefined });
+        actions.updateOutput({ ...fieldsToUpdate } as any);
+      }
     }
-  }, [isDolphinMode, options, form, actions]);
+  }, [isDolphinMode, options, actions]);
 
   // 在值变化时更新到context
   const handleFormValuesChange = useCallback(

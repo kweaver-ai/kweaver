@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import useLatestState from './useLatestState';
 import useDeepCompareMemo from './useDeepCompareMemo';
-import { processIncrementalUpdate, streamingOutHttp, StreamingOutServerType } from '@/utils/http/streaming-http';
+import { processIncrementalUpdate, streamingOutHttp, type StreamingOutServerType } from '@/utils/http/streaming-http';
 import { isJSONString } from '@/utils/handle-function';
-import _ from 'lodash';
 
 export interface UseTypeOutConfig extends Omit<StreamingOutServerType, 'body' | 'url'> {
   timeout?: number; // 字符之间的延迟输出间隔，默认 10ms
@@ -23,10 +22,6 @@ type StartParamType = {
   body: any; // 流式请求体
   url?: string; // 流式请求体url
   increase_stream?: boolean; // 是不是真流式
-  // 是否开启打字机输出效果
-  typing?: {
-    field: string | string[]; // 打字输出的字段
-  };
 };
 
 type UseTypeOutStartFunc = ({ body, url, increase_stream }: StartParamType) => void;

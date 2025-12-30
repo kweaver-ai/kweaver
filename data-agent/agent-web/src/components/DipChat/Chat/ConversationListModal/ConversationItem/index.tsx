@@ -1,12 +1,20 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import styles from './index.module.less';
 import classNames from 'classnames';
-import { ConversationItemType } from '@/components/DipChat/interface';
-import { Button, Input, message, Popconfirm, Spin, Tooltip, Form } from 'antd';
+import type { ConversationItemType } from '@/components/DipChat/interface';
+import { Button, Input, message, Popconfirm, Spin, Tooltip, Form, Popover } from 'antd';
 import intl from 'react-intl-universal';
-import { CheckOutlined, CloseOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  ClockCircleOutlined,
+  CloseOutlined,
+  EditOutlined,
+  LoadingOutlined,
+  MessageOutlined,
+} from '@ant-design/icons';
 import { deleteConversationById, updateConversation } from '@/apis/super-assistant';
 import DipIcon from '@/components/DipIcon';
+import dayjs from 'dayjs';
 
 type ConversationItemProps = {
   onClick?: () => void;
@@ -16,6 +24,7 @@ type ConversationItemProps = {
   agentAppKey: string;
   id: string;
   activeKey: string;
+  timestamp: number;
 } & Partial<ConversationItemType>;
 const ConversationItem = (props: ConversationItemProps) => {
   const [messageApi, messageContextHolder] = message.useMessage();
@@ -28,8 +37,8 @@ const ConversationItem = (props: ConversationItemProps) => {
     status,
     agentAppKey,
     refreshList,
-    activeKey,
     onClearSelectedConversation,
+    timestamp,
   } = props;
   const [isEdit, setIsEdit] = useState(false);
   const inputRef = useRef<any>(null);
@@ -100,7 +109,8 @@ const ConversationItem = (props: ConversationItemProps) => {
     return (
       <div onClick={onClick} className={classNames(styles.item, 'dip-flex-align-center', className)}>
         {unRead && <div className={styles.unRead} />}
-        <div className={classNames('dip-flex-item-full-width dip-ellipsis dip-text-color-85')} title={label}>
+        <MessageOutlined className="dip-text-color-45" />
+        <div className={classNames('dip-ml-8 dip-flex-item-full-width dip-ellipsis dip-text-color-85')} title={label}>
           {label}
         </div>
         {status === 'processing' && (
@@ -152,6 +162,12 @@ const ConversationItem = (props: ConversationItemProps) => {
             icon={<DipIcon type="icon-dip-trash" />}
           />
         </Popconfirm>
+        <Popover
+          placement="right"
+          content={<div className="dip-p-12">更新时间：{dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss')}</div>}
+        >
+          <Button size="small" type="text" className={classNames(styles.btn)} icon={<ClockCircleOutlined />} />
+        </Popover>
       </div>
     );
   };

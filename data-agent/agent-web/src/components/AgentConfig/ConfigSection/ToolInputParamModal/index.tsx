@@ -630,7 +630,12 @@ const ToolInputParamModal = ({
                 cloneInputList.forEach((item: any) => {
                   if (item.key === record.key) {
                     item.map_type = selectValue.map_type;
-                    if (record.defaultValue && item.map_type === 'fixedValue' && !item.map_value) {
+                    if (
+                      record.defaultValue &&
+                      record.map_type !== item.map_type &&
+                      item.map_type === 'fixedValue' &&
+                      !item.map_value
+                    ) {
                       item.map_value = record.defaultValue;
                     } else {
                       item.map_value = selectValue.map_value || undefined;

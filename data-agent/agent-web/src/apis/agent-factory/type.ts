@@ -149,6 +149,7 @@ export interface AgentConfig {
   product_key: number;
   status: 'published' | 'unpublished';
   published_at?: number;
+  is_published?: boolean;
   config: {
     input: {
       fields: Array<{
@@ -672,6 +673,7 @@ export interface PublishData {
 export enum PublishStatusEnum {
   Draft = 'unpublished',
   Published = 'published',
+  PublishedEdited = 'published_edited',
   // 无值代表全部
   All = '',
 }
@@ -706,6 +708,9 @@ export interface AgentManagementPermType {
 
     // 是否有 创建系统Agent 权限
     create_system_agent: boolean;
+
+    // 是否有 查看轨迹分析权限
+    see_trajectory_analysis: boolean;
   };
 
   // 模板的权限

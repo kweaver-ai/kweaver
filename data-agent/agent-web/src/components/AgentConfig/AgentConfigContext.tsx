@@ -525,7 +525,10 @@ export const AgentConfigProvider: React.FC<{
           ...prev.config,
           output: {
             ...prev.config.output,
-            variables,
+            variables: {
+              ...prev.config.output!.variables,
+              ...variables,
+            },
           },
         },
         isDirty: true,

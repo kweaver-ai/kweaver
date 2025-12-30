@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import _ from 'lodash';
 import intl from 'react-intl-universal';
 import EmptyIcon from '@/assets/icons/empty.svg';

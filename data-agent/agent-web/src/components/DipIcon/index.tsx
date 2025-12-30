@@ -1,8 +1,8 @@
-import React, { CSSProperties } from 'react';
+import React, { type CSSProperties } from 'react';
 import { createFromIconfontCN } from '@ant-design/icons';
 import classNames from 'classnames';
 import './index.less';
-import { IconFontProps } from '@ant-design/icons/es/components/IconFont';
+import type { IconFontProps } from '@ant-design/icons/es/components/IconFont';
 import '@/assets/fonts/iconfont.js';
 import '@/assets/fonts/color-iconfont.js';
 

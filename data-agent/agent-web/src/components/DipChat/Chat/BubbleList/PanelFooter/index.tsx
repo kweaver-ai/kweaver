@@ -1,5 +1,4 @@
-import React, { CSSProperties } from 'react';
-import styles from './index.module.less';
+import { type CSSProperties } from 'react';
 import { Button, message, Statistic, Tooltip } from 'antd';
 import DipIcon from '@/components/DipIcon';
 import { useDipChatStore } from '@/components/DipChat/store';
@@ -10,7 +9,7 @@ import { nanoid } from 'nanoid';
 import '@vavt/rt-extension/lib/asset/ExportPDF.css';
 import { getChatItemRoleByMode } from '@/components/DipChat/utils';
 import { getConversationDetailsById } from '@/apis/super-assistant';
-import { isJSONString } from '@/utils/handle-function';
+import dayjs from 'dayjs';
 
 type PanelFooterProps = {
   chatItemIndex: number;
@@ -56,6 +55,7 @@ const PanelFooter = ({ chatItemIndex, className, onExport, onEdit }: PanelFooter
       content: query,
       loading: false,
       fileList,
+      updateTime: dayjs().valueOf(),
     });
     newChatList.push({
       key: nanoid(),

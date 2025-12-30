@@ -1,38 +1,23 @@
-import { useMemo, memo } from 'react';
+import { memo } from 'react';
 import classNames from 'classnames';
 import { Col, Card, Skeleton, Row } from 'antd';
 import styles from './SkeletonGrid.module.less';
 import { gap } from './utils';
 
-const getCount = ({ width, cardWidth }: { width?: number; cardWidth?: number } = {}) => {
-  let count = 4;
-  try {
-    if (width && cardWidth) {
-      count = Math.floor(width / cardWidth);
-    }
-  } catch {}
-
-  return count;
-};
-
 // 渲染骨架屏
 const SkeletonGrid = ({
-  width,
-  cardWidth,
+  countOfRow = 4,
   avatarShape = 'circle',
 }: {
-  width?: number;
-  cardWidth?: number;
+  countOfRow: number;
   avatarShape?: 'square' | 'circle';
 }) => {
-  const count = useMemo(() => getCount({ width, cardWidth }), [width, cardWidth]);
-
   return (
     <Row gutter={[gap, gap]}>
-      {Array(count)
+      {Array(countOfRow)
         .fill(null)
         .map((_, index) => (
-          <Col style={{ width: cardWidth }} key={`skeleton-${index}`}>
+          <Col span={24 / countOfRow} key={`skeleton-${index}`}>
             <Card className={styles['card']} variant="borderless">
               <div className={styles['content']}>
                 <div className={classNames(styles['main'], 'dip-mb-10')}>

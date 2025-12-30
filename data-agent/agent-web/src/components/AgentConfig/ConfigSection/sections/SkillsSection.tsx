@@ -6,8 +6,8 @@ import { uniqBy, forEach, keyBy } from 'lodash';
 import { PlusOutlined, SettingOutlined, RightOutlined } from '@ant-design/icons';
 import { type ResultProcessStrategyType } from '@/apis/agent-factory';
 import AgentIcon from '@/assets/icons/agent3.svg';
-import ToolBoxIcon from '@/assets/icons/tool.svg';
-import ToolIcon from '@/assets/icons/toolIcon.svg';
+import ToolBoxIcon from '@/assets/images/tool.svg';
+import ToolIcon from '@/assets/icons/tool.svg';
 import MCPIcon from '@/assets/icons/mcp.svg';
 import { useDeepCompareMemo, useBusinessDomain } from '@/hooks';
 import DipIcon from '@/components/DipIcon';
@@ -36,12 +36,14 @@ import ToolInputParamModal from '../ToolInputParamModal';
 interface ToolBoxInfo {
   box_name: string;
   box_desc: string;
+  metadata_type: string;
 }
 
 // 扩展技能项接口，匹配实际使用场景
 interface SkillItem {
   // 基本属性 - 与API契约一致
   tool_type: string;
+  metadata_type: string;
   tool_id: string;
   tool_box_id: string;
   tool_input?: Array<{
@@ -249,10 +251,11 @@ const SkillsSection = (props: SkillsSectionProps) => {
 
       const detailsMap: Record<string, ToolBoxInfo> = {};
 
-      response.forEach(toolBox => {
+      response.forEach((toolBox: any) => {
         detailsMap[toolBox.box_id] = {
           box_name: toolBox.box_name || intl.get('dataAgent.config.toolboxWithId', { id: toolBox.box_id }),
           box_desc: toolBox.box_desc || intl.get('dataAgent.config.toolboxDescription'),
+          metadata_type: toolBox.metadata_type,
         };
       });
 
@@ -266,6 +269,7 @@ const SkillsSection = (props: SkillsSectionProps) => {
         detailsMap[toolBoxId] = {
           box_name: intl.get('dataAgent.config.toolboxWithId', { id: toolBoxId }),
           box_desc: intl.get('dataAgent.config.toolboxDescription'),
+          metadata_type: '',
         };
       });
       setToolBoxDetails(prev => ({ ...prev, ...detailsMap }));
@@ -414,12 +418,14 @@ const SkillsSection = (props: SkillsSectionProps) => {
         const toolBoxInfo = toolBoxDetails[toolBoxId];
         const toolBoxName = toolBoxInfo?.box_name || toolList[0]?.tool_box_name;
         const toolBoxDesc = toolBoxInfo?.box_desc;
+        const metadata_type = toolBoxInfo?.metadata_type;
         return {
           tool_type: 'tool-box',
           tool_id: `tool-box-${toolBoxId}`,
           tool_box_id: toolBoxId,
           tool_name: toolBoxName,
           tool_desc: toolBoxDesc,
+          metadata_type: metadata_type,
           isToolBoxNode: true,
           // 名称不存在时，children设置为undefined
           children: toolBoxName ? toolList : undefined,
@@ -527,35 +533,25 @@ const SkillsSection = (props: SkillsSectionProps) => {
         style: { display: 'flex', alignItems: 'center' },
       }),
       render: (text: string, record: SkillItem) => {
-        let Icon, IconPadding, IconSize;
+        let Icon;
         if (record.tool_type === 'mcp-server') {
-          Icon = MCPIcon; // MCP服务器使用MCP图标
-          IconSize = '32px';
-          IconPadding = '0';
+          Icon = <MCPIcon style={{ width: 32, height: 32, borderRadius: 8 }} />; // MCP服务器使用MCP图标
         } else if (record.tool_type === 'tool-box') {
-          Icon = ToolBoxIcon; // 工具箱使用工具箱图标
-          IconSize = '32px';
-          IconPadding = '0';
+          Icon = (
+            <div className="dip-position-r" style={{ width: 32, height: 32 }}>
+              <ToolBoxIcon style={{ width: 32, height: 32, borderRadius: 8 }} />
+              <div className="toolBoxLabel">{record?.metadata_type === 'openapi' ? 'OpenAPI' : '函数计算'}</div>
+            </div>
+          ); // 工具箱使用工具箱图标
         } else if (record.tool_type === 'mcp' || record.tool_type === 'tool') {
-          Icon = ToolIcon; // MCP工具和普通工具使用工具图标
-          IconSize = '32px';
-          IconPadding = '6px 0';
+          Icon = <ToolIcon style={{ width: 24, height: 24 }} />; // MCP工具和普通工具使用工具图标
         } else {
-          Icon = AgentIcon; // Agent工具使用Agent图标
-          IconSize = '32px';
-          IconPadding = '0';
+          Icon = <AgentIcon style={{ width: 32, height: 32, borderRadius: 8 }} />; // Agent工具使用Agent图标
         }
 
         return (
           <div className={classNames(styles['skill-name-cell'], 'dip-ellipsis')}>
-            <Icon
-              style={{
-                width: IconSize,
-                height: IconSize,
-                minWidth: IconSize,
-                padding: IconPadding,
-              }}
-            />
+            {Icon}
             <span
               className={classNames('dip-ellipsis', {
                 'dip-text-color-error': !text,
@@ -626,7 +622,10 @@ const SkillsSection = (props: SkillsSectionProps) => {
                     e.stopPropagation();
                     canEditToolInput && configureSkill(record);
                   }}
-                  style={{ cursor: canEditToolInput ? 'pointer' : 'not-allowed', opacity: canEditToolInput ? 1 : 0.5 }}
+                  style={{
+                    cursor: canEditToolInput ? 'pointer' : 'not-allowed',
+                    opacity: canEditToolInput ? 1 : 0.5,
+                  }}
                 />
               ) : null
             ) : null}

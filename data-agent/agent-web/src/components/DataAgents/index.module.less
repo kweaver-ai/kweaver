@@ -1,5 +1,4 @@
 .listPageContainer {
-  padding: 0 8px 24px 24px;
   height: 100%;
   background-color: #f5f5f5;
 
@@ -32,8 +31,8 @@
     position: relative;
 
     .recentAgentsContainer {
-      overflow-x: hidden;
       position: relative;
+      padding: 0 8px;
     }
 
     .recentAgentsRow {
@@ -77,7 +76,7 @@
       }
 
       &.leftArrow {
-        left: 6px;
+        left: 26px;
       }
 
       &.rightArrow {
@@ -88,11 +87,11 @@
 
   // 所有代理区块
   .allAgents {
-    height: 100%;
-    margin-bottom: 40px;
 
     .categoryContainer {
-      margin-bottom: 16px;
+      padding-left: 16px;
+      padding-right: 16px;
+      padding-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -280,6 +279,13 @@
 .unpublished {
   background-color: #fff7e6;
   color: #faad14;
+  margin-left: 6px;
+  padding: 2px 8px;
+}
+
+.publishedEdited {
+  background-color: #e6f4ff;
+  color: #126ee3;
   margin-left: 6px;
   padding: 2px 8px;
 }

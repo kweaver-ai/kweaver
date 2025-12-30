@@ -25,7 +25,10 @@ const Header: FC<HeaderProps> = ({ mode, isExportMode, onCreate }) => {
   const isMine = useMemo(() => [ModeEnum.MyAgent, ModeEnum.MyTemplate].includes(mode), [mode]);
 
   return (
-    <div className="dip-pt-24 dip-pr-16 dip-flex-space-between" style={{ paddingBottom: isMine ? '17px' : '24px' }}>
+    <div
+      className="dip-pt-24 dip-pr-16 dip-pl-16 dip-flex-space-between"
+      style={{ paddingBottom: isMine ? '17px' : '24px' }}
+    >
       {Boolean(headerText) && (
         <div
           className={classNames(styles.sectionTitle, 'dip-font-16 dip-c-black, dip-w-100')}

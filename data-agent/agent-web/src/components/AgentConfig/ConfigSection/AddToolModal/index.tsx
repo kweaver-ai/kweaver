@@ -28,6 +28,7 @@ import {
 import { DatasourceConfigTypeEnum, LLMConfigTypeEnum } from '@/apis/agent-factory/type';
 import { useLatestState } from '@/hooks';
 import AgentIcon from '@/assets/icons/agent3.svg';
+import ToolBoxIcon from '@/assets/images/tool.svg';
 import ToolIcon from '@/assets/icons/tool.svg';
 import MCPIcon from '@/assets/icons/mcp.svg';
 import NoResultIcon from '@/assets/icons/no-result.svg';
@@ -476,9 +477,18 @@ const ToolModal = ({ agentKey, onCancel, value, onConfirm, retrieverBlockOptions
     // 根据节点类型确定图标
     let IconComponent = null;
     if (nodeData.sourceData?.type === 'tool-box') {
-      IconComponent = ToolIcon;
+      IconComponent = (
+        <div className="dip-position-r" style={{ width: 38, height: 38 }}>
+          <ToolBoxIcon style={{ width: 38, height: 38, borderRadius: 8 }} />
+          <div className="toolBoxLabel">
+            {nodeData.sourceData?.metadata_type === 'openapi' ? 'OpenAPI' : '函数计算'}
+          </div>
+        </div>
+      );
+    } else if (nodeData.sourceData?.type === 'tool') {
+      IconComponent = <ToolIcon style={{ width: 32, height: 32 }} />;
     } else if (nodeData.sourceData?.type === 'mcp-server') {
-      IconComponent = MCPIcon;
+      IconComponent = <MCPIcon style={{ width: 38, height: 38, minWidth: '32px' }} />;
     }
 
     const businessDomainName =
@@ -488,7 +498,7 @@ const ToolModal = ({ agentKey, onCancel, value, onConfirm, retrieverBlockOptions
 
     return (
       <span className="dip-flex-align-center dip-mt-8">
-        {IconComponent && <IconComponent style={{ width: '32px', height: '32px', minWidth: '32px' }} />}
+        {IconComponent}
         <span className="dip-flex-column dip-ml-8 dip-overflow-hidden dip-flex-1">
           <span className="dip-ellipsis" title={nodeData.title}>
             {nodeData.title}

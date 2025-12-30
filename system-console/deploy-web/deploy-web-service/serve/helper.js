@@ -40,7 +40,7 @@ export const registryClient = async () => {
             `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients/${clientID}`,
             {
                 timeout: 1000 * 6,
-                method: "PUT",
+                method: "POST",
                 body: JSON.stringify(payload),
             }
         );

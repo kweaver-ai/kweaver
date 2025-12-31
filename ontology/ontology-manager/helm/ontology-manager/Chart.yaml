@@ -1,5 +1,0 @@
-apiVersion: v1
-appVersion: "6.0.0"
-description: helm chart for ontology-manager
-name: ontology-manager
-version: 6.0.0

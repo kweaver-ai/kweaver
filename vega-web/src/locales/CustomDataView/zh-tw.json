@@ -1,0 +1,105 @@
+{
+  "CustomDataView": {
+    "title": "自定義視圖分組管理",
+    "allGroup": "所有自定義視圖",
+    "moveToGroup": "移動數據視圖至目標分組",
+    "dataViewSetting": "視圖配置",
+    "parseSetting": "解析配置",
+    "outputView": "輸出視圖",
+    "createCustomDataView": "新建自定義視圖",
+    "editCustomDataView": "編輯自定義視圖",
+    "dataViewInfo": "視圖信息",
+    "idTip": "ID 是指標模型的唯一標識符,支持自定義輸入,若未自定義,系統將自動生成。請注意,指標模型一旦新建完成,ID便不可更改",
+    "noGroupsFound": "暫無分組",
+    "confirmChangeQueryType": "是否確認切換查詢類型?",
+    "confirmChangeQueryTypeContent": "若當前視圖已經有配置內容,切換後將重新配置,請確認操作。",
+    "confirmDeleteGroupDescription": "刪除分組的同時一併刪除該分組下的所有數據視圖",
+    "checkedListTitle": "已選{count}張表",
+    "DataViewSource": {
+      "addDataViewTitle": "添加要引用的原子視圖",
+      "dataViewSourceTip": ""
+    },
+    "OperateBox": {
+      "basicFunction": "基礎功能",
+      "readParse": "讀時解析",
+      "input": "輸入",
+      "viewReference": "視圖引用",
+      "multiViewProcess": "多個視圖處理",
+      "dataMerge": "數據合併",
+      "dataRelation": "數據關聯",
+      "sqlSetting": "SQL 配置"
+    },
+    "GraphBox": {
+      "referenceView": "引用視圖",
+      "outputView": "輸出視圖",
+      "mergeView": "合併視圖",
+      "relationView": "關聯視圖",
+      "dataJoin": "數據關聯",
+      "dataMerge": "數據合併",
+      "pleaseSelectReferenceView": "請先選擇引用視圖",
+      "confirmDeleteNode": "確認要刪除該節點嗎?",
+      "deleteNodeWarning": "節點及其配置信息將被刪除,無法找回,請謹慎操作!",
+      "selectDataView": "選擇數據視圖"
+    },
+    "FieldSetting": {
+      "dataFilterDescription": "開啟後，將基於條件篩選數據，且作為下一個配置的輸入字段",
+      "dataDeduplication": "數據去重",
+      "dataDeduplicationDescription": "開啟後，被勾選字段將會數據去重，且作為下一個配置的輸入字段",
+      "pleaseValidateDataFilter": "請先驗證數據過濾條件"
+    },
+    "overwriteTip": "注意！存在 ID 重複或分組內名稱重複的數據視圖！點擊覆蓋後將覆蓋已存在的重複項，點擊忽略將跳過重複項。",
+    "disabledBuiltInGroupTip": "系統內置分組，不支持刪除或重命名",
+    "DataViewSetting": {
+      "mergeNeedTwoNodes": "合併需要至少2個節點輸入",
+      "relationNeedTwoNodes": "關聯節點需要2個節點輸入",
+      "confirmPreviousNodeConfig": "請先確認前序節點配置",
+      "configurePreviousNodeFields": "請先配置前序節點輸出字段",
+      "nodeSupportOneOutput": "一個節點只支持一個輸出",
+      "outputViewOneInput": "輸出視圖只能有一個輸入",
+      "relationNodeTwoInputs": "關聯節點最多2個輸入"
+    },
+    "FieldJoin": {
+      "selectJoinFields": "請選擇關聯字段",
+      "joinFieldTypeMismatch": "關聯字段類型不一致",
+      "sourceNode": "來源節點",
+      "originalFieldName": "字段原名",
+      "joinType": "關聯方式",
+      "selectJoinField1": "請選擇關聯字段1",
+      "selectJoinField2": "請選擇關聯字段",
+      "leftJoin": "左聯接",
+      "rightJoin": "右聯接",
+      "innerJoin": "內聯接",
+      "fullOuterJoin": "全外聯接",
+      "fieldList": "字段列表",
+      "fieldListHelp": "（被勾選的字段會作為下一個節點/算子的輸入字段）"
+    },
+    "FieldMerge": {
+      "keepAllRows": "保留所有行",
+      "keepAllRowsTooltip": "保留合併字段下所有數據行",
+      "removeDuplicates": "去除重複行",
+      "removeDuplicatesTooltip": "去除合併字段下完全相同的數據行",
+      "outputFieldNameRequired": "輸出字段名稱不能為空",
+      "nodeFieldRequired": "節點選擇的字段不能為空",
+      "addMergeRule": "請添加合併規則",
+      "completeMergeConfig": "請填寫完整字段合併配置",
+      "outputFieldName": "輸出字段名稱",
+      "outputFieldNamePlaceholder": "輸出字段名稱",
+      "selectFieldName": "請選擇字段名稱",
+      "sameTypeFieldsOnly": "您僅可選擇數據類型相同的字段進行合併",
+      "mergeOutputType": "合併輸出方式",
+      "noMergeRules": "暫無合併規則",
+      "fieldTypeConflictTip": "名稱相同，類型不同的字段導致視圖數據查詢報錯，故此剔除"
+    },
+    "FieldSQL": {
+      "enterSQLStatement": "請輸入SQL語句",
+      "previousNodes": "前序節點",
+      "operateTip": "(節點名稱/字段名稱，請從左邊前序節點列表中，直接點擊獲取; \" \"識別的是字段名,' '識別的是值)"
+    },
+    "FieldPreview": {
+      "title": "字段預覽"
+    },
+    "EmptyForm": {
+      "noPreviousDataInput": "缺少前序數據輸入，無法配置"
+    }
+  }
+}

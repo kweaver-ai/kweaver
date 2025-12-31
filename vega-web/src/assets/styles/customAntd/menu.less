@@ -1,0 +1,60 @@
+@import '@/assets/styles/theme/index.less';
+// 对使用menu做类似于tab页的样式
+.ant-menu {
+    font-size: 14px !important;
+
+    &.ant-menu-horizontal {
+        .ant-menu-item {
+            border-bottom: none;
+
+            a:hover {
+                color: @hover-color;
+            }
+        }
+
+        .ant-menu-item:hover,
+        .ant-menu-item-active {
+            color: @hover-color;
+            border-bottom: 0;
+        }
+
+        .ant-menu-item-selected,
+        .ant-menu-item-selected:hover {
+            border-bottom: 2px solid @primary-color;
+            color: @primary-color;
+
+            a {
+                color: @primary-color;
+            }
+        }
+    }
+}
+
+.ant-menu-horizontal > .ant-menu-submenu:hover,
+.ant-menu-horizontal > .ant-menu-submenu-active,
+.ant-menu-horizontal > .ant-menu-submenu-open,
+.ant-menu-horizontal > .ant-menu-submenu-selected {
+    color: @primary-color !important;
+    border-bottom: 2px solid @primary-color !important;
+}
+
+.ant-menu-submenu-title:hover {
+    color: @primary-color !important;
+}
+
+.ant-menu-submenu .ant-menu-item > a:hover {
+    color: @hover-color !important;
+}
+
+.ant-menu-submenu .ant-menu-item:focus,
+.ant-menu-submenu .ant-menu-item:active {
+    background: @text-font-item !important;
+}
+
+.ant-menu-submenu .ant-menu-item-selected {
+    a {
+        color: @primary-color;
+    }
+
+    background: @text-font-item !important;
+}

@@ -1,0 +1,48 @@
+namespace: dip
+moduleName: vega-web
+
+# 环境变量：语言/时区
+env:
+  timezone: Asia/Shanghai
+  language: en_US.UTF-8
+
+replicaCount: 1
+
+# 节点选择器
+nodeSelector: {}
+
+image:
+  registry: acr.aishu.cn
+  repository: dip/vega-web
+  tag: tag
+  pullPolicy: IfNotPresent
+
+service:
+  enableDualStack: false
+  manageWeb:
+    type: ClusterIP
+    port: 3010
+    ingress:
+      enabled: true
+      interface:
+        path:
+          - /vega/(.*)
+
+# 反亲和性设置
+antiAffinity:
+  enabled: true
+  rule: "soft" # 可选参数 hard, soft
+
+# 微服务通信依赖配置
+depServices:
+  class-443:
+    ingressClass: class-443
+
+# 资源配置
+resources:
+  requests:
+    cpu: 0
+    memory: 0Gi
+  limits:
+    cpu: 2
+    memory: 4Gi

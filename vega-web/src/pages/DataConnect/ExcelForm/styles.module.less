@@ -1,0 +1,135 @@
+.cellRangeContainer {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  transition: all 0.3s;
+
+  :global {
+    .ant-input {
+      border: none;
+    }
+
+    .ant-input:focus,
+    .ant-input-focused {
+      box-shadow: none;
+    }
+
+    .ant-input-status-error:not(.ant-input-disabled, .ant-input-borderless).ant-input:focus,
+    .ant-input-status-error:not(.ant-input-disabled, .ant-input-borderless).ant-input-focused {
+      border-color: transparent;
+      border-right-width: 0;
+      box-shadow: none;
+    }
+  }
+
+  .line {
+    color: rgb(0 0 0 / 25%);
+  }
+
+  .bottomLine {
+    position: absolute;
+    bottom: -1px;
+    height: 2px;
+    margin-left: 11px;
+    pointer-events: none;
+    background: rgb(24 144 255);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+  }
+}
+
+.cellRangeContainerFocus {
+  outline: 0;
+  border-color: #3a8ff0;
+  border-right-width: 1px;
+
+  .bottomLine {
+    width: 200px;
+    opacity: 1;
+    transition: all 0.3s ease-out;
+  }
+
+  .focusRightInput {
+    transform: translateX(251px);
+  }
+}
+
+.cellRangeContainerError {
+  background-color: #fff;
+  border-color: #e60012 !important;
+  box-shadow: 0 0 0 2px rgb(230 0 18 / 20%);
+}
+
+.questionIcon {
+  margin-left: 5px;
+  vertical-align: 20%;
+  color: rgb(0 0 0 / 65%);
+}
+
+.dataRangeContainer {
+  .radioGroupContainer {
+    display: flex;
+    width: 100%;
+
+    .radioItemWrapper {
+      flex: 1;
+    }
+  }
+
+  .btnMinWidth {
+    min-width: 80px;
+  }
+}
+
+.dataRangeView {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+
+  .sheetWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    overflow: hidden;
+
+    .item {
+      display: flex;
+      flex: 0 1 auto;
+      column-gap: 4px;
+      padding: 0 8px;
+      background: rgb(240 242 246 / 45%);
+      border-radius: 3px;
+
+      .text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.ar-button-model {
+  .ant-modal-body {
+    padding: 24px 24px 0;
+  }
+
+  .ar-button-model-form {
+    width: 100%;
+    overflow: hidden auto;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgb(38 52 71 / 40%);
+      border-radius: 8px;
+    }
+  }
+}

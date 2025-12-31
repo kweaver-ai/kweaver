@@ -1,0 +1,47 @@
+span.ant-time-picker .ant-time-picker-input {
+  border-radius: 2px;
+  border: 1px solid @component-color;
+
+  &:hover {
+    border-color: @hover-color;
+    border-right-width: 1px !important;
+  }
+
+  &:focus {
+    border-color: @hover-color !important;
+    box-shadow: 0 0 0 2px @color-3;
+  }
+}
+
+.ant-time-picker-panel-select li {
+  &:hover {
+    background-color: @text-font-item !important;
+  }
+
+  &:focus {
+    color: @primary-color !important;
+  }
+}
+
+span.ant-calendar-picker:hover .ant-calendar-picker-input:not(.ant-input-disabled) {
+  border-color: @hover-color;
+}
+
+div.ant-calendar-header a:hover {
+  color: @hover-color;
+}
+
+td.ant-calendar-decade-panel-selected-cell .ant-calendar-decade-panel-decade,
+td.ant-calendar-year-panel-selected-cell .ant-calendar-year-panel-year,
+td.ant-calendar-month-panel-selected-cell .ant-calendar-month-panel-month,
+td.ant-calendar-year-panel-selected-cell .ant-calendar-year-panel-year:hover,
+td.ant-calendar-decade-panel-selected-cell .ant-calendar-decade-panel-decade:hover,
+td.ant-calendar-month-panel-selected-cell .ant-calendar-month-panel-month:hover {
+  background: @primary-color;
+}
+
+a.ant-calendar-month-panel-month:hover,
+a.ant-calendar-decade-panel-decade:hover,
+a.ant-calendar-year-panel-year:hover {
+  background: @text-font-item;
+}

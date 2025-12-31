@@ -1,0 +1,36 @@
+@import '@/assets/styles/theme/index.less';
+
+.detail-title {
+  .link-info-message;
+
+  margin-top: 16px;
+  color: @primary-color;
+}
+
+.notification-no-message {
+  margin-top: -8px;
+}
+
+.notification-common-detail {
+  .detail-content-hide {
+    display: none;
+  }
+
+  .detail-content-show {
+    .content-text;
+
+    display: block;
+    margin-top: 8px;
+    hyphens: auto;
+  }
+
+  .icon-collapse-open {
+    margin-left: 4px;
+    transform: rotate(180deg);
+  }
+
+  .icon-collapse-close {
+    margin-left: 4px;
+    transform: rotate(0deg);
+  }
+}

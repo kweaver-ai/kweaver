@@ -1,0 +1,23 @@
+{
+  "Task": {
+    "taskName": "任務名稱",
+    "taskStatus": "任務狀態",
+    "taskDuration": "任務總耗時",
+    "taskDetail": "任務詳情",
+    "createTask": "新建任務",
+    "pleaseEnterTaskName": "請輸入任務名稱",
+    "buildType": "構建類型",
+    "buildMethod": "構建方式",
+    "buildTypeFull": "全量構建",
+    "buildTypeIncremental": "增量構建",
+    "fullBuildDescription": "對所有數據進行完整掃描與處理，重新生成整個知識網絡。",
+    "incrementalUpdateTitle": "增量更新",
+    "incrementalUpdateDescription": "僅對具備增量標識的變更數據進行局部更新;若數據源未配置 增量標識，則自動執行全量構建。",
+    "buildCount": "構建數據量",
+    "className": "類名",
+    "searchClassName": "搜索類名",
+    "sortByDuration": "按任務總耗時排序",
+    "errorTitle": "錯誤信息",
+    "emptyDescription": "暫無任務數據"
+  }
+}

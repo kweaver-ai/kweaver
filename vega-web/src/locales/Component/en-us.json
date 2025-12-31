@@ -1,0 +1,39 @@
+{
+  "Components": {
+    "dataViewSource": {
+      "checkedListTitle": "Selected: {count}",
+      "checkedTip": "Selected",
+      "clearAll": "Clear All",
+      "detail": "You can click the view name to see details",
+      "preview": "Preview",
+      "previewTip": "(Display partial data)",
+      "title": "Select Data View"
+    },
+    "quickRangeTime": {
+      "last12Hours": "Last 12 Hours",
+      "last15Days": "Last 15 Days",
+      "last15Minutes": "Last 15 Minutes",
+      "last1Hour": "Last 1 Hour",
+      "last1Month": "Last 1 Month",
+      "last1Year": "Last 1 Year",
+      "last24Hours": "Last 24 Hours",
+      "last30Minutes": "Last 30 Minutes",
+      "last3Days": "Last 3 Days",
+      "last3Month": "Last 3 Months",
+      "last4Hours": "Last 4 Hours",
+      "last5Minutes": "Last 5 Minutes",
+      "last5Years": "Last 5 Years",
+      "last6Hours": "Last 6 Hours",
+      "last6Month": "Last 6 Months",
+      "last7Days": "Last 7 Days",
+      "lastMonth": "Last Month",
+      "lastWeek": "Last Week",
+      "lastYear": "Last Year",
+      "thisMonth": "This Month",
+      "thisWeek": "This Week",
+      "thisYear": "This Year",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    }
+  }
+}

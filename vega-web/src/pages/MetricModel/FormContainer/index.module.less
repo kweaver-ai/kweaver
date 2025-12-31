@@ -1,0 +1,55 @@
+.metric-model-form-root {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  background: #fff;
+
+  .metric-model-form-go-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 56px;
+    padding-left: 16px;
+    border-bottom: var(--g-border);
+  }
+
+  .metric-model-form-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+
+    .metric-model-form-steps {
+      display: flex;
+      align-items: center;
+      width: 800px;
+      height: 55px;
+      pointer-events: none;
+      background-color: #fff;
+    }
+
+    .metric-model-form-content {
+      width: 100%;
+      height: calc(100% - 56px - 56px - 16px);
+      padding-top: 16px;
+      overflow-y: auto;
+    }
+
+    .metric-model-form-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 800px;
+      height: 56px;
+      margin-top: 16px;
+    }
+  }
+}

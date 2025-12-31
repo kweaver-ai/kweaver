@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.moduleName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    module: {{ .Values.moduleName }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      module: {{ .Values.moduleName }}
+  template:
+    metadata:
+      labels:
+        module: {{ .Values.moduleName }}
+    spec:
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      dnsConfig:
+        options:
+          - name: single-request-reopen
+          - name: use-vc
+      {{- if .Values.antiAffinity.enabled }}
+      affinity:
+        {{- if eq .Values.antiAffinity.rule "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: module
+                      operator: In
+                      values:
+                        - {{ .Values.moduleName }}
+        {{- else if eq .Values.antiAffinity.rule "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                  - key: module
+                    operator: In
+                    values:
+                      - {{ .Values.moduleName }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: manage-web
+        image: {{ template "manage-web.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        #command: ["/bin/sh"]
+        #args: ["-c","while true; do echo 123; sleep 10; done"]
+        ports:
+          - name: manage-web
+            containerPort: {{ .Values.service.manageWeb.port }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.service.manageWeb.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 30
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.service.manageWeb.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 30
+          failureThreshold: 3
+          successThreshold: 1
+        env:
+          - name: TZ
+            value: {{ .Values.env.timezone }}
+          - name: LANG
+            value: {{ .Values.env.language }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+      restartPolicy: Always

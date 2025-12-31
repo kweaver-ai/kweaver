@@ -1,0 +1,25 @@
+{
+  "RowColumnPermission": {
+    "listTitle": "Row/Column Permission List",
+    "searchPlaceholder": "Search row/column rule name",
+    "copyRule": "Copy Row/Column Rule",
+    "permissionConfig": "Permission Configuration",
+    "deleteRule": "Delete Row/Column Rule",
+    "deleteConfirm": "Are you sure to delete this row/column rule?",
+    "pleaseInputRuleName": "Please input row/column rule name",
+    "selectColumns": "Select column fields",
+    "configRowData": "Configure row data",
+    "viewDataDescription": "If you have configured row/column rules, you can view data",
+    "missingViewId": "Missing view ID parameter",
+    "fetchRulesFailed": "Failed to fetch row/column rule list",
+    "pleaseCompleteFilterCondition": "Please complete filter conditions",
+    "transfer": {
+      "item": "item",
+      "items": "items"
+    },
+    "visitor": "Visitor",
+    "from": "From",
+    "permission": "Permission",
+    "ruleApplication": "Rule Application"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Task": {
+    "taskName": "任务名称",
+    "taskStatus": "任务状态",
+    "taskDuration": "任务总耗时",
+    "taskDetail": "任务详情",
+    "createTask": "新建任务",
+    "pleaseEnterTaskName": "请输入任务名称",
+    "buildType": "构建类型",
+    "buildMethod": "构建方式",
+    "buildTypeFull": "全量构建",
+    "buildTypeIncremental": "增量构建",
+    "fullBuildDescription": "对所有数据进行完整扫描与处理，重新生成整个知识网络。",
+    "incrementalUpdateTitle": "增量更新",
+    "incrementalUpdateDescription": "仅对具备增量标识的变更数据进行局部更新;若数据源未配置 增量标识，则自动执行全量构建。",
+    "buildCount": "构建数据量",
+    "className": "类名",
+    "searchClassName": "搜索类名",
+    "sortByDuration": "按任务总耗时排序",
+    "errorTitle": "错误信息",
+    "emptyDescription": "暂无任务数据"
+  }
+}

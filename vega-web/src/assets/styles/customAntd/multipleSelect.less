@@ -1,0 +1,39 @@
+/**
+ * 多项选择下拉框样式修改
+ *
+ * @author zheng.guolei@eisoo.com
+ * @date 2019-01-28
+ *
+ */
+
+@import '@/assets/styles/theme/index.less';
+
+// div为多选，span为单选样式
+div.ant-select-selection,
+span.ant-select-selection {
+    border: 1px solid @component-color;
+
+    li.ant-select-selection__choice {
+        .content-text;
+
+        border: 1px solid @component-color;
+        background-color: @invalid-hover-color;
+        border-radius: 2px;
+
+        span.ant-select-selection__choice__remove {
+            .content-text;
+        }
+    }
+
+    li.ant-select-selection__choice:hover {
+        background-color: @th-bg-color;
+    }
+
+    li.ant-select-selection__choice:focus {
+        background-color: @text-font-item;
+    }
+}
+
+div.has-error .ant-select-selection {
+    border-color: @error-color;
+}

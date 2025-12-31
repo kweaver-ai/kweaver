@@ -1,0 +1,115 @@
+.overview-box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px;
+  background: #f5f8ff;
+
+  .overview-box-header {
+    padding: 20px 20px 0;
+    margin-bottom: 16px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+
+    .header-title {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+
+      .header-title-left {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+
+        .name-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          margin: 0;
+          border-radius: 4px;
+        }
+
+        .name-text {
+          font-size: 20px;
+          font-weight: 400;
+          line-height: 1em;
+        }
+      }
+
+      .header-title-right {
+        display: flex;
+        gap: 10px;
+      }
+    }
+
+    .header-comment {
+      width: 100%;
+      padding: 20px 0;
+      line-height: 1em;
+      border-bottom: 1px solid #e5e5e5;
+      opacity: 0.45;
+    }
+
+    .header-footer {
+      display: flex;
+      width: 100%;
+      padding: 12px 0;
+    }
+  }
+
+  .overview-box-bar {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    width: 100%;
+
+    .bar-item {
+      flex: 1;
+      padding: 20px 20px 0;
+      margin-bottom: 16px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+
+      dl {
+        display: flex;
+        padding-bottom: 28px;
+        border-bottom: 1px solid #e5e5e5;
+
+        dt {
+          width: 64px;
+          height: 64px;
+          padding: 16px;
+          margin: 10px 20px;
+          border-radius: 32px;
+        }
+
+        dd {
+          font-size: 16px;
+          line-height: 36px;
+        }
+      }
+    }
+  }
+
+  .overview-box-content {
+    flex: 1;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+  }
+}
+
+.name-icon {
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  margin-right: 10px;
+  border-radius: 4px;
+}

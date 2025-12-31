@@ -1,0 +1,131 @@
+// 扫描中 弹窗
+
+.noCloseBtn {
+  :global {
+    .ant-modal-close {
+      display: none;
+    }
+  }
+}
+
+// 选择数据源弹窗
+.modalWrapper {
+  :global {
+    .ant-modal-body {
+      padding: 0;
+    }
+  }
+
+  .title {
+    padding-bottom: 16px;
+  }
+
+  .init {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+
+  .modalContent {
+    height: 400px;
+    overflow-y: auto;
+    // padding: 10px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+
+    .emptyContainer {
+      margin-top: 70px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+
+      .itemIcon {
+        font-size: 28px;
+      }
+
+      .itemName {
+        width: calc(100% - 56px);
+        margin-left: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .modalInitContent {
+      width: 50%;
+      height: 100%;
+
+      .modalLeft {
+        height: 100%;
+        padding: 12px;
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+
+        .searchInput {
+          margin-bottom: 12px;
+        }
+
+        .treeContainer {
+          height: 320px;
+          overflow: auto;
+        }
+      }
+    }
+
+    .modalright {
+      width: 50%;
+      padding: 12px;
+
+      .rightItemBox {
+        height: 340px;
+        overflow-y: auto;
+      }
+
+      .initTitle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .ant-btn-link {
+        color: #126ee3;
+      }
+
+      .delBtn {
+        color: rgba(0, 0, 0, 0.85);
+      }
+    }
+  }
+
+  .modalFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .footerLeft {
+      display: flex;
+      align-items: center;
+      color: rgba(0, 0, 0, 0.45);
+    }
+
+    .footerLeftIcon {
+      margin-right: 8px;
+      font-size: 20px;
+    }
+
+    .footerRight {
+      .okButton {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+.initClear {
+  color: #126ee3;
+}

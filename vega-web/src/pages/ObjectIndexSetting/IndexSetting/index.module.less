@@ -1,0 +1,98 @@
+.drawerBox {
+  :global {
+    .ant-drawer-body {
+      padding-top: 0 !important;
+    }
+  }
+
+  .selectedBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 34px;
+    font-size: 14px;
+    color: #000;
+    border-bottom: 1px solid rgba(229, 229, 229);
+  }
+
+  .subTitleBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .subTitle {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  .settingItem {
+    width: 100%;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+
+    .settingItemTitle {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    .tipInfoBox {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 2px 0;
+      margin-top: 12px;
+      border-top: 1px solid rgba(221, 221, 221);
+
+      .tipItem {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.65);
+      }
+    }
+  }
+}
+
+.questionIcon {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.25) !important;
+  cursor: pointer;
+}
+
+.footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modelItem {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+
+  .modelName {
+    width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .modelInfo {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}

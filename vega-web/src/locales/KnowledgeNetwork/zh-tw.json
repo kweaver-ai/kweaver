@@ -1,0 +1,30 @@
+{
+  "KnowledgeNetwork": {
+    "businessKnowledgeNetwork": "業務知識網絡",
+    "create": "新建業務知識網絡",
+    "overview": "概述",
+    "overviewBtn": "概覽",
+    "ontologyModelingPreview": "本體建模預覽",
+    "recentlyModifiedObjectType": "最近修改的對象類",
+    "resource": "資源",
+    "emptyDescription": "暫無可使用的業務知識網絡",
+    "emptyCreate": "你還沒有創建業務知識網絡，請",
+    "emptyCreateTip": "業務知識網絡試試",
+    "overwriteTip": "注意！存在 ID 重複或名稱重複的業務知識網絡！點擊覆蓋後將覆蓋已存在的重複項,點擊忽略將跳過重複項。",
+    "fetchNodesFailed": "獲取節點數據失敗",
+    "fetchEdgesFailed": "獲取邊數據失敗",
+    "updateGraphFailed": "更新圖譜失敗",
+    "importKnowledgeNetwork": "導入業務知識網絡",
+    "createType": "創建類型",
+    "newImport": "新建導入",
+    "overwriteImport": "覆蓋導入",
+    "selectKnowledgeNetwork": "選擇業務知識網絡",
+    "pleaseSelectKnowledgeNetwork": "請選擇業務知識網絡",
+    "businessKnowledgeNetworkName": "業務知識網絡名稱",
+    "standardCreate": "標準創建",
+    "aiCreate": "AI創建",
+    "aiCreatePlaceholder": "請描述你希望創建一個什麼樣的業務知識網絡",
+    "generate": "生成",
+    "importConflictTip": "選擇 <b>覆蓋</b> 將替換已有項，選擇 <b>忽略</b> 將跳過重複項，選擇 <b>新建</b> 將創建一個新的業務知識網絡。"
+  }
+}

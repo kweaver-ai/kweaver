@@ -1,0 +1,136 @@
+/**
+ * 对话框样式修改
+ *
+ * @author ding.mei@eisoo.com
+ * @date 2019-01-12
+ *
+ */
+
+@import '@/assets/styles/theme/index.less';
+
+div.ant-modal-wrap > .ant-modal {
+    .ant-modal-content {
+        .ant-modal-close {
+            top: 8px;
+            right: 13px;
+
+            .ant-modal-close-x {
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+            }
+        }
+
+        .ant-modal-header {
+            border-bottom: 1px solid @splite-line;
+            height: 56px;
+            line-height: 56px;
+
+            .ant-modal-title,
+            .delete-title {
+                // 提示框标题栏的蓝色竖线
+                // border-left: 2px solid @color-6;
+                // padding-left: 16px;
+                .first-level-title;
+            }
+        }
+
+        .ant-modal-footer {
+            border-top: none;
+            padding: 24px;
+        }
+
+        .delete-icon {
+            // 删除提示的icon
+            color: @warning-color;
+            font-size: 24px;
+            padding-right: 10px;
+            vertical-align: middle;
+        }
+
+        .info-icon {
+            // 删除提示的icon
+            color: @warning-color;
+            font-size: 24px;
+            padding-right: 10px;
+            vertical-align: middle;
+        }
+    }
+}
+
+.ant-table-thead > tr > th {
+    i.anticon-filter {
+        width: 24px;
+        color: @disabled-color;
+
+        &:hover {
+            background: @icon-color;
+            color: @text-color;
+        }
+
+        &:active {
+            color: @heading-color;
+        }
+    }
+
+    i.ant-table-filter-selected.anticon-filter:hover {
+        color: @primary-color !important;
+    }
+}
+
+div.ant-dropdown {
+    font-size: 12px;
+
+    li.ant-dropdown-menu-item {
+        padding: 5px 16px;
+
+        span {
+            font-size: 12px;
+        }
+
+        &:hover {
+            background: @text-font-item;
+            color: @primary-color;
+
+            a {
+                color: @primary-color;
+            }
+        }
+
+        span.ant-checkbox-inner {
+            border: 1px solid @component-color;
+        }
+    }
+
+    li.ant-dropdown-menu-item-selected {
+        background: @white-color;
+        color: @primary-color !important;
+    }
+}
+
+.ant-select-dropdown-menu-item:hover:not(.ant-select-dropdown-menu-item-disabled) {
+    color: @primary-color;
+    background-color: @text-font-item !important;
+}
+
+.ant-select-dropdown.ant-select-dropdown--multiple .ant-select-dropdown-menu-item:hover .ant-select-selected-icon,
+.ant-select-dropdown.ant-select-dropdown--multiple .ant-select-dropdown-menu-item-selected .ant-select-selected-icon,
+.ant-select-dropdown.ant-select-dropdown--multiple
+    .ant-select-dropdown-menu-item-selected:hover
+    .ant-select-selected-icon {
+    color: @primary-color !important;
+}
+
+.ant-select-dropdown-menu-item-active:not(.ant-select-dropdown-menu-item-disabled) {
+    background-color: @text-font-item !important;
+}
+
+div.ant-table-filter-dropdown-btns {
+    background: @th-bg-color;
+    padding: 7px 16px;
+}
+
+// 抽屉
+div.ant-drawer-header {
+    border-bottom: 1px solid @splite-line;
+}

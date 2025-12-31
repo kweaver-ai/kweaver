@@ -1,0 +1,29 @@
+{
+  "Edge": {
+    "addDataProperty": "Add Data Property",
+    "dataViewConnection": "Connect source and target object class properties through data view",
+    "detailDataViewSource": "Source",
+    "detailDataViewTarget": "Target",
+    "detailSourceObject": "Source Object",
+    "detailSourcePoint": "Source",
+    "detailTargetObject": "Target Object",
+    "detailTargetPoint": "Target",
+    "detailTitle": "Relationship Class Details",
+    "directConnection": "Direct connection between object class properties",
+    "edgeClassName": "Relationship Class Name",
+    "edgeClassNameRequired": "Please fill in the relationship class name",
+    "emptyCreate": "No relationship classes yet?",
+    "emptyDescription": "No available relationship classes",
+    "mappingStep": "Relationship Mapping",
+    "relationAssociation": "Relationship Association",
+    "selectDataView": "Please select a data view",
+    "selectDataViewSource": "Please select data view source",
+    "selectDataViewTarget": "Please select data view target",
+    "selectSourcePoint": "Please select source",
+    "selectSourceProperty": "Please select source property",
+    "selectTargetPoint": "Please select target",
+    "selectTargetProperty": "Please select target property",
+    "sourceObjectType": "Source Object Class",
+    "targetObjectType": "Target Object Class"
+  }
+}

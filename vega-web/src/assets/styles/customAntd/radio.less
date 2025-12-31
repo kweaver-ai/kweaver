@@ -1,0 +1,97 @@
+/**
+ * 单选框样式修改
+ *
+ * @author zheng.guolei@eisoo.com
+ * @date 2019-01-28
+ *
+ */
+
+@import '@/assets/styles/theme/index.less';
+
+span.ant-radio-inner {
+    &::after {
+        background-color: @primary-color;
+
+        &:hover {
+            .ant-radio-inner {
+                border: 1px solid @primary-color !important;
+            }
+        }
+    }
+
+    &:hover {
+        border: 1px solid @primary-color !important;
+    }
+}
+
+.ant-radio {
+    &:hover {
+        .ant-radio-inner {
+            border: 1px solid @primary-color !important;
+        }
+    }
+}
+
+span.ant-radio .ant-radio-input:focus {
+    border: 1px solid @primary-color;
+}
+
+.ant-radio-checked {
+    .ant-radio-inner {
+        border-color: @primary-color !important;
+    }
+}
+// // 单选框组样式调整，包括单选框之间间距和选中的颜色
+// label.ant-radio-wrapper {
+//   margin-right: 70px;
+//   font-size: 12px;
+//   color: @text-color;
+// }
+
+label.ant-radio-wrapper-checked {
+    color: @primary-color;
+}
+
+label.ant-radio-wrapper:hover .ant-radio,
+span.ant-radio:hover .ant-radio-inner {
+    border-color: @primary-color;
+}
+
+// // radio的按钮形式
+// label.ant-radio-button-wrapper {
+//   border: 0;
+// }
+
+.ant-radio-group {
+    .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+        z-index: 99;
+        color: @primary-color;
+        border-color: @primary-color !important;
+        // box-shadow: -1px 0 0 0 @hover-color !important;
+
+        &:hover {
+            color: @hover-color;
+        }
+    }
+
+    .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled)::before {
+        background-color: @primary-color !important;
+        opacity: 1;
+    }
+
+    .ant-radio-button-wrapper:hover {
+        color: @hover-color;
+    }
+}
+
+div.ant-radio-group {
+    .ant-radio-button-wrapper {
+        &:first-child {
+            border-radius: 2px 0 0 2px !important;
+        }
+
+        &:last-child {
+            border-radius: 0 2px 2px 0 !important;
+        }
+    }
+}

@@ -1,0 +1,44 @@
+.task-root {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  padding-bottom: 38px;
+}
+
+.task-state {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .task-state-icon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &.pending {
+      background-color: #999;
+    }
+
+    &.running {
+      background-color: #0070d1;
+    }
+
+    &.completed {
+      background-color: #00c853;
+    }
+
+    &.failed {
+      background-color: #f44336;
+    }
+
+    &.canceled {
+      background-color: #ff9800;
+    }
+  }
+}
+
+.task-error {
+  height: 308px;
+  margin-top: 12px;
+  overflow: auto;
+}

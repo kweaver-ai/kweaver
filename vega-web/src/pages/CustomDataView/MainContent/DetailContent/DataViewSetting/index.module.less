@@ -1,0 +1,14 @@
+.setting-container {
+  position: fixed;
+  top: 49px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 49px);
+  background-color: #fff;
+
+  :global {
+    .ant-table-row.ant-table-row-selected > .ant-table-cell {
+      background-color: initial !important;
+    }
+  }
+}

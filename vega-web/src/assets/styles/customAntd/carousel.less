@@ -1,0 +1,25 @@
+@import '@/assets/styles/theme/index.less';
+
+div.ant-carousel .slick-slider .slick-dots {
+    .btn {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    margin-bottom: -20px;
+
+    .slick-active {
+        button {
+            .btn;
+
+            background-color: @primary-color;
+        }
+    }
+
+    button {
+        .btn;
+
+        background-color: @icon-color;
+    }
+}

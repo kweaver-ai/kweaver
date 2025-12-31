@@ -1,0 +1,14 @@
+{
+  "AddToolModal": {
+    "title": "选择",
+    "tool": "工具",
+    "mcp": "MCP",
+    "searchToolPlaceholder": "搜索工具箱/工具名称",
+    "searchMcpPlaceholder": "搜索MCP名称",
+    "toolBox": "工具箱",
+    "searchToolBox": "搜索工具箱",
+    "readToolBox": "阅读工具箱",
+    "searchAnyInfo": "搜索任何信息和网络URL",
+    "readOrSearchWebPage": "阅读或搜索网页"
+  }
+}

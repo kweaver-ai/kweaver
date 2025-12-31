@@ -1,0 +1,30 @@
+{
+  "KnowledgeNetwork": {
+    "businessKnowledgeNetwork": "业务知识网络",
+    "create": "新建业务知识网络",
+    "overview": "概述",
+    "overviewBtn": "概览",
+    "ontologyModelingPreview": "本体建模预览",
+    "recentlyModifiedObjectType": "最近修改的对象类",
+    "resource": "资源",
+    "emptyDescription": "暂无可使用的业务知识网络",
+    "emptyCreate": "你还没有创建业务知识网络，请",
+    "emptyCreateTip": "业务知识网络试试",
+    "overwriteTip": "注意！存在 ID 重复或名称重复的的业务知识网络！点击覆盖后将覆盖已存在的重复项,点击忽略将跳过重复项。",
+    "fetchNodesFailed": "获取节点数据失败",
+    "fetchEdgesFailed": "获取边数据失败",
+    "updateGraphFailed": "更新图谱失败",
+    "importKnowledgeNetwork": "导入业务知识网络",
+    "createType": "创建类型",
+    "newImport": "新建导入",
+    "overwriteImport": "覆盖导入",
+    "selectKnowledgeNetwork": "选择业务知识网络",
+    "pleaseSelectKnowledgeNetwork": "请选择业务知识网络",
+    "businessKnowledgeNetworkName": "业务知识网络名称",
+    "standardCreate": "标准创建",
+    "aiCreate": "AI创建",
+    "aiCreatePlaceholder": "请描述你希望创建一个什么样的业务知识网络",
+    "generate": "生成",
+    "importConflictTip": "选择 <b>覆盖</b> 将替换已有项，选择 <b>忽略</b> 将跳过重复项，选择 <b>新建</b> 将创建一个新的业务知识网络。"
+  }
+}

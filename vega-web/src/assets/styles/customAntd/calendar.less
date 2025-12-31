@@ -1,0 +1,83 @@
+td.ant-calendar-today .ant-calendar-date {
+  color: @primary-color;
+  border-color: @primary-color;
+}
+
+.ant-calendar-selected-day .ant-calendar-date {
+  background: @text-font-item !important;
+}
+
+.ant-calendar-date {
+  &:hover {
+    background-color: @text-font-item !important;
+  }
+
+  &:focus {
+    background-color: @primary-color !important;
+  }
+}
+
+.ant-calendar-range .ant-calendar-selected-start-date .ant-calendar-date,
+.ant-calendar-range .ant-calendar-selected-end-date .ant-calendar-date {
+  background-color: @primary-color !important;
+}
+
+.ant-calendar-range .ant-calendar-in-range-cell::before {
+  background-color: @text-font-item !important;
+}
+
+.ant-calendar a.ant-calendar-ok-btn {
+  background-color: @primary-color;
+  border-color: @primary-color;
+
+  &:hover,
+  &:focus {
+    color: @white-color;
+    border-color: @hover-color;
+    background-color: @hover-color;
+  }
+
+  &:active {
+    color: @white-color;
+    background-color: @active-color;
+    border-color: @active-color;
+  }
+}
+
+.ant-calendar .ant-calendar-ok-btn-disabled,
+.ant-calendar .ant-calendar-ok-btn.disabled,
+.ant-calendar .ant-calendar-ok-btn[disabled],
+.ant-calendar .ant-calendar-ok-btn-disabled:hover,
+.ant-calendar .ant-calendar-ok-btn.disabled:hover,
+.ant-calendar .ant-calendar-ok-btn[disabled]:hover,
+.ant-calendar .ant-calendar-ok-btn-disabled:focus,
+.ant-calendar .ant-calendar-ok-btn.disabled:focus,
+.ant-calendar .ant-calendar-ok-btn[disabled]:focus,
+.ant-calendar .ant-calendar-ok-btn-disabled:active,
+.ant-calendar .ant-calendar-ok-btn.disabled:active,
+.ant-calendar .ant-calendar-ok-btn[disabled]:active,
+.ant-calendar .ant-calendar-ok-btn-disabled.active,
+.ant-calendar .ant-calendar-ok-btn.disabled.active,
+.ant-calendar .ant-calendar-ok-btn[disabled].active {
+  color: @disabled-color !important;
+  background-color: @polar-5 !important;
+  border-color: @component-color !important;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+span.ant-calendar-picker:focus .ant-calendar-picker-input:not(.ant-input-disabled) {
+  border-color: @hover-color;
+  box-shadow: 0 0 0 2px @color-2;
+}
+
+div.ant-calendar-time-picker-select li {
+  &:hover {
+    background: @text-font-item;
+  }
+
+  &:active,
+  &:focus {
+    color: @primary-color;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "prettier.enable": true,
+  "stylelint.enable": true,
+  "stylelint.validate": ["css", "less", "scss"],
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false
+}

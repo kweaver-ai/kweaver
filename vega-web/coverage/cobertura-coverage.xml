@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage lines-valid="16" lines-covered="16" line-rate="1" branches-valid="12" branches-covered="11" branch-rate="0.9167000000000001" timestamp="1745307668401" complexity="0" version="0.1">
+  <sources>
+    <source>D:\gmanager-studio</source>
+  </sources>
+  <packages>
+    <package name="Format" line-rate="1" branch-rate="1">
+      <classes>
+        <class name="index.tsx" filename="src\adComponents\Format\index.tsx" line-rate="1" branch-rate="1">
+          <methods>
+            <method name="(anonymous_0)" hits="1" signature="()V">
+              <lines>
+                <line number="8" hits="1"/>
+              </lines>
+            </method>
+            <method name="(anonymous_1)" hits="3" signature="()V">
+              <lines>
+                <line number="11" hits="3"/>
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="1" branch="false"/>
+            <line number="10" hits="1" branch="false"/>
+            <line number="11" hits="1" branch="false"/>
+            <line number="12" hits="3" branch="false"/>
+          </lines>
+        </class>
+      </classes>
+    </package>
+    <package name="Format.Text" line-rate="1" branch-rate="0.9167000000000001">
+      <classes>
+        <class name="index.tsx" filename="src\adComponents\Format\Text\index.tsx" line-rate="1" branch-rate="0.9167000000000001">
+          <methods>
+            <method name="(anonymous_0)" hits="10" signature="()V">
+              <lines>
+                <line number="34" hits="10"/>
+              </lines>
+            </method>
+            <method name="(anonymous_1)" hits="2" signature="()V">
+              <lines>
+                <line number="55" hits="2"/>
+              </lines>
+            </method>
+            <method name="(anonymous_2)" hits="2" signature="()V">
+              <lines>
+                <line number="56" hits="2"/>
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="11" hits="1" branch="false"/>
+            <line number="34" hits="1" branch="false"/>
+            <line number="50" hits="10" branch="false"/>
+            <line number="51" hits="10" branch="true" condition-coverage="100% (2/2)"/>
+            <line number="52" hits="10" branch="true" condition-coverage="100% (2/2)"/>
+            <line number="53" hits="10" branch="false"/>
+            <line number="55" hits="10" branch="false"/>
+            <line number="56" hits="10" branch="false"/>
+            <line number="59" hits="10" branch="false"/>
+            <line number="80" hits="10" branch="true" condition-coverage="100% (2/2)"/>
+            <line number="81" hits="6" branch="false"/>
+            <line number="87" hits="4" branch="false"/>
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

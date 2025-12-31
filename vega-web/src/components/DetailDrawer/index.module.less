@@ -1,0 +1,87 @@
+.drawer-wrapper {
+  :global(.ant-drawer-body) {
+    padding: 0;
+  }
+
+  :global(.ant-divider-horizontal) {
+    width: 94%;
+    min-width: 94%;
+    margin: 0 26px;
+  }
+}
+
+.content-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  padding-bottom: 24px;
+  // padding-left: 22px;
+}
+
+.title {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 10px 0;
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(0, 55, 150, 0.02);
+  border-radius: 4px;
+
+  .title-span {
+    display: inline-block;
+    width: 3px;
+    height: 20px;
+    margin-right: 12px;
+    background-color: #126ee3;
+  }
+}
+
+.config-item {
+  display: flex;
+  width: 48%;
+  margin: 4px;
+  word-break: break-all;
+}
+
+.config-item-block {
+  display: block !important;
+}
+
+.one-line {
+  width: 100%;
+}
+
+.config-item-flex {
+  display: flex;
+}
+
+.text-name {
+  flex-basis: auto;
+}
+
+.text-content {
+  flex: 1;
+}
+
+.sec-content-wrapper {
+  .content-wrapper;
+
+  padding: 0;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.sec-container {
+  :global(.ar-form-fold-label) {
+    margin-left: 0 !important;
+    font-size: 12px !important;
+    font-weight: normal !important;
+    color: inherit !important;
+  }
+
+  > div:first-child {
+    margin-left: -18px;
+  }
+}

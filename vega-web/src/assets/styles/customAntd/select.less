@@ -1,0 +1,84 @@
+/**
+ * 下拉框样式修改
+ *
+ * @author zheng.guolei@eisoo.com
+ * @date 2019-02-26
+ *
+ */
+
+:global {
+  .ant-select-selection {
+    border-radius: 2px !important;
+  }
+
+  .ant-tree-node-content-wrapper::before {
+    background-color: unset !important;
+  }
+
+  .ant-select-tree-node-selected {
+    background-color: @text-font-item !important;
+    color: @primary-color !important;
+  }
+}
+
+.ant-select-tree-node:not(.ant-select-tree-treenode-disabled):hover {
+  color: @hover-color !important;
+}
+
+.ant-select-tree li .ant-select-tree-node-content-wrapper:not(.ant-select-tree-treenode-disabled) {
+  &:hover {
+    color: @hover-color;
+    background-color: unset;
+  }
+
+  &:active {
+    background-color: @text-font-item !important;
+    color: @primary-color !important;
+  }
+}
+
+div.ant-select.ant-select-enabled {
+  div.ant-select-selection.ant-select-selection--single {
+    // border-color: @component-color;
+    border-radius: 2px !important;
+
+    div.ant-select-selection-selected-value {
+      padding-right: 16px;
+    }
+  }
+
+  div.ant-select-selection.ant-select-selection--single:focus {
+    // border: 1px solid @color-6;
+    border-radius: 2px !important;
+  }
+
+  div.ant-select-selection__rendered {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  span.ant-select-arrow {
+    right: 8px;
+  }
+}
+
+div.ant-select-selection {
+  border-color: @component-color;
+}
+
+.ant-select:not(.ant-select-disabled) {
+  .ant-select-selection:focus,
+  .ant-select-selection:active {
+    border-color: @hover-color;
+    box-shadow: 0 0 0 2px @color-2;
+  }
+
+  .ant-select-selection:hover {
+    border-color: @hover-color;
+  }
+}
+
+.ant-select-focused .ant-select-selection {
+  border-color: @hover-color;
+  box-shadow: 0 0 0 2px @color-2;
+}

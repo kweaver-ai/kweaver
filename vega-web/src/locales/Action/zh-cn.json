@@ -1,0 +1,23 @@
+{
+  "Action": {
+    "actionClassName": "行动类名称",
+    "actionMonitor": "行动监听",
+    "actionResource": "行动资源",
+    "actionType": "行动类型",
+    "affectDescription": "影响描述",
+    "affectedObjectType": "影响对象类",
+    "affectedObjectTypeLabel": "影响的对象类",
+    "boundObjectType": "绑定对象类",
+    "conceptDefinition": "概念定义",
+    "cronExpression": "Cron表达式，{expression}",
+    "deleteActionClass": "删除行动类",
+    "emptyCreate": "暂无数据，您可以",
+    "emptyCreateTip": "进行配置",
+    "fixedRate": "固定频率，每{time}{unit}",
+    "resourceMapping": "资源映射",
+    "selectToolName": "选择工具名称",
+    "tool": "工具",
+    "triggerCondition": "触发条件",
+    "viewTool": "{name}查看"
+  }
+}

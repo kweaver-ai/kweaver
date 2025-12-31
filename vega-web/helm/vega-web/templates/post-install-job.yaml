@@ -1,0 +1,191 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-post-install-job
+  labels:
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}
+    version: {{ .Chart.Version }}
+  annotations:
+    # 注意，如果没有下面的这个注释的话，当前的这个Job就会被当成release的一部分
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ .Chart.Name }}
+        version: {{ .Chart.Version }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: {{ template "manage-web.image" . }}
+          command:
+            - "sh"
+            - "-c"
+            - >
+              curl --fail --show-error -H "Content-Type:application/json" -X PUT -d '
+              [
+                {
+                  "name": "ontology",
+                  "parent": "root",
+                  "orderIndex": 3000,
+                  "app": {
+                    "textZHCN": "本体引擎",
+                    "textZHTW": "本体引擎",
+                    "textENUS": "Ontology Engine",
+                    "icon": "//ip:port/kn-manage/side.svg"
+                  },
+                  "subapp": {
+                    "activeRule": "/",
+                    "baseRouter": "",
+                    "children": {}
+                  }
+                },
+                {
+                  "name": "ontology-manage",
+                  "parent": "ontology",
+                  "orderIndex": 1,
+                  "app": {
+                    "textZHCN": "业务知识网络",
+                    "textZHTW": "业务知识网络",
+                    "textENUS": "Business Knowledge Network",
+                    "pathname": "/vega/ontology",
+                    "icon": "//ip:port/kn-manage/side.svg"
+                  },
+                  "subapp": {
+                    "useEntryByRoute": true,
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                },
+                {
+                  "name": "vega",
+                  "parent": "root",
+                  "orderIndex": 4000,
+                  "app": {
+                    "textZHCN": "VEGA虚拟化",
+                    "textZHTW": "VEGA虚拟化",
+                    "textENUS": "VEGA Virtualization",
+                    "icon": "//ip:port/vega/side.svg"
+                  },
+                  "bottom": true,
+                  "subapp": {
+                    "entry": "//ip:port/vega/",
+                    "registryRouter": "/vega",
+                    "activeRule": "/",
+                    "baseRouter": "",
+                    "children": {}
+                  }
+                },
+                {
+                  "name": "data-connect",
+                  "parent": "vega",
+                  "orderIndex": 0,
+                  "app": {
+                    "textZHCN": "数据连接",
+                    "textZHTW": "数据连接",
+                    "textENUS": "Data Connection",
+                    "pathname": "/vega/data-connect",
+                    "icon": "//ip:port/vega/icon-shujulianjie.svg"
+                  },
+                  "subapp": {
+                    "useEntryByRoute": true,
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                },
+                {
+                  "name": "view",
+                  "parent": "vega",
+                  "orderIndex": 1,
+                  "app": {
+                    "textZHCN": "数据视图",
+                    "textZHTW": "數據視圖",
+                    "textENUS": "Data View",
+                    "type": "directory",
+                    "icon": "//ip:port/vega/icon-view.svg"
+                  },
+                  "subapp": {
+                    "activeRule": "/",
+                    "baseRouter": "",
+                    "children": {
+                      "atom-data-view": {
+                        "name": "atom-data-view",
+                        "parent": "view",
+                        "orderIndex": 0,
+                        "app": {
+                          "textZHCN": "原子视图",
+                          "textZHTW": "原子视图",
+                          "textENUS": "Atom View",
+                          "type": "directory",
+                          "pathname": "/vega/atom-data-view",
+                          "icon": "//ip:port/vega/icon-view.svg"
+                        },
+                        "subapp": {
+                          "useEntryByRoute": true,
+                          "activeRule": "/",
+                          "baseRouter": ""
+                        }
+                      },
+                      "custom-data-view": {
+                        "name": "custom-data-view",
+                        "parent": "view",
+                        "orderIndex": 1,
+                        "app": {
+                          "textZHCN": "自定义视图",
+                          "textZHTW": "自定义视图",
+                          "textENUS": "Custom Data View",
+                          "type": "directory",
+                          "pathname": "/vega/custom-data-view",
+                          "icon": "//ip:port/vega/icon-view.svg"
+                        },
+                        "subapp": {
+                          "useEntryByRoute": true,
+                          "activeRule": "/",
+                          "baseRouter": ""
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "model-managenent",
+                  "parent": "vega",
+                  "orderIndex": 2,
+                  "app": {
+                    "textZHCN": "数据模型",
+                    "textZHTW": "資料模型",
+                    "textENUS": "Data Model",
+                    "type": "directory",
+                    "icon": "//ip:port/vega/icon-shujumoxing.svg"
+                  },
+                  "subapp": {
+                    "activeRule": "/",
+                    "baseRouter": "",
+                    "children": {}
+                  }
+                },
+                {
+                  "name": "metric-model",
+                  "parent": "model-managenent",
+                  "orderIndex": 0,
+                  "app": {
+                    "textZHCN": "指标模型",
+                    "textZHTW": "指标模型",
+                    "textENUS": "Metric Model",
+                    "type": "directory",
+                    "pathname": "/vega/metric-model",
+                    "icon": "//ip:port/vega/icon-metric.svg"
+                  },
+                  "subapp": {
+                    "useEntryByRoute": true,
+                    "activeRule": "/",
+                    "baseRouter": ""
+                  }
+                }
+              ]' http://studio-web-service:8877/api/workstation/v1/webapp

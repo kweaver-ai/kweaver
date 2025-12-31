@@ -1,0 +1,25 @@
+{
+  "RowColumnPermission": {
+    "listTitle": "行列權限列表",
+    "searchPlaceholder": "搜索行列規則名稱",
+    "copyRule": "複製行列規則",
+    "permissionConfig": "權限配置",
+    "deleteRule": "刪除行列規則",
+    "deleteConfirm": "確定刪除該行列規則嗎？",
+    "pleaseInputRuleName": "請輸入行列規則名稱",
+    "selectColumns": "勾選列字段",
+    "configRowData": "配置行數據",
+    "viewDataDescription": "若您已配置好行列規則，可查看數據",
+    "missingViewId": "缺少視圖ID參數",
+    "fetchRulesFailed": "獲取行列規則列表失敗",
+    "pleaseCompleteFilterCondition": "請完善過濾條件",
+    "transfer": {
+      "item": "項",
+      "items": "項"
+    },
+    "visitor": "訪問者",
+    "from": "來自",
+    "permission": "權限",
+    "ruleApplication": "規則應用"
+  }
+}

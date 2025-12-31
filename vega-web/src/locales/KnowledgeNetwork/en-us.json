@@ -1,0 +1,30 @@
+{
+  "KnowledgeNetwork": {
+    "businessKnowledgeNetwork": "Business Knowledge Network",
+    "create": "Create Business Knowledge Network",
+    "overview": "Overview",
+    "overviewBtn": "Overview",
+    "ontologyModelingPreview": "Ontology Modeling Preview",
+    "recentlyModifiedObjectType": "Recently Modified Object Classes",
+    "resource": "Resource",
+    "emptyDescription": "No available business knowledge networks",
+    "emptyCreate": "You haven't created a business knowledge network yet, please",
+    "emptyCreateTip": "try creating a business knowledge network",
+    "overwriteTip": "Warning! There are business knowledge networks with duplicate IDs or names! Clicking Overwrite will overwrite existing duplicates, clicking Ignore will skip duplicates.",
+    "fetchNodesFailed": "Failed to fetch node data",
+    "fetchEdgesFailed": "Failed to fetch edge data",
+    "updateGraphFailed": "Failed to update graph",
+    "importKnowledgeNetwork": "Import Business Knowledge Network",
+    "createType": "Create Type",
+    "newImport": "New Import",
+    "overwriteImport": "Overwrite Import",
+    "selectKnowledgeNetwork": "Select Business Knowledge Network",
+    "pleaseSelectKnowledgeNetwork": "Please select a business knowledge network",
+    "businessKnowledgeNetworkName": "Business Knowledge Network Name",
+    "standardCreate": "Standard Create",
+    "aiCreate": "AI Create",
+    "aiCreatePlaceholder": "Please describe what kind of business knowledge network you want to create",
+    "generate": "Generate",
+    "importConflictTip": "Select <b>Overwrite</b> to replace existing items, select <b>Ignore</b> to skip duplicates, select <b>Create</b> to create a new business knowledge network."
+  }
+}

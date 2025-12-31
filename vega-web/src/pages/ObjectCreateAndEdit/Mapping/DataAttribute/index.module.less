@@ -1,0 +1,93 @@
+.node-box {
+  width: 320px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+
+  .node-title {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+    .name-icon {
+      display: flex;
+      align-items: center;
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+      margin: 0 5px;
+      border-radius: 4px;
+    }
+
+    .name-text {
+      max-width: 220px;
+      padding: 0 8px;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 1em;
+    }
+
+    .name-count {
+      padding: 3px 4px;
+      line-height: 1em;
+      background-color: #eeeff0;
+      border-radius: 4px;
+    }
+  }
+
+  .node-search {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+
+  .node-attr {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    height: 36px;
+    padding: 0 16px;
+    line-height: 36px;
+    cursor: pointer;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .node-handle {
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
+
+.edge-btn {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  background-color: #f50713;
+  border-radius: 10px;
+  -webkit-user-drag: none;
+}
+
+.attr-form-box {
+  position: fixed;
+  top: 100px;
+  right: 0;
+  z-index: 99;
+  width: 400px;
+  height: calc(100vh - 100px);
+  padding: 24px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  .attr-title {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+}

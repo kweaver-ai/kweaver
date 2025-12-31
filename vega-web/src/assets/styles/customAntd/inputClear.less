@@ -1,0 +1,26 @@
+/**
+ * 带删除输入框样式修改
+ *
+ * @author zheng.guolei@eisoo.com
+ * @date 2019-01-28
+ *
+ */
+
+@import '@/assets/styles/theme/index.less';
+
+//带清除的输入框样式修改
+span.ant-input-affix-wrapper {
+    font-size: 12px;
+    // width: 402px;
+
+    // 输入框样式修改
+    textarea.ant-input,
+    input.ant-input {
+        border-radius: 0;
+        border: 1px solid @component-color;
+    }
+
+    span.ant-input-suffix {
+        color: rgba(0, 0, 0, 0.45);
+    }
+}

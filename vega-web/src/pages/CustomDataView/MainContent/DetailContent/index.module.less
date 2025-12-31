@@ -1,0 +1,39 @@
+.form-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+
+  .form-header {
+    position: relative;
+    z-index: 10;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 49px;
+    padding: 0 25px;
+    color: red;
+    background-color: #fff;
+    border-bottom: var(--g-border);
+
+    .form-go-back {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgb(0 0 0 / 65%);
+    }
+
+    .form-operate {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      height: 100%;
+    }
+  }
+}

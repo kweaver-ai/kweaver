@@ -1,0 +1,101 @@
+.mainContainer {
+  position: fixed;
+  top: 52px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 52px);
+  background-color: #fff;
+
+  .headerBox {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+    .headerInfo {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      height: 100%;
+      font-size: 14px;
+      color: rgba(6, 6, 6, 0.85);
+    }
+
+    .headerInfoIcon {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+      font-size: 16px;
+      color: #fff;
+      border-radius: 4px;
+    }
+  }
+
+  .contentBox {
+    padding: 24px;
+
+    .contentBoxTitle {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #000;
+
+      .contentBoxTitleCount {
+        padding: 2px 4px;
+        font-size: 10px;
+        color: rgba(6, 6, 6, 0.65);
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 2px;
+      }
+    }
+  }
+
+  .contentBoxContent {
+    height: calc(100vh - 160px);
+  }
+
+  :global {
+    .ant-btn-color-link.ant-btn-variant-link:disabled {
+      color: rgba(18, 110, 227, 0.45) !important;
+    }
+  }
+}
+
+.propertyTitle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .keyTag {
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 20px;
+    color: #126ee3;
+    background: rgba(18, 110, 227, 0.04);
+    border: 1px solid #c6deff;
+    border-radius: 4px;
+  }
+
+  .titleTag {
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 20px;
+    color: #52c41a;
+    background: #f6ffed;
+    border: 1px solid #d9f7be;
+    border-radius: 4px;
+  }
+}
+
+.stateBox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

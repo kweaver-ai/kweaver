@@ -1,0 +1,36 @@
+.fieldPreview {
+  height: 100%;
+
+  .tableContainer {
+    box-sizing: border-box;
+    height: calc(100% - 48px);
+    padding: 16px;
+    overflow: hidden;
+
+    :global(.ant-table-wrapper) {
+      height: 100%;
+
+      .ant-table {
+        height: 100%;
+
+        .ant-table-container {
+          height: calc(100% - 64px); // 减去分页器高度
+
+          .ant-table-content {
+            height: 100%;
+            overflow: auto;
+          }
+        }
+      }
+    }
+
+    :global(.ant-empty) {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 200px;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Action": {
+    "actionClassName": "Action Class Name",
+    "actionMonitor": "Action Monitor",
+    "actionResource": "Action Resource",
+    "actionType": "Action Type",
+    "affectDescription": "Impact Description",
+    "affectedObjectType": "Affected Object Class",
+    "affectedObjectTypeLabel": "Affected Object Class",
+    "boundObjectType": "Bound Object Class",
+    "conceptDefinition": "Concept Definition",
+    "cronExpression": "Cron Expression, {expression}",
+    "deleteActionClass": "Delete Action Class",
+    "emptyCreate": "No data yet. You can",
+    "emptyCreateTip": "to configure",
+    "fixedRate": "Fixed Rate, every {time} {unit}",
+    "resourceMapping": "Resource Mapping",
+    "selectToolName": "Select Tool Name",
+    "tool": "Tool",
+    "triggerCondition": "Trigger Condition",
+    "viewTool": "View {name}"
+  }
+}

@@ -1,0 +1,113 @@
+.mainBox {
+  height: 100%;
+
+  .contentBox {
+    box-sizing: border-box;
+    height: calc(100% - 48px);
+    padding: 16px 24px;
+
+    .topBox {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      .addItemBtn {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+
+        .addItemBtnContent {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          font-size: 14px;
+          color: #126ee3;
+          cursor: pointer;
+        }
+
+        .tipBox {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          font-size: 12px;
+          color: rgb(0 0 0 / 65%);
+        }
+      }
+
+      .outTypeBox {
+        display: flex;
+        align-items: center;
+
+        .radioGroup {
+          display: flex;
+          gap: 16px;
+          align-items: center;
+        }
+
+        .radioItem {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          font-size: 12px;
+          color: rgb(0 0 0 / 65%);
+        }
+      }
+    }
+  }
+
+  :global {
+    .ant-table-tbody > tr > td {
+      border: none !important;
+    }
+
+    .ant-table-cell {
+      padding-left: 0 !important;
+    }
+  }
+
+  .mergeTableBox {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.resultItem {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.actionBox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rowSelectRightSplit {
+  width: 16px;
+  height: 1px;
+  background: rgb(0 0 0 / 25%);
+}
+
+.rowNameSplit {
+  width: 1px;
+  height: 16px;
+  background: rgb(0 0 0 / 25%);
+}
+
+.emptyText {
+  margin-top: 100px;
+  font-size: 12px;
+  color: rgb(0 0 0 / 65%);
+  text-align: center;
+}
+
+.errorBox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+}

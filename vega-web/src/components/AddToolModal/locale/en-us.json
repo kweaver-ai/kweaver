@@ -1,0 +1,14 @@
+{
+  "AddToolModal": {
+    "title": "Select",
+    "tool": "Tool",
+    "mcp": "MCP",
+    "searchToolPlaceholder": "Search tool box/tool name",
+    "searchMcpPlaceholder": "Search MCP name",
+    "toolBox": "Tool Box",
+    "searchToolBox": "Search Tool Box",
+    "readToolBox": "Read Tool Box",
+    "searchAnyInfo": "Search any information and network URL",
+    "readOrSearchWebPage": "Read or search web page"
+  }
+}

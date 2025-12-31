@@ -1,0 +1,173 @@
+@import '@/assets/styles/theme/index.less';
+
+div.ant-table colgroup>col.ant-table-selection-col {
+    width: 32px !important;
+    min-width: 32px !important;
+}
+
+.ant-table-thead>tr>th.ant-table-selection-column {
+    padding: 11px 2px;
+}
+
+.ant-table-expand-icon-th,
+.ant-table-row-expand-icon-cell {
+    padding-right: 0 !important;
+    width: 32px !important;
+    min-width: 32px !important;
+}
+
+.ant-table-row-selected>td {
+    background: @text-font-item !important;
+}
+
+.ant-table-row {
+    &:hover {
+        background-color: @th-bg-color;
+    }
+}
+
+// .ant-table-expanded-row .ant-table-thead > tr > th {
+//   background: @white-color;
+// }
+
+.ant-table-expanded-row-level-1>td:first-child {
+    border-left: 2px solid @primary-color;
+}
+
+tr.ant-table-expanded-row,
+tr.ant-table-expanded-row:hover {
+    background: @module-bg !important;
+}
+
+table tr.ant-table-expanded-row td>.ant-table-wrapper {
+    margin: 0;
+}
+
+// .ant-table-expanded-row table thead tr th:not(:nth-child(1)),
+// .ant-table-expanded-row table tbody tr td:not(:nth-child(1)) {
+//   background-color: @edit-tag-color;
+// }
+
+.ant-table-expanded-row td:nth-child(1) {
+    border-right: 0 !important;
+}
+
+div.ant-table-wrapper {
+
+    // 对表格的样式进行修改
+    .ant-table {
+        .content-text;
+    }
+
+    .ant-table-thead>tr>th,
+    .ant-table-tbody>tr>td {
+        padding: 8px;
+    }
+
+    .ant-table-thead>tr>th .ant-table-column-sorter .ant-table-column-sorter-inner-full {
+        margin-top: -0.6em;
+    }
+
+    .ant-table-thead>tr {
+        .text-title;
+
+        background: @th-bg-color;
+    }
+
+    .ant-table-thead>tr>th {
+        border-right: 1px solid @white-color;
+        border-bottom: 1px solid @splite-line;
+
+        &:nth-last-child(1) {
+            border-bottom: 1px solid @splite-line;
+        }
+    }
+
+    .ant-table-tbody>tr>td {
+        border-bottom: 1px solid @splite-line;
+        border-right: 1px solid rgba(0, 0, 0, 0);
+
+        &:nth-last-child(1) {
+            border-right: none;
+            padding-bottom: 0;
+        }
+    }
+
+    .ant-table-tbody>tr:hover:not(.ant-table-expanded-row)>td {
+        background: @th-bg-color;
+        border-right: 1px solid rgba(0, 0, 0, 0);
+
+        &:nth-last-child(1) {
+            border-right: none;
+        }
+    }
+
+    // 表格的选择框还原为默认样式
+    ul.ant-pagination {
+        .text-title;
+
+        .ant-select-selection__rendered {
+            margin: 0 7px;
+        }
+
+        span.ant-select-arrow {
+            right: 8px !important;
+        }
+    }
+}
+
+// 表格设置了左右两个固定的栏
+// 正常的表格里面这个栏也是会生成的，只是隐藏掉了，
+// antd 隐藏的标签不对，导致界面出现了空白
+// 这里对他进行重写
+div.ant-table-scroll table .ant-table-fixed-columns-in-body {
+    visibility: visible;
+
+    span {
+        visibility: hidden;
+    }
+}
+
+// 固定栏换行和原table保持一致 否则导致界面显示有问题
+div.ant-table-fixed-left {
+    .ant-table-tbody {
+        td {
+            word-break: break-all;
+        }
+    }
+}
+
+// 表格滚动条
+div.ant-table-body {
+    overflow-x: auto !important;
+
+    .ant-table-tbody {
+        td {
+            word-break: break-all;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+    }
+}
+
+span.ant-checkbox-indeterminate .ant-checkbox-inner::after {
+    background-color: @primary-color;
+}
+
+thead.ant-table-thead>tr>th .ant-table-column-sorter .ant-table-column-sorter-inner .ant-table-column-sorter-up.on,
+.ant-table-thead>tr>th .ant-table-column-sorter .ant-table-column-sorter-inner .ant-table-column-sorter-down.on {
+    color: @primary-color;
+}
+
+thead.ant-table-thead>tr>th .ant-table-filter-selected.anticon {
+    color: @primary-color;
+}
+
+a.ant-table-filter-dropdown-link {
+    .link-info-message;
+}
+
+.anticon-caret-right,
+.anticon-caret-down:not(.ant-table-column-sorter-down) {
+    color: @text-color;
+}

@@ -1,0 +1,33 @@
+.add-tool-modal-root {
+  :global {
+    .ant-tree-switcher {
+      align-self: center !important;
+    }
+
+    .ant-tree-switcher-leaf-line::before,
+    .ant-tree-switcher-leaf-line::after {
+      display: none;
+    }
+  }
+
+  .tree-title-line {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+  }
+
+  .overflow-hidden {
+    width: 650px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tree-title {
+    color: rgba(0, 0, 0, 0.88);
+  }
+
+  .tree-desc {
+    color: rgba(0, 0, 0, 0.65);
+  }
+}

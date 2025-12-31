@@ -1,0 +1,23 @@
+{
+  "Task": {
+    "taskName": "Task Name",
+    "taskStatus": "Task Status",
+    "taskDuration": "Task Total Duration",
+    "taskDetail": "Task Details",
+    "createTask": "Create Task",
+    "pleaseEnterTaskName": "Please Enter Task Name",
+    "buildType": "Build Type",
+    "buildMethod": "Build Method",
+    "buildTypeFull": "Full Build",
+    "buildTypeIncremental": "Incremental Build",
+    "fullBuildDescription": "Perform complete scan and processing of all data, regenerating the entire knowledge network.",
+    "incrementalUpdateTitle": "Incremental Update",
+    "incrementalUpdateDescription": "Only perform partial updates on changed data with incremental identifiers; if the data source is not configured with incremental identifiers, a full build will be automatically executed.",
+    "buildCount": "Build Data Volume",
+    "className": "Class Name",
+    "searchClassName": "Search Class Name",
+    "sortByDuration": "Sort by Task Total Duration",
+    "errorTitle": "Error Information",
+    "emptyDescription": "No task data available"
+  }
+}

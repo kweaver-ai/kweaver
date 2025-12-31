@@ -1,0 +1,72 @@
+@import '@/assets/styles/theme/index.less';
+
+/********************
+ 字段筛选组件样式 Mixins
+********************/
+
+.fields-filter-mixins {
+    // 选择框样式
+    .select {
+        display: inline-block;
+        margin-right: 8px;
+        width: 120px;
+    }
+
+    .field-key,
+    .field-value {
+        width: 180px;
+        margin-left: 8px;
+    }
+
+    .field-operator,
+    .joiner {
+        width: 64px;
+    }
+
+    // 筛选标签样式
+    .filter-tags {
+        margin: 0;
+
+        .ant-tag {
+            position: relative;
+
+            .anticon {
+                display: none;
+            }
+
+            // 鼠标移入标签时的图标样式
+            &:hover {
+                .anticon {
+                    display: inline-block;
+                    color: @white-color;
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: 4px;
+                }
+
+                background-color: @edit-tag-hover;
+            }
+
+            &.tag-primary {
+                background-color: @message-tag-bg-color;
+                color: @link-color;
+                border-color: @message-tag-border-color;
+            }
+
+            &.tag-primary:hover {
+                background-color: @message-tag-border-color;
+                color: @link-color;
+                border-color: @message-tag-border-color;
+            }
+
+            &.tag-and:hover {
+                background-color: fade(@and-tag-color, 75%);
+            }
+
+            &.tag-or:hover {
+                background-color: fade(@or-tag-color, 75%);
+            }
+        }
+    }
+}

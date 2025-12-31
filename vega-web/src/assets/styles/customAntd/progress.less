@@ -1,0 +1,40 @@
+/**
+ * 进度条样式修改
+ *
+ * @author ding.mei@eisoo.com
+ * @date 2019-01-23
+ *
+ */
+
+@import '@/assets/styles/theme/index.less';
+
+span.ant-progress-text {
+    margin-left: 16px;
+    font-size: 12px;
+    color: @color-6;
+
+    .action {
+        font-size: 16px; // icon
+    }
+}
+
+// 上传进度颜色
+div.ant-progress-bg {
+    background-color: @color-6;
+}
+
+// 进度条底色
+div.ant-progress-inner {
+    background-color: @text-font-item;
+}
+
+// 上传成功
+div.ant-progress-status-success .ant-progress-bg {
+    background-color: @success-color;
+}
+
+// 实现进度条和百分比之间间隔16px
+div.ant-progress-show-info .ant-progress-outer {
+    padding-right: calc(2em + 16px);
+    margin-right: calc(-2em - 16px);
+}

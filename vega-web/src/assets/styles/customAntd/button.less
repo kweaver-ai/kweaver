@@ -1,0 +1,126 @@
+@import '@/assets/styles/theme/index.less';
+
+button.ant-btn {
+    // 主按钮
+    &.ant-btn-primary {
+        background-color: @primary-color;
+        border-color: @primary-color;
+
+        &:hover,
+        &:focus {
+            color: @white-color;
+            border-color: @hover-color;
+            background-color: @hover-color;
+        }
+
+        &:active {
+            color: @white-color;
+            background-color: @active-color;
+            border-color: @active-color;
+        }
+    }
+
+    // 幽灵按钮
+    &.ant-btn-dashed {
+        color: @primary-color;
+        background-color: @white-color;
+        border: 1px dashed @primary-color;
+
+        // &:hover,
+        // &:focus {
+        //   color: @hover-color;
+        //   border: 1px dashed @hover-color;
+        // }
+
+        // &:active {
+        //   color: @active-color;
+        //   border-color: @active-color;
+        // }
+
+        // &[disabled],
+        // &[disabled]:hover {
+        //   color: @disabled-color;
+        //   background-color: @white-color;
+        //   border: 1px dashed @secondary-hover-color;
+        // }
+    }
+
+    // 危险按钮
+    // &.ant-btn-danger {
+    //   border: 1px solid @text-font-item;
+    //   background-color: @white-color;
+
+    //   &:hover {
+    //     color: @error-color;
+    //     border: 1px solid @error-color;
+    //   }
+
+    //   &:active {
+    //     color: @danger-active-color;
+    //     border: 1px solid @danger-active-color;
+    //   }
+
+    //   &:focus {
+    //     color: @error-color;
+    //     background-color: @white-color;
+    //   }
+    // }
+
+    // 失效按钮
+    // &[disabled],
+    // &[disabled]:hover {
+    //   background-color: @invalid-hover-color;
+    //   border-color: transparent;
+    // }
+
+    // 禁用按钮效果
+    &.ant-btn-primary[disabled],
+    &.ant-btn-primary[disabled]:hover,
+    &.ant-btn-primary[disabled]:focus {
+        color: @disabled-color;
+        background-color: @polar-5;
+        border-color: @component-color;
+        text-shadow: none;
+        box-shadow: none;
+    }
+
+    // &:hover {
+    //   border-color: @component-color;
+    // }
+
+    &:hover,
+    &:focus {
+        border-color: @hover-color;
+        color: @hover-color;
+    }
+
+    &:active {
+        border-color: @active-color;
+        color: @active-color;
+    }
+
+    // .ant-btn-link:hover,
+    // .ant-btn-link:focus,
+    // .ant-btn-link:active {
+    //   border-color: transparent;
+    // }
+}
+
+// 链接按钮
+a {
+    &:hover {
+        color: @edit-tag-border-color;
+    }
+
+    &:active {
+        color: @st-tropaz;
+    }
+}
+
+span.ant-btn-dashed:hover {
+    border-color: @hover-color;
+}
+
+span.ant-btn-dashed:active {
+    border-color: @active-color;
+}

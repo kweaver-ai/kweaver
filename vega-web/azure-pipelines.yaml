@@ -1,0 +1,390 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - 'feature-*'
+      - 'feature/*'
+      - 'develop'
+      - 'release-*'
+      - 'release/*'
+      - 'patch-*'
+
+variables:
+  - group: global-dip
+  - name: IMAGE_REGISTRY
+    value: 'acr.aishu.cn'
+  - name: IMAGE_REPOSITORY
+    value: 'dip/vega-web'
+  - name: CHART_REPO
+    value: 'https://acr.aishu.cn/api/chartrepo/dip/charts'
+  - name: CHART_NAME
+    value: 'vega-web'
+  - name: IS_RELEASE
+    value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release')]
+  - name: BRANCH_NAME
+    value: $[replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), '/', '-')]
+  - name: BASE_IMAGE
+    value: 'acr.aishu.cn/public/nginx:1.22.1-alpine'
+  - name: YQ_IMAGE
+    value: 'acr.aishu.cn/public/mikefarah/yq:4.26.1'
+  - name: LintReportName # 此行保持一致
+    value: lint_report.xml
+  - name: UTReportName # 此行保持一致
+    value: ut_report.xml
+  - name: CoverageReportName # 此行保持一致
+    value: coverage_report.xml
+
+parameters:
+  - name: TRIVY_EXIT_CODE
+    displayName: trivy exit code
+    type: number
+    default: 0
+    values:
+      - 0
+      - 1
+  - name: SKIP_SONARQUBE
+    displayName: skip sonarqube
+    type: number
+    default: 1
+    values:
+      - 0
+      - 1
+
+resources:
+  containers:
+    - container: dotnet
+      endpoint: ACRDockerRegistry
+      image: dotnet/runtime:3.1-bullseye-slim
+  repositories:
+    - repository: templatesAlias
+      type: git
+      name: ONE-Architecture\Yaml-Templates
+      ref: 'refs/heads/main'
+    - repository: arPipelineTemplates
+      type: git
+      name: AnyRobot\PipelineTemplates
+      ref: 'refs/heads/develop'
+
+stages:
+  - stage: InitVariable
+    displayName: 初始化版本号
+    jobs:
+      - job: InitVariable
+        pool: anyrobot-pools
+        workspace:
+          clean: all
+        steps:
+          - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+              - checkout: git://DIP/ontology-version@$(Build.SourceBranch)
+          - ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}:
+              - checkout: git://DIP/ontology-version@develop
+
+          - bash: |
+              set -ex
+              ontology_version=`cat VERSION`
+              set +x
+              echo "##vso[task.setvariable variable=ONTOLOGY_VERSION;isoutput=true]$ontology_version"
+            name: MyOutputVar
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  # - stage: CodeCheck
+  #   displayName: 代码检查
+  #   dependsOn:
+  #     - InitVariable
+  #   variables:
+  #     ONTOLOGY_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.ONTOLOGY_VERSION']]
+  #   jobs:
+  #     - job: CodeCheck
+  #       displayName: 代码检查
+  #       workspace:
+  #         clean: all
+  #       pool:
+  #         name: anyrobot-pools
+  #         demands:
+  #           - Agent.OSArchitecture -equals X64
+  #           - Agent.OS -equals Linux
+  #           - docker
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+
+  #         - task: Bash@3
+  #           displayName: 单元测试
+  #           inputs:
+  #             targetType: inline
+  #             script: |
+  #               #!/usr/bin/env bash
+  #               set -ex
+
+  #               docker run --rm \
+  #                     -v $(pwd):/vega-web \
+  #                     -v /root/.ssh/id_rsa:/root/.ssh/id_rsa \
+  #                     $(BUILD_IMAGE) bash -c "
+  #                 set -ex
+
+  #                 #mv /ontology/node_modules /vega-web
+  #                 #cd /vega-web
+
+  #                 cp -r /vega-web/.[^.]* /ontology/
+  #                 cp -r /vega-web/* /ontology
+  #                 cd /ontology
+
+  #                 # npm run jest
+  #                 # cp -r /ontology/coverage  /vega-web/
+  #                 # cp /vega-web/coverage/report-name-test.xml /report-name-test.xml
+  #                 # cp /vega-web/coverage/lcov.info /lcov.info
+  #                 "
+
+  #         - template: sonarqube-setps.yml@arPipelineTemplates
+  #           parameters:
+  #             SKIP_SONARQUBE: ${{ parameters.SKIP_SONARQUBE }}
+
+  #         - task: Post-Bash@3
+  #           inputs:
+  #             targetType: inline
+  #             script: |
+  #               rm -rf $(Build.SourcesDirectory)
+  #               ls -lah $(Agent.BuildDirectory)
+
+  - stage: BuildImage
+    displayName: 镜像编译
+    dependsOn:
+      - InitVariable
+      # - CodeCheck
+    variables:
+      ONTOLOGY_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.ONTOLOGY_VERSION']]
+    jobs:
+      - job: BuildImage
+        displayName: 镜像编译
+        workspace:
+          clean: all
+        strategy:
+          matrix:
+            amd64:
+              ARCH_TYPE: amd64
+              poolAgentOSArchitecture: X64
+            arm64:
+              ARCH_TYPE: arm64
+              poolAgentOSArchitecture: ARM64
+          maxParallel: 2
+        pool:
+          name: anyrobot-pools
+          demands:
+            - Agent.OSArchitecture -equals $(poolAgentOSArchitecture)
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - checkout: self
+            submodules: true
+
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              containerRegistry: 'ACRDockerRegistry'
+              command: 'login'
+
+          - task: Bash@3
+            name: BuildImageTask
+            displayName: 镜像编译
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                CommitID="$(Build.SourceVersion)"
+                CommitID="${CommitID:0:6}"
+
+                CURRENT_TAG="$(ONTOLOGY_VERSION)-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_TAG="$(ONTOLOGY_VERSION)-$(BRANCH_NAME)"
+                if [ $(IS_RELEASE) = True ]; then
+                    CURRENT_TAG="$(ONTOLOGY_VERSION)-$(Build.BuildNumber).${CommitID}"
+                    LATEST_TAG="$(ONTOLOGY_VERSION)"
+                fi
+
+                CURRENT_IMAGE="$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY):${CURRENT_TAG}.$(ARCH_TYPE)"
+                LATEST_IMAGE="$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY):${LATEST_TAG}.$(ARCH_TYPE)"
+
+                docker build --force-rm --no-cache --pull -t ${CURRENT_IMAGE} -f docker/Dockerfile \
+                  --build-arg BASE_IMAGE=$(BASE_IMAGE) .
+
+                set +x
+                echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
+                set +x
+                echo "##vso[task.setvariable variable=LATEST_IMAGE;isoutput=true]$LATEST_IMAGE"
+
+          - template: scan-image-step.yml@templatesAlias
+            parameters:
+              imageName: $(BuildImageTask.CURRENT_IMAGE)
+              exitCode: ${{ parameters.TRIVY_EXIT_CODE }}
+              scanTimeout: 10m
+
+          - task: Bash@3
+            displayName: 推送镜像
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+                docker tag $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+                docker push $(BuildImageTask.CURRENT_IMAGE)
+                docker push $(BuildImageTask.LATEST_IMAGE)
+                docker rmi $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
+                docker images -q -f dangling=true | xargs -I {} docker rmi {}
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  - stage: MakeManifest
+    displayName: 制作多架构镜像
+    dependsOn:
+      - InitVariable
+      - BuildImage
+    variables:
+      ONTOLOGY_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.ONTOLOGY_VERSION']]
+    jobs:
+      - job: MakeManifest
+        displayName: 制作多架构镜像
+        workspace:
+          clean: all
+        pool:
+          name: anyrobot-pools
+          demands:
+            - Agent.OSArchitecture -equals X64
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - task: Docker@2
+            displayName: 登录容器仓库
+            inputs:
+              containerRegistry: ACRDockerRegistry
+              command: login
+
+          - task: Bash@3
+            displayName: 制作多架构镜像
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                CommitID="$(Build.SourceVersion)"
+                CommitID="${CommitID:0:6}"
+
+                CURRENT_TAG="$(ONTOLOGY_VERSION)-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_TAG="$(ONTOLOGY_VERSION)-$(BRANCH_NAME)"
+                if [ $(IS_RELEASE) = True ]; then
+                    CURRENT_TAG="$(ONTOLOGY_VERSION)-$(Build.BuildNumber).${CommitID}"
+                    LATEST_TAG="$(ONTOLOGY_VERSION)"
+                fi
+
+                CURRENT_IMAGE="$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY):${CURRENT_TAG}"
+                LATEST_IMAGE="$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY):${LATEST_TAG}"
+
+                docker manifest create --amend ${CURRENT_IMAGE} ${CURRENT_IMAGE}.amd64 ${CURRENT_IMAGE}.arm64
+                docker manifest create --amend ${LATEST_IMAGE} ${LATEST_IMAGE}.amd64 ${LATEST_IMAGE}.arm64
+
+                docker manifest push -p ${CURRENT_IMAGE}
+                docker manifest push -p ${LATEST_IMAGE}
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)
+
+  - stage: ChartPush
+    displayName: Chart构建
+    dependsOn:
+      - InitVariable
+    variables:
+      ONTOLOGY_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.ONTOLOGY_VERSION']]
+    jobs:
+      - job: ChartPush
+        displayName: Chart构建
+        workspace:
+          clean: all
+        pool:
+          name: anyrobot-pools
+          demands:
+            - Agent.OSArchitecture -equals X64
+            - Agent.OS -equals Linux
+            - docker
+        steps:
+          - checkout: self
+
+          - task: Bash@3
+            displayName: Chart构建
+            inputs:
+              targetType: inline
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                CommitID="$(Build.SourceVersion)"
+                CommitID="${CommitID:0:6}"
+
+                CURRENT_TAG="$(ONTOLOGY_VERSION)-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_TAG="$(ONTOLOGY_VERSION)-$(BRANCH_NAME)"
+                if [ $(IS_RELEASE) = True ]; then
+                    CURRENT_TAG="$(ONTOLOGY_VERSION)-$(Build.BuildNumber).${CommitID}"
+                    LATEST_TAG="$(ONTOLOGY_VERSION)"
+                fi
+
+                CURRENT_VERSION="$(ONTOLOGY_VERSION)-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_VERSION="$(ONTOLOGY_VERSION)-$(BRANCH_NAME)"
+                if [ $(IS_RELEASE) = True ]; then
+                    CURRENT_VERSION="$(ONTOLOGY_VERSION)-$(Build.BuildNumber).${CommitID}"
+                    LATEST_VERSION="$(ONTOLOGY_VERSION)"
+                fi
+
+                chmod 777 -R $(pwd)/helm
+                docker run --rm \
+                      -v $(pwd)/helm:/chart \
+                      --entrypoint='' \
+                      $(YQ_IMAGE) sh -c "
+                  set -ex
+
+                  yq eval -i '.image.registry = \"$(IMAGE_REGISTRY)\"' /chart/$(CHART_NAME)/values.yaml
+                  yq eval -i '.image.repository = \"$(IMAGE_REPOSITORY)\"' /chart/$(CHART_NAME)/values.yaml
+                  yq eval -i '.image.tag = \"${LATEST_TAG}\"' /chart/$(CHART_NAME)/values.yaml
+
+                  yq eval -i '.name = \"$(CHART_NAME)\"' /chart/$(CHART_NAME)/Chart.yaml
+                  yq eval -i '.appVersion = \"${CURRENT_VERSION}\"' /chart/$(CHART_NAME)/Chart.yaml
+                  sed -i 's/\"version\": .*/\"version\": \"${CURRENT_VERSION}\",/g' /chart/$(CHART_NAME)/_componentMeta.json
+
+                  yq eval -i '.version = \"${CURRENT_VERSION}\"' /chart/$(CHART_NAME)/Chart.yaml
+                  cd /chart && tar -czf $(CHART_NAME)-${CURRENT_VERSION}.tar.gz $(CHART_NAME)
+
+                  yq eval -i '.version = \"${LATEST_VERSION}\"' /chart/$(CHART_NAME)/Chart.yaml
+                  cd /chart && tar -czf $(CHART_NAME)-${LATEST_VERSION}.tar.gz $(CHART_NAME)
+                  "
+
+                cd helm
+                curlOptions="-s -u $(registry.username):$(registry.password) -H \"Content-Type:multipart/form-data\""
+                curl ${curlOptions} -F "chart=@$(CHART_NAME)-${CURRENT_VERSION}.tar.gz;type=application/x-compressed-tar" -X POST "$(CHART_REPO)"
+                curl ${curlOptions} -F "chart=@$(CHART_NAME)-${LATEST_VERSION}.tar.gz;type=application/x-compressed-tar" -X POST "$(CHART_REPO)"
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+                ls -lah $(Agent.BuildDirectory)

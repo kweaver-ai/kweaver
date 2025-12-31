@@ -1,0 +1,36 @@
+.box {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  background-image: url('@/assets/images/action/detail_bg.png');
+  background-size: cover;
+
+  :global {
+    .ant-table,
+    .ant-table-placeholder,
+    .ant-table-thead > tr > td,
+    .ant-table-tbody > tr > td,
+    .ant-table-thead > tr > th {
+      background-color: transparent !important;
+    }
+  }
+
+  .name-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    border-radius: 4px;
+  }
+}
+
+.importForm {
+  :global {
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+  }
+}

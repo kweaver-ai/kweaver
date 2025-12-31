@@ -1,0 +1,29 @@
+{
+  "Edge": {
+    "addDataProperty": "新增數據屬性",
+    "dataViewConnection": "通過數據視圖將起點與終點對象類屬性連接",
+    "detailDataViewSource": "起",
+    "detailDataViewTarget": "終",
+    "detailSourceObject": "起點對象",
+    "detailSourcePoint": "起點",
+    "detailTargetObject": "終點對象",
+    "detailTargetPoint": "終點",
+    "detailTitle": "關係類詳情",
+    "directConnection": "對象類屬性與對象類屬性直接連接",
+    "edgeClassName": "關係類名稱",
+    "edgeClassNameRequired": "請填寫關係類名稱",
+    "emptyCreate": "還沒有關係類？",
+    "emptyDescription": "暫無可使用的關係類",
+    "mappingStep": "關係映射",
+    "relationAssociation": "關係關聯",
+    "selectDataView": "請選擇數據視圖",
+    "selectDataViewSource": "請選擇數據視圖起點",
+    "selectDataViewTarget": "請選擇數據視圖終點",
+    "selectSourcePoint": "請選擇起點",
+    "selectSourceProperty": "請選擇起點屬性",
+    "selectTargetPoint": "請選擇終點",
+    "selectTargetProperty": "請選擇終點屬性",
+    "sourceObjectType": "起點對象類",
+    "targetObjectType": "終點對象類"
+  }
+}

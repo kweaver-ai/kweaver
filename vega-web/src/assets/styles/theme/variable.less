@@ -1,0 +1,259 @@
+@import './color.less';
+
+/**
+ * 全局`Less`变量
+ *
+ * @author kim.jin@eisoo.com
+ * @date 2019-01-11
+ *
+ */
+
+// 纵向导航栏自定义变量
+@sidebar-font-color: @white;
+// slogan字体自定义变量
+@slogan-font-size-var: 18px;
+
+// css自定义变量
+:root {
+  --color-1: @ant-color-1;
+  --color-2: @ant-color-2;
+  --color-3: @ant-color-3;
+  --color-4: @ant-color-4;
+  --hover-color: @danube;
+  --primary-color: @boston-blue;
+  --active-color: @st-tropaz;
+  --color-8: @ant-color-8;
+  --color-9: @ant-color-9;
+  --color-10: @ant-color-10;
+
+  // 侧边栏颜色变量
+  --sidebar-primary-color: @sidebar-bg-primary;
+  --sidebar-hover-color: @sidebar-hover-secondary;
+  --sidebar-active-color: @sidebar-active-secondary;
+  --sidebar-font-color: @sidebar-font-default-color;
+  --sidebar-active-font-color: @sidebar-font-bg-color;
+  --sidebar-logo-bg-color: @bg-blue-color;
+
+  // 顶部栏颜色变量
+  --topbar-primary-color: @top-bg-primary;
+  --topbar-secondary-color: @top-bg-secondary;
+  --topbar-font-color: @top-font-color;
+
+  // slogan字体变量
+  --slogan-font-size: @slogan-font-size-var;
+}
+
+// 主色调
+@primary-color: @boston-blue; // 全局主色调
+@color-6: @boston-blue; // 颜色 -- 删除
+@link-color: @blue-sky; // 链接色 -- 删除颜色
+
+// 纵向导航栏
+@sidebar-menu-active-color: @black-pearl; // 导航栏选择
+@help-icon-color: @light-grey; // 菜单栏icon
+@nav-slide: @dark-blue; // 导航栏滑块
+@nav-inner-slide: @light-black-1; // 内页滑块
+@sidebar-bg-color: @downriver; // 导航栏背景
+@sidebar-logo-bg-color: @bg-blue-color; // 导航栏logo背景色
+
+// 横向导航栏
+// @header-drop: @polar-1; // 系统右顶部点击（底色）选择语言的下拉框,合并到table-hover-color
+// @other-icom-color: @black-pearl; // 其他 比如说垃圾桶的那个图标
+
+// 模块底色
+// @layout-body-background: @athens-gray; // 背景色 -- 禁止使用，换成@layout-bg-color
+@module-bg: @module-color; // 模块底色（深一点）
+// @block-color: @module-color; // 块级背景色（模块底色）换成module-bg
+// @module-bg-search: @module-color; // 块级背景色2（模块底色）换成module-bg
+@layout-bg-color: @athens-gray; // 背景色（内容部分总背景色）
+@primary-tab-bg-color: @kibana-grey; // 新旧页面统一新添加颜色（一级tab标签底色）
+
+// 阴影模块
+@strength-module-shadow: @polar; // 强化模块（零色调）高阴影与其他层级没有关联。如：弹窗、对话框、全局提示
+@search-shadow: @warm-grey; // 模块阴影，用于区分相近颜色的模块，（暖色调)低阴影悬停、点击触发的悬浮状态，随悬停操作取消而消失。如：卡片
+@component-shadow-color: @light-shadow-color; //中阴影组件的衍生，展开并跟随。随元素所在层移动。如：下拉列表框、气泡
+
+// 边框颜色
+@component-color: @tropical-blue; //输入框，下拉框，列表框，表单标签切换
+// @text-border-color: @tropical-blue; // 文本边框 -- 删除 改成@component-color
+
+// 分割线
+@splite-line: @polar; // 分割线
+// @layout-splite: @polar; // 用于系统模块划分，--删除
+// @content-splite: @polar; // 用于划分内容模块--删除
+// @title-border-deep-color: @polar; // 用于系统模块划分  --删除
+// @step-border-color: @polar; // 用于系统模块划分 -- 删除
+// @title-border-light-color: @polar; // 用于系统模块划分 -- 删除
+// @title-border-color: @polar; // 用于系统模块划分  -- 删除
+// @config-border-color: @polar; // 用于系统模块划分 -- 删除
+
+// 图标
+@search-icon-stroke: @tropical-blue-six; // 用于图标底色描边
+
+// 按钮
+// 主要按钮@lily-white
+@active-color: @st-tropaz; // 按钮点击状态
+@hover-color: @danube; // 鼠标移入
+@btn-invaild-status: @white-lilac; //按钮禁用状态
+
+// 次要按钮
+// @secondary-color: @solitude; // 次要按钮 默认状态 @secondary-color改为@text-font-item
+
+// 失效按钮
+@invalid-hover-color: @white-lilac; // 失效按钮（移入）
+
+// 危险按钮（按鈕暂时没有使用）
+// @button-hover-color: @sun; // 危险按钮（悬停）
+// @danger-active-color: @monza; // 危险按钮（点击）
+
+//常用标签
+// @and-tag-dark-color: @danube; // 常用标签字的颜色
+@and-tag-bg-dark-color: @lily-white; // 常用标签背景的颜色
+@message-tag-border-color: @milk-blue; //信息标签 边的颜色
+// @and-tag-border-dark-color: @cornflower; // 常用标签边的颜色
+
+// 项目中常用显示标签
+@main-tag-bg-color: @blackPercentFour;
+// @main-tag-border-color: @lily-white;
+@main-tag-color: @danube;
+// @main-tag-border-color: @tags-18;
+
+// 可编辑标签
+// @edit-tag-bg-color: @lily-white; //  编辑标签(背景)
+@edit-tag-border-color: @danube; // 常用标签 边的颜色，标签背景
+@edit-tag-color: @white; // 常用标签 字的颜色
+@edit-tag-hover: @danube-blue-seven; // 鼠标移入标签的蒙版颜色
+@edit-inverse-selection: @cornflower-lilac; // 反选标签颜色
+@message-tag-bg-color: @list-color; //信息标签 背景的颜色
+// @edit-iverse-hover: @cornflower-lilac-six; // 反选标签移入颜色
+
+// 标签5
+@default-tag-color: @text-color-secondary; //字的颜色
+@default-tag-border-color: @polar; //  边的颜色
+@primary-tag-color: @lily-white; // 背景的颜色
+
+// 标签1
+@secondary-tag-color: @new-york-pink; // 字的颜色
+@secondary-tag-bg-color: @chablis; // 背景的颜色
+@secondary-tag-border-color: @cornflower-lilac; // 边的颜色
+
+// 标签2
+@or-tag-color: @sun; //字的颜色
+@or-tag-bg-color: @early-dawn; //背景的颜色
+@or-tag-border-color: @cream-brulee; //  边的颜色
+// @or-tag-hover-color: @golden-tainoi-eight; // 鼠标移入
+
+// 标签3
+@and-tag-color: @malachite; // 字的颜色
+@and-tag-bg-color: @clear-day; // 背景的颜色
+@and-tag-border-color: @blizzard-blue; // 边的颜色
+// @and-tag-hover-color: @turquoise-blue-eight; // 鼠标移入
+
+// 表格
+@table-filter-choose: @white-lilac; // 表格的表头过滤的选中状态
+@th-bg-color: @polar-1; // 表头背景
+// @table-bottom-border-color: @polar; //  分割线 -- 删除
+@table-hover-color: @polar-1; // 列表移入颜色
+
+// 列表
+@list-hover-color: @polar-1; // 列表中鼠标移入颜色
+// @list-header-color: @polar-1; // 列表顶部颜色（暂时未使用）
+@list-order: @shadow-white; // 列表中的序号颜色
+
+// 表单
+@text-info-tab: @athens-gray; // 字段信息tab标签未选中状态
+@input-invaild: @white-lilac; // 输入框禁用状态
+@text-font-item: @list-color; // 用于tab选中状态
+@table-hover-color: @polar-1; // 和表格使用场景一致，可一起修改
+// @number-input-unchoose: @tropical-blue; //数字输入框（未选择状态）底色
+
+// 点缀色
+@adorn-color-1: @viking; // 点缀色1
+@adorn-color-2: @yellow-orange; // 点缀色2
+// @adorn-color-3: @danube; // 点缀色3
+@adorn-color-4: @milano-red; // 点缀色4
+@adorn-color-5: @flamingo; // 点缀色5
+@adorn-color-6: @Salomie; // 点缀色6
+@adorn-color-7: @light-green; // 点缀色7
+// 工具色
+@white-color: @white;
+@basic-black: @black;
+@heading-color: fade(@basic-black, 85%); // 标题色/强调文字
+@text-color: fade(@basic-black, 65%); // 正文内容
+@text-color-secondary: fade(@basic-black, 45%); // 辅助信息
+@disabled-color: fade(@basic-black, 25%); // 不可用
+@chart-line: fade(@basic-black, 15%);
+@modal-header: @shadow-black;
+@icon-back-default: @gray-base;
+
+//状态色
+@success-color: @malachite; // 成功色
+// @success-icon-color: @malachite; // 成功的图标 --删除
+// @complate-icon-color: @malachite; // 进图条完成 -- 删除
+@warning-color: @sun; // 警告色
+// @remind-icon-color: @sun; // 警告图标 -- 删除
+@error-color: @torch-red; // 错误色
+// @warin-icon-color: @torch-red; // 错误图标的告警 -- 删除
+// @error-icon-color: @torch-red; //出错图标 -- 删除
+
+// 可视化
+
+@visualization-main: @boston-blue;
+
+@visualization-main-1: @celery;
+@visualization-main-2: @saffron-mango;
+
+@visualization-main-3: @carnation;
+@visualization-main-4: @medium-purpl;
+@visualization-main-5: @picton-blue;
+
+// @visualization-extend-1: @ocean-green;
+@visualization-extend-2: @tan-hide;
+@visualization-extend-3: @lavender;
+@visualization-distribute-3: @danube;
+//@visualization-extend-4: @blue-violet;
+//@visualization-extend-5: @viking;
+//@visualization-extend-6: @cerise-red;
+
+// 衍生色
+@color-1: @alice-blue;
+@color-2: @polar-2;
+@color-3: @spindle-1;
+@color-4: @cornflower;
+@color-5: @st-tropaz;
+@color-7: @downriver-1;
+//@color-8: @black-pearl-1;
+
+// icon颜色
+@icon-color: @light-black; // 0.45
+@icon-deep-color: @text-color; // 0.65
+// 卡片阴影色
+@help-card-shadow: @card-shadow;
+
+// 个性化品牌色
+@color-1: var(--color-1);
+@color-2: var(--color-2);
+@color-3: var(--color-3);
+@color-4: var(--color-4);
+@color-5: var(--hover-color);
+@color-6: var(--primary-color);
+@color-7: var(--active-color);
+@color-8: var(--color-8);
+@color-9: var(--color-9);
+@color-10: var(--color-10);
+@hover-color: var(--hover-color);
+@primary-color: var(--primary-color);
+@active-color: var(--active-color);
+
+@text-font-item: @color-1;
+
+// 侧边栏颜色配置
+@sidebar-bg-color: var(--sidebar-primary-color);
+@sidebar-menu-active-color: var(--sidebar-hover-color);
+@nav-slide: var(--sidebar-active-color);
+@help-icon-color: var(--sidebar-font-color);
+@sidebar-font-color: var(--sidebar-active-font-color);
+@sidebar-logo-bg-color: var(--sidebar-logo-bg-color);
+
+// slogan字体大小配置
+@slogan-font-size: var(--slogan-font-size);

@@ -1,0 +1,17 @@
+node_modules/
+
+dist/
+build/
+lib/
+es/
+umd/
+coverage/
+docker/
+helm/
+public/
+
+src/assets/
+
+*.svg
+
+pnpm-lock.yaml

@@ -1,0 +1,60 @@
+@import '@/assets/styles/theme/index.less';
+
+div.ant-tabs {
+    // 卡片式页签
+    &.ant-tabs-card {
+        .ant-tabs-bar {
+            margin: 0;
+
+            .ant-tabs-tab {
+                margin: 0;
+                background-color: @text-info-tab;
+                transition: none; // 取消切换动画
+
+                &.ant-tabs-tab-active {
+                    background-color: @module-bg;
+                    color: @primary-color;
+                    border: 1px solid @component-color;
+                }
+
+                div {
+                    margin-top: 16px;
+                }
+            }
+        }
+
+        .ant-tabs-content {
+            padding: 16px;
+            background-color: @module-bg;
+            border: 1px solid @component-color;
+            border-top: 0;
+        }
+    }
+
+    .ant-tabs-nav {
+        .ant-tabs-tab-active {
+            color: @primary-color;
+        }
+
+        .ant-tabs-ink-bar {
+            background-color: @primary-color;
+        }
+
+        .ant-tabs-tab:hover {
+            color: @hover-color;
+        }
+
+        .ant-tabs-tab:active {
+            color: @active-color;
+        }
+    }
+}
+
+// 垂直tabs样式调整，包括间距，宽度，字体大小
+div.ant-tabs .ant-tabs-left-bar .ant-tabs-tab {
+    float: none;
+    margin: 0;
+    padding: 9.6px 24px 9.6px 0;
+    display: block;
+    font-size: 14px;
+}

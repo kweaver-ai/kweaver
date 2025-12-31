@@ -1,0 +1,29 @@
+{
+  "Edge": {
+    "addDataProperty": "新增数据属性",
+    "dataViewConnection": "通过数据视图将起点与终点对象类属性连接",
+    "detailDataViewSource": "起",
+    "detailDataViewTarget": "终",
+    "detailSourceObject": "起点对象",
+    "detailSourcePoint": "起点",
+    "detailTargetObject": "终点对象",
+    "detailTargetPoint": "终点",
+    "detailTitle": "关系类详情",
+    "directConnection": "对象类属性与对象类属性直接连接",
+    "edgeClassName": "关系类名称",
+    "edgeClassNameRequired": "请填写关系类名称",
+    "emptyCreate": "还没有关系类？",
+    "emptyDescription": "暂无可使用的关系类",
+    "mappingStep": "关系映射",
+    "relationAssociation": "关系关联",
+    "selectDataView": "请选择数据视图",
+    "selectDataViewSource": "请选择数据视图起点",
+    "selectDataViewTarget": "请选择数据视图终点",
+    "selectSourcePoint": "请选择起点",
+    "selectSourceProperty": "请选择起点属性",
+    "selectTargetPoint": "请选择终点",
+    "selectTargetProperty": "请选择终点属性",
+    "sourceObjectType": "起点对象类",
+    "targetObjectType": "终点对象类"
+  }
+}

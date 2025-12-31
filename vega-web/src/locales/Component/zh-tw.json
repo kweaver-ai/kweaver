@@ -1,0 +1,39 @@
+{
+  "Components": {
+    "dataViewSource": {
+      "checkedListTitle": "本次已選：{count} 個",
+      "checkedTip": "已選中",
+      "clearAll": "清空",
+      "detail": "您可點擊視圖名稱查看詳情",
+      "preview": "預覽",
+      "previewTip": "（展示部分數據）",
+      "title": "選擇數據視圖"
+    },
+    "quickRangeTime": {
+      "last12Hours": "最近12小時",
+      "last15Days": "最近15天",
+      "last15Minutes": "最近15分鐘",
+      "last1Hour": "最近1小時",
+      "last1Month": "最近1個月",
+      "last1Year": "最近1年",
+      "last24Hours": "最近24小時",
+      "last30Minutes": "最近30分鐘",
+      "last3Days": "最近3天",
+      "last3Month": "最近3個月",
+      "last4Hours": "最近4小時",
+      "last5Minutes": "最近5分鐘",
+      "last5Years": "最近5年",
+      "last6Hours": "最近6小時",
+      "last6Month": "最近6個月",
+      "last7Days": "最近7天",
+      "lastMonth": "上月",
+      "lastWeek": "上週",
+      "lastYear": "去年",
+      "thisMonth": "本月",
+      "thisWeek": "本週",
+      "thisYear": "今年",
+      "today": "今天",
+      "yesterday": "昨天"
+    }
+  }
+}

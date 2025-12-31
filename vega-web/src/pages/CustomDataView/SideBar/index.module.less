@@ -1,0 +1,60 @@
+.metric-model-side-bar {
+  width: 100%;
+  height: 100%;
+  background-color: #f9f9f9;
+
+  .group-container-list {
+    width: 100%;
+    height: calc(100% - 120px);
+    overflow-y: auto;
+
+    div.ant-tabs-tab {
+      font-size: 32px !important;
+      background-color: #adf;
+    }
+
+    .ant-tabs-nav {
+      font-size: 32px !important;
+      background-color: #adf;
+    }
+
+    .ant-tabs-ink-bar {
+      background-color: #9d9;
+    }
+
+    .divider {
+      height: 8px;
+    }
+
+    .divider-line {
+      height: 1px;
+      margin: 8px 0;
+      background: #e8e8e8;
+    }
+
+    .group-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      padding: 0 18px;
+      cursor: pointer;
+
+      .group-item-operator {
+        display: none;
+      }
+    }
+
+    .group-item:hover {
+      background-color: #fafafa;
+
+      .group-item-operator {
+        display: block;
+      }
+    }
+
+    .group-item-active {
+      color: #126ee3;
+    }
+  }
+}

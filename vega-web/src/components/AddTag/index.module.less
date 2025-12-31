@@ -1,0 +1,44 @@
+.vega-form-tag-root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .vega-form-tag-options-container {
+    height: 280px;
+    padding: 0 4px;
+    margin: 0 -16px;
+    overflow-y: auto;
+    background-color: #fff;
+
+    .vega-form-tag-options {
+      padding: 6px 16px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      border-radius: var(--g-border-radius);
+
+      &:hover {
+        background-color: var(--g-hover-bg-color);
+      }
+    }
+
+    .vega-form-tag-options-disabled {
+      color: rgba(0, 0, 0, 0.2);
+      cursor: not-allowed;
+      background-color: rgba(0, 0, 0, 0.01);
+    }
+  }
+
+  .vega-form-tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 200px;
+    height: 32px;
+    padding: 0 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    background-color: rgba(0, 0, 0, 0.04);
+    border: var(--g-border);
+    border-radius: var(--g-border-radius);
+  }
+}

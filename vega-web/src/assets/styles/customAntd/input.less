@@ -1,0 +1,84 @@
+@import '@/assets/styles/theme/index.less';
+
+textarea.ant-input,
+input.ant-input {
+    border-color: @component-color;
+    border-radius: 2px;
+}
+
+// input.ant-input{
+//   border-color: @component-color;
+//   border-radius: 0px;
+// }
+input.ant-input-affix-wrapper input.ant-input:focus {
+    border-color: @color-5;
+    border-radius: 2px;
+}
+
+textarea.ant-input-affix-wrapper textarea.ant-input:focus {
+    border-color: @color-5;
+    border-radius: 2px;
+}
+
+// textarea边框
+form textarea.ant-input {
+    border-color: @component-color;
+}
+
+// 数字输入框的样式调整,包括数字颜色和边框
+div.ant-input-number {
+    border-color: @component-color;
+    border-radius: 2px;
+    color: @text-color;
+    font-size: 12px;
+}
+
+div.ant-input-number:hover {
+    border-color: @hover-color;
+}
+
+div.ant-input-number-focused,
+div.ant-input-number:active {
+    border-color: @hover-color;
+    outline: none;
+    box-shadow: 0 0 0 2px @color-2 !important;
+}
+
+.ant-input-number-handler:hover {
+    color: @hover-color;
+}
+
+.ant-input-number-handler:hover .ant-input-number-handler-up-inner,
+.ant-input-number-handler:hover .ant-input-number-handler-down-inner {
+    color: @hover-color !important;
+}
+
+// 修改时间选择的颜色
+span.ant-input {
+    border: 1px solid @component-color;
+}
+
+//last input
+.ant-input-group > .ant-input:last-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+textarea.ant-input:focus,
+textarea.ant-input:active,
+div.ant-pagination-options-quick-jumper input:active,
+div.ant-pagination-options-quick-jumper input:focus,
+input.ant-input:focus,
+span.ant-input:focus,
+input.ant-input:active {
+    border-color: @hover-color;
+    outline: none;
+    box-shadow: 0 0 0 2px @color-2;
+}
+
+span.ant-input-affix-wrapper:hover .ant-input:not(.ant-input-disabled),
+div.ant-pagination-options-quick-jumper input:hover,
+textarea.ant-input:hover,
+input.ant-input:hover {
+    border-color: @hover-color;
+}

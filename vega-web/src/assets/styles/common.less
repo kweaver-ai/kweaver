@@ -1,0 +1,431 @@
+/**
+ * 本文件是用于系统中部分全局公用的样式
+ * @author wang.jianwu@eisoo.com
+ * @date 2019-02-28
+ */
+
+@import '@/assets/styles/theme/index.less';
+@import '@/assets/styles/reset.less';
+
+//全局tag 圆角修改
+.ant-tag {
+    border-radius: 3px !important;
+}
+
+// 表格操作 内容 样式
+.table-operate-item {
+    margin-left: 8px;
+    color: @danube;
+    cursor: pointer;
+
+    &:nth-child(1) {
+        margin-left: 0;
+    }
+}
+
+.ant-table-row-hover td {
+    background-color: @module-bg !important;
+}
+//分割线
+.ant-divider-horizontal {
+    height: 1px;
+    margin: 24px 0;
+    background-color: @splite-line;
+}
+
+//消息提示框
+div.ant-alert-info {
+    .content-text;
+
+    background-color: @message-tag-bg-color;
+    border: 1px solid @message-tag-border-color;
+    border-radius: 2px;
+}
+
+button.ant-alert-close-icon {
+    margin-top: -2.5px;
+    color: @icon-color;
+}
+
+i.ant-alert-info .ant-alert-icon {
+    color: @blue-sky;
+    margin-top: 2px;
+}
+
+.table-operate-item-disabled {
+    margin-left: 8px;
+    color: @disabled-color;
+    cursor: not-allowed;
+
+    &:nth-child(1) {
+        margin-left: 0;
+    }
+}
+
+// 表单折叠样式
+.form-fold-label {
+    cursor: pointer;
+    margin: 10px 24px;
+    // color: @light-black;
+    .second-level-blod-title;
+
+    .text {
+        padding-left: 8px;
+    }
+}
+
+// 表单分割线
+.cut-off-rule-hr {
+    border: 0;
+    background-color: @layout-bg-color;
+    height: 1px;
+    margin: 28px 24px 16px;
+}
+
+// 去除 li 前的小黑点
+li {
+    list-style: none;
+}
+
+//下拉选框背景修改
+// li:not(.ant-tree-treenode-switcher-open .ant-pagination-item):hover {
+//   background-color: @th-bg-color !important;
+// }
+
+// li:not(.ant-tree-treenode-switcher-open .ant-pagination-item):active {
+//   background-color: @text-font-item !important;
+// }
+
+// li:not(.ant-tree-treenode-switcher-open .ant-pagination-item):focus {
+//   background-color: @text-font-item !important;
+// }
+
+// li.ant-select-tree-treenode-switcher-open:hover {
+//   background-color: @th-bg-color !important;
+// }
+
+// li.ant-select-tree-treenode-switcher-open:focus {
+//   background-color: @text-font-item !important;
+// }
+
+span.ant-tree-node-content-wrapper:hover {
+    background-color: unset !important;
+}
+
+// .ant-select-enabled {
+//   background-color: @text-font-item !important;
+// }
+
+// 全局链接文本
+a {
+    color: @link-color;
+}
+
+//全局按钮样式
+.ant-btn {
+    border-radius: 2px !important;
+}
+
+//全局输入框
+.ant-input {
+    border-radius: 2px !important;
+}
+
+//全局方框组合样式
+.square-left {
+    border-radius: 2px 0 0 2px !important;
+}
+
+.square-right {
+    border-radius: 2px 0 0 2px !important;
+}
+
+// 正文字体
+.text-font-ch {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+}
+
+// 辅助文字
+.help-font-ch {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+// 换行样式
+.wrap-content {
+    width: 100%;
+    height: auto;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow: hidden;
+}
+
+//全局页码圆角
+:global(.ant-pagination-item) {
+    border-radius: 2px !important;
+}
+
+// 内容展示区公共样式（针对顶部导航及面包屑等位置的布局调整，可参考权限管理的用户管理布局）
+.content-wrapper {
+    // margin: 48px 16px 0 16px;
+    // margin-top: 48px;
+    // background-color: #fff;
+
+    .breadcrumb-wrapper {
+        margin: 16px 0;
+    }
+
+    // 临时添加一级`Tab`导航
+    .content-menu-layout {
+        line-height: 40px;
+        background-color: @primary-tab-bg-color;
+        border: none;
+
+        .ant-menu-item {
+            a {
+                font-size: 14px;
+            }
+
+            &.ant-menu-item-selected {
+                background-color: @white-color;
+                border-bottom: none !important;
+                border-top: 2px solid @primary-color;
+            }
+        }
+    }
+
+    .container-layout {
+        padding: 0 24px;
+        background: @white-color;
+        min-height: 800px;
+
+        .content-layout {
+            padding: 12px 0;
+        }
+
+        .table-wrapper {
+            margin-top: 12px;
+
+            .highlight-new-row {
+                // 用于表格新建的一行高亮显示`2s`
+                background-color: @text-font-item;
+            }
+
+            // 操作内容间隔
+            .operate-cell > a {
+                margin-right: 12px;
+            }
+        }
+    }
+}
+
+// 新建或编辑表单顶部导航布局的样式（可参考权限管理的用户管理中的新建用户布局）
+.form-nav-layout {
+    // margin: 16px 0;
+    padding-top: 16px;
+    background: @white-color;
+    min-height: 800px;
+
+    .back {
+        .main-title;
+
+        &:hover {
+            color: @hover-color;
+        }
+
+        &:active {
+            color: @active-color;
+        }
+
+        display: inline-block;
+        padding: 0 12px 10px 16px;
+        color: @heading-color;
+        margin-right: 16px;
+        cursor: pointer;
+        line-height: 28px;
+        height: 3px;
+
+        .anticon {
+            margin-right: 16px;
+            height: 28px;
+        }
+
+        i {
+            svg {
+                width: 16px;
+                height: 16px;
+                margin-bottom: 3px;
+            }
+        }
+
+        h4 {
+            display: inline-block;
+        }
+    }
+
+    .form-submit-button {
+        margin: 16px 0 0;
+        padding-bottom: 24px;
+
+        .ant-btn-primary {
+            margin-right: 24px;
+        }
+    }
+}
+
+// DBIO删除框样式修改
+.dbio-del-modal {
+    .ant-modal {
+        width: 416px !important;
+    }
+
+    // 删除提示框Icon样式
+    .del-icon {
+        font-size: 20px;
+        margin: 0 16px 0 0;
+        color: @warning-color;
+        vertical-align: middle;
+    }
+
+    // 删除提示文字
+    .del-info {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .del-content {
+        .text-title;
+
+        padding-left: 36px;
+        padding-top: 16px;
+    }
+
+    .ant-modal-body {
+        .second-level-title;
+
+        padding-top: 32px;
+    }
+
+    .ant-modal-footer {
+        padding-top: 16px;
+    }
+}
+// 设置自定义表头，checkbox样式
+.table-Setting-info {
+    .ant-checkbox-wrapper {
+        padding: 5px;
+    }
+}
+
+// 图标初始/hover/focus样式
+.icon-different-status {
+    color: @icon-color;
+    font-size: 14px;
+
+    &:hover {
+        color: @primary-color;
+    }
+
+    &:focus {
+        color: @active-color;
+    }
+}
+
+// line-height为32px时居中
+.vertical-center-32px {
+    line-height: 32px;
+}
+
+// lable 必填项标识
+.required-pre::before {
+    display: inline-block;
+    margin-right: 4px;
+    color: @torch-red;
+    font-size: 12px;
+    font-family: SimSun, sans-serif;
+    line-height: 1;
+    content: '*';
+}
+
+// label标签icon
+.label-icon-gutter {
+    margin-left: 4px;
+    color: @icon-color;
+    font-size: 12px;
+}
+
+// 操作内容间隔
+.table-operate-cell > a {
+    margin-right: 12px;
+}
+
+// 动态表单文字添加按钮
+.dynamic-form-add {
+    margin-top: 0;
+    line-height: 0;
+    margin-bottom: 5px;
+    display: inline-block;
+}
+
+// 文字按钮禁用
+.element-disabled {
+    cursor: not-allowed;
+    color: @disabled-color;
+
+    &:hover {
+        color: @disabled-color;
+    }
+
+    &:focus {
+        color: @disabled-color;
+    }
+}
+
+// 不显示
+.none {
+    display: none;
+}
+
+// 显示
+.unset {
+    display: unset;
+}
+
+// button中的Icon
+.btn-icon {
+    .ant-btn {
+        padding: 0 9px;
+    }
+}
+
+// 标题输入框后边操作按钮
+.title-operate-icon {
+    cursor: pointer;
+    font-size: 16px;
+    color: @icon-color;
+    height: unset !important;
+    line-height: 0;
+
+    &:hover {
+        color: @primary-color;
+    }
+
+    &:focus {
+        color: @active-color;
+    }
+
+    :global {
+        .ant-btn-icon-only {
+            height: unset;
+            line-height: 0;
+        }
+    }
+}
+
+// 通知信息框没有message，直接显示description
+.notification-no-message {
+    .ant-notification-notice-message {
+        display: block !important;
+    }
+}

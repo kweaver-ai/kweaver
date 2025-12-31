@@ -1,0 +1,31 @@
+{
+  "ConceptGroup": {
+    "conceptGroup": "概念分组",
+    "iconColor": "图标颜色",
+    "pleaseInputName": "请输入概念分组名称",
+    "pleaseInputId": "请输入概念分组ID",
+    "createSuccess": "概念分组创建成功",
+    "editSuccess": "概念分组编辑成功",
+    "deleteSuccess": "概念分组删除成功",
+    "importSuccess": "概念分组导入成功",
+    "importFailed": "概念分组导入失败",
+    "existGroupName": "已存在同名分组，请选择处理方式：",
+    "addObjectTypes": "添加对象类",
+    "selected": "已选择 {count} 个",
+    "addObjectTypesSuccess": "对象类添加成功",
+    "pleaseSelectObjectTypesToRemove": "请选择要移除的对象类",
+    "groupDetail": "分组详情",
+    "skipSameConflict": "为之后所有的相同冲突执行此操作",
+    "confirmDeleteSingle": "您确定要删除“${name}”吗？",
+    "confirmDeleteMultiple": "您确定要删除“${names}”这${count}个吗？",
+    "click": "点击",
+    "createButton": "【新建】",
+    "addConceptGroupTip": "按钮添加概念分组",
+    "relatedResource": "关联资源",
+    "sourceObjectType": "起点对象类",
+    "targetObjectType": "终点对象类",
+    "bindObjectType": "绑定对象类",
+    "removeSuccess": "移除成功",
+    "importConflictTip": "选择<b>覆盖</b>将替换已有项，选择<b>忽略</b>将跳过重复项。"
+  }
+}

@@ -1,0 +1,110 @@
+.graph-box {
+  width: 100%;
+  height: 100%;
+}
+
+.custom-node {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 280px;
+  height: 108px;
+  padding: 12px;
+  cursor: pointer;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px 0 #0000001a;
+
+  .custom-node-top-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .custom-node-title-box {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+
+      .custom-node-title {
+        width: 170px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .custom-node-menu-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+    }
+  }
+
+  .custom-node-content {
+    box-sizing: border-box;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 32px;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    color: #000;
+    white-space: nowrap;
+    background-color: #f3f5f6;
+    border-radius: 6px;
+
+    .custom-node-content-name {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      .custom-node-content-name-text {
+        width: 170px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    &:hover {
+      background-color: #ecf5ff;
+    }
+  }
+
+  .custom-node-content-empty {
+    width: 100%;
+    font-size: 14px;
+    color: rgb(0 0 0 / 30%);
+    text-align: center;
+  }
+
+  .custom-node-content-choose {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: rgb(0 0 0 / 65%);
+
+    &:hover {
+      background-color: #ecf5ff;
+    }
+  }
+}
+
+.custom-node-selected {
+  border: 1px solid #007aff;
+}
+
+.custom-node-error {
+  border: 1px solid #ff4d4f;
+}

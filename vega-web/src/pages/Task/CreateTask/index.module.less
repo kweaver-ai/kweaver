@@ -1,0 +1,81 @@
+.mainContainer {
+  margin-top: 20px;
+}
+
+.buildTypeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+
+  .buildTypeOption {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 82px;
+    padding: 0 16px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+
+    &.selected {
+      border-color: rgba(0, 0, 0, 0.85);
+
+      .buildTypeTitle {
+        color: #000 !important;
+      }
+
+      .buildTypeDescription {
+        color: rgba(0, 0, 0, 0.65) !important;
+      }
+    }
+
+    .buildTypeIcon {
+      margin-right: 12px;
+      font-size: 32px;
+    }
+
+    .buildTypeContent {
+      width: 320px;
+      color: rgba(0, 0, 0, 0.45);
+
+      .buildTypeTitle {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .buildTypeDescription {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+.radioNormal {
+  width: 16px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+}
+
+.radioSelected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #126ee3;
+  border-radius: 50%;
+
+  &::after {
+    width: 10px;
+    height: 10px;
+    content: '';
+    background: #126ee3;
+    border-radius: 50%;
+  }
+}

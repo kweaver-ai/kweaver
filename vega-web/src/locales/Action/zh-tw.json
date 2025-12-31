@@ -1,0 +1,23 @@
+{
+  "Action": {
+    "actionClassName": "行動類名稱",
+    "actionMonitor": "行動監聽",
+    "actionResource": "行動資源",
+    "actionType": "行動類型",
+    "affectDescription": "影響描述",
+    "affectedObjectType": "影響對象類",
+    "affectedObjectTypeLabel": "影響的對象類",
+    "boundObjectType": "綁定對象類",
+    "conceptDefinition": "概念定義",
+    "cronExpression": "Cron表達式，{expression}",
+    "deleteActionClass": "刪除行動類",
+    "emptyCreate": "暫無數據，您可以",
+    "emptyCreateTip": "進行配置",
+    "fixedRate": "固定頻率，每{time}{unit}",
+    "resourceMapping": "資源映射",
+    "selectToolName": "選擇工具名稱",
+    "tool": "工具",
+    "triggerCondition": "觸發條件",
+    "viewTool": "{name}查看"
+  }
+}

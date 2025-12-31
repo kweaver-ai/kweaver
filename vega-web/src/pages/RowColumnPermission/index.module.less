@@ -1,0 +1,87 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+
+  .header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 52px;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    .headerContent {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      width: 100%;
+      padding: 0 24px;
+
+      .backButton {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        cursor: pointer;
+
+        &:hover {
+          .backText {
+            color: rgba(0, 0, 0, 0.85);
+          }
+        }
+
+        .backText {
+          font-size: 14px;
+          line-height: 18px;
+          color: rgba(0, 0, 0, 0.65);
+          transition: color 0.3s;
+        }
+      }
+
+      .divider {
+        width: 1px;
+        height: 16px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+      }
+
+      .pageTitle {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 18px;
+        color: #000;
+      }
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  height: 100%;
+  padding: 24px;
+  overflow: auto;
+
+  .listTitle {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 28px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  .tableWrapper {
+    height: calc(100% - 48px);
+  }
+}
+
+.nameCell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.notConfigured {
+  color: #bababa;
+}

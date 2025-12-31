@@ -1,0 +1,25 @@
+{
+  "RowColumnPermission": {
+    "listTitle": "行列权限列表",
+    "searchPlaceholder": "搜索行列规则名称",
+    "copyRule": "复制行列规则",
+    "permissionConfig": "权限配置",
+    "deleteRule": "删除行列规则",
+    "deleteConfirm": "确定删除该行列规则吗？",
+    "pleaseInputRuleName": "请输入行列规则名称",
+    "selectColumns": "勾选列字段",
+    "configRowData": "配置行数据",
+    "viewDataDescription": "若您已配置好行列规则，可查看数据",
+    "missingViewId": "缺少视图ID参数",
+    "fetchRulesFailed": "获取行列规则列表失败",
+    "pleaseCompleteFilterCondition": "请完善过滤条件",
+    "transfer": {
+      "item": "项",
+      "items": "项"
+    },
+    "visitor": "访问者",
+    "from": "来自",
+    "permission": "权限",
+    "ruleApplication": "规则应用"
+  }
+}

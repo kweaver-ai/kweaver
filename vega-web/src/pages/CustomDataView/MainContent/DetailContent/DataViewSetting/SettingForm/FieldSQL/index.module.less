@@ -1,0 +1,67 @@
+.mainBox {
+  height: 100%;
+
+  .contentBox {
+    height: calc(100% - 48px);
+
+    .treeBox {
+      box-sizing: border-box;
+      height: 100%;
+      padding: 12px 16px;
+
+      .h2 {
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: rgb(0 0 0 / 50%);
+      }
+    }
+
+    .editorBox {
+      box-sizing: border-box;
+      height: 100%;
+      padding: 17px 20px;
+
+      .operateBox {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+        cursor: pointer;
+
+        .operateItem {
+          display: flex;
+          gap: 4px;
+          align-items: center;
+          font-size: 14px;
+          color: rgb(0 0 0 / 85%);
+
+          &.disabled {
+            color: rgb(0 0 0 / 25%);
+            cursor: not-allowed;
+          }
+        }
+
+        .operateTip {
+          font-size: 12px;
+          color: rgb(0 0 0 / 45%);
+        }
+      }
+    }
+  }
+}
+
+.treeTitleBox {
+  display: flex !important;
+  gap: 8px;
+  align-items: center;
+
+  .treeTitle {
+    font-size: 14px;
+    color: rgb(0 0 0 / 85%);
+  }
+
+  .treeDesc {
+    font-size: 12px;
+    color: rgb(0 0 0 / 45%);
+  }
+}

@@ -1,0 +1,30 @@
+.ant-pagination-item-active {
+  border-color: @primary-color !important;
+
+  a {
+    color: @primary-color !important;
+  }
+}
+
+.ant-pagination-item {
+  &:hover {
+    a {
+      color: @hover-color !important;
+    }
+  }
+}
+
+.ant-pagination-prev,
+.ant-pagination-next {
+  &:hover,
+  &:focus {
+    .ant-pagination-item-link {
+      color: @hover-color !important;
+    }
+  }
+}
+
+.ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-link-icon,
+.ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-link-icon {
+  color: @hover-color !important;
+}

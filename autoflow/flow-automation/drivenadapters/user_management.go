@@ -33,7 +33,7 @@ type UserManagement interface {
 	GetUserInfo(userID string) (UserInfo, error)
 
 	// 根据accessorIDs获取names
-	GetNameByAccessorIDs(accessorIDs map[string]AccessorType) (map[string]string, error)
+	GetNameByAccessorIDs(accessorIDs map[string]string) (map[string]string, error)
 
 	// 获取用户的accessorids
 	GetUserAccessorIDs(userID string) (accessorIDs []string, err error)
@@ -73,6 +73,9 @@ type UserManagement interface {
 
 	// GetUserInfoByType 根据用户类型获取用户信息, 当前已支持类型 user, app
 	GetUserInfoByType(accessorID, accessorType string) (UserInfo, error)
+
+	// IsApp 判断是否为应用账号
+	IsApp(appID string) (bool, error)
 }
 
 type userManagement struct {
@@ -136,23 +139,23 @@ func (u *NamesInfo) ToMap(userType ...string) map[string]string {
 	var res = map[string]string{}
 	for _, val := range userType {
 		switch val {
-		case "user":
+		case common.User.ToString():
 			for _, val := range u.UserNames {
 				res[val.ID] = val.Name
 			}
-		case "group":
+		case common.Group.ToString():
 			for _, val := range u.GroupNames {
 				res[val.ID] = val.Name
 			}
-		case "department":
+		case common.Department.ToString():
 			for _, val := range u.DepartmentNames {
 				res[val.ID] = val.Name
 			}
-		case "contactor":
+		case common.Contactor.ToString():
 			for _, val := range u.ContactorNames {
 				res[val.ID] = val.Name
 			}
-		case "app":
+		case common.APP.ToString():
 			for _, val := range u.AppNames {
 				res[val.ID] = val.Name
 			}
@@ -208,20 +211,6 @@ type DepartmentMembers struct {
 	UserIDs       []string `json:"user_ids"`
 	DepartmentIDs []string `json:"department_ids"`
 }
-
-// AccessorType 分组类型
-type AccessorType = string
-
-const (
-	// Group 用户组
-	Group AccessorType = "group"
-	// User 普通用户
-	User AccessorType = "user"
-	// Department 部门
-	Department AccessorType = "department"
-	// Contactor 联系人
-	Contactor AccessorType = "contactor"
-)
 
 type orgNameIDInfo struct {
 	UserIDs      map[string]string
@@ -488,20 +477,20 @@ func (u *userManagement) getOrgNameIDInfo(orgInfo *orgIDInfo) (orgNameInfo orgNa
 	return
 }
 
-func (u *userManagement) GetNameByAccessorIDs(accessorIDs map[string]AccessorType) (accessorNames map[string]string, err error) { //nolint
+func (u *userManagement) GetNameByAccessorIDs(accessorIDs map[string]string) (accessorNames map[string]string, err error) { //nolint
 	var orgInfo orgIDInfo
 	orgInfo.UserIDs = make([]string, 0)
 	orgInfo.DepartIDs = make([]string, 0)
 	orgInfo.ContactorIDs = make([]string, 0)
 	orgInfo.GroupIDs = make([]string, 0)
 	for accessorID, accessorType := range accessorIDs {
-		if accessorType == User {
+		if accessorType == common.User.ToString() {
 			orgInfo.UserIDs = append(orgInfo.UserIDs, accessorID)
-		} else if accessorType == Department {
+		} else if accessorType == common.Department.ToString() {
 			orgInfo.DepartIDs = append(orgInfo.DepartIDs, accessorID)
-		} else if accessorType == Contactor {
+		} else if accessorType == common.Contactor.ToString() {
 			orgInfo.ContactorIDs = append(orgInfo.ContactorIDs, accessorID)
-		} else if accessorType == Group {
+		} else if accessorType == common.Group.ToString() {
 			orgInfo.GroupIDs = append(orgInfo.GroupIDs, accessorID)
 		}
 	}
@@ -513,19 +502,19 @@ func (u *userManagement) GetNameByAccessorIDs(accessorIDs map[string]AccessorTyp
 	}
 	accessorNames = make(map[string]string)
 	for accessorID, accessorType := range accessorIDs {
-		if accessorType == User {
+		if accessorType == common.User.ToString() {
 			if value, ok := orgNameInfo.UserIDs[accessorID]; ok {
 				accessorNames[accessorID] = value
 			}
-		} else if accessorType == Department {
+		} else if accessorType == common.Department.ToString() {
 			if value, ok := orgNameInfo.DepartIDs[accessorID]; ok {
 				accessorNames[accessorID] = value
 			}
-		} else if accessorType == Contactor {
+		} else if accessorType == common.Contactor.ToString() {
 			if value, ok := orgNameInfo.ContactorIDs[accessorID]; ok {
 				accessorNames[accessorID] = value
 			}
-		} else if accessorType == Group {
+		} else if accessorType == common.Group.ToString() {
 			if value, ok := orgNameInfo.GroupIDs[accessorID]; ok {
 				accessorNames[accessorID] = value
 			}
@@ -615,7 +604,7 @@ func (u *userManagement) UpdateInternalGroupMember(groupID string, userIDs []str
 	target := fmt.Sprintf("%s/api/user-management/v1/internal-group-members/%s", u.adminAddress, groupID)
 	body := []map[string]string{}
 	for _, id := range userIDs {
-		body = append(body, map[string]string{"id": id, "type": "user"})
+		body = append(body, map[string]string{"id": id, "type": common.User.ToString()})
 	}
 	_, _, err = u.httpClient.Put(target, map[string]string{"Content-Type": "application/json;charset=UTF-8"}, body)
 	if err != nil {
@@ -777,16 +766,32 @@ func (u *userManagement) GetAppAccountInfo(appID string) (AppAccountInfo, error)
 // GetUserInfoByType 根据用户类型获取用户信息, 当前已支持类型 user, app
 func (m *userManagement) GetUserInfoByType(accessorID, accessorType string) (UserInfo, error) {
 	var userInfo UserInfo
-	if accessorType == "app" {
+	if accessorType == common.APP.ToString() {
 		app, err := m.GetAppAccountInfo(accessorID)
 		if err != nil {
 			return userInfo, err
 		}
 		userInfo.UserID = app.AppID
 		userInfo.UserName = app.Name
-		userInfo.AccountType = "app"
+		userInfo.AccountType = common.APP.ToString()
 		return userInfo, nil
 	}
 
 	return m.GetUserInfo(accessorID)
+}
+
+// IsApp 判断是否是应用账号
+func (u *userManagement) IsApp(appID string) (bool, error) {
+	target := fmt.Sprintf("%s/api/user-management/v1/apps/%s", u.adminAddress, appID)
+	_, err := u.httpClient.Get(target, map[string]string{"Content-Type": "application/json;charset=UTF-8"})
+	if err != nil {
+		httpError, ok := err.(errors.ExHTTPError)
+		if ok && httpError.Status == http.StatusNotFound {
+			return false, nil
+		}
+		u.log.Errorf("Check is app failed: %v, url: %v", err, target)
+		return false, err
+	}
+
+	return true, nil
 }

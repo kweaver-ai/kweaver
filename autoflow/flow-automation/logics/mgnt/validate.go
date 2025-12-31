@@ -191,6 +191,17 @@ func (m *mgnt) validSteps(validate *Validate) *ValidateError {
 		DescriptionKey:  ierr.PErrorBadRequest,
 	}
 
+	handleErr := func(err error) {
+		detail := map[string]interface{}{}
+		switch iErr := err.(type) {
+		case *aerr.IError:
+			detail = iErr.ErrorDetails.(map[string]interface{})
+		case *ierr.RestError:
+			detail = iErr.ErrorDetails.(map[string]interface{})
+		}
+		vErr.Detail = map[string]interface{}{"id": id, "operator": operator, "invalidparams": detail["params"]}
+	}
+
 	for index, step := range validate.Steps {
 		var isDataSource = false
 	REDO:
@@ -226,6 +237,16 @@ func (m *mgnt) validSteps(validate *Validate) *ValidateError {
 		}
 		if path == "" {
 			log.Infof("[logic.validOperator] id: %s, operator: %s, skip validate\n", id, operator)
+
+			// 因为有的节点未定义jsonschema，通过接口创建会存在非法参数问题
+			// 因此统一校验高级配置，setting字段非必填，如果存在则校验参数合法性
+			taskByte, _ := json.Marshal(step)
+			err := validate.Valid(taskByte, "base/settings.json")
+			if err != nil {
+				handleErr(err)
+				return vErr
+			}
+
 			continue
 		}
 		// according to trigger type, choose different values dataSource or parameter
@@ -249,16 +270,10 @@ func (m *mgnt) validSteps(validate *Validate) *ValidateError {
 		taskByte, _ := json.Marshal(step)
 		err := validate.Valid(taskByte, path)
 		if err != nil {
-			detail := map[string]interface{}{}
-			switch iErr := err.(type) {
-			case *aerr.IError:
-				detail = iErr.ErrorDetails.(map[string]interface{})
-			case *ierr.RestError:
-				detail = iErr.ErrorDetails.(map[string]interface{})
-			}
-			vErr.Detail = map[string]interface{}{"id": id, "operator": operator, "invalidparams": detail["params"]}
+			handleErr(err)
 			return vErr
 		}
+
 		// set datasource
 		if isDataSource {
 			step = dataSource

@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/errors"
 	traceLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/log"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -150,6 +151,15 @@ func (s *structureExtractor) FileParse(ctx context.Context, fileUrl, fileName st
 
 	if err != nil {
 		traceLog.WithContext(ctx).Warnf("FileParse err: %s", err.Error())
+		return nil, nil, err
+	}
+
+	respCode := resp.StatusCode
+	if (respCode < http.StatusOK) || (respCode >= http.StatusMultipleChoices) {
+		err = errors.ExHTTPError{
+			Body:   string(data),
+			Status: respCode,
+		}
 		return nil, nil, err
 	}
 

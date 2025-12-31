@@ -1,0 +1,13 @@
+{
+  "variable": "变量",
+  "variableDes": "支持自定义变量和变量更新",
+  "variableAdd": "变量定义",
+  "variableAddDes": "声明并初始化新变量",
+  "variableEdit": "变量赋值",
+  "variableEditDes": "对已声明的变量进行值更新或修改",
+  "variableType": "变量类型",
+  "variableValue": "变量初始值",
+  "editVariableType": "目标变量名",
+  "editVariableValue": "变量赋值",
+  "emptyMessage": "此项不能为空"
+}

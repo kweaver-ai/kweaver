@@ -89,6 +89,8 @@ export const ParamsConfig = forwardRef<Validatable, ParamsConfigProps>(
 
         const num = useMemo(() => index + 1, [index]);
 
+        const [variableVal, setVariableVal] = useState<any>();
+
         useImperativeHandle(ref, () => {
             return {
                 validate() {
@@ -132,16 +134,46 @@ export const ParamsConfig = forwardRef<Validatable, ParamsConfigProps>(
             ]
         >(() => {
             if (typeof value === "string") {
-                const result = /^\{\{(__(\d+).*)\}\}$/.exec(value);
+               const result = /^\{\{(__(\w+).*)\}\}$/.exec(value);
+
                 if (result) {
                     const [, key, id] = result;
+                    const newID = !isNaN(Number(id)) ? id : "1000"; //处理全局变量的情况
+                    // 找到最精确的匹配项（最长的匹配前缀）
+                    let bestMatch: any = null;
+                    
+                    Object.entries(stepOutputs).forEach(([id, val]) => {
+                    if (key.startsWith(id)) {
+                        const differentPart = key.substring(id.length);
+                        // 检查是否比当前最佳匹配更精确（匹配长度更长）
+                        if (!bestMatch || id.length > bestMatch.id.length) {
+                        bestMatch = {
+                            id,
+                            value: val,
+                            differentPart: differentPart.startsWith(".") ? differentPart.substring(1) : differentPart
+                        };
+                        }
+                    }
+                    });
+
+                    const outputsNew = bestMatch ? [{
+                    key,
+                    value: bestMatch.value,
+                    differentPart: bestMatch.differentPart
+                    }] : [];
+
+                    setVariableVal({
+                      ...variableVal,
+                      addVal: outputsNew[0]?.differentPart,
+                    });
+
                     return [
                         true,
-                        stepNodes[id] as
+                        stepNodes[newID] as
                         | TriggerStepNode
                         | ExecutorStepNode
                         | DataSourceStepNode,
-                        stepOutputs[key],
+                        stepOutputs[key] || outputsNew[0]?.value,
                     ];
                 }
             }
@@ -326,6 +358,7 @@ export const ParamsConfig = forwardRef<Validatable, ParamsConfigProps>(
                                     scope={scope || ((step && stepNodes[step.id]?.path) || [])}
                                     stepNode={stepNode}
                                     stepOutput={stepOutput}
+                                    variableVal={variableVal}
                                 />
                             ) : (
                                 <Input

@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/actions"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/store/rds"
 
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/drivenadapters"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/dependency"
@@ -186,6 +188,16 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 		instances, dbErr := GetStore().BatchCreateTaskIns(f.Context(), []*entity.TaskInstance{taskIns})
 
 		if dbErr != nil {
+			f.vm.AppendEvents(&entity.DagInstanceEvent{
+				Type:       rds.DagInstanceEventTypeTaskStatus,
+				InstanceID: f.dagIns.ID,
+				Operator:   name,
+				TaskID:     f.GetTaskID(),
+				Status:     string(entity.TaskInstanceStatusFailed),
+				Data:       dbErr.Error(),
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			})
 			return false, rets, dbErr
 		}
 
@@ -201,6 +213,16 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 			Status:   entity.TaskInstanceStatusRunning,
 		}
 
+		f.vm.AppendEvents(&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: f.dagIns.ID,
+			Operator:   name,
+			TaskID:     f.GetTaskID(),
+			Status:     string(patch.Status),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		})
+
 		if beforeAct, ok := action.(entity.BeforeAction); ok {
 			beforeRunStatus, err := beforeAct.RunBefore(f, params)
 
@@ -208,6 +230,17 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 				patch.Status = entity.TaskInstanceStatusFailed
 				patch.Reason = err.Error()
 				_ = taskIns.Patch(f.Context(), patch)
+
+				f.vm.AppendEvents(&entity.DagInstanceEvent{
+					Type:       rds.DagInstanceEventTypeTaskStatus,
+					InstanceID: f.dagIns.ID,
+					Operator:   name,
+					TaskID:     f.GetTaskID(),
+					Status:     string(patch.Status),
+					Data:       patch.Reason,
+					Timestamp:  time.Now().UnixMicro(),
+					Visibility: rds.DagInstanceEventVisibilityPublic,
+				})
 				return false, rets, err
 			}
 
@@ -220,6 +253,17 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 			patch.Status = entity.TaskInstanceStatusFailed
 			patch.Reason = err.Error()
 			_ = taskIns.Patch(f.Context(), patch)
+
+			f.vm.AppendEvents(&entity.DagInstanceEvent{
+				Type:       rds.DagInstanceEventTypeTaskStatus,
+				InstanceID: f.dagIns.ID,
+				Operator:   name,
+				TaskID:     f.GetTaskID(),
+				Status:     string(patch.Status),
+				Data:       patch.Reason,
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			})
 			return false, rets, err
 		}
 
@@ -229,6 +273,17 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 			patch.Status = entity.TaskInstanceStatusFailed
 			patch.Reason = err.Error()
 			_ = taskIns.Patch(f.Context(), patch)
+
+			f.vm.AppendEvents(&entity.DagInstanceEvent{
+				Type:       rds.DagInstanceEventTypeTaskStatus,
+				InstanceID: f.dagIns.ID,
+				Operator:   name,
+				TaskID:     f.GetTaskID(),
+				Status:     string(patch.Status),
+				Data:       patch.Reason,
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			})
 			return false, rets, err
 		}
 
@@ -238,6 +293,17 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 				patch.Status = entity.TaskInstanceStatusFailed
 				patch.Reason = err.Error()
 				_ = taskIns.Patch(f.Context(), patch)
+
+				f.vm.AppendEvents(&entity.DagInstanceEvent{
+					Type:       rds.DagInstanceEventTypeTaskStatus,
+					InstanceID: f.dagIns.ID,
+					Operator:   name,
+					TaskID:     f.GetTaskID(),
+					Status:     string(patch.Status),
+					Data:       patch.Reason,
+					Timestamp:  time.Now().UnixMicro(),
+					Visibility: rds.DagInstanceEventVisibilityPublic,
+				})
 				return false, rets, err
 			}
 
@@ -253,8 +319,38 @@ func (f *extfunc) Call(ctx context.Context, name string, _ int, args ...interfac
 		patch.Results = ret
 
 		if err := taskIns.Patch(f.Context(), patch); err != nil {
+			f.vm.AppendEvents(&entity.DagInstanceEvent{
+				Type:       rds.DagInstanceEventTypeTaskStatus,
+				InstanceID: f.dagIns.ID,
+				Operator:   name,
+				TaskID:     f.GetTaskID(),
+				Status:     string(entity.TaskInstanceStatusFailed),
+				Data:       err.Error(),
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			})
 			return false, rets, err
 		}
+
+		f.vm.AppendEvents(
+			&entity.DagInstanceEvent{
+				Type:       rds.DagInstanceEventTypeVariable,
+				InstanceID: f.dagIns.ID,
+				Name:       fmt.Sprintf("__%s", f.GetTaskID()),
+				Data:       ret,
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			},
+			&entity.DagInstanceEvent{
+				Type:       rds.DagInstanceEventTypeTaskStatus,
+				InstanceID: f.dagIns.ID,
+				Operator:   name,
+				TaskID:     f.GetTaskID(),
+				Status:     string(patch.Status),
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			},
+		)
 
 		rets = append(rets, ret)
 		return wait, rets, err
@@ -310,9 +406,14 @@ func (f *extfunc) NewExecuteMethods() entity.ExecuteMethods {
 		return GetStore().GetDagWithOptionalVersion(ctx, id, versionID)
 	}
 
+	patchDagIns := func(ctx context.Context, dagIns *entity.DagInstance, mustsPatchFields ...string) error {
+		return GetStore().PatchDagIns(ctx, dagIns, mustsPatchFields...)
+	}
+
 	return entity.ExecuteMethods{
-		Publish: NewMQHandler().Publish,
-		GetDag:  getDag,
+		Publish:     NewMQHandler().Publish,
+		GetDag:      getDag,
+		PatchDagIns: patchDagIns,
 	}
 }
 
@@ -374,6 +475,10 @@ func (e *extfunc) IsDebug() bool {
 	}
 
 	return false
+}
+
+func (e *extfunc) PatchDagIns(ctx context.Context, dagIns *entity.DagInstance, mustsPatchFields ...string) error {
+	return GetStore().PatchDagIns(ctx, dagIns, mustsPatchFields...)
 }
 
 var _ entity.ExecuteContext = (*extfunc)(nil)

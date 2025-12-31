@@ -3,12 +3,12 @@ moduleName: flow-stream-data-pipeline
 
 serviceAccount: flow-stream-data-pipeline-service-account
 
-#环境变量：语言/时区
+# 环境变量：语言/时区
 env:
   timezone: Asia/Shanghai
   language: en_US.UTF-8
 
-#节点选择器
+# 节点选择器
 nodeSelector: {}
 
 image:
@@ -28,11 +28,53 @@ service:
         path:
           - /api/flow-stream-data-pipeline/v1
 
-#反亲和性设置
+# 反亲和性设置
 antiAffinity:
   enabled: true
   rule: "soft" # hard, soft
-    
+
+# 微服务通信依赖配置
+depServices:
+  rds:
+    host: mariadb-mariadb-master.resource.svc.cluster.local.
+    port: 3330
+    user: root
+    password: eisoo.com123
+    database: adp
+    type: MariaDB
+  opensearch:
+    host: opensearch-master.resource.svc.cluster.local.
+    port: 9200
+    protocol: http
+    user: admin
+    password: eisoo.com123
+  mq:
+    auth:
+      mechanism: PLAIN
+      password: eisoo.com123
+      username: anyrobot
+    mqHost: kafka-headless.resource.svc.cluster.local.
+    mqPort: 9097
+    mqType: kafka
+    protocol: sasl_plaintext
+    tenant: default
+  authorization-private:
+    host: authorization-private
+    port: 30920
+    protocol: http
+  hydra-admin:
+    host: hydra-admin
+    port: 4445
+    protocol: http
+  flow-stream-data-pipeline:
+    host: flow-stream-data-pipeline-svc
+    port: 13012
+    protocol: http
+  index-base:
+    host: mdl-index-base-svc
+    port: 13013
+    protocol: http
+
 config:
   server:
     runMode: release
@@ -72,30 +114,7 @@ config:
     retries: 5                            # 生产者重试次数
     retryBackoffMs: 500                   # 生产者每次重试之间的间隔
 
-depServices:
-  rds:
-    type: MariaDB
-    host: mariadb-mariadb-master.resource
-    port: 3330
-    user: root
-    password: eisoo.com123
-  mq:
-    auth:
-      mechanism: PLAIN
-      password: eisoo.com123
-      username: anyrobot
-    mqHost: kafka-headless.resource.svc.cluster.local.
-    mqPort: 9097
-    mqType: kafka
-    protocol: sasl_plaintext
-    tenant: default
-  opensearch:
-    host: opensearch-master.resource
-    port: 9200
-    protocol: http
-    user: admin
-    password: eisoo.com123
-
+# 资源配置
 resources:
   requests:
     cpu: 0

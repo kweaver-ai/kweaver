@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.moduleName }}"
-  namespace: "{{ .Values.namespace }}"
+  name: {{ .Values.moduleName }}
+  namespace: {{ .Values.namespace }}
   labels:
-    module: "{{ .Values.moduleName }}"
+    module: {{ .Values.moduleName }}
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -20,10 +20,10 @@ spec:
       labels:
         module: {{ .Values.moduleName }}
     spec:
-      {{- with .Values.nodeSelector }}
+{{- with .Values.nodeSelector }}
       nodeSelector:
-        {{ toYaml . | indent 8 }}
-      {{- end }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       dnsConfig:
         options:
           - name: single-request-reopen
@@ -41,20 +41,20 @@ spec:
                 topologyKey: kubernetes.io/hostname
                 labelSelector:
                   matchExpressions:
-                    - key: app
+                    - key: module
                       operator: In
                       values:
-                        - {{ template "flow-stream-data-pipeline.name" . }}
+                        - {{ .Values.moduleName }}
         {{- else if eq .Values.antiAffinity.rule "hard" }}
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchExpressions:
-                  - key: app
+                  - key: module
                     operator: In
                     values:
-                      - {{ template "flow-stream-data-pipeline.name" . }}
+                      - {{ .Values.moduleName }}
         {{- end }}
       {{- end }}
       serviceAccountName: {{ .Values.serviceAccount }}
@@ -105,18 +105,13 @@ spec:
             value: {{ .Values.depServices.mq.mqType | quote }}
           {{- end }}
           - name: DM_SVC_PATH
-            value: /mdl-shared-configmap
+            value: /opt/pipeline/config
         resources: {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
-          - name: {{ .Values.moduleName }}-configmap
+          - name: {{ .Values.moduleName }}-cm
             mountPath: /opt/pipeline/config
-          - name: {{ .Values.moduleName }}-dep-configmap
-            mountPath: /mdl-shared-configmap
       restartPolicy: Always
       volumes:
-      - name: {{ .Values.moduleName }}-configmap
+      - name: {{ .Values.moduleName }}-cm
         configMap:
-          name: {{ .Values.moduleName }}-configmap
-      - name:  {{ .Values.moduleName }}-dep-configmap
-        configMap:
-          name: {{ .Values.moduleName }}-dep-configmap
+          name: {{ .Values.moduleName }}-cm

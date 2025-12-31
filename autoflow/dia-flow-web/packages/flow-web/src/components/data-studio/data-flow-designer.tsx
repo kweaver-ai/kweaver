@@ -47,8 +47,10 @@ const DataFlowDesigner = ({
   const handleSave = async (data?: any) => {
     const newSteps = outputConver(steps);
     if (!hasTargetOperator(newSteps)) {
-      hasOperatorMessage(microWidgetProps?.container);
-      return false;
+      const confirm = await hasOperatorMessage(microWidgetProps?.container);
+      if (!confirm) {
+        return;
+      }
     }
     
     if (isFunction(editorInstance?.current?.validate)) {

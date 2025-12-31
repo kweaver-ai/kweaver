@@ -1,10 +1,14 @@
 package entity
 
 import (
+	"bufio"
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -22,6 +26,7 @@ import (
 	libstore "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/store"
 	"devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/trace"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // NewDag new a dag
@@ -109,8 +114,7 @@ type TriggerConfig struct {
 
 // AppInfo 应用账户信息
 type AppInfo struct {
-	Enable bool   `yaml:"enable,omitempty" json:"enable,omitempty" bson:"enable,omitempty"`
-	AppID  string `yaml:"app_id,omitempty" json:"app_id,omitempty" bson:"app_id,omitempty"`
+	Enable bool `yaml:"enable,omitempty" json:"enable,omitempty" bson:"enable,omitempty"`
 }
 
 // SpecifiedVar special variable
@@ -124,7 +128,7 @@ func (d *Dag) SetPushMessage(publish func(topic string, message []byte) error) {
 }
 
 // Run used to build a new DagInstance, then you also need save it to Store
-func (d *Dag) Run(ctx context.Context, trigger Trigger, specVars map[string]string) (*DagInstance, error) {
+func (d *Dag) Run(ctx context.Context, trigger Trigger, specVars map[string]string, keywords []string) (*DagInstance, error) {
 	var err error
 	ctx, span := trace.StartInternalSpan(ctx)
 	defer func() { trace.TelemetrySpanEnd(span, err) }()
@@ -187,22 +191,30 @@ func (d *Dag) Run(ctx context.Context, trigger Trigger, specVars map[string]stri
 		}, &drivenadapters.JSONLogWriter{SendFunc: d.pushMessage})
 	}()
 
-	return &DagInstance{
-		ctx:         ctx,
-		DagID:       d.ID,
-		Trigger:     trigger,
-		Vars:        dagInsVars,
-		ShareData:   &ShareData{},
-		Status:      DagInstanceStatusInit,
-		UserID:      userID,
-		DagType:     d.Type,
-		PolicyType:  d.PolicyType,
-		AppInfo:     d.AppInfo,
-		Priority:    priority,
-		Version:     d.Version,
-		VersionID:   d.VersionID,
-		BizDomainID: d.BizDomainID,
-	}, nil
+	dagIns := &DagInstance{
+		ctx:              ctx,
+		DagID:            d.ID,
+		Trigger:          trigger,
+		Vars:             dagInsVars,
+		Keywords:         keywords,
+		EventPersistence: DagInstanceEventPersistenceSql,
+		Status:           DagInstanceStatusInit,
+		UserID:           userID,
+		DagType:          d.Type,
+		PolicyType:       d.PolicyType,
+		AppInfo:          d.AppInfo,
+		Priority:         priority,
+		Version:          d.Version,
+		VersionID:        d.VersionID,
+		BizDomainID:      d.BizDomainID,
+	}
+
+	dagIns.ShareData = &ShareData{
+		Dict:        map[string]any{},
+		DagInstance: dagIns,
+	}
+
+	return dagIns, nil
 }
 
 // DagVars dag variables type
@@ -236,37 +248,49 @@ const (
 	DagInstanceModeVM       DagInstanceMode = 1
 )
 
+type DagInstanceEventPersistence int
+
+const (
+	DagInstanceEventPersistenceNone DagInstanceEventPersistence = 0
+	DagInstanceEventPersistenceSql  DagInstanceEventPersistence = 1
+	DagInstanceEventPersistenceOss  DagInstanceEventPersistence = 2
+)
+
 // DagInstance dag instance
 type DagInstance struct {
-	BaseInfo        `bson:"inline"`
-	ctx             context.Context
-	DagID           string              `json:"dagId,omitempty" bson:"dagId,omitempty"`
-	Trigger         Trigger             `json:"trigger,omitempty" bson:"trigger,omitempty"`
-	Worker          string              `json:"worker,omitempty" bson:"worker,omitempty"`
-	Vars            DagInstanceVars     `json:"vars,omitempty" bson:"vars,omitempty"`
-	ShareData       *ShareData          `json:"shareData,omitempty" bson:"shareData,omitempty"`
-	ShareDataExt    *DagInstanceExtData `json:"-" bson:"shareDataExt,omitempty"`
-	Status          DagInstanceStatus   `json:"status,omitempty" bson:"status,omitempty"`
-	Reason          string              `json:"reason,omitempty" bson:"reason,omitempty"`
-	Cmd             *Command            `json:"cmd,omitempty" bson:"cmd,omitempty"`
-	UserID          string              `json:"userid,omitempty" bson:"userid,omitempty"`
-	EndedAt         int64               `json:"endedAt,omitempty" bson:"endedAt,omitempty"`
-	DagType         string              `json:"dag_type,omitempty" bson:"dag_type,omitempty"`
-	PolicyType      string              `json:"policy_type,omitempty" bson:"policy_type,omitempty"`
-	AppInfo         AppInfo             `json:"appinfo,omitempty" bson:"appinfo,omitempty"`
-	Priority        string              `json:"priority,omitempty" bson:"priority,omitempty"`
-	Mode            DagInstanceMode     `json:"mode,omitempty" bson:"mode,omitempty"`
-	Dump            string              `json:"dump,omitempty" bson:"dump,omitempty"`
-	DumpExt         *DagInstanceExtData `json:"-" bson:"dumpExt,omitempty"`
-	SuccessCallback string              `json:"success_callback,omitempty" bson:"success_callback,omitempty"`
-	ErrorCallback   string              `json:"error_callback,omitempty" bson:"error_callback,omitempty"`
-	CallChain       []string            `json:"-" bson:"call_chain,omitempty"`
-	ResumeData      string              `json:"-" bson:"resume_data,omitempty"`
-	ResumeStatus    TaskInstanceStatus  `json:"-" bson:"resume_status,omitempty"`
-	Version         Version             `json:"version,omitempty" bson:"version,omitempty"`
-	VersionID       string              `json:"versionId,omitempty" bson:"versionId,omitempty"`
-	BizDomainID     string              `json:"biz_domain_id,omitempty" bson:"biz_domain_id,omitempty"`
-	MemoryShareData *MemoryShareData    `json:"-" bson:"-"`
+	BaseInfo         `bson:"inline"`
+	ctx              context.Context
+	DagID            string                      `json:"dagId,omitempty" bson:"dagId,omitempty"`
+	Trigger          Trigger                     `json:"trigger,omitempty" bson:"trigger,omitempty"`
+	Worker           string                      `json:"worker,omitempty" bson:"worker,omitempty"`
+	Source           string                      `json:"source,omitempty" bson:"source,omitempty"`
+	Vars             DagInstanceVars             `json:"vars,omitempty" bson:"vars,omitempty"`
+	Keywords         []string                    `json:"keywords,omitempty" bson:"keywords,omitempty"`
+	EventPersistence DagInstanceEventPersistence `json:"eventPersistence,omitempty" bson:"eventPersistence,omitempty"`
+	EventOssPath     string                      `json:"eventOssPath,omitempty" bson:"eventOssPath,omitempty"`
+	ShareData        *ShareData                  `json:"shareData,omitempty" bson:"shareData,omitempty"`
+	ShareDataExt     *DagInstanceExtData         `json:"-" bson:"shareDataExt,omitempty"`
+	Status           DagInstanceStatus           `json:"status,omitempty" bson:"status,omitempty"`
+	Reason           string                      `json:"reason,omitempty" bson:"reason,omitempty"`
+	Cmd              *Command                    `json:"cmd,omitempty" bson:"cmd,omitempty"`
+	UserID           string                      `json:"userid,omitempty" bson:"userid,omitempty"`
+	EndedAt          int64                       `json:"endedAt,omitempty" bson:"endedAt,omitempty"`
+	DagType          string                      `json:"dag_type,omitempty" bson:"dag_type,omitempty"`
+	PolicyType       string                      `json:"policy_type,omitempty" bson:"policy_type,omitempty"`
+	AppInfo          AppInfo                     `json:"appinfo,omitempty" bson:"appinfo,omitempty"`
+	Priority         string                      `json:"priority,omitempty" bson:"priority,omitempty"`
+	Mode             DagInstanceMode             `json:"mode,omitempty" bson:"mode,omitempty"`
+	Dump             string                      `json:"dump,omitempty" bson:"dump,omitempty"`
+	DumpExt          *DagInstanceExtData         `json:"-" bson:"dumpExt,omitempty"`
+	SuccessCallback  string                      `json:"success_callback,omitempty" bson:"success_callback,omitempty"`
+	ErrorCallback    string                      `json:"error_callback,omitempty" bson:"error_callback,omitempty"`
+	CallChain        []string                    `json:"-" bson:"call_chain,omitempty"`
+	ResumeData       string                      `json:"-" bson:"resume_data,omitempty"`
+	ResumeStatus     TaskInstanceStatus          `json:"-" bson:"resume_status,omitempty"`
+	Version          Version                     `json:"version,omitempty" bson:"version,omitempty"`
+	VersionID        string                      `json:"versionId,omitempty" bson:"versionId,omitempty"`
+	BizDomainID      string                      `json:"biz_domain_id,omitempty" bson:"biz_domain_id,omitempty"`
+	MemoryShareData  *MemoryShareData            `json:"-" bson:"-"`
 
 	// 添加互斥锁用于保护 SaveExtData 方法
 	extDataMutex sync.Mutex `json:"-" bson:"-"`
@@ -283,13 +307,19 @@ var (
 // if you want a high performance just within same task, you can use
 // ExecuteContext's Context
 type ShareData struct {
-	Dict  map[string]interface{} `json:"dict,omitempty" bson:"dict,omitempty"`
-	Save  func(data *ShareData) error
-	mutex sync.RWMutex // 改用读写锁
+	Dict        map[string]interface{} `json:"dict,omitempty" bson:"dict,omitempty"`
+	Save        func(data *ShareData) error
+	mutex       sync.RWMutex // 改用读写锁
+	DagInstance *DagInstance
 }
 
 // MarshalBSON used by mongo
 func (d *ShareData) MarshalBSON() ([]byte, error) {
+
+	if d.DagInstance != nil && d.DagInstance.EventPersistence != DagInstanceEventPersistenceNone {
+		return StoreMarshal(map[string]any{})
+	}
+
 	d.mutex.RLock() // 使用读锁
 	defer d.mutex.RUnlock()
 
@@ -321,7 +351,7 @@ func (d *ShareData) MarshalBSON() ([]byte, error) {
 func (d *ShareData) UnmarshalBSON(data []byte) error {
 	dict := make(map[string]any)
 
-	if len(data) == 0 {
+	if len(data) == 0 || d.DagInstance != nil && d.DagInstance.EventPersistence != DagInstanceEventPersistenceNone {
 		d.Dict = dict
 		return nil
 	}
@@ -377,9 +407,7 @@ func (d *ShareData) UnmarshalJSON(data []byte) error {
 
 // Get value from share data, it is thread-safe.
 func (d *ShareData) Get(key string) (interface{}, bool) {
-	if d.Dict == nil {
-		return "", false
-	}
+	_ = d.Load(context.Background(), []string{key})
 	d.mutex.RLock() // 使用读锁
 	defer d.mutex.RUnlock()
 
@@ -387,35 +415,98 @@ func (d *ShareData) Get(key string) (interface{}, bool) {
 	return v, ok
 }
 
-// Set value to share data, it is thread-safe.
-func (d *ShareData) Set(key string, val interface{}) {
-	d.mutex.Lock() // 写操作使用写锁
+func (d *ShareData) Load(ctx context.Context, keys []string) error {
+	if d.DagInstance == nil || d.DagInstance.EventPersistence != DagInstanceEventPersistenceSql {
+		return nil
+	}
+
+	names := []string{}
+
+	if len(keys) == 0 {
+		names = keys
+	} else {
+		if d.Dict == nil {
+			names = keys
+		} else {
+			for _, k := range keys {
+				if _, ok := d.Dict[k]; ok {
+					continue
+				}
+				names = append(names, k)
+			}
+		}
+
+		if len(names) == 0 {
+			return nil
+		}
+	}
+
+	d.mutex.Lock()
 	defer d.mutex.Unlock()
 
 	if d.Dict == nil {
 		d.Dict = make(map[string]interface{})
 	}
 
+	events, err := d.DagInstance.ListEvents(context.Background(), &rds.DagInstanceEventListOptions{
+		DagInstanceID: d.DagInstance.ID,
+		Types:         []rds.DagInstanceEventType{rds.DagInstanceEventTypeVariable},
+		Names:         names,
+		LatestOnly:    true,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, event := range events {
+		d.Dict[event.Name] = event.Data
+	}
+
+	return nil
+}
+
+// Set value to share data, it is thread-safe.
+func (d *ShareData) Set(key string, val interface{}) {
+	d.mutex.Lock() // 写操作使用写锁
+	defer d.mutex.Unlock()
+
+	dict := make(map[string]any)
+
 	if strings.HasPrefix(key, "__") {
-		d.Dict[key] = val
+		dict[key] = val
 	} else if strings.Contains(key, "_i") {
 		// 使用正则表达式匹配 _i{number}_s{id} 格式
 		re := regexp.MustCompile(`_i\d+_s([^_]+)$`)
 		matches := re.FindStringSubmatch(key)
 		if len(matches) > 1 {
 			originKey := matches[1]
-			d.Dict[fmt.Sprintf("__%s", originKey)] = val
-			d.Dict[fmt.Sprintf("__%s", key)] = val
+			dict[fmt.Sprintf("__%s", originKey)] = val
+			dict[fmt.Sprintf("__%s", key)] = val
 		} else {
 			// 如果不是 _i{number}_s{id} 格式，则取最后一个部分
 			keys := strings.Split(key, "_")
 			originKey := keys[len(keys)-1]
-			d.Dict[fmt.Sprintf("__%s", originKey)] = val
-			d.Dict[fmt.Sprintf("__%s", key)] = val
-
+			dict[fmt.Sprintf("__%s", originKey)] = val
+			dict[fmt.Sprintf("__%s", key)] = val
 		}
 	} else if key != "" {
-		d.Dict[fmt.Sprintf("__%s", key)] = val
+		dict[fmt.Sprintf("__%s", key)] = val
+	}
+
+	if d.Dict == nil {
+		d.Dict = dict
+	} else {
+		for k, v := range dict {
+			d.Dict[k] = v
+		}
+	}
+
+	if len(dict) > 0 &&
+		d.DagInstance != nil &&
+		d.DagInstance.EventPersistence == DagInstanceEventPersistenceSql &&
+		d.DagInstance.Mode != DagInstanceModeVM {
+		_ = d.DagInstance.WriteEventByVariableMap(context.Background(), dict, time.Now().UnixMicro())
 	}
 
 	if d.Save != nil {
@@ -464,6 +555,13 @@ func (d *ShareData) BatchSet(updates map[string]interface{}) {
 		}
 	}
 
+	if len(updates) > 0 &&
+		d.DagInstance != nil &&
+		d.DagInstance.EventPersistence == DagInstanceEventPersistenceSql &&
+		d.DagInstance.Mode != DagInstanceModeVM {
+		_ = d.DagInstance.WriteEventByVariableMap(context.Background(), updates, time.Now().UnixMicro())
+	}
+
 	if d.Save != nil {
 		// 在保存之前释放锁
 		d.mutex.Unlock()
@@ -480,6 +578,7 @@ func (d *ShareData) BatchSet(updates map[string]interface{}) {
 
 // 添加新的批量获取方法
 func (d *ShareData) BatchGet(keys []string) map[string]interface{} {
+	_ = d.Load(context.Background(), keys)
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
@@ -498,6 +597,8 @@ func (d *ShareData) BatchGet(keys []string) map[string]interface{} {
 
 // GetAll 获取所有数据的副本，线程安全
 func (d *ShareData) GetAll() map[string]interface{} {
+	_ = d.Load(context.Background(), nil)
+
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
 
@@ -616,6 +717,361 @@ func (dagIns *DagInstance) VarsIterator() utils.KeyValueIterator {
 	}
 }
 
+type DagInstanceEvent struct {
+	ID         uint64                         `json:"-"`
+	Type       rds.DagInstanceEventType       `json:"type,omitempty"`
+	InstanceID string                         `json:"-"`
+	Operator   string                         `json:"operator,omitempty"`
+	TaskID     string                         `json:"task_id,omitempty"`
+	Status     string                         `json:"status,omitempty"`
+	Name       string                         `json:"name,omitempty"`
+	Data       any                            `json:"data,omitempty"`
+	Size       int                            `json:"-"`
+	Inline     bool                           `json:"-"`
+	Visibility rds.DagInstanceEventVisibility `json:"-"`
+	Timestamp  int64                          `json:"timestamp,omitempty"`
+}
+
+func ToRdsEvent(ctx context.Context, ev *DagInstanceEvent) (*rds.DagInstanceEvent, error) {
+	config := common.NewConfig()
+	og := drivenadapters.NewOssGateWay()
+
+	event := &rds.DagInstanceEvent{
+		ID:         store.NextID(),
+		Type:       ev.Type,
+		InstanceID: ev.InstanceID,
+		Operator:   ev.Operator,
+		TaskID:     ev.TaskID,
+		Status:     ev.Status,
+		Name:       ev.Name,
+		Data:       "",
+		Inline:     true,
+		Visibility: ev.Visibility,
+		Timestamp:  ev.Timestamp,
+	}
+
+	if event.Timestamp == 0 {
+		event.Timestamp = time.Now().UnixMicro()
+	}
+
+	if ev.Data != nil {
+		b, _ := json.Marshal(ev.Data)
+		event.Data = string(b)
+		event.Size = len(event.Data)
+		if event.Size > config.Server.DagInstanceEventMaxInlineSize {
+			ossID, err := og.GetAvaildOSS(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			size := int64(event.Size)
+			ossKey := fmt.Sprintf("%s/dag_instance/%s/event_%d", config.Server.StoragePrefix, event.InstanceID, event.ID)
+			err = og.UploadFile(ctx, ossID, ossKey, true, bytes.NewReader([]byte(event.Data)), size)
+			if err != nil {
+				return nil, err
+			}
+			event.Inline = false
+			event.Data = fmt.Sprintf("%s/%s", ossID, ossKey)
+		}
+	}
+
+	return event, nil
+}
+
+func FromRdsEvent(ctx context.Context, ev *rds.DagInstanceEvent) (*DagInstanceEvent, error) {
+
+	var (
+		dataStr string
+		data    any
+	)
+
+	if ev.Inline {
+		dataStr = ev.Data
+	} else {
+		parts := strings.SplitN(ev.Data, "/", 2)
+		ossID, ossKey := parts[0], parts[1]
+		if ossID != "" && ossKey != "" {
+			og := drivenadapters.NewOssGateWay()
+			b, err := og.DownloadFile(ctx, ossID, ossKey, true)
+			if err != nil {
+				return nil, err
+			}
+			dataStr = string(b)
+		}
+	}
+
+	switch ev.Type {
+	case rds.DagInstanceEventTypeInstructions, rds.DagInstanceEventTypeVM:
+		data = dataStr
+	default:
+		if dataStr != "" {
+			if err := json.Unmarshal([]byte(dataStr), &data); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	event := &DagInstanceEvent{
+		ID:         ev.ID,
+		Type:       ev.Type,
+		InstanceID: ev.InstanceID,
+		Operator:   ev.Operator,
+		TaskID:     ev.TaskID,
+		Status:     ev.Status,
+		Name:       ev.Name,
+		Data:       data,
+		Size:       ev.Size,
+		Inline:     ev.Inline,
+		Visibility: ev.Visibility,
+		Timestamp:  ev.Timestamp,
+	}
+
+	return event, nil
+}
+
+func (dagIns *DagInstance) WriteEventByVariableMap(ctx context.Context, m map[string]any, timestamp int64) error {
+
+	var events []*DagInstanceEvent
+
+	if timestamp == 0 {
+		timestamp = time.Now().UnixMicro()
+	}
+
+	for k, v := range m {
+		event := &DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeVariable,
+			InstanceID: dagIns.ID,
+			Name:       k,
+			Data:       v,
+			Visibility: rds.DagInstanceEventVisibilityPrivate,
+			Timestamp:  timestamp,
+		}
+
+		if regexp.MustCompile(`^__[0-9]+$`).MatchString(k) {
+			event.Visibility = rds.DagInstanceEventVisibilityPublic
+		}
+
+		events = append(events, event)
+	}
+
+	return dagIns.WriteEvents(ctx, events)
+}
+
+// WriteTraceEvent 写入Trace变更信息
+func (dagIns *DagInstance) WriteTraceEvent(ctx context.Context, m map[string]any) error {
+	var events []*DagInstanceEvent
+
+	now := time.Now().UnixMicro()
+	keyReg := regexp.MustCompile(`__[a-zA-Z0-9_]+_trace`)
+
+	for k, v := range m {
+		if !keyReg.MatchString(k) {
+			continue
+		}
+
+		event := &DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTrace,
+			InstanceID: dagIns.ID,
+			Name:       k,
+			Data:       v,
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+			Timestamp:  now,
+		}
+
+		events = append(events, event)
+	}
+
+	return dagIns.WriteEvents(ctx, events)
+}
+
+func (dagIns *DagInstance) WriteEvents(ctx context.Context, events []*DagInstanceEvent) error {
+	eventRepo := rds.NewDagInstanceEventRepository()
+	rdsEvents := make([]*rds.DagInstanceEvent, 0, len(events))
+	for _, event := range events {
+		ev, err := ToRdsEvent(ctx, event)
+
+		if err != nil {
+			return err
+		}
+		rdsEvents = append(rdsEvents, ev)
+	}
+
+	err := eventRepo.InsertMany(ctx, rdsEvents)
+
+	if err != nil {
+		log.Warnf("[dagIns.WriteEvents] err: %s", err.Error())
+	}
+
+	return err
+}
+
+func (dagIns *DagInstance) UploadEvents(ctx context.Context) error {
+
+	config := common.NewConfig()
+	og := drivenadapters.NewOssGateWay()
+	eventRepo := rds.NewDagInstanceEventRepository()
+
+	ossId, err := og.GetAvaildOSS(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	ossKey := fmt.Sprintf("%s/dag_instance/%s/events_%s.jsonl", config.Server.StoragePrefix, dagIns.ID, time.Now().Format("20060102150405"))
+
+	pr, pw := io.Pipe()
+	go func() {
+		var err error
+
+		defer func() {
+			if err != nil {
+				pw.CloseWithError(err)
+			} else {
+				pw.Close()
+			}
+		}()
+
+		batchSize := 50
+		opts := &rds.DagInstanceEventListOptions{
+			DagInstanceID: dagIns.ID,
+			Offset:        0,
+			Limit:         batchSize,
+			Visibilities:  []rds.DagInstanceEventVisibility{rds.DagInstanceEventVisibilityPublic},
+		}
+
+		for {
+			var rdsEvents []*rds.DagInstanceEvent
+			if rdsEvents, err = eventRepo.List(context.Background(), opts); err != nil {
+				return
+			}
+
+			if len(rdsEvents) == 0 {
+				return
+			}
+
+			for _, ev := range rdsEvents {
+				var event *DagInstanceEvent
+				if event, err = FromRdsEvent(ctx, ev); err != nil {
+					return
+				}
+
+				b, _ := json.Marshal(event)
+
+				if _, err = pw.Write(b); err != nil {
+					return
+				}
+
+				if _, err = pw.Write([]byte("\n\n")); err != nil {
+					return
+				}
+			}
+
+			opts.Offset += batchSize
+		}
+	}()
+
+	err = og.SimpleUpload(ctx, ossId, ossKey, true, pr)
+
+	if err != nil {
+		return err
+	}
+
+	dagIns.EventPersistence = DagInstanceEventPersistenceOss
+	dagIns.EventOssPath = fmt.Sprintf("%s/%s", ossId, ossKey)
+
+	return nil
+}
+
+func (dagIns *DagInstance) ListEvents(ctx context.Context, opts *rds.DagInstanceEventListOptions) ([]*DagInstanceEvent, error) {
+
+	eventRepo := rds.NewDagInstanceEventRepository()
+
+	if opts == nil {
+		opts = &rds.DagInstanceEventListOptions{
+			DagInstanceID: dagIns.ID,
+		}
+	} else if opts.DagInstanceID == "" {
+		opts.DagInstanceID = dagIns.ID
+	}
+
+	rdsEvents, err := eventRepo.List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]*DagInstanceEvent, 0, len(rdsEvents))
+
+	for _, ev := range rdsEvents {
+		event, err := FromRdsEvent(ctx, ev)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
+}
+
+func (dagIns *DagInstance) ListOssEvents(ctx context.Context) (events []*DagInstanceEvent, err error) {
+
+	if dagIns.EventPersistence != DagInstanceEventPersistenceOss || dagIns.EventOssPath == "" {
+		return
+	}
+
+	og := drivenadapters.NewOssGateWay()
+	parts := strings.SplitN(dagIns.EventOssPath, "/", 2)
+	ossID, ossKey := parts[0], parts[1]
+	url, err := og.GetDownloadURL(ctx, ossID, ossKey, 0, true)
+	if err != nil {
+		return
+	}
+	client := &http.Client{
+		Transport: otelhttp.NewTransport(&http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}),
+	}
+
+	resp, err := client.Get(url)
+
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("failed to fetch file: %s", string(body))
+	}
+
+	scanner := bufio.NewScanner(resp.Body)
+	// 增加缓冲区大小以支持大行数据（默认64KB，设置为10MB）
+	maxCapacity := 10 * 1024 * 1024 // 10MB
+	buf := make([]byte, 0, bufio.MaxScanTokenSize)
+	scanner.Buffer(buf, maxCapacity)
+
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+
+		var elem DagInstanceEvent
+		if perr := json.Unmarshal(line, &elem); perr != nil {
+			log.Warnf("[dagIns.ListOssEvents] unmarshal err %s", perr.Error())
+			continue
+		}
+
+		events = append(events, &elem)
+	}
+
+	if err = scanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan file: %w", err)
+	}
+
+	return
+}
+
 // Run the dag instance
 func (dagIns *DagInstance) Run() {
 	dagIns.executeHook(HookDagInstance.BeforeRun)
@@ -637,6 +1093,11 @@ func (dagIns *DagInstance) Fail(reason string) {
 	dagIns.executeHook(HookDagInstance.BeforeFail)
 	dagIns.Status = DagInstanceStatusFailed
 	dagIns.EndedAt = time.Now().Unix()
+}
+
+func (dagIns *DagInstance) FailDetail(reason map[string]any) {
+	b, _ := json.Marshal(reason)
+	dagIns.Fail(string(b))
 }
 
 // Block the dag instance
@@ -902,103 +1363,117 @@ func (dagIns *DagInstance) uploadExtData(ctx context.Context, data []byte, field
 }
 
 func (dagIns *DagInstance) SaveExtData(ctx context.Context) (err error) {
-	// 使用互斥锁保护整个方法
-	dagIns.extDataMutex.Lock()
-	defer dagIns.extDataMutex.Unlock()
 
-	config := common.NewConfig()
-	extDataItems := make([]*DagInstanceExtData, 0)
+	switch dagIns.EventPersistence {
+	case DagInstanceEventPersistenceOss, DagInstanceEventPersistenceSql:
+		// 数据已存到 event 表
+	default:
+		// 使用互斥锁保护整个方法
+		dagIns.extDataMutex.Lock()
+		defer dagIns.extDataMutex.Unlock()
 
-	if dagIns.ShareData != nil {
-		var copyDict map[string]any = dagIns.ShareData.GetAll()
+		config := common.NewConfig()
+		extDataItems := make([]*DagInstanceExtData, 0)
 
-		data, err := json.Marshal(copyDict)
-		if err != nil {
-			return err
-		}
-		size := len(data)
-		if size > config.Server.MongoMaxInlineSize {
-			extData, err := dagIns.uploadExtData(ctx, data, "shareData", 3)
+		if dagIns.ShareData != nil {
+			var copyDict map[string]any = dagIns.ShareData.GetAll()
+
+			data, err := json.Marshal(copyDict)
 			if err != nil {
-				log.Warnf("[dagIns.SaveExtData] upload shareData failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
 				return err
 			}
-			dagIns.ShareDataExt = extData
-			extDataItems = append(extDataItems, extData)
-		} else {
-			dagIns.ShareDataExt = nil
-		}
-	}
-
-	if dagIns.Dump != "" {
-		data := []byte(dagIns.Dump)
-		size := len(data)
-		if size > config.Server.MongoMaxInlineSize {
-			extData, err := dagIns.uploadExtData(ctx, data, "dump", 3)
-			if err != nil {
-				log.Warnf("[dagIns.SaveExtData] upload dump failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
-				return err
-			}
-			dagIns.DumpExt = extData
-			extDataItems = append(extDataItems, extData)
-		} else {
-			dagIns.DumpExt = nil
-		}
-	}
-
-	if len(extDataItems) > 0 {
-		var items []*rds.DagInstanceExtData
-		for _, item := range extDataItems {
-			items = append(items, item.DagInstanceExtData)
-		}
-		go func() {
-			err := rds.NewDagInstanceExtDataDao().InsertMany(context.Background(), items)
-			if err != nil {
-				for _, item := range extDataItems {
-					_ = item.Delete(context.Background())
+			size := len(data)
+			if size > config.Server.MongoMaxInlineSize {
+				extData, err := dagIns.uploadExtData(ctx, data, "shareData", 3)
+				if err != nil {
+					log.Warnf("[dagIns.SaveExtData] upload shareData failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
+					return err
 				}
+				dagIns.ShareDataExt = extData
+				extDataItems = append(extDataItems, extData)
+			} else {
+				dagIns.ShareDataExt = nil
 			}
-		}()
+		}
+
+		if dagIns.Dump != "" {
+			data := []byte(dagIns.Dump)
+			size := len(data)
+			if size > config.Server.MongoMaxInlineSize {
+				extData, err := dagIns.uploadExtData(ctx, data, "dump", 3)
+				if err != nil {
+					log.Warnf("[dagIns.SaveExtData] upload dump failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
+					return err
+				}
+				dagIns.DumpExt = extData
+				extDataItems = append(extDataItems, extData)
+			} else {
+				dagIns.DumpExt = nil
+			}
+		}
+
+		if len(extDataItems) > 0 {
+			var items []*rds.DagInstanceExtData
+			for _, item := range extDataItems {
+				items = append(items, item.DagInstanceExtData)
+			}
+			go func() {
+				err := rds.NewDagInstanceExtDataDao().InsertMany(context.Background(), items)
+				if err != nil {
+					for _, item := range extDataItems {
+						_ = item.Delete(context.Background())
+					}
+				}
+			}()
+		}
 	}
 
 	return
 }
 
 func (dagIns *DagInstance) LoadExtData(ctx context.Context) (err error) {
-	if dagIns.ShareDataExt != nil {
-		data, err := dagIns.ShareDataExt.Read(ctx)
-		if err != nil {
-			return err
-		}
 
-		dict := make(map[string]any)
-
-		err = json.Unmarshal(data, &dict)
-
-		if err != nil {
-			log.Warnf("[dagIns.LoadExtData] download shareData failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
-			return err
-		}
-
-		if dagIns.ShareData != nil {
-			dagIns.ShareData.mutex.Lock()
-			dagIns.ShareData.Dict = dict
-			dagIns.ShareData.mutex.Unlock()
-		} else {
-			dagIns.ShareData = &ShareData{
-				Dict: dict,
-			}
-		}
+	if dagIns.ShareData == nil {
+		dagIns.ShareData = &ShareData{}
 	}
 
-	if dagIns.DumpExt != nil {
-		data, err := dagIns.DumpExt.Read(ctx)
-		if err != nil {
-			log.Warnf("[dagIns.LoadExtData] download dump failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
-			return err
-		}
+	dagIns.ShareData.DagInstance = dagIns
 
-		dagIns.Dump = string(data)
+	switch dagIns.EventPersistence {
+	case DagInstanceEventPersistenceOss, DagInstanceEventPersistenceSql:
+		// nothing to do:
+	default:
+		{
+			if dagIns.ShareDataExt != nil {
+				data, err := dagIns.ShareDataExt.Read(ctx)
+				if err != nil {
+					return err
+				}
+
+				dict := make(map[string]any)
+
+				err = json.Unmarshal(data, &dict)
+
+				if err != nil {
+					log.Warnf("[dagIns.LoadExtData] download shareData failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
+					return err
+				}
+
+				dagIns.ShareData.mutex.Lock()
+				dagIns.ShareData.Dict = dict
+				dagIns.ShareData.mutex.Unlock()
+			}
+
+			if dagIns.DumpExt != nil {
+				data, err := dagIns.DumpExt.Read(ctx)
+				if err != nil {
+					log.Warnf("[dagIns.LoadExtData] download dump failed, dagInsId: %s, err: %s", dagIns.ID, err.Error())
+					return err
+				}
+
+				dagIns.Dump = string(data)
+			}
+		}
 	}
 
 	return nil

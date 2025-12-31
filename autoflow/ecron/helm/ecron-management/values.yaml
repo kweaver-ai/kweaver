@@ -60,7 +60,7 @@ depServices:
     port: 3309
     user: "root"
     password: "123456"
-    database: "ecron"
+    database: "adp"
     system_id: ""
     maxConnections: 30
     dbFormat: utf8

@@ -13,10 +13,13 @@ import (
 )
 
 type OpenSearchBulkUpsert struct {
-	BaseType  string `json:"base_type"`
-	DataType  string `json:"data_type"`
-	Category  string `json:"category"`
-	Documents any    `json:"documents"`
+	BaseType  string                 `json:"base_type"`
+	DataType  string                 `json:"data_type"`
+	Category  string                 `json:"category"`
+	Documents any                    `json:"documents"`
+	Template  string                 `json:"template"`
+	Settings  map[string]interface{} `json:"settings,omitempty"`
+	Mappings  map[string]interface{} `json:"mappings,omitempty"`
 }
 
 func (b *OpenSearchBulkUpsert) Name() string {
@@ -25,6 +28,80 @@ func (b *OpenSearchBulkUpsert) Name() string {
 
 func (b *OpenSearchBulkUpsert) ParameterNew() any {
 	return &OpenSearchBulkUpsert{}
+}
+
+// getDefaultIndexTemplate 获取默认的索引配置模板
+func getDefaultIndexTemplate() (map[string]interface{}, map[string]interface{}) {
+	settings := map[string]interface{}{
+		"number_of_shards":         1,
+		"number_of_replicas":       0,
+		"knn":                      true,
+		"knn.algo_param.ef_search": 100,
+		"refresh_interval":         "30s",
+	}
+
+	mappings := map[string]interface{}{
+		"dynamic": false,
+		"properties": map[string]interface{}{
+			"doc_name": map[string]interface{}{
+				"type": "text",
+				"fields": map[string]interface{}{
+					"keyword": map[string]interface{}{
+						"type":         "keyword",
+						"ignore_above": 256,
+					},
+				},
+			},
+			"doc_md5": map[string]interface{}{
+				"type": "keyword",
+			},
+			"slice_md5": map[string]interface{}{
+				"type": "keyword",
+			},
+			"id": map[string]interface{}{
+				"type": "keyword",
+			},
+			"deduplication_id": map[string]interface{}{
+				"type": "keyword",
+			},
+			"document_id": map[string]interface{}{
+				"type": "keyword",
+			},
+			"slice_type": map[string]interface{}{
+				"type": "integer",
+			},
+			"pages": map[string]interface{}{
+				"type": "integer",
+			},
+			"segment_id": map[string]interface{}{
+				"type": "integer",
+			},
+			"slice_content": map[string]interface{}{
+				"type":     "text",
+				"analyzer": "standard",
+			},
+			"text_vector": map[string]interface{}{
+				"type":      "knn_vector",
+				"dimension": 768,
+			},
+			"img_path": map[string]interface{}{
+				"type":  "keyword",
+				"index": false,
+			},
+			"image_vector": map[string]interface{}{
+				"type":      "knn_vector",
+				"dimension": 512,
+			},
+			"created_at": map[string]interface{}{
+				"type": "date",
+			},
+			"updated_at": map[string]interface{}{
+				"type": "date",
+			},
+		},
+	}
+
+	return settings, mappings
 }
 
 func normalizeDocuments(documents any, baseType, dataType, category string) (results []map[string]any) {
@@ -88,6 +165,20 @@ func (b *OpenSearchBulkUpsert) Run(ctx entity.ExecuteContext, params interface{}
 	openSearch := drivenadapters.NewOpenSearch()
 	documents := normalizeDocuments(input.Documents, input.BaseType, input.DataType, input.Category)
 
+	index := "mdl-" + input.BaseType
+
+	// 确定使用的 settings 和 mappings
+	settings := input.Settings
+	mappings := input.Mappings
+
+	// 如果用户没有提供 settings 和 mappings，但指定了 template，使用内置模板
+	if settings == nil && mappings == nil && input.Template != "" {
+		if input.Template == "default" {
+			settings, mappings = getDefaultIndexTemplate()
+			log.Infof("[OpenSearchBulkUpsert] taskInsID %s, using default index template", taskIns.TaskID)
+		}
+	}
+
 	result := map[string]any{}
 	success, failed := 0, 0
 	reasons := []string{}
@@ -95,7 +186,7 @@ func (b *OpenSearchBulkUpsert) Run(ctx entity.ExecuteContext, params interface{}
 	for i := 0; i < len(documents); i += batchSize {
 		end := min(i+batchSize, len(documents))
 		batch := documents[i:end]
-		err = openSearch.BulkUpsert(ctx.Context(), "mdl-"+input.BaseType, batch)
+		err = openSearch.BulkUpsert(ctx.Context(), index, batch, settings, mappings)
 
 		if err != nil {
 			log.Warnf("[OpenSearchBulkUpsert] taskInsID %s, total %d, range %d-%d, err: %s", taskIns.TaskID, len(documents), i, end, err.Error())

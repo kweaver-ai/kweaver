@@ -190,6 +190,8 @@ type DagInstanceRunInfo struct {
 	Status    string `json:"status"`
 	StartedAt int64  `json:"started_at"`
 	EndedAt   int64  `json:"ended_at"`
+	Source    any    `json:"source"`
+	Reason    any    `json:"reason"`
 }
 
 // Progress dag ins run detail info
@@ -207,16 +209,17 @@ type DagInstanceRunList struct {
 
 // TaskInstanceRunInfo task ins run info
 type TaskInstanceRunInfo struct {
-	ID             string      `json:"id"`
-	Name           string      `json:"name,omitempty"`
-	Operator       string      `json:"operator"`
-	StartedAt      int64       `json:"started_at"`
-	UpdatedAt      int64       `json:"updated_at"`
-	Status         string      `json:"status"`
-	Inputs         interface{} `json:"inputs"`
-	Outputs        interface{} `json:"outputs"`
-	TaskID         string      `json:"taskId"`
-	LastModifiedAt int64       `json:"last_modified_at"`
+	ID             string               `json:"id"`
+	Name           string               `json:"name,omitempty"`
+	Operator       string               `json:"operator"`
+	StartedAt      int64                `json:"started_at"`
+	UpdatedAt      int64                `json:"updated_at"`
+	Status         string               `json:"status"`
+	Inputs         interface{}          `json:"inputs"`
+	Outputs        interface{}          `json:"outputs"`
+	TaskID         string               `json:"taskId"`
+	LastModifiedAt int64                `json:"last_modified_at"`
+	MetaData       *entity.TaskMetaData `json:"metadata,omitempty"`
 }
 
 // RunInstanceWithFormReq 表单运行流程时参数
@@ -270,7 +273,7 @@ type MgntHandler interface { //nolint
 	ListDagV2(ctx context.Context, param QueryParams, userInfo *drivenadapters.UserInfo) ([]*DagSimpleInfo, int64, error)
 	ListDagByFields(ctx context.Context, filter bson.M, opt options.FindOptions) ([]*DagSimpleInfo, int64, error)
 	RunInstance(ctx context.Context, id string, userInfo *drivenadapters.UserInfo) error
-	RunFormInstance(ctx context.Context, id string, formData map[string]interface{}, userInfo *drivenadapters.UserInfo) error
+	RunFormInstance(ctx context.Context, id string, formData map[string]interface{}, userInfo *drivenadapters.UserInfo) (string, error)
 	HandleDocEvent(ctx context.Context, msg *DocMsg, topic string) error
 	CancelRunningInstance(ctx context.Context, id string, dagInsReq *DagInsStatusReq, userInfo *drivenadapters.UserInfo) error
 	GetSuggestDagName(ctx context.Context, name string, userInfo *drivenadapters.UserInfo) (string, error)
@@ -319,6 +322,8 @@ type MgntHandler interface { //nolint
 
 	// 业务域数据迁移列举接口
 	ListHistoryData(ctx context.Context, page, limit int64) (HistoryDataResp, error)
+	ListDagInstanceEvents(ctx context.Context, dagID, dagInsID string, offset, limit int, userInfo *drivenadapters.UserInfo) (
+		logs []*entity.DagInstanceEvent, dagIns *entity.DagInstance, total int, next int, err error)
 }
 
 var (
@@ -346,6 +351,7 @@ type mgnt struct {
 	executor          rds.ExecutorDao
 	admin             rds.ContentAmdinDao
 	extData           rds.DagInstanceExtDataDao
+	eventRepository   rds.DagInstanceEventRepository
 	taskTimeoutConfig *common.TimeoutConfig
 	mq                mod.MQHandler
 	logger            drivenadapters.Logger
@@ -387,6 +393,7 @@ func NewMgnt() MgntHandler {
 			executor:          rds.NewExecutor(),
 			admin:             rds.NewContentAmdin(),
 			extData:           rds.NewDagInstanceExtDataDao(),
+			eventRepository:   rds.NewDagInstanceEventRepository(),
 			taskTimeoutConfig: common.NewTimeoutConfig(),
 			mq:                mod.NewMQHandler(),
 			agent:             rds.NewAgent(),
@@ -599,7 +606,7 @@ func (m *mgnt) CreateDag(ctx context.Context, param *CreateDagReq, userInfo *dri
 			"create_by": createBy,
 		}
 
-		userInfo.Type = "user"
+		userInfo.Type = common.User.ToString()
 		write := &drivenadapters.JSONLogWriter{SendFunc: m.executeMethods.Publish}
 		m.logger.Log(drivenadapters.LogTypeASOperationLog, &drivenadapters.BuildARLogParams{
 			Operation:   common.ArLogCreateDag,
@@ -959,32 +966,42 @@ func (m *mgnt) GetDagByID(ctx context.Context, dagID, versionID, bizDomainID str
 
 		parameters := dag.TriggerConfig.Parameters
 		if parameters != nil && parameters["docids"] != nil {
-			docIDs := parameters["docids"].(primitive.A)
+			var docIDs []interface{}
+			// 安全地处理 primitive.A 或 []interface{} 类型
+			if ids, ok := parameters["docids"].(primitive.A); ok {
+				docIDs = ids
+			} else if ids, ok := parameters["docids"].([]interface{}); ok {
+				docIDs = ids
+			} else {
+				log.Warnf("[logic.GetDagByID] docids parameter is not a valid array type")
+			}
 			// Initialize the docs array before appending
-			dag.TriggerConfig.Parameters["docs"] = make([]map[string]interface{}, 0)
+			if docIDs != nil {
+				dag.TriggerConfig.Parameters["docs"] = make([]map[string]interface{}, 0)
 
-			for _, docID := range docIDs {
-				query := []string{"doc_lib_type", "name", "path"}
-				if !utils.IsGNS(docID.(string)) {
+				for _, docID := range docIDs {
+					query := []string{"doc_lib_type", "name", "path"}
+					if !utils.IsGNS(docID.(string)) {
+						dag.TriggerConfig.Parameters["docs"] = append(dag.TriggerConfig.Parameters["docs"].([]map[string]interface{}), map[string]interface{}{
+							"docid":        docID,
+							"doc_lib_type": docID,
+							"path":         docID,
+							"name":         docID,
+						})
+						continue
+					}
+					docInfo, merr := m.efast.GetDocMetaData(context.Background(), docID.(string), query)
+					if merr != nil {
+						log.Warnf("[logic.GetDagByID] GetDocMetaData err, detail: %s", merr.Error())
+						continue
+					}
 					dag.TriggerConfig.Parameters["docs"] = append(dag.TriggerConfig.Parameters["docs"].([]map[string]interface{}), map[string]interface{}{
 						"docid":        docID,
-						"doc_lib_type": docID,
-						"path":         docID,
-						"name":         docID,
+						"doc_lib_type": docInfo.DocLibType,
+						"path":         docInfo.Path,
+						"name":         docInfo.Name,
 					})
-					continue
 				}
-				docInfo, merr := m.efast.GetDocMetaData(context.Background(), docID.(string), query)
-				if merr != nil {
-					log.Warnf("[logic.GetDagByID] GetDocMetaData err, detail: %s", merr.Error())
-					continue
-				}
-				dag.TriggerConfig.Parameters["docs"] = append(dag.TriggerConfig.Parameters["docs"].([]map[string]interface{}), map[string]interface{}{
-					"docid":        docID,
-					"doc_lib_type": docInfo.DocLibType,
-					"path":         docInfo.Path,
-					"name":         docInfo.Name,
-				})
 			}
 		}
 	}
@@ -1066,6 +1083,8 @@ func (m *mgnt) deleteDag(ctx context.Context, dag *entity.Dag, userInfo *drivena
 		}
 
 		resourceID := fmt.Sprintf("%s:%s", dag.ID, utils.IfNot(dag.Type == "", common.DagTypeDefault, dag.Type))
+		// 此处由于部分是数据迁移的记录，导致数据库中并未真正记录业务域ID，一些内部接口或事件进行删除操作时，会因为空而报错
+		bizDomainID = utils.IfNot(bizDomainID == "", common.BizDomainDefaultID, bizDomainID)
 		err = m.bizDomain.UnBindResourceInternal(context.Background(), drivenadapters.BizDomainResourceParams{
 			BizDomainID:  bizDomainID,
 			ResourceID:   resourceID,
@@ -1073,7 +1092,6 @@ func (m *mgnt) deleteDag(ctx context.Context, dag *entity.Dag, userInfo *drivena
 		})
 		if err != nil {
 			log.Warnf("[logic.deleteDag] UnBindResourceInternal err, BizDomainID: %s, ResourceID: %s, detail: %s", bizDomainID, resourceID, err.Error())
-			return
 		}
 
 		detail, extMsg := common.GetLogBody(common.DeleteTask, []interface{}{dag.Name}, []interface{}{})
@@ -1140,10 +1158,10 @@ func (m *mgnt) ListDag(ctx context.Context, param QueryParams, userInfo *drivena
 		return dagArr, total, err
 	}
 
-	var accessorIDs = make(map[string]drivenadapters.AccessorType)
+	var accessorIDs = make(map[string]string)
 
 	for _, dag := range dags {
-		accessorIDs[dag.UserID] = drivenadapters.User
+		accessorIDs[dag.UserID] = common.User.ToString()
 	}
 
 	accessors, _ := m.usermgnt.GetNameByAccessorIDs(accessorIDs)
@@ -1186,10 +1204,10 @@ func (m *mgnt) ListDagByFields(ctx context.Context, filter bson.M, opt options.F
 		return dagArr, total, ierrors.NewIError(ierrors.InternalError, "", nil)
 	}
 
-	var accessorIDs = make(map[string]drivenadapters.AccessorType)
+	var accessorIDs = make(map[string]string)
 
 	for _, dag := range dags {
-		accessorIDs[dag.UserID] = drivenadapters.User
+		accessorIDs[dag.UserID] = common.User.ToString()
 	}
 
 	accessors, _ := m.usermgnt.GetNameByAccessorIDs(accessorIDs)
@@ -1270,7 +1288,7 @@ func (m *mgnt) RunCronInstance(ctx context.Context, id, webhook string) error {
 
 	userDetail.VisitorType = common.InternalServiceUserType
 	if dag.AppInfo.Enable {
-		userDetail.VisitorType = common.AppUserType
+		userDetail.VisitorType = common.APP.ToString()
 	}
 
 	var datasourceid = ""
@@ -1306,7 +1324,7 @@ func (m *mgnt) RunCronInstance(ctx context.Context, id, webhook string) error {
 	if dag.Steps[0].Operator == common.MDLDataViewTrigger {
 		err = m.triggerFromMDLDataView(ctx, dag, triggerType, runVar, userDetail.UserID, userDetail.AccountType, tokenInfo.LoginIP)
 		if err != nil {
-			log.Warnf("[logic.RunInstance] triggerFromMDLDataView err %s", err.Error())
+			log.Warnf("[logic.RunCronInstance] triggerFromMDLDataView err %s", err.Error())
 			return err
 		}
 
@@ -1371,11 +1389,6 @@ func (m *mgnt) RunInstance(ctx context.Context, id string, userInfo *drivenadapt
 	}
 	dag.SetPushMessage(m.executeMethods.Publish)
 
-	_, tokenInfo, err := m.getUserDetail(dag.UserID, &dag.AppInfo)
-	if err != nil {
-		return ierrors.NewIError(ierrors.UnAuthorization, "", map[string]interface{}{"info": err.Error()})
-	}
-
 	opMap := &perm.MapOperationProvider{
 		OpMap: map[string][]string{
 			common.DagTypeDataFlow: {perm.ManualExecOperation},
@@ -1383,9 +1396,18 @@ func (m *mgnt) RunInstance(ctx context.Context, id string, userInfo *drivenadapt
 		},
 	}
 
+	if userInfo.AccountType == common.APP.ToString() {
+		opMap.OpMap[common.DagTypeDefault] = []string{perm.OldAppTokenOperation}
+	}
+
 	_, err = m.permCheck.CheckDagAndPerm(ctx, dag.ID, userInfo, opMap)
 	if err != nil {
 		return err
+	}
+
+	_, tokenInfo, err := m.getUserDetail(dag.UserID, &dag.AppInfo)
+	if err != nil {
+		return ierrors.NewIError(ierrors.UnAuthorization, "", map[string]interface{}{"info": err.Error()})
 	}
 
 	var datasourceid = ""
@@ -1397,7 +1419,7 @@ func (m *mgnt) RunInstance(ctx context.Context, id string, userInfo *drivenadapt
 		"userid":        userInfo.UserID,
 		"operator_id":   userInfo.UserID,
 		"operator_name": userInfo.UserName,
-		"operator_type": "user",
+		"operator_type": common.User.ToString(),
 		"datasourceid":  datasourceid,
 	}
 
@@ -1471,7 +1493,7 @@ func (m *mgnt) RunInstance(ctx context.Context, id string, userInfo *drivenadapt
 	return nil
 }
 
-func (m *mgnt) RunFormInstance(ctx context.Context, id string, formData map[string]interface{}, userInfo *drivenadapters.UserInfo) error {
+func (m *mgnt) RunFormInstance(ctx context.Context, id string, formData map[string]interface{}, userInfo *drivenadapters.UserInfo) (string, error) {
 	var err error
 	ctx, span := trace.StartInternalSpan(ctx)
 	defer func() { trace.TelemetrySpanEnd(span, err) }()
@@ -1480,10 +1502,10 @@ func (m *mgnt) RunFormInstance(ctx context.Context, id string, formData map[stri
 	dag, err := m.mongo.GetDag(ctx, id)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return ierrors.NewIError(ierrors.TaskNotFound, "", map[string]string{"dagId": id})
+			return "", ierrors.NewIError(ierrors.TaskNotFound, "", map[string]string{"dagId": id})
 		}
 		log.Warnf("[logic.RunFormInstance] GetDag err, deail: %s", err.Error())
-		return ierrors.NewIError(ierrors.InternalError, "", nil)
+		return "", ierrors.NewIError(ierrors.InternalError, "", nil)
 	}
 	dag.SetPushMessage(m.executeMethods.Publish)
 
@@ -1494,24 +1516,26 @@ func (m *mgnt) RunFormInstance(ctx context.Context, id string, formData map[stri
 	}
 	if dag.Published {
 		opMap.OpMap[common.DagTypeDefault] = []string{perm.OldPublishOperatiuon}
+	} else if userInfo.AccountType == common.APP.ToString() {
+		opMap.OpMap[common.DagTypeDefault] = []string{perm.OldAppTokenOperation}
 	} else {
 		opMap.OpMap[common.DagTypeDefault] = []string{perm.OldShareOperation}
 	}
 
 	_, err = m.permCheck.CheckDagAndPerm(ctx, dag.ID, userInfo, opMap)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if !dag.Published && userInfo == nil {
-		return ierrors.NewIError(ierrors.Forbidden, "", map[string]string{"dagId": id})
+		return "", ierrors.NewIError(ierrors.Forbidden, "", map[string]string{"dagId": id})
 	}
 
 	if userInfo != nil {
 		userDetail, err := m.usermgnt.GetUserInfoByType(userInfo.UserID, userInfo.AccountType)
 		if err != nil {
 			log.Warnf("[logic.RunFormInstance] GetUserInfoByType err, deail: %s", err.Error())
-			return err
+			return "", err
 		}
 
 		userInfo.UserName = userDetail.UserName
@@ -1555,18 +1579,18 @@ func (m *mgnt) RunFormInstance(ctx context.Context, id string, formData map[stri
 		err := ierrors.NewIError(ierrors.Forbidden, ierrors.ErrorIncorretTrigger, map[string]interface{}{
 			"trigger": fmt.Sprintf("%s trigger type is not allowed to run form", triggerType),
 		})
-		return err
+		return "", err
 	}
 
-	dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+	dagIns, dagErr := dag.Run(ctx, triggerType, runVar, []string{userInfo.UserName})
 	if dagErr != nil {
-		return ierrors.NewIError(ierrors.Forbidden, ierrors.DagStatusNotNormal, map[string]interface{}{"id:": dag.ID, "status": dag.Status})
+		return "", ierrors.NewIError(ierrors.Forbidden, ierrors.DagStatusNotNormal, map[string]interface{}{"id:": dag.ID, "status": dag.Status})
 	}
 
-	_, err = m.mongo.CreateDagIns(ctx, dagIns)
+	dagInsID, err := m.mongo.CreateDagIns(ctx, dagIns)
 	if err != nil {
 		log.Warnf("[logic.RunFromInstance] CreateDagIns err, deail: %s", err.Error())
-		return ierrors.NewIError(ierrors.InternalError, "", nil)
+		return "", ierrors.NewIError(ierrors.InternalError, "", nil)
 	}
 	go func() {
 		detail, extMsg := common.GetLogBody(common.TriggerTaskManually, []interface{}{dag.Name},
@@ -1593,7 +1617,7 @@ func (m *mgnt) RunFormInstance(ctx context.Context, id string, formData map[stri
 			LogLevel:  drivenadapters.NcTLogLevel_NCT_LL_INFO_Str,
 		}, write)
 	}()
-	return nil
+	return dagInsID, nil
 }
 
 func (m *mgnt) getSource(msg *common.DocMsg, triggerType string, log *traceLog.Logger) []string {
@@ -1733,7 +1757,7 @@ func (m *mgnt) HandleDocEvent(ctx context.Context, msg *DocMsg, topic string) er
 		}
 
 		dag.SetPushMessage(m.executeMethods.Publish)
-		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar) //nolint
+		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar, []string{msg.DocName}) //nolint
 		if err != nil {
 			return err
 		}
@@ -1795,7 +1819,7 @@ func (m *mgnt) HandleUserInfoEvent(ctx context.Context, msg *common.UserInfoMsg,
 		"source_type":   "dept",
 	}
 
-	if triggerType[0] == common.AnyshareOrgNameModifyTrigger && msg.Type == "user" {
+	if triggerType[0] == common.AnyshareOrgNameModifyTrigger && msg.Type == common.User.ToString() {
 		triggerType[0] = common.AnyshareUserChangeTrigger // 区分用户改名和组织改名
 		curUserInfo, gerr := m.usermgnt.GetUserInfo(msg.ID)
 		if err != nil {
@@ -1811,7 +1835,7 @@ func (m *mgnt) HandleUserInfoEvent(ctx context.Context, msg *common.UserInfoMsg,
 		if !curUserInfo.Enabled {
 			runVar["status"] = "disabled"
 		}
-		runVar["source_type"] = "user"
+		runVar["source_type"] = common.User.ToString()
 	}
 	dags, err := m.mongo.ListDag(ctx, &mod.ListDagInput{
 		Trigger: triggerType,
@@ -1823,6 +1847,20 @@ func (m *mgnt) HandleUserInfoEvent(ctx context.Context, msg *common.UserInfoMsg,
 		return err
 	}
 
+	keywords := []string{}
+
+	if msg.Name != "" {
+		keywords = append(keywords, msg.Name)
+	}
+
+	if msg.NewName != "" {
+		keywords = append(keywords, msg.NewName)
+	}
+
+	if msg.Email != "" {
+		keywords = append(keywords, msg.Email)
+	}
+
 	for _, dag := range dags {
 		if dag.Status == entity.DagStatusStopped {
 			continue
@@ -1832,7 +1870,7 @@ func (m *mgnt) HandleUserInfoEvent(ctx context.Context, msg *common.UserInfoMsg,
 			(dag.TriggerConfig.Operator == common.AnyshareUserChangeTrigger ||
 				dag.TriggerConfig.Operator == common.AnyshareUserCreateTrigger ||
 				dag.TriggerConfig.Operator == common.AnyshareUserDeleteTrigger) {
-			runVar["source_type"] = "user"
+			runVar["source_type"] = common.User.ToString()
 		}
 
 		dag.SetPushMessage(m.executeMethods.Publish)
@@ -1844,7 +1882,7 @@ func (m *mgnt) HandleUserInfoEvent(ctx context.Context, msg *common.UserInfoMsg,
 			runVar["dept_paths"] = string(paths)
 		}
 
-		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar)
+		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar, keywords)
 		if err != nil {
 			log.Warnf("[logics.HandleUserInfoEvent] Run dag failed: %s", err.Error())
 			return err
@@ -1919,7 +1957,7 @@ func (m *mgnt) HandleTagInfoChangeEvent(ctx context.Context, tag *common.TagInfo
 		}
 
 		dag.SetPushMessage(m.executeMethods.Publish)
-		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar) //nolint
+		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar, []string{tag.Name}) //nolint
 		if err != nil {
 			return err
 		}
@@ -1999,7 +2037,7 @@ func (m *mgnt) HandleTagTreeCreateEvent(ctx context.Context, msg *common.TagInfo
 		}
 
 		dag.SetPushMessage(m.executeMethods.Publish)
-		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar) //nolint
+		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar, []string{msg.Name}) //nolint
 		if err != nil {
 			return err
 		}
@@ -2082,7 +2120,7 @@ func (m *mgnt) HandleKCUserInfoEvent(ctx context.Context, msg *common.UserInfoMs
 			"is_delete":         fmt.Sprint(msg.IsDelete),
 			"professional":      msg.Professional,
 			"status":            "enabled",
-			"source_type":       "user",
+			"source_type":       common.User.ToString(),
 		}
 
 		if msg.Status > 0 {
@@ -2090,7 +2128,7 @@ func (m *mgnt) HandleKCUserInfoEvent(ctx context.Context, msg *common.UserInfoMs
 		}
 
 		dag.SetPushMessage(m.executeMethods.Publish)
-		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar) //nolint
+		dagIns, err := dag.Run(ctx, entity.TriggerEvent, runVar, []string{msg.Name, msg.Email}) //nolint
 		if err != nil {
 			return err
 		}
@@ -2410,12 +2448,12 @@ func (m *mgnt) ListDagInstance(ctx context.Context, dagID string, param map[stri
 	if param["name"] != nil {
 		filter := bson.M{"$regex": param["name"], "$options": "i"}
 		input.MatchQuery = &mod.MatchQuery{
-			Field: "shareData.__0.name",
+			Field: "keywords",
 			Value: filter,
 		}
 	}
 
-	input.SelectField = []string{"_id", "createdAt", "endedAt", "status"}
+	input.SelectField = []string{"_id", "createdAt", "endedAt", "status", "source", "reason"}
 
 	dagInsList, err := m.mongo.ListDagInstance(ctx, input)
 	if err != nil {
@@ -2426,11 +2464,31 @@ func (m *mgnt) ListDagInstance(ctx context.Context, dagID string, param map[stri
 	// Step4: compute result
 	for _, dag := range dagInsList {
 		_dag := dag
+		var source any
+
+		if len(_dag.Source) > 0 {
+			_ = json.Unmarshal([]byte(_dag.Source), &source)
+		}
+
+		var reason any
+
+		if len(_dag.Reason) > 0 {
+			err := json.Unmarshal([]byte(_dag.Reason), &reason)
+			if err != nil {
+				reason = map[string]any{
+					"detail": _dag.Reason,
+				}
+			}
+		}
+
 		dagInstanceRunInfo := &DagInstanceRunInfo{
 			ID:        _dag.ID,
 			StartedAt: _dag.CreatedAt,
 			EndedAt:   _dag.EndedAt,
+			Source:    source,
+			Reason:    reason,
 		}
+
 		if _dag.Status == entity.DagInstanceStatusBlocked {
 			dagInstanceRunInfo.EndedAt = 0
 		}
@@ -2531,6 +2589,10 @@ func (m *mgnt) ListDagInstanceV2(ctx context.Context, dagID string, param map[st
 		},
 	}
 
+	if userInfo.AccountType == common.APP.ToString() {
+		opMap.OpMap[common.DagTypeDefault] = []string{perm.OldAppTokenOperation}
+	}
+
 	_, err = m.permCheck.CheckDagAndPerm(ctx, dagID, userInfo, opMap)
 	if err != nil {
 		return dagInsRunList, total, err
@@ -2574,9 +2636,9 @@ func (m *mgnt) ListDagInstanceV2(ctx context.Context, dagID string, param map[st
 
 	if param["name"] != nil {
 		filter := bson.M{"$regex": param["name"], "$options": "i"}
-		query["shareData.__0.name"] = filter
+		query["keywords"] = filter
 		input.MatchQuery = &mod.MatchQuery{
-			Field: "shareData.__0.name",
+			Field: "keywords",
 			Value: filter,
 		}
 	}
@@ -2606,7 +2668,7 @@ func (m *mgnt) ListDagInstanceV2(ctx context.Context, dagID string, param map[st
 		}
 	}
 
-	input.SelectField = []string{"_id", "createdAt", "endedAt", "status"}
+	input.SelectField = []string{"_id", "createdAt", "endedAt", "status", "source", "reason"}
 	dagInsList, err := m.mongo.ListDagInstance(ctx, input)
 	if err != nil {
 		log.Warnf("[logic.ListDagInstanceV2] ListDagInstance err, detail: %s", err.Error())
@@ -2616,10 +2678,29 @@ func (m *mgnt) ListDagInstanceV2(ctx context.Context, dagID string, param map[st
 	// Step4: compute result
 	for _, dag := range dagInsList {
 		_dag := dag
+		var source any
+
+		if len(_dag.Source) > 0 {
+			_ = json.Unmarshal([]byte(_dag.Source), &source)
+		}
+
+		var reason any
+
+		if len(_dag.Reason) > 0 {
+			err := json.Unmarshal([]byte(_dag.Reason), &reason)
+			if err != nil {
+				reason = map[string]any{
+					"detail": _dag.Reason,
+				}
+			}
+		}
+
 		dagInstanceRunInfo := &DagInstanceRunInfo{
 			ID:        _dag.ID,
 			StartedAt: _dag.CreatedAt,
 			EndedAt:   _dag.EndedAt,
+			Source:    source,
+			Reason:    reason,
 		}
 		if _dag.Status == entity.DagInstanceStatusBlocked {
 			dagInstanceRunInfo.EndedAt = 0
@@ -2658,6 +2739,10 @@ func (m *mgnt) ListTaskInstance(ctx context.Context, dagID, dagInstanceID string
 		},
 	}
 
+	if userInfo.AccountType == common.APP.ToString() {
+		opMap.OpMap[common.DagTypeDefault] = []string{perm.OldAppTokenOperation}
+	}
+
 	_, err = m.permCheck.CheckDagAndPerm(ctx, dagID, userInfo, opMap)
 	if err != nil {
 		return taskInsResultList, 0, err
@@ -2691,7 +2776,7 @@ func (m *mgnt) ListTaskInstance(ctx context.Context, dagID, dagInstanceID string
 		query := &mod.ListTaskInstanceInput{
 			DagInsID: dagInstanceID,
 			SelectField: []string{
-				"_id", "name", "actionName", "createdAt", "status", "params", "results", "reason", "updatedAt", "taskId", "lastModifiedAt", "renderedParams",
+				"_id", "name", "actionName", "createdAt", "status", "params", "results", "reason", "updatedAt", "taskId", "lastModifiedAt", "renderedParams", "metadata",
 			},
 			Limit:  limit,
 			Offset: page,
@@ -2727,6 +2812,7 @@ func (m *mgnt) ListTaskInstance(ctx context.Context, dagID, dagInstanceID string
 			UpdatedAt:      _taskIns.UpdatedAt,
 			TaskID:         _taskIns.TaskID,
 			LastModifiedAt: _taskIns.LastModifiedAt,
+			MetaData:       _taskIns.MetaData,
 		}
 
 		switch _taskIns.Status { //nolint
@@ -2933,6 +3019,62 @@ func (m *mgnt) ContinueBlockInstances(ctx context.Context, blockedTaskIDs []stri
 				dagIns.ShareData.Set(instance.TaskID, "null")
 			}
 
+			if dagIns.EventPersistence == entity.DagInstanceEventPersistenceSql &&
+				dagIns.Mode != entity.DagInstanceModeVM {
+				var events []*entity.DagInstanceEvent
+
+				taskID := instance.TaskID
+
+				for _, re := range []string{`^\d+_i\d+_s\d+.+_(\d+)$`, `^\d+_i\d+_s(\d+)$`, `^(\d+)_i\d+$`} {
+					if matches := regexp.MustCompile(re).FindStringSubmatch(taskID); len(matches) == 2 {
+						taskID = matches[1]
+						break
+					}
+				}
+
+				if instance.Status == entity.TaskInstanceStatusFailed {
+					events = append(events, &entity.DagInstanceEvent{
+						Type:       rds.DagInstanceEventTypeTaskStatus,
+						InstanceID: dagIns.ID,
+						Operator:   instance.ActionName,
+						TaskID:     taskID,
+						Status:     string(status),
+						Data:       results,
+						Timestamp:  time.Now().UnixMicro(),
+						Visibility: rds.DagInstanceEventVisibilityPublic,
+					})
+				} else {
+					events = append(events, &entity.DagInstanceEvent{
+						Type:       rds.DagInstanceEventTypeTaskStatus,
+						InstanceID: dagIns.ID,
+						Operator:   instance.ActionName,
+						TaskID:     taskID,
+						Status:     string(status),
+						Timestamp:  time.Now().UnixMicro(),
+						Visibility: rds.DagInstanceEventVisibilityPublic,
+					})
+				}
+
+				// 异步节点执行后置信息,任务的执行时间动态拼接，此逻辑暂时去除
+				// key := fmt.Sprintf("__%s_trace_async", instance.TaskID)
+				// trace := map[string]any{
+				// 	"ended_at": time.Now().UnixMilli(),
+				// }
+				// events = append(events, &entity.DagInstanceEvent{
+				// 	Type:       rds.DagInstanceEventTypeTrace,
+				// 	InstanceID: dagIns.ID,
+				// 	Name:       key,
+				// 	Data:       trace,
+				// 	Visibility: rds.DagInstanceEventVisibilityPublic,
+				// 	Timestamp:  time.Now().UnixMicro(),
+				// })
+
+				err := dagIns.WriteEvents(ctx, events)
+				if err != nil {
+					return ierrors.NewIError(ierrors.InternalError, "", nil)
+				}
+			}
+
 			dagIns.Status = entity.DagInstanceStatusInit
 
 			if dagIns.Mode == entity.DagInstanceModeVM {
@@ -2946,7 +3088,14 @@ func (m *mgnt) ContinueBlockInstances(ctx context.Context, blockedTaskIDs []stri
 			} else {
 				if status == entity.TaskInstanceStatusFailed {
 					dagIns.Status = entity.DagInstanceStatusFailed
-					dagIns.Reason = fmt.Sprintf("%v", res)
+					reason := map[string]any{
+						"taskId":     instance.TaskID,
+						"name":       instance.Name,
+						"actionName": instance.ActionName,
+						"detail":     instance.Reason,
+					}
+					b, _ := json.Marshal(reason)
+					dagIns.Reason = string(b)
 					// 如果dagIns已经是取消状态，不需要再推一次可观测性日志
 					if preStatus != entity.DagInstanceStatusCancled {
 						go m.LogDagInsResult(ctx, dagIns)
@@ -3098,6 +3247,12 @@ func (m *mgnt) buildTasks(triggerStep *entity.Step, steps []entity.Step, tasks *
 					Act:        entity.ActiveActionSkip,
 				}}
 			}
+
+			// 审核节点或图谱写入节点，显式的配置了超时和失败重试策略
+			if step.Operator == common.WorkflowApproval || step.Operator == common.IntelliinfoTranfer {
+				step.Settings = nil
+			}
+
 			task := entity.Task{
 				ID:         step.ID,
 				ActionName: step.Operator,
@@ -3105,13 +3260,18 @@ func (m *mgnt) buildTasks(triggerStep *entity.Step, steps []entity.Step, tasks *
 				DependOn:   dependOn,
 				Params:     step.Parameters,
 				PreChecks:  pre,
+				Settings:   step.Settings,
 			}
 
-			// 使用超时配置获取超时时间
-			if task.TimeoutSecs == 0 {
+			if step.Settings == nil {
 				task.TimeoutSecs = m.taskTimeoutConfig.GetTimeout(step.Operator)
-
+			} else {
+				task.TimeoutSecs = step.Settings.TimeOut.Delay
 			}
+
+			// 看门狗和超时策略使用同一个超时时间会存在资源竞争，因此看门狗在此基础上增加60s的时间窗口
+			task.TimeoutSecs += 60
+
 			*tasks = append(*tasks, task)
 		}
 	}
@@ -3175,11 +3335,11 @@ func (m *mgnt) triggerfromDataSource(ctx context.Context, dataSource *entity.Dat
 	if dataSource == nil {
 		return false, nil
 	}
-	var datas = make([]string, 0)
+	var datas = make([]*DataSourceItem, 0)
 	switch dataSource.Operator {
 	case common.AnyshareDataSpecifyFiles, common.AnyshareDataSpecifyFolders:
 		for _, docID := range dataSource.Parameters.DocIDs {
-			_, err := m.efast.ConvertPath(ctx, docID, strings.TrimPrefix(token, "Bearer "), ip)
+			attrs, err := m.efast.ConvertPath(ctx, docID, strings.TrimPrefix(token, "Bearer "), ip)
 			if err != nil {
 				parsedError, _err := ierrors.ExHTTPErrorParser(err)
 				if _err != nil {
@@ -3190,10 +3350,13 @@ func (m *mgnt) triggerfromDataSource(ctx context.Context, dataSource *entity.Dat
 				}
 				continue
 			}
-			datas = append(datas, docID)
+			datas = append(datas, &DataSourceItem{
+				ID:       docID,
+				Keywords: []string{attrs.Name},
+			})
 		}
 		if len(datas) > 0 {
-			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, &datas, dag)
+			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, datas, dag)
 			if err != nil {
 				log.Warnf("[triggerfromDataSource] createDagInstanceFromDataSource failed: %s, dagId: %s", err.Error(), dag.ID)
 			}
@@ -3271,6 +3434,7 @@ func (m *mgnt) triggerfromDataSource(ctx context.Context, dataSource *entity.Dat
 		}
 		return true, nil
 	case common.AnyshareDataDepartment:
+		departmentIDMap := make(map[string]string)
 		accessorid := dataSource.Parameters.AccessorID
 		if accessorid == "00000000-0000-0000-0000-000000000000" {
 			// 从根目录开始获取
@@ -3280,21 +3444,40 @@ func (m *mgnt) triggerfromDataSource(ctx context.Context, dataSource *entity.Dat
 				return false, ierrors.NewIError(ierrors.TaskSourceInvalid, "", parsedError["detail"])
 			}
 			for _, depInfo := range *depInfos {
-				datas = append(datas, depInfo.ID)
+				departmentIDMap[depInfo.ID] = common.Department.ToString()
 			}
 		} else if accessorid != "" {
-			datas = append(datas, accessorid)
+			departmentIDMap[accessorid] = common.Department.ToString()
 		}
 
-		for _, source := range datas {
+		for source, _ := range departmentIDMap {
 			childDeptIDs := m.getDepartmentMembers(ctx, source)
 			if err != nil {
 				continue
 			}
-			datas = append(datas, childDeptIDs...)
+			for _, id := range childDeptIDs {
+				departmentIDMap[id] = common.Department.ToString()
+			}
 		}
-		if len(datas) > 0 {
-			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, &datas, dag)
+		if len(departmentIDMap) > 0 {
+
+			nameMap, err := m.usermgnt.GetNameByAccessorIDs(departmentIDMap)
+
+			if err != nil {
+				return false, nil
+			}
+
+			for id, _ := range departmentIDMap {
+				item := &DataSourceItem{
+					ID: id,
+				}
+				if name, ok := nameMap[id]; ok {
+					item.Keywords = []string{name}
+				}
+				datas = append(datas, item)
+			}
+
+			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, datas, dag)
 			if err != nil {
 				log.Warnf("[triggerfromDataSource] createDagInstanceFromDataSource failed: %s, dagId: %s", err.Error(), dag.ID)
 			}
@@ -3319,15 +3502,31 @@ func (m *mgnt) triggerfromDataSource(ctx context.Context, dataSource *entity.Dat
 			sources = append(sources, accessorid)
 		}
 
+		userIDMap := make(map[string]string)
 		for _, source := range sources {
 			userIDs := m.getUserMembers(ctx, source)
-			if err != nil {
-				continue
+			for _, id := range userIDs {
+				userIDMap[id] = common.User.ToString()
 			}
-			datas = append(datas, userIDs...)
+		}
+
+		if len(userIDMap) > 0 {
+			nameMap, err := m.usermgnt.GetNameByAccessorIDs(userIDMap)
+			if err != nil {
+				return false, nil
+			}
+			for id, _ := range userIDMap {
+				item := &DataSourceItem{
+					ID: id,
+				}
+				if name, ok := nameMap[id]; ok {
+					item.Keywords = []string{name}
+				}
+				datas = append(datas, item)
+			}
 		}
 		if len(datas) > 0 {
-			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, &datas, dag)
+			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, datas, dag)
 			if err != nil {
 				log.Warnf("[triggerfromDataSource] createDagInstanceFromDataSource failed: %s, dagId: %s", err.Error(), dag.ID)
 			}
@@ -3344,7 +3543,7 @@ func (m *mgnt) triggerfromDataSource(ctx context.Context, dataSource *entity.Dat
 
 		datas = m.getTags(tagTrees)
 		if len(datas) > 0 {
-			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, &datas, dag)
+			err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, datas, dag)
 			if err != nil {
 				log.Warnf("[triggerfromDataSource] createDagInstanceFromDataSource failed: %s, dagId: %s", err.Error(), dag.ID)
 			}
@@ -3388,10 +3587,13 @@ func (m *mgnt) getUserMembers(ctx context.Context, departmentID string) []string
 	return datas
 }
 
-func (m *mgnt) getTags(tagTrees []*drivenadapters.TagTree) []string {
-	var datas = make([]string, 0)
+func (m *mgnt) getTags(tagTrees []*drivenadapters.TagTree) []*DataSourceItem {
+	var datas = make([]*DataSourceItem, 0)
 	for _, tags := range tagTrees {
-		datas = append(datas, tags.ID)
+		datas = append(datas, &DataSourceItem{
+			ID:       tags.ID,
+			Keywords: []string{tags.Name},
+		})
 		childTagTrees := tags.ChildTags
 		childTags := m.getTags(childTagTrees)
 		datas = append(datas, childTags...)
@@ -3400,7 +3602,7 @@ func (m *mgnt) getTags(tagTrees []*drivenadapters.TagTree) []string {
 }
 
 func (m *mgnt) handleFilesFromSource(ctx context.Context, depth int, docid, userid, token, ip string, triggerType entity.Trigger, runVar map[string]string, dag *entity.Dag) error {
-	var datas = make([]string, 0)
+	var datas = make([]*DataSourceItem, 0)
 	files, dirs, err := m.efast.ListDir(ctx, docid, strings.TrimPrefix(token, "Bearer "), ip)
 	if err != nil {
 		traceLog.WithContext(ctx).Warnf("[handleFilesFromSource] ListDir err, detail: %s", err.Error())
@@ -3432,11 +3634,15 @@ func (m *mgnt) handleFilesFromSource(ctx context.Context, depth int, docid, user
 	for _, file := range files {
 		info := file.(map[string]interface{})
 		id := info["docid"].(string)
-		datas = append(datas, id)
+		name := info["name"].(string)
+		datas = append(datas, &DataSourceItem{
+			ID:       id,
+			Keywords: []string{name},
+		})
 	}
 
 	if len(datas) > 0 {
-		err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, &datas, dag)
+		err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, datas, dag)
 		if err != nil {
 			log.Warnf("[triggerfromDataSource] createDagInstanceFromDataSource failed: %s, dagId: %s", err.Error(), dag.ID)
 			return err
@@ -3461,7 +3667,7 @@ func (m *mgnt) handleFilesFromSource(ctx context.Context, depth int, docid, user
 }
 
 func (m *mgnt) handleFoldersFromSource(ctx context.Context, depth int, docid, userid, token, ip string, triggerType entity.Trigger, runVar map[string]string, dag *entity.Dag) error {
-	var datas = make([]string, 0)
+	var datas = make([]*DataSourceItem, 0)
 	log := traceLog.WithContext(ctx)
 	debug := isDebugEnabled()
 
@@ -3504,7 +3710,11 @@ func (m *mgnt) handleFoldersFromSource(ctx context.Context, depth int, docid, us
 	for _, dir := range dirs {
 		info := dir.(map[string]interface{})
 		id := info["docid"].(string)
-		datas = append(datas, id)
+		name := info["name"].(string)
+		datas = append(datas, &DataSourceItem{
+			ID:       id,
+			Keywords: []string{name},
+		})
 		if debug {
 			log.Debugf("[handleFoldersFromSource] found subfolder: %s, name: %s", id, info["name"])
 		}
@@ -3514,7 +3724,7 @@ func (m *mgnt) handleFoldersFromSource(ctx context.Context, depth int, docid, us
 		log.Debugf("[handleFoldersFromSource] found %d subfolders in folder: %s", len(datas), docid)
 	}
 
-	err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, &datas, dag)
+	err = m.createDagInstanceFromDataSource(ctx, triggerType, runVar, datas, dag)
 	if err != nil {
 		log.Warnf("[triggerfromDataSource] createDagInstanceFromDataSource failed: %s, dagId: %s", err.Error(), dag.ID)
 		return err
@@ -3527,13 +3737,13 @@ func (m *mgnt) handleFoldersFromSource(ctx context.Context, depth int, docid, us
 		return nil
 	}
 
-	for _, id := range datas {
+	for _, item := range datas {
 		if debug {
-			log.Debugf("[handleFoldersFromSource] recursively traversing subfolder: %s, remaining depth: %d", id, depth-1)
+			log.Debugf("[handleFoldersFromSource] recursively traversing subfolder: %s, remaining depth: %d", item.ID, depth-1)
 		}
-		err := m.handleFoldersFromSource(ctx, depth-1, id, userid, token, ip, triggerType, runVar, dag)
+		err := m.handleFoldersFromSource(ctx, depth-1, item.ID, userid, token, ip, triggerType, runVar, dag)
 		if err != nil {
-			traceLog.WithContext(ctx).Warnf("[logic.getFilesFromSource] getFilesFromSource err, detail: %s, id: %s", err.Error(), id)
+			traceLog.WithContext(ctx).Warnf("[logic.getFilesFromSource] getFilesFromSource err, detail: %s, id: %s", err.Error(), item.ID)
 			continue
 		}
 	}
@@ -3546,7 +3756,7 @@ func (m *mgnt) handleFoldersFromSource(ctx context.Context, depth int, docid, us
 
 // handleTriggerError 处理触发器节点执行失败
 func (m *mgnt) handleTriggerError(ctx context.Context, triggerType entity.Trigger, runVar map[string]string, dag *entity.Dag, err error) error {
-	dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+	dagIns, dagErr := dag.Run(ctx, triggerType, runVar, nil)
 
 	if dagErr != nil {
 		log.Warnf("[logic.handleTriggerError] dag.Run err: %s", err.Error())
@@ -4023,9 +4233,7 @@ func (m *mgnt) ListActions(ctx context.Context, userInfo *drivenadapters.UserInf
 	var actionsMap = mod.ActionMap
 	var acts = make([]map[string]interface{}, 0)
 	// Check if user is admin
-	userDetail, _, err := m.getUserDetail(userInfo.UserID, &entity.AppInfo{
-		AppID: utils.IfNot(userInfo.AccountType == "app", userInfo.UserID, ""),
-	})
+	userDetail, _, err := m.getUserDetail(userInfo.UserID, &entity.AppInfo{})
 	if err != nil {
 		return nil, ierrors.NewIError(ierrors.UnAuthorization, "", map[string]interface{}{"info": err.Error()})
 	}
@@ -4240,17 +4448,25 @@ func (m *mgnt) isAccessible(dagAccessors *[]entity.Accessor, userAccessors []str
 
 // getUserDetail 获取用户信息
 func (m *mgnt) getUserDetail(userID string, appInfo *entity.AppInfo) (*drivenadapters.UserInfo, *entity.Token, error) {
+	var (
+		tokenInfo *entity.Token
+		userType  string
+	)
 	tokenMgnt := mod.NewTokenMgnt(userID)
-	var tokenInfo *entity.Token
 	accessorID := userID
-	isCustomApp := appInfo.AppID != "" && appInfo.AppID != m.config.OAuth.ClientID
-	// 如果触发时使用的应用账户Token则有限使用用户传递的应用账户信息，否则再使用系统内的应用账户信息
-	userType := utils.IfNot(isCustomApp, "app", "user")
 
-	if appInfo.Enable && !isCustomApp {
+	if appInfo.Enable {
 		accessorID = m.config.OAuth.ClientID
-		userType = "app"
+		userType = common.APP.ToString()
+	} else {
+		isApp, err := m.usermgnt.IsApp(accessorID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		userType = utils.IfNot(isApp, common.APP.ToString(), common.User.ToString())
 	}
+
 	tokenInfo, err := tokenMgnt.GetUserToken("", accessorID)
 	if err != nil {
 		return nil, nil, err
@@ -4285,13 +4501,18 @@ func (m *mgnt) getDataSourceType(dataSource *entity.DataSource) string {
 	return ""
 }
 
+type DataSourceItem struct {
+	ID       string
+	Keywords []string
+}
+
 // createDagInstanceFromDataSource
-func (m *mgnt) createDagInstanceFromDataSource(ctx context.Context, triggerType entity.Trigger, runVar map[string]string, datas *[]string, dag *entity.Dag) error {
+func (m *mgnt) createDagInstanceFromDataSource(ctx context.Context, triggerType entity.Trigger, runVar map[string]string, datas []*DataSourceItem, dag *entity.Dag) error {
 	dag.SetPushMessage(m.executeMethods.Publish)
 	dagInstances := make([]*entity.DagInstance, 0)
-	for _, d := range *datas {
-		runVar["docid"] = d
-		dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+	for _, d := range datas {
+		runVar["docid"] = d.ID
+		dagIns, dagErr := dag.Run(ctx, triggerType, runVar, d.Keywords)
 		if dagErr != nil {
 			return ierrors.NewIError(ierrors.Forbidden, ierrors.DagStatusNotNormal, map[string]interface{}{"id:": dag.ID, "status": dag.Status})
 		}
@@ -4451,7 +4672,7 @@ func (m *mgnt) RunInstanceWithDoc(ctx context.Context, id string, params RunWith
 	}
 
 	dag.SetPushMessage(m.executeMethods.Publish)
-	dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+	dagIns, dagErr := dag.Run(ctx, triggerType, runVar, []string{metadata.Name, userDetail.UserName})
 	if dagErr != nil {
 		return ierrors.NewIError(ierrors.Forbidden, ierrors.DagStatusNotNormal, map[string]interface{}{"id:": dag.ID, "status": dag.Status})
 	}
@@ -4715,10 +4936,10 @@ func (m *mgnt) ListModelBindDags(ctx context.Context, id, userID string) ([]*Dag
 		return dagsInfo, ierrors.NewIError(ierrors.InternalError, "", nil)
 	}
 
-	var accessorIDs = make(map[string]drivenadapters.AccessorType)
+	var accessorIDs = make(map[string]string)
 
 	for _, dag := range dags {
-		accessorIDs[dag.UserID] = drivenadapters.User
+		accessorIDs[dag.UserID] = common.User.ToString()
 	}
 
 	accessors, _ := m.usermgnt.GetNameByAccessorIDs(accessorIDs)
@@ -4950,7 +5171,7 @@ func (m *mgnt) GetAgents(ctx context.Context) (res []*rds.AgentModel, err error)
 
 // Extract shared logic into a helper method
 func (m *mgnt) runDagInstance(ctx context.Context, dag *entity.Dag, triggerType entity.Trigger, runVar map[string]string, userDetail *drivenadapters.UserInfo) error {
-	dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+	dagIns, dagErr := dag.Run(ctx, triggerType, runVar, nil)
 	if dagErr != nil {
 		return ierrors.NewIError(ierrors.Forbidden, ierrors.DagStatusNotNormal, map[string]interface{}{"id:": dag.ID, "status": dag.Status})
 	}
@@ -5189,10 +5410,10 @@ func (m *mgnt) ListDagV2(ctx context.Context, param QueryParams, userInfo *drive
 	if err != nil {
 		return res, total, err
 	}
-	var accessorIDs = make(map[string]drivenadapters.AccessorType)
+	var accessorIDs = make(map[string]string)
 
 	for _, dag := range dags {
-		accessorIDs[dag.UserID] = drivenadapters.User
+		accessorIDs[dag.UserID] = common.User.ToString()
 	}
 
 	accessors, _ := m.usermgnt.GetNameByAccessorIDs(accessorIDs)
@@ -5218,4 +5439,61 @@ func (m *mgnt) ListDagV2(ctx context.Context, param QueryParams, userInfo *drive
 	}
 
 	return res, total, nil
+}
+
+func (m *mgnt) ListDagInstanceEvents(ctx context.Context, dagID, dagInsID string, offset, limit int, userInfo *drivenadapters.UserInfo) (
+	logs []*entity.DagInstanceEvent, dagIns *entity.DagInstance, total int, next int, err error) {
+
+	ctx, span := trace.StartInternalSpan(ctx)
+	defer func() { trace.TelemetrySpanEnd(span, err) }()
+	log := traceLog.WithContext(ctx)
+
+	opMap := &perm.MapOperationProvider{
+		OpMap: map[string][]string{
+			common.DagTypeDataFlow:      {perm.RunStatisticsOperation},
+			common.DagTypeComboOperator: {perm.ViewOperation},
+			common.DagTypeDefault:       {perm.OldOnlyAdminOperation},
+		},
+	}
+
+	_, err = m.permCheck.CheckDagAndPerm(ctx, dagID, userInfo, opMap)
+	if err != nil {
+		return nil, nil, 0, offset, err
+	}
+
+	err = m.isDagInstanceExist(ctx, map[string]interface{}{"_id": dagInsID, "dagId": dagID})
+	if err != nil {
+		return nil, nil, 0, offset, err
+	}
+
+	dagIns, err = m.mongo.GetDagInstanceByFields(ctx, map[string]interface{}{"_id": dagInsID, "dagId": dagID})
+
+	if err != nil {
+		log.Warnf("[logic.ListDagInstanceEvents] GetDagInstanceByFields err, detail: %s", err.Error())
+		return nil, nil, 0, offset, ierrors.NewIError(ierrors.InternalError, "", nil)
+	}
+
+	opt := &rds.DagInstanceEventListOptions{
+		DagInstanceID: dagInsID,
+		Offset:        offset,
+		Limit:         limit,
+		Visibilities:  []rds.DagInstanceEventVisibility{rds.DagInstanceEventVisibilityPublic},
+		Fields:        rds.DagInstanceEventFieldPublic,
+	}
+
+	total, err = m.eventRepository.ListCount(ctx, opt)
+
+	if err != nil {
+		log.Warnf("[logic.ListDagInstanceEvents] ListCount err, detail: %s", err.Error())
+		return nil, nil, 0, offset, ierrors.NewIError(ierrors.InternalError, "", nil)
+	}
+
+	logs, err = dagIns.ListEvents(ctx, opt)
+
+	if err != nil {
+		log.Warnf("[logic.ListDagInstanceEvents] List err, detail: %s", err.Error())
+		return nil, nil, 0, offset, ierrors.NewIError(ierrors.InternalError, "", nil)
+	}
+	next = offset + len(logs)
+	return
 }

@@ -63,9 +63,9 @@ func (c *ComboOperator) Run(ctx entity.ExecuteContext, params interface{}, token
 	userInfo := &drivenadapters.UserInfo{}
 	if token != nil {
 		userInfo.UserID = token.UserID
-		userInfo.AccountType = "user"
+		userInfo.AccountType = common.User.ToString()
 		if token.IsApp {
-			userInfo.AccountType = "app"
+			userInfo.AccountType = common.APP.ToString()
 		}
 	}
 	agentOperatorIntegration := drivenadapters.NewAgentOperatorIntegration()
@@ -131,10 +131,16 @@ func callOperator(ctx context.Context,
 
 	authorization := drivenadapters.NewAuthorization()
 
+	isApp, err := drivenadapters.NewUserManagement().IsApp(taskIns.RelatedDagInstance.UserID)
+	if err != nil {
+		log.Warnf("[Run.ComboOperator] IsApp err %s, taskId %s", err.Error(), taskIns.ID)
+		return nil, err
+	}
+
 	hasPerm, err := authorization.OperationPermCheck(ctx, drivenadapters.OperationPermCheckParams{
 		Accessor: drivenadapters.Vistor{
 			ID:   taskIns.RelatedDagInstance.UserID,
-			Type: utils.IfNot(taskIns.RelatedDagInstance.UserID == taskIns.RelatedDagInstance.AppInfo.AppID, "app", "user"),
+			Type: utils.IfNot(isApp, "app", "user"),
 		},
 		Resource: drivenadapters.Resource{
 			ID:   operator.OperatorID,

@@ -29,6 +29,7 @@ data:
   SERVER_MONGO_MAX_INLINE_SIZE: {{ .Values.service.mongoMaxInlineSize | quote }}
   SERVER_DELETE_EXT_DATA_CRON: {{ .Values.service.deleteExtDataCron | quote }}
   SERVER_DELETE_EXPIRED_TASK_CACHE_CRON: {{ .Values.service.deleteExpiredTaskCacheCron | quote }}
+  SERVER_DAG_INSTANCE_EVENT_MAX_INLINE_SIZE: {{ .Values.service.dagInstanceEventMaxInlineSize | quote }}
   SERVER_STORAGE_PREFIX: {{ .Values.service.storagePrefix | quote }}
   MONGODB_USER: {{ .Values.depServices.mongodb.user | quote }}
   MONGODB_HOST: {{ .Values.depServices.mongodb.host | quote }}
@@ -227,6 +228,8 @@ data:
   STRUCTUREEXTRACTOR_OUTPUT_DIR: {{ index .Values "depServices" "structure-extractor" "outputDir" | quote }}
   STRUCTUREEXTRACTOR_BACKEND: {{ index .Values "depServices" "structure-extractor" "backend" | quote }}
   STRUCTUREEXTRACTOR_SERVER_URL: {{ index .Values "depServices" "structure-extractor" "serverUrl" | quote }}
+  STRUCTUREEXTRACTOR_FILE_HOST: {{ index .Values "depServices" "structure-extractor" "fileHost" | quote }}
+  STRUCTUREEXTRACTOR_FILE_PORT: {{ index .Values "depServices" "structure-extractor" "filePort" | quote }}
 
   OCR_PRIVATE_HOST: {{ .Values.depServices.ocr.privateHost | quote }}
   OCR_PRIVATE_PORT: {{ .Values.depServices.ocr.privatePort | quote }}

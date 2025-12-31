@@ -114,7 +114,7 @@ class RedisConnectionManager:
         master_name = self.config.get('redis_master_name', 'mymaster')
         
         self.client_master = sentinel.master_for(master_name, **connection_kwargs)
-        self.client_master = sentinel.slave_for(master_name, **connection_kwargs)
+        self.client_slave = sentinel.slave_for(master_name, **connection_kwargs)
     
     def _create_cluster_connection(self):
         """创建集群连接"""

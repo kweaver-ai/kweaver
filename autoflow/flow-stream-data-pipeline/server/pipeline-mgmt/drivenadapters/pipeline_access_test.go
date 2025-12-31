@@ -735,7 +735,7 @@ func Test_PipelineAccess_CheckPipelineExistByID(t *testing.T) {
 		})
 
 		Convey("Check failed, caused by the scan error", func() {
-			rows := sqlmock.NewRows([]string{"f_group_id", "f_group_name"}).
+			rows = sqlmock.NewRows([]string{"f_group_id", "f_group_name"}).
 				AddRow(pp.PipelineID, pp.PipelineName)
 			smock.ExpectQuery(sqlStr).WithArgs().WillReturnRows(rows)
 
@@ -826,7 +826,7 @@ func Test_PipelineAccess_CheckPipelineExistByName(t *testing.T) {
 		})
 
 		Convey("Check failed, caused by the scan error", func() {
-			rows := sqlmock.NewRows([]string{"f_group_id", "f_group_name"}).
+			rows = sqlmock.NewRows([]string{"f_group_id", "f_group_name"}).
 				AddRow(pp.PipelineID, pp.PipelineName)
 			smock.ExpectQuery(sqlStr).WithArgs().WillReturnRows(rows)
 

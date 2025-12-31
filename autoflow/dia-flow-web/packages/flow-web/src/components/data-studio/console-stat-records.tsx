@@ -1,15 +1,18 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { Button, Checkbox, Menu, message, Select, Space, Table, Typography } from "antd";
+import { Button, Checkbox, Menu, message, Popover, Select, Space, Table, Tooltip, Typography } from "antd";
 import moment from "moment";
 import clsx from "clsx";
 import {
     ClockCircleFilled,
     DownOutlined,
     MinusCircleFilled,
+    ReloadOutlined,
 } from "@ant-design/icons";
 import { TaskResult } from "@applet/api/lib/content-automation";
 import { API, MicroAppContext, useTranslate } from "@applet/common";
+import { useTranslateExtension } from "../extension-provider";
 import {
+    EyeOutlined,
     SyncfaildColored,
     SyncSyncingColored,
     SyncuccessColored,
@@ -17,6 +20,8 @@ import {
 import { Empty, getLoadStatus } from "../table-empty";
 import styles from "../task-stat/styles/stat-records.module.less";
 import { useHandleErrReq } from "../../utils/hooks";
+import { Thumbnail } from "../thumbnail";
+import { PopoverErrorReason } from "./popover-error-reason";
 
 interface ConsoleStatRecordsProps {
     data?: TaskResult;
@@ -47,6 +52,8 @@ export const ConsoleStatRecords = ({
     onTableParamsChange,
 }: ConsoleStatRecordsProps) => {
     const t = useTranslate();
+    const tDataStudio = useTranslateExtension("dataStudio");
+    const tInternal = useTranslateExtension("internal");
     const enable = useRef(true);
     const handleErr = useHandleErrReq();
 
@@ -62,7 +69,11 @@ export const ConsoleStatRecords = ({
         onTableParamsChange?.(setTableParams);
     }, [onTableParamsChange]);
 
-    const { prefixUrl } = useContext(MicroAppContext);
+    const { prefixUrl, container } = useContext(MicroAppContext);
+    const getPopupContainer = () =>
+      document.getElementById("content-automation-root-layout") ||
+      container ||
+      document.body;
 
     const formatTime = (timestamp?: number, format = "YYYY/MM/DD HH:mm") => {
         if (!timestamp) {
@@ -127,22 +138,41 @@ export const ConsoleStatRecords = ({
                 );
             case "failed":
                 return (
-                    <div className={styles["status-wrapper"]}>
-                        <SyncfaildColored className={styles["status-icon"]} />
-                        <span title={t("status.failed", "运行失败")}>
-                            {t("status.failed", "运行失败")}
-                        </span>
-                        <Button
-                            type="link"
-                            className={styles["cancel-btn"]}
-                            onClick={() => handleRetry(record.id)}
-                            onDoubleClick={(e) => {
-                                e.stopPropagation();
-                            }}
-                        >
-                            {t("record.retry", "重试")}
-                        </Button>
-                    </div>
+                  <div className={styles["status-wrapper"]}>
+                    <SyncfaildColored className={styles["status-icon"]} />
+                    <span title={t("status.failed", "运行失败")}>
+                      {t("status.failed", "运行失败")}
+                    </span>
+                    <Popover
+                      content={<PopoverErrorReason record={record} />}
+                      getPopupContainer={getPopupContainer}
+                      placement="right"
+                    >
+                      <EyeOutlined
+                        style={{
+                          fontSize: "15px",
+                          margin: "0 10px",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </Popover>
+                    <Button
+                      type="text"
+                      onClick={() => handleRetry(record.id)}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      title={t("record.retry", "重试")}
+                    >
+                      <Tooltip
+                        placement="top"
+                        title={t("record.retry", "重试")}
+                        getPopupContainer={getPopupContainer}
+                      >
+                        <ReloadOutlined />
+                      </Tooltip>
+                    </Button>
+                  </div>
                 );
             case "scheduled":
                 return (
@@ -205,6 +235,17 @@ export const ConsoleStatRecords = ({
                         </Button>
                     </div>
                 );
+        }
+    };
+
+    const getName = (source: any) => {
+        switch (source?._type) {
+            case "dataview":
+                return tDataStudio('MdlDataDataview');
+            case "form":
+                return tInternal("TAForm");
+            default:
+                return source?.name
         }
     };
 
@@ -292,7 +333,7 @@ export const ConsoleStatRecords = ({
                     className={clsx({
                         [styles["filter-active"]]: tableParams.type.length > 0,
                     })}
-                    width="25%"
+                    width="23%"
                     filterIcon={<DownOutlined />}
                     filteredValue={tableParams.type}
                     filterDropdown={({
@@ -381,10 +422,37 @@ export const ConsoleStatRecords = ({
                     render={(status, record) => getStatus(status, record)}
                 />
                 <Table.Column
+                    title={t("operational.objective", "运行目标")}
+                    key="name"
+                    dataIndex="name"
+                    render={(name, item: any) => {
+                    return item?.source?.name && item?.source?.docid ? (
+                        <div className={styles["name-wrapper"]}>
+                        <span>
+                            <Thumbnail
+                                doc={{
+                                    ...item?.source,
+                                    size: item.source?.size,
+                                }}
+                                className={styles["doc-icon"]}
+                            />
+                        </span>
+
+                        <Typography.Text
+                            ellipsis
+                            title={item?.source?.name}
+                        >
+                            {item?.source?.name}
+                        </Typography.Text>
+                        </div>
+                    ) : <>{getName(item?.source)}</> ;
+                    }}
+                />
+                <Table.Column
                     key="started_at"
                     dataIndex="started_at"
                     title={t("time.start", "开始时间")}
-                    width="25%"
+                    width="20%"
                     sorter
                     sortDirections={["descend", "ascend", "descend"]}
                     sortOrder={
@@ -404,7 +472,7 @@ export const ConsoleStatRecords = ({
                     key="ended_at"
                     dataIndex="ended_at"
                     title={t("time.end", "结束时间")}
-                    width="25%"
+                    width="20%"
                     sorter
                     sortDirections={["descend", "ascend", "descend"]}
                     sortOrder={
@@ -422,6 +490,7 @@ export const ConsoleStatRecords = ({
                 />
                 <Table.Column
                     key="option"
+                    width={100}
                     title={t("column.details", "操作")}
                     render={(_, record: any) => (
                         <Button

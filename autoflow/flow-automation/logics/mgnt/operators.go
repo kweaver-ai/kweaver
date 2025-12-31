@@ -186,10 +186,6 @@ func (m *mgnt) CreateComboOperator(ctx context.Context, param *ComboOperatorReq,
 	}
 	userInfo.UserName = userDetail.UserName
 
-	appInfo := entity.AppInfo{
-		AppID: utils.IfNot(userInfo.AccountType == "app", userInfo.UserID, ""),
-	}
-
 	dag := &entity.Dag{
 		UserID: userInfo.UserID,
 		Vars: entity.DagVars{
@@ -199,7 +195,6 @@ func (m *mgnt) CreateComboOperator(ctx context.Context, param *ComboOperatorReq,
 		Priority:    common.PriorityLowest,
 		Type:        common.DagTypeComboOperator,
 		Status:      entity.DagStatusNormal,
-		AppInfo:     appInfo,
 		BizDomainID: param.BizDomainID,
 	}
 

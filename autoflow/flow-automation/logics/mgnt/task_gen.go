@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/mod"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/store/rds"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/utils"
 	ierr "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/errors"
 	commonLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/log"
@@ -47,12 +49,6 @@ func (m *mgnt) GenerateTaskResults(ctx context.Context, dagID, dagInsID string, 
 		return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.DescKeyErrorDepencyService, nil)
 	}
 
-	err = dagIns.LoadExtData(ctx)
-	if err != nil {
-		log.Warnf("[logic.GenerateTaskResults] LoadExtData err, detail: %s", err.Error())
-		return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.InternalError, err.Error())
-	}
-
 	dag, err := m.mongo.GetDagWithOptionalVersion(ctx, dagID, dagIns.VersionID)
 	if err != nil {
 		log.Warnf("[logic.GenerateTaskResults] GetDagWithOptionalVersion err, detail: %s", err.Error())
@@ -67,29 +63,62 @@ func (m *mgnt) GenerateTaskResults(ctx context.Context, dagID, dagInsID string, 
 			return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.DescKeyErrorDepencyService, nil)
 		}
 	} else {
-		for _, task := range dag.Tasks {
-			if task.ActionName == common.InternalReturnOpt {
-				allTasks = append(allTasks, m.createBaseTaskInstance(task, dagIns))
-				break
+		switch dagIns.EventPersistence {
+		case entity.DagInstanceEventPersistenceSql:
+			events, err := dagIns.ListEvents(ctx, &rds.DagInstanceEventListOptions{
+				DagInstanceID: dagIns.ID,
+				Types: []rds.DagInstanceEventType{
+					rds.DagInstanceEventTypeTaskStatus,
+					rds.DagInstanceEventTypeVariable,
+					rds.DagInstanceEventTypeTrace,
+				},
+			})
+			if err != nil {
+				log.Warnf("[logic.GenerateTaskResults] list events err, detail: %s", err.Error())
+				return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.InternalError, err.Error())
 			}
-			// 循环节点内的step信息不会在任务执行前初始化好，需要动态生成
-			if task.ActionName == common.Loop {
-				isRetrun, tasks := m.generateLoopTaskResults(task, dagIns)
-				allTasks = append(allTasks, tasks...)
-				if isRetrun {
+			allTasks = buildTaskInstanceFromEvents(events, dagIns, dag)
+			m.memoryCache.Set(dagInsID, allTasks, time.Minute*5)
+		case entity.DagInstanceEventPersistenceOss:
+			events, err := dagIns.ListOssEvents(ctx)
+
+			if err != nil {
+				log.Warnf("[logic.GenerateTaskResults] list events err, detail: %s", err.Error())
+				return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.InternalError, err.Error())
+			}
+
+			allTasks = buildTaskInstanceFromEvents(events, dagIns, dag)
+			m.memoryCache.Set(dagInsID, allTasks, time.Minute*5)
+		default:
+			err = dagIns.LoadExtData(ctx)
+			if err != nil {
+				log.Warnf("[logic.GenerateTaskResults] LoadExtData err, detail: %s", err.Error())
+				return 0, nil, ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.InternalError, err.Error())
+			}
+
+			for _, task := range dag.Tasks {
+				if task.ActionName == common.InternalReturnOpt {
+					allTasks = append(allTasks, m.createBaseTaskInstance(task, dagIns))
 					break
 				}
-			} else {
-				baseTask := m.createBaseTaskInstance(task, dagIns)
-				allTasks = append(allTasks, baseTask)
+				// 循环节点内的step信息不会在任务执行前初始化好，需要动态生成
+				if task.ActionName == common.Loop {
+					isRetrun, tasks := m.generateLoopTaskResults(task, dagIns)
+					allTasks = append(allTasks, tasks...)
+					if isRetrun {
+						break
+					}
+				} else {
+					baseTask := m.createBaseTaskInstance(task, dagIns)
+					allTasks = append(allTasks, baseTask)
+				}
 			}
+
+			sort.SliceStable(allTasks, func(i, j int) bool {
+				return allTasks[i].LastModifiedAt < allTasks[j].LastModifiedAt
+			})
+			m.memoryCache.Set(dagInsID, allTasks, time.Minute*5)
 		}
-
-		sort.SliceStable(allTasks, func(i, j int) bool {
-			return allTasks[i].LastModifiedAt < allTasks[j].LastModifiedAt
-		})
-
-		m.memoryCache.Set(dagInsID, allTasks, time.Minute*5)
 	}
 
 	total := int64(len(allTasks))
@@ -119,7 +148,8 @@ func (m *mgnt) generateLoopTaskResults(task entity.Task, dagIns *entity.DagInsta
 	iterations, loopParam := 0, &LoopParam{LoopTaskID: task.ID, Index: 0, StepMap: make(map[string]string)}
 	switch mode {
 	case "limit":
-		switch v := task.Params["limit"].(type) {
+		loopTaskIns := m.createBaseTaskInstance(task, dagIns)
+		switch v := loopTaskIns.Params["limit"].(type) {
 		case int32:
 			iterations = int(v)
 		case int64:
@@ -130,6 +160,8 @@ func (m *mgnt) generateLoopTaskResults(task entity.Task, dagIns *entity.DagInsta
 			iterations = v
 		case float64:
 			iterations = int(v)
+		case string:
+			iterations, _ = strconv.Atoi(v)
 		}
 	case "array":
 		loopTaskIns := m.createBaseTaskInstance(task, dagIns)
@@ -290,6 +322,9 @@ func (m *mgnt) createBaseTaskInstance(task entity.Task, dagIns *entity.DagInstan
 		Results:            extractTaskResults(taskCopy.ID, dagIns),
 		LastModifiedAt:     dagIns.EndedAt * 1e9,
 		RelatedDagInstance: dagIns,
+		MetaData: &entity.TaskMetaData{
+			StartedAt: dagIns.CreatedAt * 1e3,
+		},
 	}
 	taskIns.Initial()
 	taskIns.CreatedAt = dagIns.CreatedAt
@@ -318,6 +353,9 @@ func createIterationBranchTaskInstance(taskID string, step entity.Step, dagIns *
 		ActionName:     step.Operator,
 		Status:         entity.TaskInstanceStatusSuccess,
 		LastModifiedAt: dagIns.EndedAt * 1e9,
+		MetaData: &entity.TaskMetaData{
+			StartedAt: dagIns.CreatedAt * 1e3,
+		},
 	}
 	taskIns.Initial()
 	taskIns.CreatedAt = dagIns.CreatedAt
@@ -436,4 +474,135 @@ func (m *mgnt) renderLoopBranchParams(params map[string]any, loopParam *LoopPara
 	}
 
 	return copyParams
+}
+
+func buildStepMap(steps []entity.Step, stepMap map[string]*entity.Step) {
+	for _, step := range steps {
+		switch step.Operator {
+		case common.Loop:
+			stepMap[step.ID] = &step
+			buildStepMap(step.Steps, stepMap)
+		case common.BranchOpt:
+			for _, branch := range step.Branches {
+				buildStepMap(branch.Steps, stepMap)
+			}
+		default:
+			stepMap[step.ID] = &step
+		}
+	}
+}
+
+func buildTaskInstanceFromEvents(events []*entity.DagInstanceEvent, dagIns *entity.DagInstance, dag *entity.Dag) (tasks []*entity.TaskInstance) {
+	var (
+		current *entity.TaskInstance
+		env     = make(map[string]any)
+		stepMap = make(map[string]*entity.Step)
+	)
+
+	buildStepMap(dag.Steps, stepMap)
+
+	for _, event := range events {
+		switch event.Type {
+		case rds.DagInstanceEventTypeVariable:
+			env[event.Name] = event.Data
+		case rds.DagInstanceEventTypeTaskStatus:
+			if current != nil {
+				if current.TaskID == event.TaskID {
+					current.Status = entity.TaskInstanceStatus(event.Status)
+					current.UpdatedAt = event.Timestamp / 1e6
+					current.LastModifiedAt = current.UpdatedAt
+					current.MetaData.ElapsedTime = event.Timestamp/1e3 - current.MetaData.StartedAt
+
+					switch current.Status {
+					case entity.TaskInstanceStatusSuccess:
+						if result, ok := env[fmt.Sprintf("__%s", current.TaskID)]; ok {
+							current.Results = result
+						}
+
+					case entity.TaskInstanceStatusFailed:
+						current.Reason = event.Data
+					}
+					continue
+				} else {
+					tasks = append(tasks, current)
+				}
+			}
+
+			timestampSec := event.Timestamp / 1e6
+			current = &entity.TaskInstance{
+				BaseInfo: entity.BaseInfo{
+					ID:        fmt.Sprintf("%d", event.ID),
+					CreatedAt: timestampSec,
+					UpdatedAt: timestampSec,
+				},
+				TaskID:         event.TaskID,
+				DagInsID:       dagIns.ID,
+				ActionName:     event.Operator,
+				Status:         entity.TaskInstanceStatus(event.Status),
+				LastModifiedAt: event.Timestamp,
+				MetaData: &entity.TaskMetaData{
+					StartedAt: event.Timestamp / 1e3,
+				},
+			}
+
+			if step, ok := stepMap[event.TaskID]; ok {
+				switch step.Operator {
+				case common.InternalAssignOpt:
+					target := step.Parameters["target"]
+					value, valueOk := step.Parameters["value"]
+					if valueOk {
+						value = renderParams(value, env)
+					}
+					current.Params = map[string]any{
+						"target": target,
+						"value":  value,
+					}
+				case common.BranchOpt:
+				default:
+					realParam := renderParams(step.Parameters, env)
+					if p, ok := realParam.(map[string]any); ok {
+						current.Params = p
+					} else {
+						current.Params = step.Parameters
+					}
+				}
+			}
+
+			switch current.Status {
+			case entity.TaskInstanceStatusSuccess:
+				if result, ok := env[fmt.Sprintf("__%s", current.TaskID)]; ok {
+					current.Results = result
+				}
+			case entity.TaskInstanceStatusFailed:
+				current.Reason = event.Data
+			}
+		case rds.DagInstanceEventTypeTrace:
+			dataBytes, _ := json.Marshal(event.Data)
+			_ = json.Unmarshal(dataBytes, current.MetaData)
+		}
+	}
+
+	if current != nil {
+		tasks = append(tasks, current)
+	}
+	return
+}
+
+func renderParams(params any, env map[string]any) any {
+	vmIns := vm.NewVM()
+	g := vm.NewGenerator(vmIns)
+	err := g.GenerateValue(params)
+	if err != nil {
+		return params
+	}
+	vmIns.LoadInstructions(g.Instructions)
+	vmIns.Env = env
+	vmIns.Run()
+	_, ret, err := vmIns.Result()
+
+	if err != nil {
+		return params
+	}
+
+	return ret
 }

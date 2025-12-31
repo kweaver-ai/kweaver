@@ -117,9 +117,6 @@ func (t *tokenMgnt) GetUserToken(tokenIn, userid string) (tokenInfo *entity.Toke
 			t.logger.Infof("****************%s:%s hydra RequestToken success expireIn:%v", t.ip, t.clientID, tokenInfo.ExpiresIn)
 		} else {
 			t.logger.Infof("****************%s:%s hydra RequestToken err:%v", t.ip, t.clientID, err)
-			if err.Error() == "token is not active" {
-				return tokenInfo, nil
-			}
 		}
 
 		if _, rErr := lockClient.Release(); rErr != nil {

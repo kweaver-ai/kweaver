@@ -6,10 +6,16 @@ ADD coderunner coderunner
 COPY deps deps
 COPY init_site_packages.sh init_site_packages.sh
 
+# 漏洞修复
+RUN set -ex && \
+    apt-get update && \
+    apt-get -y install --only-upgrade linux-libc-dev
+
 RUN groupadd -g 5000 -f coderunner && \
     useradd coderunner -u 5000 -g 5000 -m -s /bin/bash && \
     chown -R coderunner:coderunner /opt && \
     pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip3 install setuptools==78.1.1 && \
     pip3 install deps/* && \
     cd coderunner && \
     pip3 install -r requirements.txt && \

@@ -16,8 +16,24 @@ export function formatNumber(num: number = 0) {
 }
 
 export function formatDate(timestamp?: number, format = "YYYY-MM-DD HH:mm:ss") {
-    if (!timestamp) {
-        return "";
-    }
-    return moment(timestamp*1000).format(format);
-};
+  if (!timestamp) {
+    return "";
+  }
+  return moment(timestamp * 1000).format(format);
+}
+
+export function formatElapsedTime(ms?: number) {
+  if (!ms) return "--";
+
+  if (ms < 1000) {
+    return `${ms}ms`;
+  } else if (ms < 60 * 1000) {
+    return `${(ms / 1000).toFixed(1)}s`;
+  } else if (ms < 60 * 60 * 1000) {
+    return `${(ms / (60 * 1000)).toFixed(1)}m`;
+  } else if (ms < 24 * 60 * 60 * 1000) {
+    return `${(ms / (60 * 60 * 1000)).toFixed(1)}h`;
+  } else {
+    return `${(ms / (24 * 60 * 60 * 1000)).toFixed(1)}d`;
+  }
+}

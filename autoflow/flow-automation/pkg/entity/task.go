@@ -13,6 +13,7 @@ import (
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/log"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/utils"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/store/rds"
 	"devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/trace"
 )
 
@@ -29,6 +30,7 @@ type Task struct {
 	BranchsNum  int                    `yaml:"branchsNum,omitempty" json:"branchsNum,omitempty"  bson:"branchsNum,omitempty"`
 	BranchID    string                 `yaml:"branchsID,omitempty" json:"branchsID,omitempty"  bson:"branchsID,omitempty"`
 	Priority    int                    `json:"priority,omitempty" bson:"priority,omitempty"`
+	Settings    *Settings              `json:"settings,omitempty" bson:"settings,omitempty"`
 }
 
 // Step 每一步骤的执行数据
@@ -41,6 +43,21 @@ type Step struct {
 	Cron       string                 `json:"cron,omitempty"`
 	Branches   []Branch               `json:"branches,omitempty"`
 	Steps      []Step                 `json:"steps,omitempty"`
+	Settings   *Settings              `json:"settings,omitempty" bson:"settings,omitempty"`
+}
+
+type Settings struct {
+	Retry   *RetryConfig   `json:"retry"`
+	TimeOut *TimeoutConfig `json:"timeout"`
+}
+
+type RetryConfig struct {
+	Max   int `json:"max"`
+	Delay int `json:"delay"`
+}
+
+type TimeoutConfig struct {
+	Delay int `json:"delay"`
 }
 
 // DataSource 数据源
@@ -425,6 +442,8 @@ type TaskInstance struct {
 	LastModifiedAt int64                  `json:"lastModifiedAt,omitempty" bson:"lastModifiedAt,omitempty"`
 	RenderedParams map[string]interface{} `json:"renderedParams,omitempty" bson:"renderedParams,omitempty"`
 	Hash           string                 `json:"-" bson:"hash,omitempty"`
+	Settings       *Settings              `json:"settings,omitempty" bson:"settings,omitempty"`
+	MetaData       *TaskMetaData          `json:"metadata,omitempty" bson:"metadata,omitempty"`
 
 	// used to save changes
 	Patch              func(context.Context, *TaskInstance) error `json:"-" bson:"-"`
@@ -442,6 +461,18 @@ type TaskInstance struct {
 type TraceInfo struct {
 	Time    int64  `json:"time,omitempty" bson:"time,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
+}
+
+// TaskMetaData 任务执行元信息
+type TaskMetaData struct {
+	Attempts  int   `json:"attempts"`
+	MaxRetry  int   `json:"max_retry,omitempty"`
+	StartedAt int64 `json:"started_at"`
+	EndedAt   int64 `json:"ended_at,omitempty"`
+	// 节点调度到执行器上运行时间
+	Duration int64 `json:"duration"`
+	// 节点从开始到完成总耗时
+	ElapsedTime int64 `json:"elapsed_time"`
 }
 
 // NewTaskInstance
@@ -462,6 +493,7 @@ func NewTaskInstance(dagInsID string, t *Task) *TaskInstance {
 		PreChecks:      t.PreChecks,
 		Steps:          t.Steps,
 		LastModifiedAt: futureTime, // 设置为当前时间+200年，确保未执行任务排在后面
+		Settings:       t.Settings,
 	}
 }
 
@@ -549,11 +581,25 @@ func (t *TaskInstance) InitialDep(ctx ExecuteContext, patch func(context.Context
 	t.RelatedDagInstance = dagIns
 }
 
+func IsCtxDone(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return true
+	default:
+		return false
+	}
+}
+
 // SetStatus will persist task instance
 func (t *TaskInstance) SetStatus(ctx context.Context, s TaskInstanceStatus) error {
 	var err error
 	ctx, span := trace.StartInternalSpan(ctx)
 	defer func() { trace.TelemetrySpanEnd(span, err) }()
+
+	done := IsCtxDone(ctx)
+	if done {
+		s = TaskInstanceStatusFailed
+	}
 
 	t.Status = s
 	t.LastModifiedAt = time.Now().UnixNano()
@@ -562,7 +608,45 @@ func (t *TaskInstance) SetStatus(ctx context.Context, s TaskInstanceStatus) erro
 		copy(patch.Traces, t.Traces)
 		patch.Traces = append(patch.Traces, t.bufTraces...)
 	}
+
+	dagIns := t.RelatedDagInstance
+	if dagIns != nil &&
+		dagIns.EventPersistence == DagInstanceEventPersistenceSql &&
+		dagIns.Mode != DagInstanceModeVM &&
+		t.Status != TaskInstanceStatusEnding {
+
+		taskID := t.TaskID
+
+		for _, re := range []string{`^\d+_i\d+_s\d+.+_(\d+)$`, `^\d+_i\d+_s(\d+)$`, `^(\d+)_i\d+$`} {
+			if matches := regexp.MustCompile(re).FindStringSubmatch(t.TaskID); len(matches) == 2 {
+				taskID = matches[1]
+				break
+			}
+		}
+
+		err = dagIns.WriteEvents(ctx, []*DagInstanceEvent{
+			{
+				Type:       rds.DagInstanceEventTypeTaskStatus,
+				InstanceID: dagIns.ID,
+				Operator:   t.ActionName,
+				TaskID:     taskID,
+				Status:     string(t.Status),
+				Data:       t.Reason,
+				Timestamp:  time.Now().UnixMicro(),
+				Visibility: rds.DagInstanceEventVisibilityPublic,
+			},
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
 	err = t.Patch(ctx, patch)
+
+	if err == nil && done {
+		err = ctx.Err()
+	}
 	return err
 }
 
@@ -741,9 +825,16 @@ func (t *TaskInstance) SetResult(ctx context.Context, results interface{}) error
 	if results == nil {
 		return nil
 	}
+
 	var err error
 	ctx, span := trace.StartInternalSpan(ctx)
 	defer func() { trace.TelemetrySpanEnd(span, err) }()
+
+	done := IsCtxDone(ctx)
+	if done {
+		t.Status = TaskInstanceStatusFailed
+		results = ctx.Err()
+	}
 
 	t.Results = results
 	t.LastModifiedAt = time.Now().UnixNano()
@@ -751,6 +842,11 @@ func (t *TaskInstance) SetResult(ctx context.Context, results interface{}) error
 	if err := t.Patch(ctx, patch); err != nil {
 		return fmt.Errorf("set result err, dagins id: %s, taskins id: %s, result: %v", t.DagInsID, t.TaskID, results)
 	}
+
+	if err == nil && done {
+		err = ctx.Err()
+	}
+
 	return nil
 }
 

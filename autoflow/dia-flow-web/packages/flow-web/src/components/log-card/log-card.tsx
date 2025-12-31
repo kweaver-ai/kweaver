@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { isFunction, isObject } from "lodash";
 import moment from "moment";
 import ReactJsonView from "react-json-view";
-import { NavigationContext, useTranslate } from "@applet/common";
+import { MicroAppContext, NavigationContext, useTranslate } from "@applet/common";
 import { SyncfaildColored, SyncuccessColored } from "@applet/icons";
 import { MinusCircleFilled } from "@ant-design/icons";
 import { LogResult } from "@applet/api/lib/content-automation";
@@ -23,6 +23,7 @@ import { DefaultFormattedOutput } from "./default-output";
 import { detectIE } from "../../utils/browser";
 import styles from "./log-card.module.less";
 import { IntelliinfoTransfer } from "../../extensions/datastudio/graph-database";
+import { formatElapsedTime } from "../../utils/format-number";
 
 interface LogCardProps {
     log?: LogResult;
@@ -76,6 +77,7 @@ export const LogCard = ({
     const [dataType, setDataType] = useState("beauty");
     const [isExpand, setIsExpand] = useState(true);
     const { getLocale } = useContext(NavigationContext);
+    const { platform } = useContext(MicroAppContext);
     const t = useTranslate();
     const __a = useTranslateExtension("anyshare");
     const { triggers, executors, dataSources, globalConfig } =
@@ -127,7 +129,7 @@ export const LogCard = ({
         if (!timestamp) {
             return "";
         }
-        return moment(timestamp * 1000).format(format);
+        return moment(timestamp).format(format);
     };
 
     const getAvatar = (operator: string) => {
@@ -327,11 +329,34 @@ export const LogCard = ({
                         </div>
                     }
                     description={
-                        <div className={styles["card-time"]}>
-                            {formatTime(
-                                (log as any)?.updated_at || log?.started_at
-                            ) || "---"}
-                        </div>
+                        <>
+                            {platform === "operator" ? (
+                            <div className={styles["card-time"]}>
+                                {formatTime((log as any)?.updated_at*1000 || (log as any)?.started_at*1000) ||
+                                "---"}
+                            </div>
+                            ) : (
+                            <div className={styles["card-description"]}>
+                                <ul>
+                                <li>
+                                    {t("runtime.duration")}
+                                    {formatElapsedTime(log?.metadata?.elapsed_time)}
+                                </li>
+                                <li>
+                                    {t("start.time")}
+                                    {formatTime(log?.metadata?.started_at) || "--"}
+                                </li>
+                                <li>
+                                    {t("number.of.runs")}
+                                    {log?.metadata?.attempts ||
+                                    log?.metadata?.attempts === 0
+                                    ? log?.metadata?.attempts + 1
+                                    : "--"}
+                                </li>
+                                </ul>
+                            </div>
+                            )}
+                        </>
                     }
                 />
                 <Button

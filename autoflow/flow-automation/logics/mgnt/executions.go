@@ -54,7 +54,7 @@ func (m *mgnt) RunOperator(ctx context.Context,
 			})
 	}
 
-	if userInfo.AccountType != "app" {
+	if userInfo.AccountType != common.APP.ToString() {
 		opMap := &perm.MapOperationProvider{
 			OpMap: map[string][]string{
 				common.DagTypeComboOperator: {perm.OpExecuteOperation},
@@ -121,7 +121,7 @@ func (m *mgnt) runFormInstanceVM(
 		"run_args":      string(bytes),
 	}
 
-	dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+	dagIns, dagErr := dag.Run(ctx, triggerType, runVar, []string{userInfo.UserName})
 	if dagErr != nil {
 		return nil, nil, liberrors.NewPublicRestError(ctx, liberrors.PErrorForbidden,
 			liberrors.PErrorForbidden,
@@ -137,7 +137,8 @@ func (m *mgnt) runFormInstanceVM(
 	// Initialize ShareData if it doesn't exist
 	if dagIns.ShareData == nil {
 		dagIns.ShareData = &entity.ShareData{
-			Dict: map[string]interface{}{},
+			Dict:        map[string]interface{}{},
+			DagInstance: dagIns,
 		}
 	}
 

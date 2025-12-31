@@ -1,4 +1,4 @@
-import { Button, Form, Select, Space } from 'antd';
+import { Button, Form, Select, Space, Typography } from 'antd';
 import { API, useTranslate } from '@applet/common';
 import { DefaultOptionType } from 'antd/lib/select';
 import styles from './create-mode-step.module.less';
@@ -6,6 +6,8 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { FormItem } from '../../editor/form-item';
 import { SelectDocLib } from '../trigger-config/select-doclib';
 import { DocLibItem } from '../../as-file-select/doclib-list';
+
+const { Text } = Typography;
 
 interface ISelectAtlasProps {
     onNext: (value: IAtlasInfo) => void;
@@ -59,7 +61,8 @@ interface ISelectDoc {
 export enum ItemType {
     Graph = "graph_id",
     Entity = "entity_ids",
-    Doc = "selectedDoc"
+    Doc = "selectedDoc",
+    IndexBase = "indexBase"
 }
 
 const DEFAULT_ENTITIES = ['tag', 'industry', 'customer', 'project', 'custom_subject'];
@@ -319,6 +322,57 @@ export const SelectAtlas = ({
         },
         [ItemType.Doc]: {
             Component: <SelectDocLib ref={docRef} parameters={selectDoc || {}} onChange={handleChange} />
+        },
+        [ItemType.IndexBase]: {
+            Component: (
+                <div>
+                    <div style={{ 
+                        marginBottom: 16, 
+                        fontSize: 14, 
+                        fontWeight: 500, 
+                        color: "rgba(0, 0, 0, 0.85)" 
+                    }}>
+                        {t("datastudio.create.pdfParse.parseResultStorage", "解析结果存储至")}
+                    </div>
+                    <div style={{ 
+                        backgroundColor: "#F0F7FF", 
+                        padding: 16, 
+                        borderRadius: 4,
+                        marginBottom: 16
+                    }}>
+                        <FormItem
+                            required
+                            label={t("datastudio.create.pdfParse.documentMetadataIndex", "文档元数据索引库")}
+                        >
+                            <Select
+                                value="content_document"
+                                disabled
+                                options={[{ label: "content_document", value: "content_document" }]}
+                            />
+                        </FormItem>
+                        <FormItem
+                            required
+                            label={t("datastudio.create.pdfParse.documentElementIndex", "文档元素索引库")}
+                        >
+                            <Select
+                                value="content_element"
+                                disabled
+                                options={[{ label: "content_element", value: "content_element" }]}
+                            />
+                        </FormItem>
+                        <FormItem
+                            required
+                            label={t("datastudio.create.pdfParse.vectorIndex", "向量索引库")}
+                        >
+                            <Select
+                                value="content_index"
+                                disabled
+                                options={[{ label: "content_index", value: "content_index" }]}
+                            />
+                        </FormItem>
+                    </div>
+                </div>
+            )
         }
     }
 

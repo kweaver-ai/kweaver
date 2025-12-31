@@ -10,8 +10,11 @@ import (
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/drivenadapters"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/log"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm"
+	vmerrors "devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm/errors"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm/hook"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm/state"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/store/rds"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/utils"
 	liberrors "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/errors"
 	traceLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/log"
@@ -29,6 +32,35 @@ func (vm *VMExt) HookBeforeAssign(id string, target string, value any) {
 		Status: entity.TaskInstanceStatusSuccess,
 	}
 
+	vm.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vm.dagIns.ID,
+			Operator:   common.InternalAssignOpt,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusRunning),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeVariable,
+			InstanceID: vm.dagIns.ID,
+			Name:       target,
+			Data:       value,
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+			Timestamp:  time.Now().UnixMicro(),
+		},
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vm.dagIns.ID,
+			Operator:   common.InternalAssignOpt,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusSuccess),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
+
 	_, err := GetStore().BatchCreateTaskIns(vm.Context(), []*entity.TaskInstance{taskIns})
 
 	if err != nil {
@@ -44,6 +76,18 @@ func (vm *VMExt) HookBranchSkip(id string) {
 		Status:     entity.TaskInstanceStatusSkipped,
 	}
 
+	vm.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vm.dagIns.ID,
+			Operator:   common.BranchOpt,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusSkipped),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
+
 	_, err := GetStore().BatchCreateTaskIns(vm.Context(), []*entity.TaskInstance{taskIns})
 
 	if err != nil {
@@ -52,12 +96,25 @@ func (vm *VMExt) HookBranchSkip(id string) {
 }
 
 func (vm *VMExt) HookBranchStart(id string) {
+
 	taskIns := &entity.TaskInstance{
 		TaskID:     id,
 		DagInsID:   vm.dagIns.ID,
 		ActionName: common.BranchOpt,
 		Status:     entity.TaskInstanceStatusSuccess,
 	}
+
+	vm.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vm.dagIns.ID,
+			Operator:   common.BranchOpt,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusSuccess),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
 
 	_, err := GetStore().BatchCreateTaskIns(vm.Context(), []*entity.TaskInstance{taskIns})
 
@@ -75,6 +132,18 @@ func (vm *VMExt) HookLoopStart(id string, value any) {
 		Status:     entity.TaskInstanceStatusSuccess,
 	}
 
+	vm.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vm.dagIns.ID,
+			Operator:   common.Loop,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusSuccess),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
+
 	_, err := GetStore().BatchCreateTaskIns(vm.Context(), []*entity.TaskInstance{taskIns})
 
 	if err != nil {
@@ -91,6 +160,18 @@ func (vm *VMExt) HookBeforeReturn(id string, value any) {
 		Status:     entity.TaskInstanceStatusSuccess,
 	}
 
+	vm.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vm.dagIns.ID,
+			Operator:   common.InternalReturnOpt,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusSuccess),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
+
 	_, err := GetStore().BatchCreateTaskIns(vm.Context(), []*entity.TaskInstance{taskIns})
 
 	if err != nil {
@@ -98,37 +179,91 @@ func (vm *VMExt) HookBeforeReturn(id string, value any) {
 	}
 }
 
-func (vm *VMExt) HookVMStop() {
-	ctx := vm.Context()
-	now := time.Now()
+func (vmIns *VMExt) HookResume(name, id string, value any) {
+	var data any
 
-	bytes, err := json.Marshal(vm)
-
-	if err != nil {
-		vm.logger.Warnf("[VMExt.HookVMStop] PatchDagIns err, detail: %s", err.Error())
-		return
+	if rets, ok := value.([]any); ok && len(rets) > 0 {
+		data = rets[0]
 	}
+
+	vmIns.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeVariable,
+			InstanceID: vmIns.dagIns.ID,
+			Name:       fmt.Sprintf("__%s", id),
+			Data:       data,
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+			Timestamp:  time.Now().UnixMicro(),
+		},
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vmIns.dagIns.ID,
+			Operator:   name,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusSuccess),
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
+}
+
+func (vmIns *VMExt) HookResumeError(name, id string, err any) {
+	vmIns.AppendEvents(
+		&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeTaskStatus,
+			InstanceID: vmIns.dagIns.ID,
+			Operator:   name,
+			TaskID:     id,
+			Status:     string(entity.TaskInstanceStatusFailed),
+			Data:       err,
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPublic,
+		},
+	)
+}
+
+func (vmIns *VMExt) HookVMStop() {
+	ctx := vmIns.Context()
+	dagIns := vmIns.dagIns
 
 	patch := &entity.DagInstance{
-		BaseInfo:  vm.dagIns.BaseInfo,
-		DagID:     vm.dagIns.DagID,
-		Dump:      string(bytes),
-		ShareData: vm.dagIns.ShareData,
-		EndedAt:   now.Unix(),
+		BaseInfo:         dagIns.BaseInfo,
+		DagID:            dagIns.DagID,
+		EventPersistence: dagIns.EventPersistence,
+		EndedAt:          time.Now().Unix(),
 	}
 
-	vmState, data, vmErr := vm.Result()
+	vmState, data, vmErr := vmIns.Result()
 
 	switch vmState {
 	case state.Done:
 		patch.Status = entity.DagInstanceStatusSuccess
-		vm.logger.Infof("[VMExt.HookVMStop] 运行完成: %v\n", data)
-		go vm.dagIns.SendSuccessCallback(data)
+		vmIns.logger.Infof("[VMExt.HookVMStop] 运行完成: %v\n", data)
+		go dagIns.SendSuccessCallback(data)
 
 	case state.Error:
 		patch.Status = entity.DagInstanceStatusFailed
+
+		reason := make(map[string]any)
+
+		if vmErrObj, ok := vmErr.(*vmerrors.Error); ok {
+			reason["taskId"] = vmErrObj.Step
+
+			if detail, ok := vmErrObj.Detail.(map[string]any); ok {
+				reason["actionName"] = detail["name"]
+				reason["detail"] = detail["cause"]
+			} else {
+				reason["detail"] = detail
+			}
+		} else {
+			reason["detail"] = vmErr
+		}
+
+		b, _ := json.Marshal(reason)
+		patch.Reason = string(b)
+
 		log.Infof("[VMExt.HookVMStop] 运行失败: %v\n", vmErr)
-		go vm.dagIns.SendErrorCallback(
+		go dagIns.SendErrorCallback(
 			liberrors.NewPublicRestError(context.Background(), liberrors.PErrorInternalServerError,
 				liberrors.PErrorInternalServerError,
 				vmErr))
@@ -138,21 +273,61 @@ func (vm *VMExt) HookVMStop() {
 		patch.Status = entity.DagInstanceStatusBlocked
 	}
 
+	switch dagIns.EventPersistence {
+	case entity.DagInstanceEventPersistenceOss:
+		// nothing to do
+	case entity.DagInstanceEventPersistenceSql:
+		vmIns.AppendEvents(&entity.DagInstanceEvent{
+			Type:       rds.DagInstanceEventTypeVM,
+			InstanceID: dagIns.ID,
+			Status:     string(patch.Status),
+			Data: &vm.VM{
+				State:     vmIns.State,
+				PC:        vmIns.PC,
+				RegID:     vmIns.RegID,
+				Stack:     vmIns.Stack,
+				Env:       vmIns.Env,
+				Callstack: vmIns.Callstack,
+				Traces:    vmIns.Traces,
+				Err:       vmIns.Err,
+			},
+			Timestamp:  time.Now().UnixMicro(),
+			Visibility: rds.DagInstanceEventVisibilityPrivate,
+		})
+		if err := vmIns.WriteEvents(); err != nil {
+			log.Warnf("[VMExt.HookVMStop] SaveExtData err, detail: %s", err.Error())
+		}
+
+	default:
+		bytes, err := json.Marshal(vmIns)
+
+		if err != nil {
+			vmIns.logger.Warnf("[VMExt.HookVMStop] PatchDagIns err, detail: %s", err.Error())
+			return
+		}
+		patch.ShareData = dagIns.ShareData
+		patch.Dump = string(bytes)
+	}
+
 	if err := patch.SaveExtData(context.Background()); err != nil {
 		log.Warnf("[VMExt.HookVMStop] SaveExtData err, detail: %s", err.Error())
 		return
 	}
 
-	if err = GetStore().PatchDagIns(ctx, patch); err != nil {
+	if err := GetStore().PatchDagIns(ctx, patch); err != nil {
 		log.Warnf("[VMExt.HookVMStop] PatchDagIns err, detail: %s", err.Error())
 	}
 
-	go vm.AfterStopLog(ctx, vm.dagIns, patch.Status)
+	go vmIns.AfterStopLog(ctx, dagIns, patch.Status)
 }
 
 func (vm *VMExt) AfterStopLog(ctx context.Context, dagIns *entity.DagInstance, status entity.DagInstanceStatus) {
 	if status != entity.DagInstanceStatusFailed && status != entity.DagInstanceStatusSuccess {
 		return
+	}
+
+	if dagIns.EventPersistence == entity.DagInstanceEventPersistenceSql {
+		_ = UploadDagInstanceEvents(context.Background(), dagIns)
 	}
 
 	// 流程执行成功删除所有task信息
@@ -235,3 +410,5 @@ var _ hook.LoopStart = (*VMExt)(nil)
 var _ hook.BranchStart = (*VMExt)(nil)
 var _ hook.BranchSkip = (*VMExt)(nil)
 var _ hook.VMStop = (*VMExt)(nil)
+var _ hook.Resume = (*VMExt)(nil)
+var _ hook.ResumeError = (*VMExt)(nil)

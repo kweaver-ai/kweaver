@@ -132,7 +132,7 @@ func (a *LLMChatCompletion) Run(ctx entity.ExecuteContext, input interface{}, to
 
 		if len(contents) > 0 {
 			messages = append(messages, &drivenadapters.ChatMessage{
-				Role:    "user",
+				Role:    common.User.ToString(),
 				Content: contents,
 			})
 		}
@@ -140,7 +140,7 @@ func (a *LLMChatCompletion) Run(ctx entity.ExecuteContext, input interface{}, to
 
 	if len(params.UserMessage) > 0 {
 		messages = append(messages, &drivenadapters.ChatMessage{
-			Role:    "user",
+			Role:    common.User.ToString(),
 			Content: params.UserMessage,
 		})
 	}

@@ -331,10 +331,12 @@ const DataStudioPanel: React.FC = () => {
     dataSourceChanged: boolean
   ) => {
     const { id } = flowDetail;
-    if (!hasTargetOperator(flowDetail?.steps)) {
-      hasOperatorMessage(microWidgetProps?.container);
-      return false;
-    }
+    // if (!hasTargetOperator(flowDetail?.steps)) {
+    //   const confirm = await hasOperatorMessage(microWidgetProps?.container);
+    //   if (!confirm) {
+    //     return;
+    //   }
+    // }
 
     setIsDataFlowDesignerVisible(false);
     task.isEditTrigger = false;
@@ -788,11 +790,13 @@ const DataStudioPanel: React.FC = () => {
   };
 
   // 完成触发方式配置
-  const handleTriggerConfigOk = (trigger_config: Trigger) => {
- if (!hasTargetOperator(currentFlowDetail.current?.steps)) {
-   hasOperatorMessage(microWidgetProps?.container);
-   return false;
- }
+  const handleTriggerConfigOk = async (trigger_config: Trigger) => {
+//  if (!hasTargetOperator(currentFlowDetail.current?.steps)) {
+//    const confirm = await hasOperatorMessage(microWidgetProps?.container);
+//    if (!confirm) {
+//      return;
+//    }
+//  }
     currentFlowDetail.current = {
       ...currentFlowDetail.current,
       trigger_config,

@@ -51,6 +51,7 @@ export interface VariablePickerProps extends VariablePickerOptions {
   scope?: number[];
   onFinish?(variable: string, data?: any): void;
   onCancel?(): void;
+  allowOperator?: string[];
 }
 
 export enum NodeRelation {
@@ -159,6 +160,7 @@ export const VariablePicker: FC<VariablePickerProps> = ({
   loop = false,
   onFinish,
   onCancel,
+  allowOperator,
 }) => {
   const { stepNodes } = useContext(EditorContext);
   const t = useTranslate();
@@ -201,7 +203,8 @@ export const VariablePicker: FC<VariablePickerProps> = ({
           (item.type === "trigger" ||
             item.type === "executor" ||
             item.type === "globalVariable") &&
-          item.step.operator
+          item.step.operator &&
+          (!allowOperator || allowOperator.includes(item.step.operator))
         ) {
           if (item.step.operator === LoopOperator && !loop) {
             return isLoopVarAccessible(scope, item.path, true);
@@ -244,7 +247,7 @@ export const VariablePicker: FC<VariablePickerProps> = ({
       | TriggerStepNode
       | ExecutorStepNode
     )[];
-  }, [stepNodes, scope, type]);
+  }, [stepNodes, scope, type, allowOperator]);
 
   useLayoutEffect(() => {
     setActiveKey(filterred.map((item) => item.step.id));

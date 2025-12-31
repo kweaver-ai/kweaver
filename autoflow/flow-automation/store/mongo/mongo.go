@@ -856,6 +856,10 @@ func (s *Store) PatchTaskIns(ctx context.Context, taskIns *entity.TaskInstance) 
 		update["hash"] = taskIns.Hash
 	}
 
+	if taskIns.MetaData != nil {
+		update["metadata"] = taskIns.MetaData
+	}
+
 	update = bson.M{
 		"$set": update,
 	}
@@ -885,24 +889,34 @@ func (s *Store) PatchDagIns(ctx context.Context, dagIns *entity.DagInstance, mus
 		update["endedAt"] = dagIns.EndedAt
 	}
 
-	if dagIns.ShareData != nil {
-		if dagIns.ShareDataExt != nil {
-			update["shareDataExt"] = dagIns.ShareDataExt
-			update["shareData"] = nil
-		} else {
-			update["shareDataExt"] = nil
-			update["shareData"] = dagIns.ShareData
+	if dagIns.EventPersistence == 0 {
+		if dagIns.ShareData != nil {
+			if dagIns.ShareDataExt != nil {
+				update["shareDataExt"] = dagIns.ShareDataExt
+				update["shareData"] = nil
+			} else {
+				update["shareDataExt"] = nil
+				update["shareData"] = dagIns.ShareData
+			}
+		}
+
+		if dagIns.Dump != "" {
+			if dagIns.DumpExt != nil {
+				update["dumpExt"] = dagIns.DumpExt
+				update["dump"] = ""
+			} else {
+				update["dumpExt"] = nil
+				update["dump"] = dagIns.Dump
+			}
 		}
 	}
 
-	if dagIns.Dump != "" {
-		if dagIns.DumpExt != nil {
-			update["dumpExt"] = dagIns.DumpExt
-			update["dump"] = ""
-		} else {
-			update["dumpExt"] = nil
-			update["dump"] = dagIns.Dump
-		}
+	if dagIns.EventPersistence != 0 {
+		update["eventPersistence"] = dagIns.EventPersistence
+	}
+
+	if dagIns.EventOssPath != "" {
+		update["eventOssPath"] = dagIns.EventOssPath
 	}
 
 	if dagIns.Status != "" {
@@ -926,12 +940,19 @@ func (s *Store) PatchDagIns(ctx context.Context, dagIns *entity.DagInstance, mus
 		update["resume_status"] = dagIns.ResumeStatus
 	}
 
+	if dagIns.Source != "" {
+		update["source"] = dagIns.Source
+	}
+
 	update = bson.M{
 		"$set": update,
 	}
 
-	updates := make([]bson.M, 0)
-	updates = append(updates, update)
+	if len(dagIns.Keywords) > 0 {
+		update["$addToSet"] = bson.M{
+			"keywords": bson.M{"$each": dagIns.Keywords},
+		}
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), s.opt.Timeout)
 	defer cancel()
@@ -942,7 +963,7 @@ func (s *Store) PatchDagIns(ctx context.Context, dagIns *entity.DagInstance, mus
 	}
 	defer session.EndSession(ctx)
 
-	if _, err := s.mongoDB.Collection(s.dagInsClsName).UpdateOne(ctx, bson.M{"_id": dagIns.ID}, updates); err != nil {
+	if _, err := s.mongoDB.Collection(s.dagInsClsName).UpdateOne(ctx, bson.M{"_id": dagIns.ID}, update); err != nil {
 		return fmt.Errorf("patch dag instance failed: %w", err)
 	}
 

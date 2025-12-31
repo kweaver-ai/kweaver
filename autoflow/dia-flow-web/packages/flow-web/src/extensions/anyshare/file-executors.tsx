@@ -1,17 +1,17 @@
 import {
-    ExecutorActionConfigProps,
-    ExecutorActionInputProps,
-    Validatable,
+  ExecutorActionConfigProps,
+  ExecutorActionInputProps,
+  Validatable,
 } from "../../components/extension";
 import FileSVG from "./assets/file.svg";
 import {
   ForwardedRef,
-    forwardRef,
-    useContext,
-    useImperativeHandle,
-    useLayoutEffect,
-    useMemo,
-    useRef,
+  forwardRef,
+  useContext,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
 } from "react";
 import { Form, Input, Radio, Select, Typography } from "antd";
 import { FormItem } from "../../components/editor/form-item";
@@ -23,24 +23,24 @@ import { TriggerStepNode } from "../../components/editor/expr";
 import { isGNSLike, isVariableLike } from ".";
 
 function useConfigForm(parameters: any, ref: ForwardedRef<Validatable>) {
-    const [form] = Form.useForm();
+  const [form] = Form.useForm();
 
-    useImperativeHandle(ref, () => {
-        return {
-            validate() {
-                return form.validateFields().then(
-                    () => true,
-                    () => false
-                );
-            },
-        };
-    });
+  useImperativeHandle(ref, () => {
+    return {
+      validate() {
+        return form.validateFields().then(
+          () => true,
+          () => false
+        );
+      },
+    };
+  });
 
-    useLayoutEffect(() => {
-        form.setFieldsValue(parameters);
-    }, [form, parameters]);
+  useLayoutEffect(() => {
+    form.setFieldsValue(parameters);
+  }, [form, parameters]);
 
-    return form;
+  return form;
 }
 
 export const FileCreate = [
@@ -127,7 +127,20 @@ export const FileCreate = [
               form={form}
               layout="vertical"
               initialValues={initialValues}
-              onFieldsChange={() => {
+              onFieldsChange={(changedFields) => {
+                const typeFieldChanged = changedFields.some(
+                  (field:any) => field.name[0] === "type"
+                );
+                if (typeFieldChanged) {
+                  const allFields = form.getFieldsValue();
+                   form.setFieldsValue({
+                      type: allFields.type,
+                      name: undefined,
+                      ondup: undefined,
+                      docid: undefined,
+                      content: undefined,
+                    });
+                } 
                 onChange(form.getFieldsValue());
               }}
             >
@@ -197,7 +210,7 @@ export const FileCreate = [
                     </Select.Option>
                   </Select>
                 </FormItem>
-              ):(
+              ) : (
                 <FormItem
                   required
                   name="source_type"
@@ -243,20 +256,28 @@ export const FileCreate = [
               )}
               <FormItem
                 required
-                label={parameters?.type === "xlsx" ? "表格内容" : t("fileCreate.content")}
+                label={
+                  parameters?.type === "xlsx"
+                    ? "表格内容"
+                    : t("fileCreate.content")
+                }
                 name="content"
                 allowVariable
-                type={parameters?.type=== "xlsx" ? 'array' : "string"}
+                type={parameters?.type === "xlsx" ? "array" : "string"}
                 rules={[
                   {
                     required: true,
                     message: t("emptyMessage"),
-                  }
+                  },
                 ]}
               >
                 <Input
                   autoComplete="off"
-                  placeholder={parameters?.type === "xlsx" ? '仅支持选择数组类型的变量' : t("fileCreate.namePlaceholder")}
+                  placeholder={
+                    parameters?.type === "xlsx"
+                      ? "仅支持选择数组类型的变量"
+                      : t("fileCreate.namePlaceholder")
+                  }
                   readOnly={parameters?.type === "xlsx"}
                 />
               </FormItem>
@@ -520,7 +541,7 @@ export const FileCreate = [
                   selectType={1}
                   supportExtensions={supportExtensions()}
                   notSupportTip={t("fileEditDoc.tip", {
-                    name: parameters?.type,
+                    name: parameters?.type || "docx",
                   })}
                   placeholder={t("fileEditDoc.sourcePlaceholder")}
                   selectButtonText={t("select")}

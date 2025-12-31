@@ -8,10 +8,36 @@ import (
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/drivenadapters"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/log"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/utils"
 	traceLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/log"
 	"devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/trace"
 )
+
+func patchDagInstanceSource(ctx entity.ExecuteContext, data map[string]interface{}, triggerName string) {
+	if len(data) == 0 {
+		return
+	}
+
+	taskIns := ctx.GetTaskInstance()
+	if taskIns == nil {
+		return
+	}
+
+	b, err := json.Marshal(data)
+
+	if err != nil {
+		log.Warnf("[%s] Marshal source err %s", triggerName, err.Error())
+		return
+	}
+
+	if err := ctx.NewExecuteMethods().PatchDagIns(ctx.Context(), &entity.DagInstance{
+		BaseInfo: taskIns.RelatedDagInstance.BaseInfo,
+		Source:   string(b),
+	}); err != nil {
+		log.Warnf("[%s] PatchDagIns err %s", triggerName, err.Error())
+	}
+}
 
 // CronTrigger cron trigger
 type CronTrigger struct {
@@ -29,7 +55,7 @@ func (a *CronTrigger) Name() string {
 
 // Run 操作方法
 func (a *CronTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew 初始化参数
@@ -48,7 +74,7 @@ func (a *CronWeekTrigger) Name() string {
 
 // Run 操作方法
 func (a *CronWeekTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew 初始化参数
@@ -67,7 +93,7 @@ func (a *CronMonthTrigger) Name() string {
 
 // Run 操作方法
 func (a *CronMonthTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew 初始化参数
@@ -86,7 +112,7 @@ func (a *CronCustomTrigger) Name() string {
 
 // Run 操作方法
 func (a *CronCustomTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew 初始化参数
@@ -109,7 +135,7 @@ func (a *ManualTrigger) Name() string {
 
 // Run 操作方法 手动触发
 func (a *ManualTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew new parameter
@@ -117,7 +143,7 @@ func (a *ManualTrigger) ParameterNew() interface{} {
 	return &ManualTriggerParam{}
 }
 
-func triggerManual(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
+func triggerManual(ctx entity.ExecuteContext, params interface{}, token *entity.Token, actionName string) (interface{}, error) {
 	var err error
 	newCtx, span := trace.StartInternalSpan(ctx.Context())
 	defer func() { trace.TelemetrySpanEnd(span, err) }()
@@ -140,21 +166,32 @@ func triggerManual(ctx entity.ExecuteContext, params interface{}, token *entity.
 
 	var data = make(map[string]interface{})
 
+	defer func() {
+		patchDagInstanceSource(ctx, data, actionName)
+	}()
+
 	sourceType, _ := ctx.GetVar("source_type")
 	if sourceType == "" || sourceType == "doc" {
 		data["id"] = idStr
 		data["docid"] = idStr
 		data["item_id"] = utils.GetDocCurID(idStr)
+		data["_type"] = "file"
 
 		attr, doc, err := getDocInfo(ctx.Context(), idStr, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 		if err == nil {
 			data = attr
 			data["modify_time"] = attr["modified"]
 			data["item_id"] = utils.GetDocCurID(doc.DocID)
+			if doc.Size == -1 {
+				data["_type"] = "folder"
+			} else {
+				data["_type"] = "file"
+			}
 		}
 
 	} else if sourceType == "dept" {
 		data["id"] = idStr
+		data["_type"] = "department"
 		departInfo, err := usermgntAdaper.GetDepartmentInfo(idStr)
 		if err == nil {
 			data["id"] = departInfo.DepartmentID
@@ -181,9 +218,10 @@ func triggerManual(ctx entity.ExecuteContext, params interface{}, token *entity.
 				data["email"] = mails[0]
 			}
 		}
-	} else if sourceType == "user" {
+	} else if sourceType == common.User.ToString() {
 		userID := idStr
 		data["id"] = userID
+		data["_type"] = "user"
 		userInfo, err := usermgntAdaper.GetUserInfo(userID)
 		if err == nil {
 			data["name"] = userInfo.UserName
@@ -226,6 +264,7 @@ func triggerManual(ctx entity.ExecuteContext, params interface{}, token *entity.
 	} else if sourceType == "tagtree" {
 		tagID := idStr
 		data["id"] = tagID
+		data["_type"] = "tag"
 		tagInfos, err := ecotagAdapter.GetTags(ctx.Context(), map[string][]string{"id": []string{tagID}})
 		if err == nil && len(tagInfos) > 0 {
 			tagInfo := tagInfos[0]
@@ -264,8 +303,17 @@ func triggerManual(ctx entity.ExecuteContext, params interface{}, token *entity.
 type FormTrigger struct {
 }
 
+type FormTriggerParamField struct {
+	Name     string `json:"name"`
+	Key      string `json:"key"`
+	Type     string `json:"type"`
+	Required bool   `json:"required"`
+	Default  any    `json:"default"`
+}
+
 // FormTriggerParam 手动触发器参数
 type FormTriggerParam struct {
+	Fields []*FormTriggerParamField `json:"fields"`
 }
 
 // Name 操作名称
@@ -282,9 +330,19 @@ func (a *FormTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 
+	input, ok := params.(*FormTriggerParam)
+	if !ok {
+		return nil, fmt.Errorf("invalid parameter type")
+	}
+
 	attr := make(map[string]interface{})
+	attr["_type"] = "form"
 	fields := make(map[string]interface{})
+	finalFields := make(map[string]any)
 	accessor := Accessor{}
+	defer func() {
+		patchDagInstanceSource(ctx, attr, a.Name())
+	}()
 
 	isVM := false
 	runArgs := make(map[string]any)
@@ -312,9 +370,29 @@ func (a *FormTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *
 		}
 	}
 
+	for _, f := range input.Fields {
+		if v, ok := fields[f.Key]; ok {
+			finalFields[f.Key] = v
+			continue
+		}
+
+		if f.Default != nil {
+			finalFields[f.Key] = f.Default
+			continue
+		}
+
+		if f.Required {
+			title := f.Key
+			if f.Name != "" {
+				title = f.Name
+			}
+			return nil, fmt.Errorf("%s is required", title)
+		}
+	}
+
 	accessorBytes, _ := json.Marshal(accessor)
 
-	attr["fields"] = fields
+	attr["fields"] = finalFields
 	attr["accessor"] = string(accessorBytes)
 
 	id := ctx.GetTaskID()
@@ -348,6 +426,10 @@ func (a *AnyshareFileUploadTrigger) Run(ctx entity.ExecuteContext, params interf
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	docID := data["id"].(string)
 	attr, doc, err := getDocInfo(ctx.Context(), docID, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -392,6 +474,10 @@ func (a *AnyshareFileCopyTrigger) Run(ctx entity.ExecuteContext, params interfac
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	newDocID := data["new_id"].(string)
 	attr, doc, err := getDocInfo(ctx.Context(), newDocID, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -436,7 +522,11 @@ func (a *AnyshareFileMoveTrigger) Run(ctx entity.ExecuteContext, params interfac
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	paths := strings.Split(data["new_path"].(string), "/")
+	data["_type"] = "file"
 	data["name"] = paths[len(paths)-1]
 	data["path"] = data["new_path"]
 	data["id"] = data["new_id"]
@@ -483,6 +573,10 @@ func (a *AnyshareFileRemoveTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	id := ctx.GetTaskID()
 	ctx.ShareData().Set(id, data)
 	ctx.Trace(ctx.Context(), "run end")
@@ -513,6 +607,10 @@ func (a *AnyshareFolderCreateTrigger) Run(ctx entity.ExecuteContext, params inte
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "folder"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	docID := data["id"].(string)
 	attr, doc, err := getDocInfo(ctx.Context(), docID, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -554,6 +652,10 @@ func (a *AnyshareFolderMoveTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "folder"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	paths := strings.Split(data["new_path"].(string), "/")
 	data["name"] = paths[len(paths)-1]
 	data["path"] = data["new_path"]
@@ -596,6 +698,10 @@ func (a *AnyshareFolderCopyTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "folder"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	newDocID := data["new_id"].(string)
 	attr, newDoc, err := getDocInfo(ctx.Context(), newDocID, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -637,6 +743,10 @@ func (a *AnyshareFolderRemoveTrigger) Run(ctx entity.ExecuteContext, params inte
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "folder"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	id := ctx.GetTaskID()
 	ctx.ShareData().Set(id, data)
 	ctx.Trace(ctx.Context(), "run end")
@@ -668,6 +778,10 @@ func (a *AnyshareFileReversionTrigger) Run(ctx entity.ExecuteContext, params int
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	docID := data["id"].(string)
 	attr, doc, err := getDocInfo(ctx.Context(), docID, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -714,6 +828,10 @@ func (a *AnyshareFileRestoreTrigger) Run(ctx entity.ExecuteContext, params inter
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	docID := data["id"].(string)
 	attr, doc, err := getDocInfo(ctx.Context(), docID, token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -760,6 +878,10 @@ func (a *AnyshareFileRenameTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	data["path"] = data["new_path"]
 	attr, doc, err := getDocInfo(ctx.Context(), data["id"].(string), token.Token, token.LoginIP, token.IsApp, ctx.NewASDoc())
 	if err != nil {
@@ -805,6 +927,10 @@ func (a *AnyshareFileDeleteTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := getTriggerVars(ctx)
+	data["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	id := ctx.GetTaskID()
 	ctx.ShareData().Set(id, data)
 	ctx.Trace(ctx.Context(), "run end")
@@ -835,6 +961,10 @@ func (a *AnyshareUserCreateTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
 	userInfo, err := usermgntAdaper.GetUserInfo(userID)
@@ -883,6 +1013,10 @@ func (a *AnyshareUserDeleteTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
 	data["id"] = userID
@@ -915,6 +1049,10 @@ func (a *AnyshareUserFreezeTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
 	data["id"] = userID
@@ -947,6 +1085,10 @@ func (a *AnyshareOrgNameModifyTrigger) Run(ctx entity.ExecuteContext, params int
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "department"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
 	_newName, _ := ctx.GetVar("new_name")
@@ -986,6 +1128,10 @@ func (a *AnyshareUserMovedTrigger) Run(ctx entity.ExecuteContext, params interfa
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
 	_newDeptPath, _ := ctx.GetVar("new_dept_path")
@@ -1026,6 +1172,10 @@ func (a *AnyshareDeptMovedTrigger) Run(ctx entity.ExecuteContext, params interfa
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "department"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	ID := _id.(string)
 	data["id"] = ID
@@ -1087,6 +1237,10 @@ func (a *AnyshareUserAddDeptTrigger) Run(ctx entity.ExecuteContext, params inter
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	deps := make([]map[string]interface{}, 0)
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
@@ -1134,6 +1288,10 @@ func (a *AnyshareUserRemoveDeptTrigger) Run(ctx entity.ExecuteContext, params in
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	deps := make([]map[string]interface{}, 0)
 	_id, _ := ctx.GetVar("id")
 	userID := _id.(string)
@@ -1181,6 +1339,10 @@ func (a *AnyshareDeptCreateTrigger) Run(ctx entity.ExecuteContext, params interf
 	usermgntAdaper := drivenadapters.NewUserManagement()
 
 	data := make(map[string]interface{})
+	data["_type"] = "department"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	ID := _id.(string)
 	_name, _ := ctx.GetVar("name")
@@ -1243,6 +1405,10 @@ func (a *AnyshareDeptDeleteTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "department"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	_id, _ := ctx.GetVar("id")
 	ID := _id.(string)
 	data["id"] = ID
@@ -1276,6 +1442,10 @@ func (a *AnyshareUserChangeTrigger) Run(ctx entity.ExecuteContext, params interf
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "user"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		data[key] = val
 		return false
@@ -1310,6 +1480,10 @@ func (a *AnyshareTagTreeCreateTrigger) Run(ctx entity.ExecuteContext, params int
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "tag"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		data[key] = val
 		return false
@@ -1344,6 +1518,10 @@ func (a *AnyshareTagTreeAddedTrigger) Run(ctx entity.ExecuteContext, params inte
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "tag"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		data[key] = val
 		return false
@@ -1378,6 +1556,10 @@ func (a *AnyshareTagTreeEditedTrigger) Run(ctx entity.ExecuteContext, params int
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "tag"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		data[key] = val
 		return false
@@ -1412,6 +1594,10 @@ func (a *AnyshareTagTreeDeletedTrigger) Run(ctx entity.ExecuteContext, params in
 
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	data := make(map[string]interface{})
+	data["_type"] = "tag"
+	defer func() {
+		patchDagInstanceSource(ctx, data, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		data[key] = val
 		return false
@@ -1450,6 +1636,10 @@ func (a AnyShareSelectedFileTrigger) Run(ctx entity.ExecuteContext, params inter
 	fields := make(map[string]interface{})
 	accessor := Accessor{}
 	var source map[string]interface{}
+	attr["_type"] = "file"
+	defer func() {
+		patchDagInstanceSource(ctx, attr, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		if key == "operator_id" {
 			accessor.ID = val
@@ -1464,6 +1654,10 @@ func (a AnyShareSelectedFileTrigger) Run(ctx entity.ExecuteContext, params inter
 		}
 		return false
 	})
+
+	if name, ok := source["name"]; ok {
+		attr["name"] = name
+	}
 
 	accessorBytes, _ := json.Marshal(accessor)
 
@@ -1500,6 +1694,10 @@ func (a AnyShareSelectedFolderTrigger) Run(ctx entity.ExecuteContext, params int
 	fields := make(map[string]interface{})
 	accessor := Accessor{}
 	var source map[string]interface{}
+	attr["_type"] = "folder"
+	defer func() {
+		patchDagInstanceSource(ctx, attr, a.Name())
+	}()
 	ctx.IterateVars(func(key, val string) (stop bool) {
 		if key == "operator_id" {
 			accessor.ID = val
@@ -1520,6 +1718,9 @@ func (a AnyShareSelectedFolderTrigger) Run(ctx entity.ExecuteContext, params int
 	attr["fields"] = fields
 	attr["accessor"] = string(accessorBytes)
 	attr["source"] = source
+	if name, ok := source["name"]; ok {
+		attr["name"] = name
+	}
 
 	id := ctx.GetTaskID()
 	ctx.ShareData().Set("source", source)
@@ -1543,7 +1744,7 @@ func (a *DataFlowDocTrigger) Name() string {
 
 // Run 操作方法 手动触发
 func (a *DataFlowDocTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew new parameter
@@ -1565,7 +1766,7 @@ func (a *DataFlowUserTrigger) Name() string {
 
 // Run 操作方法 手动触发
 func (a *DataFlowUserTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 // ParameterNew new parameter
@@ -1584,7 +1785,7 @@ func (a *DataFlowDeptTrigger) Name() string {
 }
 
 func (a *DataFlowDeptTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 func (a *DataFlowDeptTrigger) ParameterNew() interface{} {
@@ -1602,7 +1803,7 @@ func (a *DataFlowTagTrigger) Name() string {
 }
 
 func (a *DataFlowTagTrigger) Run(ctx entity.ExecuteContext, params interface{}, token *entity.Token) (interface{}, error) {
-	return triggerManual(ctx, params, token)
+	return triggerManual(ctx, params, token, a.Name())
 }
 
 func (a *DataFlowTagTrigger) ParameterNew() interface{} {
@@ -1642,9 +1843,9 @@ func (a *TriggerOperator) Run(ctx entity.ExecuteContext, params interface{}, tok
 	userInfo := &drivenadapters.UserInfo{}
 	if token != nil {
 		userInfo.UserID = token.UserID
-		userInfo.AccountType = "user"
+		userInfo.AccountType = common.User.ToString()
 		if token.IsApp {
-			userInfo.AccountType = "app"
+			userInfo.AccountType = common.APP.ToString()
 		}
 	}
 
@@ -1680,7 +1881,12 @@ func (a *TriggerOperator) Run(ctx entity.ExecuteContext, params interface{}, tok
 		return nil, err
 	}
 
-	result := map[string]any{"data": data}
+	result := map[string]interface{}{"data": data}
+	result["_type"] = "operator"
+	result["name"] = operator.Name
+	defer func() {
+		patchDagInstanceSource(ctx, result, a.Name())
+	}()
 	ctx.ShareData().Set(ctx.GetTaskID(), result)
 	return result, nil
 }

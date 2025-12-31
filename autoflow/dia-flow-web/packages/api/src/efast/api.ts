@@ -10993,7 +10993,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 无法复制到原位置的子目录下
          * @summary 复制目录协议
-         * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
          * @param {DirCopyReq} [dirCopyReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11703,7 +11702,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 复制文件协议
-         * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
          * @param {FileCopyReq} [fileCopyReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12055,6 +12053,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         *
          * @summary 上传大文件的分块完成协议
          * @param {FileOscompleteuploadReq} [fileOscompleteuploadReq] 
          * @param {*} [options] Override http request option.
@@ -13965,7 +13964,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 无法复制到原位置的子目录下
          * @summary 复制目录协议
-         * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
          * @param {DirCopyReq} [dirCopyReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -14247,7 +14245,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 复制文件协议
-         * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
          * @param {FileCopyReq} [fileCopyReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -14385,6 +14382,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             };
         },
         /**
+         *
          * @summary 上传大文件的分块完成协议
          * @param {FileOscompleteuploadReq} [fileOscompleteuploadReq] 
          * @param {*} [options] Override http request option.
@@ -14398,7 +14396,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             };
         },
         /**
-         *@summary 下载文件协议
+         * @summary 下载文件协议
          * @param {FileOsdownloadReq} [fileOsdownloadReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -15405,7 +15403,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 无法复制到原位置的子目录下
          * @summary 复制目录协议
-         * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
          * @param {DirCopyReq} [dirCopyReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -15607,7 +15604,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 复制文件协议
-         * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
          * @param {FileCopyReq} [fileCopyReq] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -15705,6 +15701,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return DefaultApiFp(configuration).efastV1FileOsbeginuploadPost(fileOsbeginuploadReq, options)(axios, basePath);
         },
         /**
+         *
          * @summary 上传大文件的分块完成协议
          * @param {FileOscompleteuploadReq} [fileOscompleteuploadReq] 
          * @param {*} [options] Override http request option.
@@ -16738,7 +16735,6 @@ export class DefaultApi extends BaseAPI {
     /**
      * 无法复制到原位置的子目录下
      * @summary 复制目录协议
-     * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
      * @param {DirCopyReq} [dirCopyReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -16980,7 +16976,6 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 复制文件协议
-     * @param {string} [xASAuthorization] 扩展token，仅在拷贝匿名共享数据时需要增加此报头，value为匿名账户的token，token类型为Bearer Token。
      * @param {FileCopyReq} [fileCopyReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -17098,6 +17093,7 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     *
      * @summary 上传大文件的分块完成协议
      * @param {FileOscompleteuploadReq} [fileOscompleteuploadReq] 
      * @param {*} [options] Override http request option.

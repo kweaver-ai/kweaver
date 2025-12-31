@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	libmq "devops.aishu.cn/AISHUDevOps/DIP/_git/mdl-go-lib/mq"
 	. "github.com/agiledragon/gomonkey/v2"
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/ast"
@@ -26,7 +27,7 @@ func NewTestTask(mockCtl *gomock.Controller, mqMock interfaces.MQAccess,
 
 	taskTest := &Task{
 		appSetting: &common.AppSetting{
-			KafkaSetting: common.KafkaSetting{
+			MQSetting: libmq.MQSetting{
 				Tenant: "default",
 			},
 		},

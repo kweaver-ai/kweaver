@@ -48,13 +48,14 @@ import { VariableEditorModal } from "../../extensions/ai/variable-editor-modal";
 
 export const FormItem: FC<FormItemProps> = ({
   allowVariable,
+  allowOperator,
   name,
   className,
   ...props
 }) => {
   if (name !== undefined && allowVariable) {
     return (
-      <FormItemWithVariable name={name} className={className} {...props} />
+      <FormItemWithVariable name={name} className={className} {...props} allowOperator={allowOperator} />
     );
   }
   return (
@@ -69,6 +70,7 @@ export const FormItem: FC<FormItemProps> = ({
 interface FormItemProps extends AntFormItemProps {
   type?: string | string[];
   allowVariable?: boolean;
+  allowOperator?: string[];
 }
 
 export const FormItemWithVariable: FC<FormItemProps & { name: NamePath }> = ({
@@ -79,6 +81,7 @@ export const FormItemWithVariable: FC<FormItemProps & { name: NamePath }> = ({
   extra,
   className,
   rules,
+  allowOperator,
   ...props
 }) => {
   const { step } = useContext(StepConfigContext);
@@ -208,7 +211,7 @@ export const FormItemWithVariable: FC<FormItemProps & { name: NamePath }> = ({
               const targetRect = ref.current?.getBoundingClientRect();
               pickVariable((step && stepNodes[step.id]?.path) || [], type, {
                 targetRect,
-              })
+              }, allowOperator)
                 .then((value) => {
                   form.setFieldValue(namepath, `{{${value}}}`);
                   form.validateFields([namepath]);

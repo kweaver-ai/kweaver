@@ -294,13 +294,14 @@ func (wService *WorkerService) reloadWorker(ctx context.Context, pipeline *inter
 	}
 
 	// 更新任务的时候，任务状态不变
-	if pipeline.PipelineStatus == wService.pipelineInfo.PipelineStatus {
+	switch pipeline.PipelineStatus {
+	case wService.pipelineInfo.PipelineStatus:
 		return wService.updateWorker(ctx, pipeline)
-	} else if pipeline.PipelineStatus == interfaces.PipelineStatus_Running {
+	case interfaces.PipelineStatus_Running:
 		return wService.resumeWorker(ctx, wService.worker)
-	} else if pipeline.PipelineStatus == interfaces.PipelineStatus_Close {
+	case interfaces.PipelineStatus_Close:
 		return wService.pauseWorker(ctx, wService.pipelineID)
-	} else {
+	default:
 		return nil
 	}
 }
@@ -358,7 +359,7 @@ func (wService *WorkerService) updatePipelineStatus(ctx context.Context, pipelin
 
 		pipeline.PipelineStatus = interfaces.PipelineStatus_Error
 		pipeline.PipelineStatusDetails = details
-		return fmt.Errorf("Failed to update the worker's status and details in DB, " + err.Error())
+		return fmt.Errorf("failed to update the worker's status and details in DB, %w", err)
 	}
 
 	pipeline.PipelineStatus = status

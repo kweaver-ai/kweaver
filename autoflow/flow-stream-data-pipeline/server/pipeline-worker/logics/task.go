@@ -114,7 +114,7 @@ func (t *Task) CloseProducer(kp *interfaces.KafkaProducer) {
 }
 
 func (t *Task) Execute(ctx context.Context) error {
-	groupID := ComsumerGroupID(t.appSetting.KafkaSetting.Tenant, t.pipelineID)
+	groupID := ComsumerGroupID(t.appSetting.MQSetting.Tenant, t.pipelineID)
 	c, err := t.mqAccess.NewConsumer(groupID)
 	if err != nil {
 		logger.Errorf("task failed to NewConsumer: %v", err)
@@ -358,7 +358,7 @@ func (t *Task) PackagingOSMessage(msg *kafka.Message) (*osutil.BulkIndexerItem, 
 	if t.useIndexBaseInData {
 		indexAlias = fmt.Sprintf("mdl-%s", base_type)
 		// 重置 output topic
-		t.outputTopic = fmt.Sprintf(interfaces.TopicOutputName, t.appSetting.KafkaSetting.Tenant, base_type)
+		t.outputTopic = fmt.Sprintf(interfaces.TopicOutputName, t.appSetting.MQSetting.Tenant, base_type)
 	} else {
 		indexAlias = fmt.Sprintf("mdl-%s", t.IndexBaseInfo.BaseType)
 	}

@@ -253,7 +253,7 @@ func (m *mqHandler) handleUserInfoNotify(topic string) func(message []byte) erro
 			return nil
 		}
 
-		if topic == common.TopicNameModify && msg.Type == "user" {
+		if topic == common.TopicNameModify && msg.Type == common.User.ToString() {
 			m.admin.UpdateAdmin(ctx, msg.ID, msg.NewName)
 		}
 
@@ -891,7 +891,7 @@ func (m *mqHandler) handleContentPipelineDocFormatConvertResult(message []byte) 
 	log := traceLog.WithContext(ctx)
 	log.Warnf("[handleContentPipelineDocFormatConvertResult] message: %s", string(message))
 
-	var result ContentPipelineResult[string, string]
+	var result ContentPipelineResult[string, any]
 
 	err = json.Unmarshal(message, &result)
 
@@ -900,7 +900,9 @@ func (m *mqHandler) handleContentPipelineDocFormatConvertResult(message []byte) 
 		return err
 	}
 
-	if !strings.HasPrefix(result.Job.Passback, "automation:") {
+	ossPath, ok := result.Result.Value.(string)
+
+	if !strings.HasPrefix(result.Job.Passback, "automation:") || !ok {
 		return nil
 	}
 
@@ -938,7 +940,7 @@ func (m *mqHandler) handleContentPipelineDocFormatConvertResult(message []byte) 
 	} else {
 		og := drivenadapters.NewOssGateWay()
 		servicePrefix := false
-		parts := strings.SplitN(result.Result.Value, "/", 2)
+		parts := strings.SplitN(ossPath, "/", 2)
 		ossID, objectKey := parts[0], parts[1]
 		reader := og.NewReader(ossID, objectKey, drivenadapters.OssOpt{StoragePrifix: &servicePrefix})
 		taskResult["url"], _ = reader.Url(ctx)

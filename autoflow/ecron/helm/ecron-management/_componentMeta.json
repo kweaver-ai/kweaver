@@ -95,7 +95,7 @@
     },
     "dependence": [
         {
-            "name": "dip-dataflow-dm-pre"
+            "name": "dataflow-dm-pre"
         },
         {
             "name": "rds"

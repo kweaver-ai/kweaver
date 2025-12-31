@@ -29,14 +29,17 @@ func (h *OperatorsRESTHandler) execute(c *gin.Context) {
 	bytes, _ := io.ReadAll(c.Request.Body)
 
 	data := make(map[string]interface{})
-	err := json.Unmarshal(bytes, &data)
 
-	if err != nil {
-		errors.ReplyError(c, liberrors.NewPublicRestError(ctx,
-			liberrors.PErrorBadRequest,
-			liberrors.PErrorBadRequest,
-			err.Error()))
-		return
+	if len(bytes) > 0 {
+		err := json.Unmarshal(bytes, &data)
+
+		if err != nil {
+			errors.ReplyError(c, liberrors.NewPublicRestError(ctx,
+				liberrors.PErrorBadRequest,
+				liberrors.PErrorBadRequest,
+				err.Error()))
+			return
+		}
 	}
 
 	dagIns, vmIns, err := h.mgnt.RunOperator(ctx, dagID, data, callback, callback, parentDagInsID, userInfo)

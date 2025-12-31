@@ -212,9 +212,9 @@ func (a *alarm) ModifyAlarmRule(ctx context.Context, task *AlarmTask) (string, e
 
 	for _, val := range task.AlertUsers {
 		switch val.Type {
-		case "group":
+		case common.Group.ToString():
 			groupIDs = append(groupIDs, val.ID)
-		case "user":
+		case common.User.ToString():
 			userIDs = append(userIDs, val.ID)
 		}
 	}
@@ -233,7 +233,7 @@ func (a *alarm) ModifyAlarmRule(ctx context.Context, task *AlarmTask) (string, e
 		traceLog.WithContext(ctx).Warnf("[logic.CreateAlarmRule] BatchGetNames err, detail: %s", err.Error())
 		return task.RuleID, err
 	}
-	nameMap := namesInfo.ToMap("user", "group")
+	nameMap := namesInfo.ToMap(common.User.ToString(), common.Group.ToString())
 
 	var DBAlarmTasks []*rds.AlarmRule
 	var DBAlarmUsers []*rds.AlarmUser
@@ -667,7 +667,7 @@ func (a *alarm) ListUserMail(ctx context.Context, alertUsers []*AlertUser) ([]st
 	var groupIDs, userIDs []string
 	var err error
 	for _, alterUser := range alertUsers {
-		if alterUser.Type == "group" {
+		if alterUser.Type == common.Group.ToString() {
 			groupIDs = append(groupIDs, alterUser.ID)
 		} else {
 			userIDs = append(userIDs, alterUser.ID)

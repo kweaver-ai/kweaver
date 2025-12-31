@@ -409,7 +409,7 @@ func (e *ExecutorHandlerImpl) CreateExecutor(ctx context.Context, dto ExecutorDt
 			"name":    *executor.Name,
 			"creator": userInfo.UserID,
 		}
-		userInfo.Type = "user"
+		userInfo.Type = common.User.ToString()
 
 		writer := &drivenadapters.JSONLogWriter{SendFunc: e.executeMethods.Publish}
 		e.logger.Log(drivenadapters.LogTypeASOperationLog, &drivenadapters.BuildARLogParams{
@@ -632,7 +632,7 @@ func (e *ExecutorHandlerImpl) GetExecutor(ctx context.Context, id uint64, userIn
 	}
 	executor.Actions = actions
 
-	accessorMap := map[string]drivenadapters.AccessorType{*executor.CreatorID: drivenadapters.User}
+	accessorMap := map[string]string{*executor.CreatorID: common.User.ToString()}
 
 	if executor.Accessors != nil {
 		for _, accessor := range executor.Accessors {
@@ -1051,10 +1051,10 @@ func (e *ExecutorHandlerImpl) executorModelToDto(models []*rds.ExecutorModel) ([
 		return executors, nil
 	}
 
-	accessorMap := make(map[string]drivenadapters.AccessorType, 0)
+	accessorMap := make(map[string]string, 0)
 
 	for _, model := range models {
-		accessorMap[*model.CreatorID] = drivenadapters.User
+		accessorMap[*model.CreatorID] = common.User.ToString()
 
 		if model.Accessors != nil {
 			for _, accessor := range model.Accessors {

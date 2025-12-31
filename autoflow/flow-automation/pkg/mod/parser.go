@@ -309,8 +309,29 @@ func (p *DefParser) InitialDagIns(ctx context.Context, dagIns *entity.DagInstanc
 		case TreeStatusBlocked:
 			tree.DagIns.Block(fmt.Sprintf("initial blocked because task ins[%s]", taskInsId))
 		case TreeStatusFailed:
-			tree.DagIns.Fail(fmt.Sprintf("initial failed because task ins[%s]", taskInsId))
-			p.handleDagInsResult(dagIns)
+			{
+				var taskIns *entity.TaskInstance
+				for _, t := range tasks {
+					if t.ID == taskInsId {
+						taskIns = t
+						break
+					}
+				}
+
+				if taskIns != nil {
+					tree.DagIns.FailDetail(map[string]any{
+						"taskId":     taskIns.TaskID,
+						"name":       taskIns.Name,
+						"actionName": taskIns.ActionName,
+						"detail":     "initial failed",
+					})
+				} else {
+					tree.DagIns.FailDetail(map[string]any{
+						"detail": "initial failed",
+					})
+				}
+				p.handleDagInsResult(dagIns)
+			}
 		default:
 			log.Warn("initial a dag which has no executable tasks",
 				utils.LogKeyDagInsID, dagIns.ID)
@@ -318,8 +339,9 @@ func (p *DefParser) InitialDagIns(ctx context.Context, dagIns *entity.DagInstanc
 		}
 
 		if err := GetStore().PatchDagIns(ctx, &entity.DagInstance{
-			BaseInfo: entity.BaseInfo{ID: dagIns.ID},
-			Status:   dagIns.Status}); err != nil {
+			BaseInfo:         entity.BaseInfo{ID: dagIns.ID},
+			EventPersistence: dagIns.EventPersistence,
+			Status:           dagIns.Status}); err != nil {
 			log.Errorf("patch dag instance[%s] failed: %s", dagIns.ID, err)
 			return
 		}
@@ -330,6 +352,10 @@ func (p *DefParser) InitialDagIns(ctx context.Context, dagIns *entity.DagInstanc
 					dErr := GetStore().DeleteTaskInsByDagInsID(ctx, dagIns.ID)
 					if dErr != nil {
 						log.Warnf("run success, delete task instance failed: %s", dErr.Error())
+					}
+
+					if tree.DagIns.EventPersistence == entity.DagInstanceEventPersistenceSql {
+						_ = UploadDagInstanceEvents(context.Background(), tree.DagIns)
 					}
 				}
 				dag, err := GetStore().GetDagWithOptionalVersion(ctx, dagIns.DagID, dagIns.VersionID)
@@ -494,7 +520,12 @@ func (p *DefParser) executeNext(taskIns *entity.TaskInstance) error {
 				tree.DagIns.Success()
 				p.handleDagInsResult(tree.DagIns)
 			} else {
-				tree.DagIns.Fail(fmt.Sprintf("task [%s] return failed ", taskIns.ID))
+				tree.DagIns.FailDetail(map[string]any{
+					"taskId":     taskIns.TaskID,
+					"name":       taskIns.Name,
+					"actionName": taskIns.ActionName,
+					"detail":     "return failed",
+				})
 				p.handleDagInsResult(tree.DagIns)
 			}
 		} else {
@@ -503,7 +534,12 @@ func (p *DefParser) executeNext(taskIns *entity.TaskInstance) error {
 			case TreeStatusRunning:
 				return nil
 			case TreeStatusFailed:
-				tree.DagIns.Fail(fmt.Sprintf("task[%s] failed or canceled", taskId))
+				tree.DagIns.FailDetail(map[string]any{
+					"taskId":     taskIns.TaskID,
+					"name":       taskIns.Name,
+					"actionName": taskIns.ActionName,
+					"detail":     taskIns.Reason,
+				})
 				p.handleDagInsResult(tree.DagIns)
 			case TreeStatusBlocked:
 				tree.DagIns.Block(fmt.Sprintf("task[%s] blocked", taskId))
@@ -526,10 +562,11 @@ func (p *DefParser) executeNext(taskIns *entity.TaskInstance) error {
 		// tree has already completed, delete from map
 		p.taskTrees.Delete(taskIns.DagInsID)
 		if err := GetStore().PatchDagIns(ctx, &entity.DagInstance{
-			BaseInfo: entity.BaseInfo{ID: tree.DagIns.ID},
-			Status:   status,
-			Reason:   tree.DagIns.Reason,
-			EndedAt:  tree.DagIns.EndedAt,
+			BaseInfo:         entity.BaseInfo{ID: tree.DagIns.ID},
+			Status:           status,
+			EventPersistence: tree.DagIns.EventPersistence,
+			Reason:           tree.DagIns.Reason,
+			EndedAt:          tree.DagIns.EndedAt,
 		}); err != nil {
 			return err
 		}
@@ -541,6 +578,10 @@ func (p *DefParser) executeNext(taskIns *entity.TaskInstance) error {
 					dErr := GetStore().DeleteTaskInsByDagInsID(ctx, tree.DagIns.ID)
 					if dErr != nil {
 						log.Warnf("run success,delete task instance failed: %s", dErr.Error())
+					}
+
+					if tree.DagIns.EventPersistence == entity.DagInstanceEventPersistenceSql {
+						_ = UploadDagInstanceEvents(context.Background(), tree.DagIns)
 					}
 				}
 				dag, err := GetStore().GetDagWithOptionalVersion(ctx, tree.DagIns.DagID, tree.DagIns.VersionID)
@@ -701,7 +742,10 @@ func (p *DefParser) cancelChildTasks(ctx context.Context, tree *TaskTree, ids []
 	if !tree.DagIns.CanModifyStatus() {
 		return nil
 	}
-	tree.DagIns.Fail(fmt.Sprintf("task instance[%s] canceled", strings.Join(ids, ",")))
+	tree.DagIns.FailDetail(map[string]any{
+		"detail": fmt.Sprintf("task instance[%s] canceled", strings.Join(ids, ",")),
+	})
+
 	p.handleDagInsResult(tree.DagIns)
 	if err := tree.DagIns.SaveExtData(context.Background()); err != nil {
 		return err
@@ -825,9 +869,10 @@ func (p *DefParser) parseScheduleDagIns(ctx context.Context, dagIns *entity.DagI
 		dagIns.Run()
 
 		if err := GetStore().PatchDagIns(ctx, &entity.DagInstance{
-			BaseInfo: dagIns.BaseInfo,
-			Status:   dagIns.Status,
-			Reason:   dagIns.Reason,
+			BaseInfo:         dagIns.BaseInfo,
+			Status:           dagIns.Status,
+			EventPersistence: dagIns.EventPersistence,
+			Reason:           dagIns.Reason,
 		}, "Reason"); err != nil {
 			return err
 		}
@@ -876,10 +921,11 @@ func (p *DefParser) parseCmd(dagIns *entity.DagInstance) (err error) {
 
 		dagIns.Cmd = nil
 		if err := GetStore().PatchDagIns(context.TODO(), &entity.DagInstance{
-			BaseInfo: dagIns.BaseInfo,
-			Status:   dagIns.Status,
-			Cmd:      dagIns.Cmd,
-			Reason:   dagIns.Reason,
+			BaseInfo:         dagIns.BaseInfo,
+			Status:           dagIns.Status,
+			EventPersistence: dagIns.EventPersistence,
+			Cmd:              dagIns.Cmd,
+			Reason:           dagIns.Reason,
 		}, "Cmd", "Reason"); err != nil {
 			return err
 		}

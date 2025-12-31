@@ -56,7 +56,7 @@ func NewRESTHandler() RESTHandler {
 func (h *restHandler) RegisterAPI(engine *gin.RouterGroup) {
 	// engine.GET("/trigger", h.trigger)
 	// engine.POST("/trigger/kc-userinfo", h.kcInfoTrigger)
-	engine.POST("/trigger/cron/:id", middleware.TokenAuth(), middleware.SaveAppToken(), middleware.CheckBizDomainID(), h.cronTriggerManual)
+	engine.POST("/trigger/cron/:id", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.cronTriggerManual)
 }
 
 // 注册内部API

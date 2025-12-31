@@ -31,7 +31,7 @@ import {
 } from "react";
 import { ExtensionContext, ExtensionProvider } from "../components/extension-provider";
 import { OemConfigProvider } from "../components/oem-provider";
-import { Layout } from "antd";
+import { Layout, message } from "antd";
 import { useHandleErrReq } from "../utils/hooks";
 import { Position } from "react-scaleable";
 import { StrategyMode } from "../extensions/workflow/approval-executor-action";
@@ -249,6 +249,11 @@ function render(props?: any) {
     const microWidgetProps = props?.microWidgetProps
         ? props?.microWidgetProps
         : props;
+
+    message.config({
+      getContainer: () => props?.container || document.body,
+    });
+    
     ReactDOM.render(
         <MicroAppProvider
             microWidgetProps={microWidgetProps}

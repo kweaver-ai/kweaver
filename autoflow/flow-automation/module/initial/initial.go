@@ -288,6 +288,7 @@ func Init(opt *InitialOption) error {
 		&actions.CallAgent{},
 		&actions.EcoconfigReindex{},
 		&actions.Assign{},
+		&actions.Define{},
 		&actions.Loop{},
 		&actions.MDLDataViewTrigger{},
 		&actions.OpenSearchBulkUpsert{},

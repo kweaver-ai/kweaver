@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/errors"
 	commonLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/log"
 	"github.com/go-playground/assert/v2"
@@ -211,12 +212,12 @@ func TestGetNameByAccessorIDs(t *testing.T) {
 	httpClient := NewHttpClientMock(t)
 	userManagement := NewMockUserManagement(httpClient)
 
-	accessorIDs := map[string]AccessorType{
-		"accessor_id1": User,
-		"accessor_id2": Group,
-		"accessor_id3": Contactor,
-		"accessor_id4": Department,
-		"accessor_id5": User,
+	accessorIDs := map[string]string{
+		"accessor_id1": common.User.ToString(),
+		"accessor_id2": common.Group.ToString(),
+		"accessor_id3": common.Contactor.ToString(),
+		"accessor_id4": common.Department.ToString(),
+		"accessor_id5": common.User.ToString(),
 	}
 
 	Convey("TestGetNameByAccessorIDs", t, func() {

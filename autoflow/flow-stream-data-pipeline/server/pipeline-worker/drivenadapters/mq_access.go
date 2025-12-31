@@ -155,32 +155,22 @@ func (kAccess *mqAccess) DoProduceAndCommit(kp *interfaces.KafkaProducer, c *kaf
 // 创建消费者
 func (kAccess *mqAccess) NewConsumer(groupID string) (*kafka.Consumer, error) {
 	consumerConfig := kafka.ConfigMap{
-		"bootstrap.servers":        kAccess.appSetting.KafkaSetting.Services,
-		"security.protocol":        kAccess.appSetting.KafkaSetting.Protocol,
-		"group.id":                 groupID,
-		"enable.auto.commit":       false,
-		"auto.offset.reset":        kAccess.appSetting.KafkaSetting.AutoOffsetReset,
-		"isolation.level":          "read_committed",
-		"session.timeout.ms":       kAccess.appSetting.KafkaSetting.SessionTimeoutMs,
-		"socket.timeout.ms":        kAccess.appSetting.KafkaSetting.SocketTimeoutMs,
-		"socket.keepalive.enable":  true,
-		"heartbeat.interval.ms":    kAccess.appSetting.KafkaSetting.HeartbeatIntervalMs,
-		"max.poll.interval.ms":     kAccess.appSetting.KafkaSetting.MaxPollIntervalMs,
-		"allow.auto.create.topics": false,
-	}
-	// SASL
-	if kAccess.appSetting.KafkaSetting.Protocol == "sasl_plaintext" ||
-		kAccess.appSetting.KafkaSetting.Protocol == "sasl_ssl" {
-
-		consumerConfig["sasl.mechanism"] = "PLAIN"
-		consumerConfig["sasl.username"] = kAccess.appSetting.KafkaSetting.Username
-		consumerConfig["sasl.password"] = kAccess.appSetting.KafkaSetting.Password
-	}
-	// SSL
-	if kAccess.appSetting.KafkaSetting.Protocol == "ssl" ||
-		kAccess.appSetting.KafkaSetting.Protocol == "sasl_ssl" {
-
-		consumerConfig["enable.ssl.certificate.verification"] = false
+		"bootstrap.servers":                   fmt.Sprintf("%s:%d", kAccess.appSetting.MQSetting.MQHost, kAccess.appSetting.MQSetting.MQPort),
+		"security.protocol":                   "sasl_plaintext",
+		"group.id":                            groupID,
+		"enable.auto.commit":                  false,
+		"auto.offset.reset":                   kAccess.appSetting.KafkaSetting.AutoOffsetReset,
+		"isolation.level":                     "read_committed",
+		"session.timeout.ms":                  kAccess.appSetting.KafkaSetting.SessionTimeoutMs,
+		"socket.timeout.ms":                   kAccess.appSetting.KafkaSetting.SocketTimeoutMs,
+		"socket.keepalive.enable":             true,
+		"heartbeat.interval.ms":               kAccess.appSetting.KafkaSetting.HeartbeatIntervalMs,
+		"max.poll.interval.ms":                kAccess.appSetting.KafkaSetting.MaxPollIntervalMs,
+		"allow.auto.create.topics":            false,
+		"sasl.mechanism":                      kAccess.appSetting.MQSetting.Auth.Mechanism,
+		"sasl.username":                       kAccess.appSetting.MQSetting.Auth.Username,
+		"sasl.password":                       kAccess.appSetting.MQSetting.Auth.Password,
+		"enable.ssl.certificate.verification": false,
 	}
 
 	c, err := kafka.NewConsumer(&consumerConfig)
@@ -189,7 +179,7 @@ func (kAccess *mqAccess) NewConsumer(groupID string) (*kafka.Consumer, error) {
 		return nil, err
 	}
 
-	logger.Debugf("Create %s consumer %v on cluster %s", groupID, c, kAccess.appSetting.KafkaSetting.Services)
+	logger.Debugf("Create %s consumer %v on cluster %s", groupID, c, kAccess.appSetting.MQSetting.MQHost)
 
 	return c, nil
 }
@@ -198,8 +188,8 @@ func (kAccess *mqAccess) NewConsumer(groupID string) (*kafka.Consumer, error) {
 func (kAccess *mqAccess) NewTransactionalProducer(txId string) (*kafka.Producer, error) {
 	producerConfig := kafka.ConfigMap{
 		"client.id":                             txId,
-		"bootstrap.servers":                     kAccess.appSetting.KafkaSetting.Services,
-		"security.protocol":                     kAccess.appSetting.KafkaSetting.Protocol,
+		"bootstrap.servers":                     fmt.Sprintf("%s:%d", kAccess.appSetting.MQSetting.MQHost, kAccess.appSetting.MQSetting.MQPort),
+		"security.protocol":                     "sasl_plaintext",
 		"acks":                                  "all",
 		"transactional.id":                      txId,
 		"enable.idempotence":                    true,
@@ -210,21 +200,10 @@ func (kAccess *mqAccess) NewTransactionalProducer(txId string) (*kafka.Producer,
 		"transaction.timeout.ms":                kAccess.appSetting.KafkaSetting.TransactionTimeoutMs,
 		"socket.keepalive.enable":               true,
 		"allow.auto.create.topics":              false,
-	}
-
-	// SASL
-	if kAccess.appSetting.KafkaSetting.Protocol == "sasl_plaintext" ||
-		kAccess.appSetting.KafkaSetting.Protocol == "sasl_ssl" {
-
-		producerConfig["sasl.mechanism"] = "PLAIN"
-		producerConfig["sasl.username"] = kAccess.appSetting.KafkaSetting.Username
-		producerConfig["sasl.password"] = kAccess.appSetting.KafkaSetting.Password
-	}
-	// SSL
-	if kAccess.appSetting.KafkaSetting.Protocol == "ssl" ||
-		kAccess.appSetting.KafkaSetting.Protocol == "sasl_ssl" {
-
-		producerConfig["enable.ssl.certificate.verification"] = false
+		"sasl.mechanism":                        kAccess.appSetting.MQSetting.Auth.Mechanism,
+		"sasl.username":                         kAccess.appSetting.MQSetting.Auth.Username,
+		"sasl.password":                         kAccess.appSetting.MQSetting.Auth.Password,
+		"enable.ssl.certificate.verification":   false,
 	}
 
 	p, err := kafka.NewProducer(&producerConfig)
@@ -249,7 +228,7 @@ func (kAccess *mqAccess) NewTransactionalProducer(txId string) (*kafka.Producer,
 		}
 	}()
 
-	logger.Debugf("Create %s producer %v on cluster %s", txId, p, kAccess.appSetting.KafkaSetting.Services)
+	logger.Debugf("Create %s producer %v on cluster %s", txId, p, kAccess.appSetting.MQSetting.MQHost)
 	return p, nil
 }
 

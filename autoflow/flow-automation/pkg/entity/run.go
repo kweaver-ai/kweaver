@@ -15,10 +15,13 @@ type PushMessage func(topic string, message []byte) error
 // GetDag query dag info
 type GetDag func(ctx context.Context, id, versionID string) (*Dag, error)
 
+type PatchDagIns func(ctx context.Context, dagIns *DagInstance, mustsPatchFields ...string) error
+
 // ExecuteMethods 自定义方法结构体，用于外部方法注入
 type ExecuteMethods struct {
-	Publish PushMessage
-	GetDag  GetDag
+	Publish     PushMessage
+	GetDag      GetDag
+	PatchDagIns PatchDagIns
 }
 
 // NewDefExecuteContext

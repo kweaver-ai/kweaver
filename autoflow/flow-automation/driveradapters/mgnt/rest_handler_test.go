@@ -592,7 +592,7 @@ func TestRunFormInstance(t *testing.T) {
 
 	dep.hydraAdmin.EXPECT().Introspect(gomock.All(), gomock.All()).AnyTimes().Return(userInfo, nil)
 	dep.userMgnt.EXPECT().GetUserInfo(gomock.Any()).AnyTimes().Return(userDetail, nil)
-	dep.mgnt.EXPECT().RunFormInstance(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(errors.New("internal error"))
+	dep.mgnt.EXPECT().RunFormInstance(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return("dagInsID", errors.New("internal error"))
 	req = httptest.NewRequest(http.MethodPost, "/api/automation/v1/run-instance-form/dagId", bytes.NewReader(paramsByte))
 	resp = httptest.NewRecorder()
 	engine.ServeHTTP(resp, req)
@@ -600,7 +600,7 @@ func TestRunFormInstance(t *testing.T) {
 
 	// runinstance success
 	dep.hydraAdmin.EXPECT().Introspect(gomock.All(), gomock.All()).AnyTimes().Return(userInfo, nil)
-	dep.mgnt.EXPECT().RunFormInstance(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	dep.mgnt.EXPECT().RunFormInstance(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return("dagInsID", nil)
 	req = httptest.NewRequest(http.MethodPost, "/api/automation/v1/run-instance-form/dagId", bytes.NewReader(paramsByte))
 	resp = httptest.NewRecorder()
 	engine.ServeHTTP(resp, req)

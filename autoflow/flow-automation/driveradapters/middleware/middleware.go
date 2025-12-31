@@ -8,8 +8,6 @@ import (
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/drivenadapters"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/errors"
-	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
-	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/mod"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/utils"
 	ierr "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/errors"
 	commonLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/log"
@@ -63,13 +61,13 @@ func TokenAuth() gin.HandlerFunc {
 		userInfo.LoginIP = res.LoginIP
 		userInfo.UserID = res.UserID
 		userInfo.ClientType = res.ClientType
-		userInfo.AccountType = "user"
+		userInfo.AccountType = common.User.ToString()
 		userInfo.ExpiresIn = res.ExpiresIn
 
 		// 应用账户调用ClientID与UserID相同
 		if res.ClientID == res.UserID {
-			userInfo.AccountType = "app"
-			userInfo.VisitorType = common.AppUserType
+			userInfo.AccountType = common.APP.ToString()
+			userInfo.VisitorType = common.APP.ToString()
 			c.Set("user", userInfo)
 			c.Next()
 			return
@@ -173,77 +171,6 @@ func CheckExecutorWhiteList(appstore drivenadapters.Appstore) gin.HandlerFunc {
 	}
 }
 
-// SaveAppToken 应用账户token
-func SaveAppToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user, ok := c.Get("user")
-		if !ok {
-			c.JSON(http.StatusInternalServerError, errors.NewIError(errors.InternalError, "", map[string]string{"err": "userinfo not exist"}))
-			c.Abort()
-			return
-		}
-		userInfo := user.(*drivenadapters.UserInfo)
-		if userInfo.AccountType != "app" {
-			c.Next()
-			return
-		}
-
-		tokenID := strings.TrimPrefix(userInfo.TokenID, "Bearer ")
-
-		store := mod.GetStore()
-
-		tokenInfo, err := store.GetTokenByUserID(userInfo.UserID)
-		if err != nil {
-			logger.Warnf("[saveAppToken] get token err, detail: %s", err.Error())
-			c.JSON(http.StatusInternalServerError, errors.NewIError(errors.InternalError, "", nil))
-			c.Abort()
-			return
-		}
-
-		if tokenInfo.UserID == "" {
-			appInfo, err := userManagement.GetAppAccountInfo(userInfo.UserID)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, errors.NewIError(errors.InternalError, "", map[string]string{"err": err.Error()}))
-				c.Abort()
-				return
-			}
-
-			tokenInfo = &entity.Token{
-				UserID:    userInfo.UserID,
-				UserName:  appInfo.Name,
-				Token:     tokenID,
-				ExpiresIn: int(userInfo.ExpiresIn),
-				IsApp:     true,
-			}
-			tokenInfo.Initial()
-
-			err = store.CreateToken(tokenInfo)
-			if err != nil {
-				logger.Warnf("[saveAppToken] create token err, detail: %s", err.Error())
-				c.JSON(http.StatusInternalServerError, errors.NewIError(errors.InternalError, "", nil))
-				c.Abort()
-				return
-			}
-		} else {
-			if tokenInfo.Token != tokenID {
-				tokenInfo.Token = tokenID
-				tokenInfo.ExpiresIn = int(userInfo.ExpiresIn)
-				tokenInfo.Update()
-
-				err = store.UpdateToken(tokenInfo)
-				if err != nil {
-					logger.Warnf("[saveAppToken] update token err, detail: %s", err.Error())
-					c.JSON(http.StatusInternalServerError, errors.NewIError(errors.InternalError, "", nil))
-					c.Abort()
-					return
-				}
-			}
-		}
-
-		c.Next()
-	}
-}
-
 // CheckBizDomainID checks if the request header contains a valid X-Business-Domain
 // It will return a 400 error if the header is empty or missing.
 func CheckBizDomainID() gin.HandlerFunc {
@@ -256,6 +183,25 @@ func CheckBizDomainID() gin.HandlerFunc {
 		}
 
 		c.Set("bizDomainID", bizDomainID)
+		c.Next()
+	}
+}
+
+// CheckIsApp 检查用户是否为应用账户，如果为应用账户禁止创建数据流和工作流
+func CheckIsApp() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, ok := c.Get("user")
+		if !ok {
+			c.JSON(http.StatusInternalServerError, errors.NewIError(errors.InternalError, "", map[string]string{"err": "userinfo not exist"}))
+			c.Abort()
+			return
+		}
+		userInfo := user.(*drivenadapters.UserInfo)
+		if userInfo.AccountType == common.APP.ToString() {
+			c.JSON(http.StatusForbidden, errors.NewIError(errors.NoPermission, "", map[string]string{"user": userInfo.UserID, "type": common.APP.ToString()}))
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }

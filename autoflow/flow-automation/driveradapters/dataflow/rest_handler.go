@@ -52,7 +52,7 @@ func NewRESTHandler() RESTHandler {
 
 // RegisterAPI 注册API
 func (h *DataFlowHandler) RegisterAPI(engine *gin.RouterGroup) {
-	engine.POST("/flow", middleware.TokenAuth(), middleware.SaveAppToken(), middleware.CheckBizDomainID(), h.create)
+	engine.POST("/flow", middleware.TokenAuth(), middleware.CheckIsApp(), middleware.CheckBizDomainID(), h.create)
 	engine.PUT("/flow/:id", middleware.TokenAuth(), h.update)
 	engine.DELETE("/flow/:id", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.delete)
 }

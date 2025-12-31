@@ -119,8 +119,8 @@ func (pmService *pipelineMgmtService) CreatePipeline(ctx context.Context, pipeli
 
 	// 先创建 topic，如果创建topic失败，则不创建管道。如果创建topic成功，管道创建失败，下次继续创建
 	// 创建topic底层先检查kafka中是否存在，如果存在，则不创建，保证了这里执行的幂等性
-	inputTopicName := GenerateInputTopicName(pmService.appSetting.KafkaSetting.Tenant, pipelineInfo.PipelineID)
-	errorTopicName := GenerateErrorTopicName(pmService.appSetting.KafkaSetting.Tenant, pipelineInfo.PipelineID)
+	inputTopicName := GenerateInputTopicName(pmService.appSetting.MQSetting.Tenant, pipelineInfo.PipelineID)
+	errorTopicName := GenerateErrorTopicName(pmService.appSetting.MQSetting.Tenant, pipelineInfo.PipelineID)
 	// 批量创建 topic, input_topic 和 error_topic
 	err = pmService.mqAccess.CreateTopicsOrPartitions(ctx, []string{inputTopicName, errorTopicName})
 	if err != nil {
@@ -186,8 +186,8 @@ func (pmService *pipelineMgmtService) DeletePipeline(ctx context.Context, pipeli
 	}
 
 	// 删除 topic,，删除 input_topic 和 error_topic
-	inputTopicName := GenerateInputTopicName(pmService.appSetting.KafkaSetting.Tenant, pipelineID)
-	errorTopicName := GenerateErrorTopicName(pmService.appSetting.KafkaSetting.Tenant, pipelineID)
+	inputTopicName := GenerateInputTopicName(pmService.appSetting.MQSetting.Tenant, pipelineID)
+	errorTopicName := GenerateErrorTopicName(pmService.appSetting.MQSetting.Tenant, pipelineID)
 	err = pmService.mqAccess.DeleteTopics(ctx, []string{inputTopicName, errorTopicName})
 	if err != nil {
 		logger.Errorf("failed to delete topic of pipeline '%s', error: %v", pipelineID, err)
@@ -502,9 +502,9 @@ func (pmService *pipelineMgmtService) getPipelineByPipelineID(ctx context.Contex
 
 	pipeline.Operations = matchResouces[pipelineID].Operations
 	// 补充 topic 信息
-	pipeline.InputTopic = GenerateInputTopicName(pmService.appSetting.KafkaSetting.Tenant, pipelineID)
-	pipeline.OutputTopic = GenerateOutputTopicName(pmService.appSetting.KafkaSetting.Tenant, pipeline.IndexBase)
-	pipeline.ErrorTopic = GenerateErrorTopicName(pmService.appSetting.KafkaSetting.Tenant, pipelineID)
+	pipeline.InputTopic = GenerateInputTopicName(pmService.appSetting.MQSetting.Tenant, pipelineID)
+	pipeline.OutputTopic = GenerateOutputTopicName(pmService.appSetting.MQSetting.Tenant, pipeline.IndexBase)
+	pipeline.ErrorTopic = GenerateErrorTopicName(pmService.appSetting.MQSetting.Tenant, pipelineID)
 
 	span.SetStatus(codes.Ok, "")
 	return pipeline, true, nil

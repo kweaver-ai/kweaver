@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import { Checkbox, Form, Input, Select, Typography } from "antd";
+import { Form, Input, InputNumber, Select, Switch, Typography } from "antd";
 import { Draggable } from "react-beautiful-dnd";
 import { TranslateFn } from "@applet/common";
 import { HolderOutlined } from "@ant-design/icons";
@@ -93,6 +93,14 @@ export const FieldInput = forwardRef<Validatable, FieldInputProps>(
       };
     };
 
+    const defaultComponent = () => {
+      if (value?.type === "number") {
+        return <InputNumber style={{ width: "100%" }} placeholder="请输入参数的默认值，用于用户未填写时使用的预设值" />;
+      } else if (value?.type === "string") {
+        return <Input placeholder="请输入参数的默认值，用于用户未填写时使用的预设值" />;
+      }
+    };
+
     return (
       <Draggable key={index} draggableId={String(index)} index={index}>
         {(provided, snapshot) => (
@@ -163,22 +171,25 @@ export const FieldInput = forwardRef<Validatable, FieldInputProps>(
                   // },
                 ]}
               >
-                <Input placeholder={t("input.placeholder", "请输入")} />
+                <Input placeholder={t("input.placeholder", "请输入参数标识，只支持字母、数字或下划线（如：username）")} />
               </FormItem>
               <FormItem name="name" label="显示名称">
-                <Input placeholder={t("input.placeholder", "请输入")} />
+                <Input placeholder={t("input.placeholder", "请输入界面显示的名称（如：用户名）")} />
               </FormItem>
-              <FormItem name={["description", "text"]} label="参数说明">
-                <Input placeholder={t("input.placeholder", "请输入")} />
+              <FormItem name={["description", "text"]} label="参数描述">
+                <Input placeholder={t("input.placeholder", "请输入界面显示的描述，用于补充用途、示例或注意事项")} />
               </FormItem>
               <FormItem name={["description", "type"]} hidden>
                 <Input value="text" defaultValue="text" />
               </FormItem>
-              <div className={styles["required-wrapper"]}>
-                <FormItem name="required" valuePropName="checked" noStyle>
-                  <Checkbox>{t("fileTrigger.required", "必填")}</Checkbox>
+              {(value?.type === "string" || value?.type === "number") && (
+                <FormItem name="default" label="默认值">
+                  {defaultComponent()}
                 </FormItem>
-              </div>
+              )}
+              <FormItem name="required" valuePropName="checked" label={t("fileTrigger.required", "必填")}>
+                <Switch />
+              </FormItem>
             </Form>
           </div>
         )}

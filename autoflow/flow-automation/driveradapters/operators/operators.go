@@ -49,10 +49,10 @@ func NewRESTHandler() RESTHandler {
 }
 
 func (h *OperatorsRESTHandler) RegisterAPI(engine *gin.RouterGroup) {
-	engine.POST("/operators/:id/executions", middleware.TokenAuth(), middleware.SaveAppToken(), h.execute)
+	engine.POST("/operators/:id/executions", middleware.TokenAuth(), h.execute)
 	engine.GET("/executions/:id", middleware.TokenAuth(), h.getExecution)
 	engine.POST("/continuations/:id", h.continueExecution)
-	engine.POST("/operators", middleware.TokenAuth(), middleware.SaveAppToken(), middleware.CheckBizDomainID(), h.registerOperator)
+	engine.POST("/operators", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.registerOperator)
 	// 接口无人使用暂时去除
 	// engine.GET("/operators", middleware.TokenAuth(), h.listOperator)
 	engine.PUT("/operators/:id", middleware.TokenAuth(), h.updateOperator)

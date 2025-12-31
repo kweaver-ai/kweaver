@@ -122,7 +122,6 @@ func (m *mgnt) CreateDataFlow(ctx context.Context, param *CreateDataFlowReq, use
 
 	dag.AppInfo = entity.AppInfo{
 		Enable: false,
-		AppID:  utils.IfNot(userInfo.AccountType == "app", userInfo.UserID, ""),
 	}
 
 	err = m.validSteps(&Validate{
@@ -263,7 +262,7 @@ func (m *mgnt) CreateDataFlow(ctx context.Context, param *CreateDataFlowReq, use
 			"priority": dag.Priority,
 		}
 
-		userInfo.Type = "user"
+		userInfo.Type = common.User.ToString()
 		write := &drivenadapters.JSONLogWriter{SendFunc: m.executeMethods.Publish}
 		m.logger.Log(drivenadapters.LogTypeASOperationLog, &drivenadapters.BuildARLogParams{
 			Operation:   common.ArLogCreateDag,

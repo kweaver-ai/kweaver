@@ -409,7 +409,6 @@ export const TriggerConfig: FC<TriggerConfigProps> = ({
         }
         footerStyle={{
           display: "flex",
-          justifyContent: "space-between",
           borderTop: "none",
           padding: "10px 16px",
         }}
@@ -420,7 +419,10 @@ export const TriggerConfig: FC<TriggerConfigProps> = ({
                 <Button
                   style={{ marginRight: "100px" }}
                   onClick={() => {
-                    if (currentAction?.operator === "@trigger/form" || currentAction?.operator === "@trigger/dataview") {
+                    if (
+                      currentAction?.operator === "@trigger/form" ||
+                      currentAction?.operator === "@trigger/dataview"
+                    ) {
                       setCurrent((current) => current - 2);
                       return;
                     }
@@ -429,8 +431,10 @@ export const TriggerConfig: FC<TriggerConfigProps> = ({
                 >
                   {t("datastudio.trigger.back", "返回")}
                 </Button>
-                {(currentAction?.operator === "@trigger/form" || currentAction?.operator.startsWith("@trigger/operator/") || currentAction?.operator === "@trigger/dataview") && (
-                  <Space>
+                {(currentAction?.operator === "@trigger/form" ||
+                  currentAction?.operator.startsWith("@trigger/operator/") ||
+                  currentAction?.operator === "@trigger/dataview") && (
+                  <Space style={{ marginLeft: "auto" }}>
                     <Button
                       type="primary"
                       onClick={async () => {
@@ -468,7 +472,7 @@ export const TriggerConfig: FC<TriggerConfigProps> = ({
               </>
             ) : null
           ) : current === 2 ? (
-            <Space>
+            <Space style={{ marginLeft: "auto" }}>
               <Button
                 type="primary"
                 className="automate-oem-primary-btn"

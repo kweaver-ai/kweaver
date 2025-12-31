@@ -348,11 +348,11 @@ func (o *observability) RuntimeView(ctx context.Context, params ObservabilityQue
 
 	var dagIDs []string
 	dagNameMap := make(map[string]string)
-	accessorIDs := make(map[string]drivenadapters.AccessorType)
+	accessorIDs := make(map[string]string)
 	for _, dag := range dags {
 		dagIDs = append(dagIDs, dag.ID)
 		dagNameMap[dag.ID] = dag.Name
-		accessorIDs[dag.UserID] = drivenadapters.User
+		accessorIDs[dag.UserID] = common.User.ToString()
 	}
 
 	dvMap, avgMap, err := o.CollectDagMetrics(ctx, *params.StartTime, *params.EndTime, userInfo.TokenID, params.BizDomainID, dagIDs)
@@ -501,10 +501,10 @@ func (o *observability) RecentRunView(ctx context.Context, params ObservabilityQ
 
 	dagIDs, dagInss = dagIDs[0:0], dagInss[0:min(10, len(dagInss))]
 	creatorMap := make(map[string]string)
-	accessorIDs := make(map[string]drivenadapters.AccessorType)
+	accessorIDs := make(map[string]string)
 	for _, ins := range dagInss {
 		dagIDs = append(dagIDs, ins.DagIns.DagID)
-		accessorIDs[ins.DagIns.UserID] = drivenadapters.User
+		accessorIDs[ins.DagIns.UserID] = common.User.ToString()
 		creatorMap[ins.DagIns.DagID] = ins.DagIns.UserID
 	}
 

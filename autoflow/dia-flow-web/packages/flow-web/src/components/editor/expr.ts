@@ -18,6 +18,7 @@ export interface IStep {
     steps?: IStep[];
     dataSource?: IStep & { depth?: number };
     outputs?: Array<{ key: string; value: string; type?: string }>;
+    settings?: any;
 }
 
 export interface IBranch {

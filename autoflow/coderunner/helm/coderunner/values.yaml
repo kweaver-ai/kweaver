@@ -42,7 +42,7 @@ depServices:
       connectType: ocr
   rds:
     host: mariadb-mariadb-master.resource
-    database: workflow
+    database: adp
     password: eisoo.com123
     port: 3330
     type: MariaDB

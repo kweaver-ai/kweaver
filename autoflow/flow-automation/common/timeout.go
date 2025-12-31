@@ -1,5 +1,7 @@
 package common
 
+import "sync"
+
 // TimeoutConfig 超时配置结构体
 type TimeoutConfig struct {
 	// 操作类型到超时秒数的映射
@@ -7,6 +9,9 @@ type TimeoutConfig struct {
 	// 默认超时秒数
 	DefaultTimeout int
 }
+
+var timeoutConfig *TimeoutConfig
+var toOnce sync.Once
 
 // getDefaultOperationTimeouts 获取默认的操作超时映射
 func getDefaultOperationTimeouts() map[string]int {
@@ -30,10 +35,14 @@ func getDefaultOperationTimeouts() map[string]int {
 
 // NewTimeoutConfig 创建指定默认超时的超时配置
 func NewTimeoutConfig() *TimeoutConfig {
-	return &TimeoutConfig{
-		OperationTimeouts: getDefaultOperationTimeouts(),
-		DefaultTimeout:    NewConfig().Server.ExecutorTimeout,
-	}
+	toOnce.Do(func() {
+		timeoutConfig = &TimeoutConfig{
+			OperationTimeouts: getDefaultOperationTimeouts(),
+			DefaultTimeout:    NewConfig().Server.ExecutorTimeout,
+		}
+	})
+
+	return timeoutConfig
 }
 
 // GetTimeout 根据操作类型获取超时时间（秒）

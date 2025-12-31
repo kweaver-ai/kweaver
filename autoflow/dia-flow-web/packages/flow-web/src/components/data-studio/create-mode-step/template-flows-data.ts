@@ -28,7 +28,8 @@ export interface IWorkflow {
 
 export enum CreateType {
     CreateIndex = "createIndex",
-    UpdateAtlas = "updateAtlas"
+    UpdateAtlas = "updateAtlas",
+    PdfParse = "pdfParse"
 }
 
 const createFileSteps = [
@@ -378,6 +379,132 @@ export const ReIndexTemplates: IWorkflow[] = [
         },
         trigger: TriggerType.EVENT,
     }
+]
+
+export const PdfParseTemplates: IWorkflow[] = [
+    {
+        "id": "1",
+        "title": "新增文件版本时自动解析",
+        "steps": [
+            {
+                "id": "0",
+                "title": "",
+                "operator": "@trigger/dataflow-doc"
+            },
+            {
+                "id": "1",
+                "title": "",
+                "operator": "@content/file_parse",
+                "parameters": {
+                    "docid": "{{__0.id}}",
+                    "model": "embedding",
+                    "slice_vector": "slice_vector",
+                    "source_type": "docid",
+                    "version": "{{__0.rev}}"
+                }
+            },
+            {
+                "id": "1001",
+                "title": "写入向量",
+                "operator": "@opensearch/bulk-upsert",
+                "parameters": {
+                    "base_type": "content_index",
+                    "category": "log",
+                    "data_type": "user9",
+                    "documents": "{{__1.chunks}}",
+                    "template": "default"
+                }
+            },
+            {
+                "id": "1002",
+                "title": "写入元素",
+                "operator": "@opensearch/bulk-upsert",
+                "parameters": {
+                    "base_type": "content_element",
+                    "category": "log",
+                    "data_type": "user9",
+                    "documents": "{{__1.content_list}}"
+                }
+            },
+            {
+                "id": "1003",
+                "title": "写入文件元信息",
+                "operator": "@opensearch/bulk-upsert",
+                "parameters": {
+                    "base_type": "content_document",
+                    "category": "log",
+                    "data_type": "user9",
+                    "documents": "{  \"id\": \"{{__0.item_id}}\",\n  \"rev\": \"{{__0.rev}}\",\n  \"name\": \"{{__0.name}}\"}"
+                }
+            }
+        ],
+        "trigger_config": {
+            "operator": "@anyshare-trigger/file-version-update",
+        },
+        trigger: TriggerType.EVENT,
+    },
+    {
+        "id": "2",
+        "title": "定时解析文件",
+        "steps": [
+            {
+                "id": "0",
+                "title": "",
+                "operator": "@trigger/dataflow-doc"
+            },
+            {
+                "id": "1",
+                "title": "",
+                "operator": "@content/file_parse",
+                "parameters": {
+                    "docid": "{{__0.id}}",
+                    "model": "embedding",
+                    "slice_vector": "slice_vector",
+                    "source_type": "docid",
+                    "version": "{{__0.rev}}"
+                }
+            },
+            {
+                "id": "1001",
+                "title": "写入向量",
+                "operator": "@opensearch/bulk-upsert",
+                "parameters": {
+                    "base_type": "content_index",
+                    "category": "log",
+                    "data_type": "user9",
+                    "documents": "{{__1.chunks}}",
+                    "template": "default"
+                }
+            },
+            {
+                "id": "1002",
+                "title": "写入元素",
+                "operator": "@opensearch/bulk-upsert",
+                "parameters": {
+                    "base_type": "content_element",
+                    "category": "log",
+                    "data_type": "user9",
+                    "documents": "{{__1.content_list}}"
+                }
+            },
+            {
+                "id": "1003",
+                "title": "写入文件元信息",
+                "operator": "@opensearch/bulk-upsert",
+                "parameters": {
+                    "base_type": "content_document",
+                    "category": "log",
+                    "data_type": "user9",
+                    "documents": "{  \"id\": \"{{__0.item_id}}\",\n  \"rev\": \"{{__0.rev}}\",\n  \"name\": \"{{__0.name}}\"}"
+                }
+            }
+        ],
+        "trigger_config": {
+            cron: '0 30 1 * * ?',
+            "operator": "@trigger/cron",
+        },
+        trigger: TriggerType.CRON,
+    },
 ]
 
 
@@ -1591,6 +1718,33 @@ const completeCreateIndexTemplate = (workflows: IWorkflow[], value: IAtlasInfo):
     })
 }
 
+const completePdfParseTemplate = (workflows: IWorkflow[], value: IAtlasInfo): IWorkflow[] => {
+    return workflows.map((flow, i) => {
+        let currentFlow = JSON.parse(JSON.stringify(flow));
+
+        // 定时解析PDF文件
+        if (i === 1) {
+            currentFlow.trigger_config = {
+                ...currentFlow.trigger_config,
+                dataSource: {
+                    operator: "@anyshare-data/list-files",
+                    parameters: value.selectedDoc,
+                },
+            };
+        }
+
+        // 新增PDF文件时自动解析
+        if (i === 0) {
+            currentFlow.trigger_config = {
+                ...currentFlow.trigger_config,
+                parameters: value.selectedDoc,
+            };
+        }
+
+        return currentFlow;
+    })
+}
+
 
 
 
@@ -1609,6 +1763,14 @@ export const Templates = {
         workflows: ReIndexTemplates,
         complete: completeCreateIndexTemplate,
         selectTypes: [ItemType.Doc]
+    },
+    [CreateType.PdfParse]: {
+        thirdTitle: "datastudio.create.pdfParseConfig", //"配置PDF文档解析流程",
+        fourthTitle: "datastudio.create.pdfParse", //"PDF文档智能解析"
+        fourthDesc: "datastudio.create.templateFlowsPdfParse", //"PDF解析共包含 2条流程，您还需要完善流程配置：",
+        workflows: PdfParseTemplates,
+        complete: completePdfParseTemplate,
+        selectTypes: [ItemType.Doc, ItemType.IndexBase]
     }
 }
 

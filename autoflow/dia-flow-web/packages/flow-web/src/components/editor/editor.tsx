@@ -508,7 +508,8 @@ export const Editor = forwardRef<Instance, EditorProps>((props, ref) => {
         (
             scope: number[],
             type?: string | string[],
-            options?: VariablePickerOptions
+            options?: VariablePickerOptions,
+            allowOperator?: string[],
         ) => {
             const promise = new Promise<string>((resolve, reject) => {
                 setVariablePickerProps({
@@ -517,6 +518,7 @@ export const Editor = forwardRef<Instance, EditorProps>((props, ref) => {
                     scope,
                     onFinish: resolve,
                     onCancel: reject,
+                    allowOperator,
                 });
             });
             promise.finally(() => setVariablePickerProps(undefined));
@@ -595,13 +597,13 @@ export const Editor = forwardRef<Instance, EditorProps>((props, ref) => {
                 );
             }
             // 模板中缺少部分参数(编目设置INT类型时参数可能为null)
-            if (
-                parameter === null &&
-                (!step.operator.includes("settemplate") ||
-                    (step.operator.includes("settemplate") && depth === 2))
-            ) {
-                return false;
-            }
+            // if (
+            //     parameter === null &&
+            //     (!step.operator.includes("settemplate") ||
+            //         (step.operator.includes("settemplate") && depth === 2))
+            // ) {
+            //     return false;
+            // }
 
             return true;
         }

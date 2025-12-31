@@ -171,7 +171,7 @@ func (m *mgnt) triggerFromMDLDataView(
 	err = <-ch
 
 	if err != nil {
-		dagIns, dagErr := dag.Run(ctx, triggerType, runVar)
+		dagIns, dagErr := dag.Run(ctx, triggerType, runVar, nil)
 
 		if dagErr != nil {
 			log.Warnf("[logic.triggerFromMDLDataView] dag.Run err: %s", err.Error())
@@ -189,6 +189,18 @@ func (m *mgnt) triggerFromMDLDataView(
 			Status:     entity.TaskInstanceStatusFailed,
 			Reason:     err,
 		}
+		dagIns.Source = `{"_type":"dataview"}`
+
+		reason := map[string]any{
+			"taskId":     taskIns.TaskID,
+			"name":       taskIns.Name,
+			"actionName": taskIns.ActionName,
+			"detail":     taskIns.Reason,
+		}
+
+		b, _ := json.Marshal(reason)
+
+		dagIns.Reason = string(b)
 
 		_, dbErr := m.mongo.CreateDagIns(ctx, dagIns)
 
@@ -544,7 +556,7 @@ func (m *mgnt) batchCreateDagInsFromDataView(ctx context.Context,
 		}
 
 		items := entryBuffer[start:end]
-		dagIns, err := dag.Run(ctx, triggerType, runVar)
+		dagIns, err := dag.Run(ctx, triggerType, runVar, nil)
 
 		if err != nil {
 			log.Warnf("[logic.batchCreateDagInsFromDataView] dag.Run err, detail: %s", err.Error())
@@ -552,21 +564,28 @@ func (m *mgnt) batchCreateDagInsFromDataView(ctx context.Context,
 		}
 
 		dagIns.Initial()
-		dagIns.ShareData.Dict = map[string]any{
+
+		b, _ := json.Marshal(map[string]any{
+			"_type": "dataview",
+			"total": len(items),
+		})
+		dagIns.Source = string(b)
+
+		werr := dagIns.WriteEventByVariableMap(ctx, map[string]any{
 			"__" + dag.Steps[0].ID: map[string]any{
 				"data": items,
 			},
-		}
-		serr := dagIns.SaveExtData(context.Background())
-		if serr != nil {
-			log.Warnf("[logic.batchCreateDagInsFromDataView] dagIns.SaveExtData err, detail: %s", serr.Error())
-			dagIns.ShareData.Dict = map[string]any{
-				"__" + dag.Steps[0].ID: map[string]any{
-					"status": entity.TaskInstanceStatusFailed,
-				},
-			}
-		} else if dagIns.ShareDataExt != nil {
-			dagIns.ShareData = nil
+		}, time.Now().UnixMicro())
+
+		if werr != nil {
+			dagIns.Status = entity.DagInstanceStatusFailed
+			b, _ := json.Marshal(map[string]any{
+				"actionName": dag.Steps[0].Operator,
+				"name":       dag.Steps[0].Title,
+				"taskId":     dag.Steps[0].ID,
+				"detail":     werr,
+			})
+			dagIns.Reason = string(b)
 		}
 
 		dagInstances = append(dagInstances, dagIns)

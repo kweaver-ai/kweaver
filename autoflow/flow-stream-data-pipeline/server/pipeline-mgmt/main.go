@@ -10,8 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/mdl-go-lib/audit"
 	"devops.aishu.cn/AISHUDevOps/DIP/_git/mdl-go-lib/logger"
+	"devops.aishu.cn/AISHUDevOps/DIP/_git/mdl-go-lib/rest"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	_ "go.uber.org/automaxprocs"
 
 	"flow-stream-data-pipeline/common"
@@ -35,6 +39,7 @@ func (server *mgrService) start() {
 
 	// 创建gin.engine 并注册Public API
 	engine := gin.New()
+
 	server.restHandler.RegisterPublic(engine)
 	logger.Info("Server Register API Success")
 
@@ -51,6 +56,7 @@ func (server *mgrService) start() {
 		WriteTimeout:   server.appSetting.ServerSetting.WriteTimeout * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+
 	// 启动http服务
 	go func() {
 		err := s.ListenAndServe()
@@ -81,11 +87,16 @@ func main() {
 	//     logger.Info(http.ListenAndServe(":9999", nil))
 	// }()
 
-	logger.Info("Pipeline Management Server Starting")
+	logger.Info("Server Starting")
 
 	// 初始化服务配置
 	appSetting := common.NewSetting()
+
 	logger.Info("Server Init Setting Success")
+
+	// 设置错误码语言
+	rest.SetLang(appSetting.ServerSetting.Language)
+	logger.Info("Server Set Language Success")
 
 	// 设置gin运行模式
 	gin.SetMode(appSetting.ServerSetting.RunMode)
@@ -93,6 +104,11 @@ func main() {
 
 	logger.Infof("Server Start By Port:%d", appSetting.ServerSetting.HttpPort)
 
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	audit.Init(&appSetting.MQSetting)
+
+	// Set顺序按字母升序排序
 	logics.SetIndexBaseAccess(access.NewIndexBaseAccess(appSetting))
 	logics.SetMQAccess(access.NewMQAccess(appSetting))
 	logics.SetPermissionAccess(access.NewPermissionAccess(appSetting))
@@ -102,6 +118,5 @@ func main() {
 		appSetting:  appSetting,
 		restHandler: driveradapters.NewRestHandler(appSetting),
 	}
-
 	server.start()
 }

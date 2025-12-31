@@ -56,6 +56,18 @@
         line-height: 20px;
     }
 
+    .card-description {
+        color: rgba(0, 0, 0, 0.3);
+        font-size: 12px;
+        line-height: 20px;
+        ul {
+            display: flex;
+        }
+        li {
+            margin-right: 20px;
+        }
+    }
+
     .expand-btn {
         position: absolute;
         top: 20px;
@@ -85,7 +97,7 @@
         align-items: center;
     }
 
-    :global(.@{ant-prefix}-card-meta-detail) > div:not(:last-child) {
+    :global(.@{ant-prefix}-card-meta-detail)>div:not(:last-child) {
         margin-bottom: 4px;
     }
 
@@ -111,12 +123,8 @@
 
         &:global(.@{ant-prefix}-tabs-top > .@{ant-prefix}-tabs-nav::before),
         &:global(.@{ant-prefix}-tabs-bottom > .@{ant-prefix}-tabs-nav::before),
-        &:global(.@{ant-prefix}-tabs-top
-                > div
-                > .@{ant-prefix}-tabs-nav::before),
-        &:global(.@{ant-prefix}-tabs-bottom
-                > div
-                > .@{ant-prefix}-tabs-nav::before) {
+        &:global(.@{ant-prefix}-tabs-top > div > .@{ant-prefix}-tabs-nav::before),
+        &:global(.@{ant-prefix}-tabs-bottom > div > .@{ant-prefix}-tabs-nav::before) {
             border-bottom: none;
         }
 
@@ -124,7 +132,7 @@
             padding: 0 0 6px;
         }
 
-        :global(.@{ant-prefix}-tabs-tab) + :global(.@{ant-prefix}-tabs-tab) {
+        :global(.@{ant-prefix}-tabs-tab)+ :global(.@{ant-prefix}-tabs-tab) {
             margin-left: 42px;
         }
 
@@ -147,21 +155,12 @@
         }
 
         .data-tabs-wrapper {
+
             // 覆盖原本的antd -> tabs 样式
-            :global(.@{ant-prefix}-tabs-top
-                    > .@{ant-prefix}-tabs-nav
-                    .@{ant-prefix}-tabs-ink-bar),
-            :global(.@{ant-prefix}-tabs-bottom
-                    > .@{ant-prefix}-tabs-nav
-                    .@{ant-prefix}-tabs-ink-bar),
-            :global(.@{ant-prefix}-tabs-top
-                    > div
-                    > .@{ant-prefix}-tabs-nav
-                    .@{ant-prefix}-tabs-ink-bar),
-            :global(.@{ant-prefix}-tabs-bottom
-                    > div
-                    > .@{ant-prefix}-tabs-nav
-                    .@{ant-prefix}-tabs-ink-bar) {
+            :global(.@{ant-prefix}-tabs-top > .@{ant-prefix}-tabs-nav .@{ant-prefix}-tabs-ink-bar),
+            :global(.@{ant-prefix}-tabs-bottom > .@{ant-prefix}-tabs-nav .@{ant-prefix}-tabs-ink-bar),
+            :global(.@{ant-prefix}-tabs-top > div > .@{ant-prefix}-tabs-nav .@{ant-prefix}-tabs-ink-bar),
+            :global(.@{ant-prefix}-tabs-bottom > div > .@{ant-prefix}-tabs-nav .@{ant-prefix}-tabs-ink-bar) {
                 height: 0;
             }
 
@@ -173,8 +172,7 @@
                 padding-top: 0;
             }
 
-            :global(.@{ant-prefix}-tabs-tab.@{ant-prefix}-tabs-tab-active
-                    .@{ant-prefix}-tabs-tab-btn) {
+            :global(.@{ant-prefix}-tabs-tab.@{ant-prefix}-tabs-tab-active .@{ant-prefix}-tabs-tab-btn) {
                 text-shadow: none;
             }
 
@@ -187,8 +185,7 @@
                 color: rgba(0, 0, 0, 0.6);
             }
 
-            :global(.@{ant-prefix}-tabs-tab.@{ant-prefix}-tabs-tab-active
-                    .@{ant-prefix}-tabs-tab-btn) {
+            :global(.@{ant-prefix}-tabs-tab.@{ant-prefix}-tabs-tab-active .@{ant-prefix}-tabs-tab-btn) {
                 color: #126ee3;
             }
 

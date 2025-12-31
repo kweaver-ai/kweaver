@@ -61,11 +61,13 @@ type OssOpt struct {
 // OssGateWay oss接口
 type OssGateWay interface {
 	UploadFile(ctx context.Context, ossID, key string, internalRequest bool, file io.Reader, size int64) error
+	SimpleUpload(ctx context.Context, ossID, key string, internalRequest bool, file io.Reader) error
 	GetAvaildOSS(ctx context.Context) (string, error)
 	DownloadFile2Local(ctx context.Context, ossID, key string, internalRequest bool, filePath string, opts ...OssOpt) (int64, error)
 	DownloadFile(ctx context.Context, ossID, key string, internalRequest bool, opts ...OssOpt) ([]byte, error)
 	DeleteFile(ctx context.Context, ossID, key string, internalRequest bool) error
 	GetDownloadURL(ctx context.Context, ossID, key string, expires int64, internalRequest bool, opts ...OssOpt) (string, error)
+	GetObjectMeta(ctx context.Context, ossID, key string, internalRequest bool, opts ...OssOpt) (int64, error)
 	NewReader(ossID string, ossKey string, opts ...OssOpt) *Reader
 }
 
@@ -370,7 +372,7 @@ func (og *ossGatetway) GetDownloadURL(ctx context.Context, ossID, key string, ex
 	target := fmt.Sprintf("%s/api/ossgateway/v1/download/%s/%s?type=query_string&internal_request=%t", og.address, ossID, key, internalRequest)
 	target = og.appendOptQuery(target, opts...)
 	if expires != 0 {
-		target += fmt.Sprintf("&expires=%d", expires)
+		target += fmt.Sprintf("&Expires=%d", expires)
 	}
 	requestBody := &RequestBody{}
 	_, respParam, err := og.client.Get(ctx, target, nil)

@@ -80,10 +80,12 @@ const CreateModal = ({
 
   const handleModalOk = async (data?: any) => {
     const values = await form.validateFields();
-    if (!hasTargetOperator(value?.steps)) {
-      hasOperatorMessage(microWidgetProps?.container);
-      return false;
-    }
+    // if (!hasTargetOperator(value?.steps)) {
+    //   const confirm = await hasOperatorMessage(microWidgetProps?.container);
+    //   if (!confirm) {
+    //     return;
+    //   }
+    // }
 
     if (isTemplateCreate) {
       onSave(values.flowName);

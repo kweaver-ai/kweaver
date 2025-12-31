@@ -1,5 +1,5 @@
 import { MicroAppContext, useTranslate } from "@applet/common";
-import { Steps as AntSteps, Button, Drawer, Space } from "antd";
+import { Steps as AntSteps, Button, Drawer, Segmented, Space } from "antd";
 import clsx from "clsx";
 import {
   FC,
@@ -22,6 +22,8 @@ import styles from "./editor.module.less";
 import { ExecutorList } from "./executor-list";
 import { IStep } from "./expr";
 import { StepConfigContext } from "./step-config-context";
+import { StepsSettings } from "../../extensions/anyshare/steps-settings";
+import { hasConfigOperator } from "./utils";
 
 export interface ExecutorConfigProps {
   step?: IStep;
@@ -46,6 +48,8 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
   const [parameters, setParameters] = useState<any>(step?.parameters);
   const { getId, getPopupContainer } = useContext(EditorContext);
   const showScrollShadow = useDrawerScroll(!!step);
+  const [settings, setSettings] = useState<any>(step?.settings);
+  const [nodeConfig, setNodeConfig] = useState(1);
 
   useLayoutEffect(() => {
     if (step?.operator) {
@@ -54,6 +58,7 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
       setCurrentExecutor(executor);
       setCurrentAction(action);
       setParameters(step.parameters);
+      setNodeConfig(1);
 
       if (action && action.components?.Config) {
         setCurrent(2);
@@ -91,6 +96,8 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
                         if (item.actions[0] !== currentAction) {
                           setCurrentAction(item.actions[0]);
                           setParameters(undefined);
+                          setSettings(undefined);
+                          setNodeConfig(1);
                         }
                         setCurrent(current + 2);
                       } else {
@@ -104,6 +111,8 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
                       if (item !== currentExecutor) {
                         setCurrentAction(undefined);
                         setParameters(undefined);
+                        setSettings(undefined);
+                        setNodeConfig(1);
                       }
                       setCurrent(current + 1);
                     }
@@ -176,14 +185,45 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
         return (
           <div className={styles.section}>
             {Config && step ? (
-              <Config
-                key={step?.id}
-                ref={configRef}
-                action={currentAction!}
-                t={te}
-                parameters={parameters}
-                onChange={setParameters}
-              />
+              <>
+                {!hasConfigOperator({
+                  operator: currentAction!.operator,
+                  parameters,
+                }) &&
+                  platform !== "operator" && (
+                    <Segmented
+                      className={styles["step-segmented"]}
+                      value={nodeConfig}
+                      onChange={(val: any) => {
+                        setNodeConfig(val);
+                      }}
+                      options={[
+                        { label: t("edit.base.settings"), value: 1 },
+                        { label: t('edit.advanced.settings'), value: 2 },
+                      ]}
+                    />
+                  )}
+                {nodeConfig === 1 ? (
+                  <Config
+                    key={step?.id}
+                    ref={configRef}
+                    action={currentAction!}
+                    t={te}
+                    parameters={parameters}
+                    onChange={setParameters}
+                  />
+                ) : (
+                  <StepsSettings
+                    step={{
+                      ...step,
+                      operator: currentAction!.operator,
+                    }}
+                    onChange={(settings: any) => {
+                      setSettings(settings);
+                    }}
+                  />
+                )}
+              </>
             ) : null}
           </div>
         );
@@ -203,7 +243,9 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
     t,
     getId,
     step,
-    parameters
+    parameters,
+    nodeConfig,
+    settings,
   ]);
 
   return (
@@ -216,7 +258,11 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
         push={false}
         maskClosable={false}
         onClose={onCancel}
-        width={currentExecutor?.name === "sqlWrite.name" && current === 2 ? 1024 : 528}
+        width={
+          currentExecutor?.name === "sqlWrite.name" && current === 2
+            ? 1024
+            : 528
+        }
         afterOpenChange={(open) => {
           if (!open) {
             setCurrent(0);
@@ -224,6 +270,8 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
             setCurrentExecutor(undefined);
             setCurrentExtension(undefined);
             setParameters(undefined);
+            setSettings(undefined);
+            setNodeConfig(1);
           }
         }}
         getContainer={getPopupContainer}
@@ -290,6 +338,7 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
                             id: step!.id,
                             operator: currentAction!.operator,
                             parameters,
+                            settings: settings || step?.settings,
                           });
                       } else {
                         console.log("Invalid");
@@ -303,6 +352,7 @@ export const ExecutorConfig: FC<ExecutorConfigProps> = ({
                         id: step!.id,
                         operator: currentAction!.operator,
                         parameters,
+                        settings: settings || step?.settings,
                       });
                   }
                 }}

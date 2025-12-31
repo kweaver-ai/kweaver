@@ -23,7 +23,7 @@ func (c *DefCommander) RunDag(ctx context.Context, dagId string, specVars map[st
 	}
 
 	dag.SetPushMessage(NewMQHandler().Publish)
-	dagIns, err := dag.Run(context.Background(), entity.TriggerManually, specVars)
+	dagIns, err := dag.Run(context.Background(), entity.TriggerManually, specVars, nil)
 	if err != nil {
 		return nil, err
 	}

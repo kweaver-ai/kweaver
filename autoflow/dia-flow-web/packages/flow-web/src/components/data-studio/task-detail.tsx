@@ -38,7 +38,7 @@ export const TaskDetail: FC<ITaskDetailProps> = ({ id, onBack, onShowLog }) => {
     // }; 
   
     return createPortal(
-        <Layout className={styles["container"]}>
+        <Layout className={styles["container"]} id="content-automation-root-layout">
             <PageHeader
                 title={
                     <div title={data?.title} className={styles["title"]}>

@@ -38,8 +38,9 @@ import {
 } from "../../utils/analyze-jsonschema";
 import { OperatorDataSource } from "../editor/operator-editor/operator-data-source";
 import SqlWriteExtension from "../../extensions/sqlwriter";
+import VariableExtension from "../../extensions/variable";
 // 工作流
-const Extensions = [AnyShare, Internal, Cron, JSONExtension, ContentExtension];
+const Extensions = [AnyShare, Internal, Cron, JSONExtension, ContentExtension, VariableExtension];
 // 数据处理流
 const DataStudioExtensions = [
   DataStudio,
@@ -49,6 +50,7 @@ const DataStudioExtensions = [
   JSONExtension,
   AIExtensionForDataStudio,
   ContentExtension,
+  VariableExtension,
 ];
 // 控制台
 const ConsoleExtensions = [Console, Internal];
@@ -59,6 +61,7 @@ const OperatorExtensions = [
   JSONExtension,
   AIExtensionForDataStudio,
   ContentExtension,
+  VariableExtension,
 ];
 
 export const findConfig = (config: any[], name: string) => {
@@ -320,7 +323,7 @@ export const ExtensionProvider: FC<ExtensionProviderProps> = ({
             "@anyshare/doclib/quota-scale"
           );
           if (quotaConfig?.config?.enable === true) {
-            newExtensions = [...newExtensions, Admin];
+            newExtensions = [...newExtensions];
             setConfig((pre) => ({
               ...pre,
               "@anyshare/doclib/quota-scale": true,
@@ -407,9 +410,9 @@ export const ExtensionProvider: FC<ExtensionProviderProps> = ({
         setExtensions(newExtensions);
       }
     };
-    if (typeof isSecretMode === "boolean") {
+    // if (typeof isSecretMode === "boolean") {
       fetchConfig();
-    }
+    // }
   }, [isSecretMode]);
 
   const outputsFn = (action?: any) => {

@@ -72,6 +72,9 @@
                     ]
                 }
             ]
+        },
+        "settings":{
+            "$ref": "../common.json#/definitions/Settings"
         }
     },
     "required": [

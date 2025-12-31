@@ -38,6 +38,9 @@
                 "type"
             ],
             "additionalProperties": false
+        },
+        "settings":{
+            "$ref": "../common.json#/definitions/Settings"
         }
     },
     "required": [

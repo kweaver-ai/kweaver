@@ -21,7 +21,6 @@ import (
 
 const (
 	DataAdminID            = "00990824-4bf7-11f0-8fa7-865d5643e61f"
-	UserType               = "user"
 	DataFlowResourceType   = "data_flow"
 	OperatorResourceType   = "operator"
 	DataAdminResourceID    = "*"
@@ -44,6 +43,8 @@ const (
 	OldShareOperation     = "share"
 	// OldPublishOperatiuon 原AS publish-api接口使用
 	OldPublishOperatiuon = "publish"
+	// OldAppTokenOperation 原AS app-token接口使用,工作流运行接口应用账户支持所有流程执行
+	OldAppTokenOperation = "app_token"
 )
 
 var (
@@ -130,7 +131,7 @@ func (pp *permPolicy) IsDataAdmin(ctx context.Context, userID, userType string) 
 
 // IsUseAppAccount 判断用户是否使用应用账号
 func (pp *permPolicy) IsUseAppAccount(ctx context.Context, userid, id, name string) (bool, error) {
-	return pp.OperationCheck(ctx, userid, UserType, id, RunWithAppOperation)
+	return pp.OperationCheck(ctx, userid, common.User.ToString(), id, RunWithAppOperation)
 }
 
 // CheckPerm 批量校验当前用户是否对资源实例具有指定权限

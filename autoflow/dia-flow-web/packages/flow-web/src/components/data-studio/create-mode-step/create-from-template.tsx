@@ -41,6 +41,19 @@ export const CreateFromTemplate = ({ onNext }: ICreateFromTemplateProps) => {
           </Text>
         </div>
       </div> */}
+      <div className={styles["create-mode-option"]} onClick={() => onNext(CreateType.PdfParse)}>
+        <img
+          src={createIndex}
+          alt="pdfParse"
+          className={styles["create-mode-icon"]}
+        />
+        <div className={styles["create-mode-content"]}>
+          <Text className={styles["title"]}>{t("datastudio.create.pdfParse", "PDF文档智能解析")}</Text>
+          <Text className={styles["description"]}>
+            {t("datastudio.create.pdfParseDesc", "支持对PDF文档多维度的内容提取与结构化输出")}
+          </Text>
+        </div>
+      </div>
     </Space>
   );
 };

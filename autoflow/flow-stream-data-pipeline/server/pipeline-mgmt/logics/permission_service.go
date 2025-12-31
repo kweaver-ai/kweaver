@@ -31,8 +31,8 @@ func NewPermissionService(appSetting *common.AppSetting) interfaces.PermissionSe
 	pServiceOnce.Do(func() {
 		client, err := mqclient.NewProtonMQClient(appSetting.MQSetting.MQHost, appSetting.MQSetting.MQPort,
 			appSetting.MQSetting.MQHost, appSetting.MQSetting.MQPort, appSetting.MQSetting.MQType,
-			mqclient.UserInfo(appSetting.MQSetting.Username, appSetting.MQSetting.Password),
-			mqclient.AuthMechanism(appSetting.MQSetting.Mechanism),
+			mqclient.UserInfo(appSetting.MQSetting.Auth.Username, appSetting.MQSetting.Auth.Password),
+			mqclient.AuthMechanism(appSetting.MQSetting.Auth.Mechanism),
 		)
 		if err != nil {
 			logger.Fatal("failed to create a proton mq client:", err)

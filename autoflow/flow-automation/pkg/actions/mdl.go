@@ -5,6 +5,7 @@ import (
 
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/common"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/store/rds"
 	"devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/trace"
 )
 
@@ -27,13 +28,34 @@ func (m *MDLDataViewTrigger) Run(ctx entity.ExecuteContext, params interface{}, 
 	ctx.SetContext(newCtx)
 	ctx.Trace(ctx.Context(), "run start", entity.TraceOpPersistAfterAction)
 	id := ctx.GetTaskID()
+	taskIns := ctx.GetTaskInstance()
+	dagIns := taskIns.RelatedDagInstance
+
+	var originalResult any
+	switch dagIns.EventPersistence {
+	case entity.DagInstanceEventPersistenceOss:
+		return nil, fmt.Errorf("DagInstance is already archived")
+	case entity.DagInstanceEventPersistenceSql:
+		events, err := dagIns.ListEvents(ctx.Context(), &rds.DagInstanceEventListOptions{
+			Types: []rds.DagInstanceEventType{rds.DagInstanceEventTypeVariable},
+			Names: []string{fmt.Sprintf("__%s", id)},
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		if len(events) > 0 {
+			originalResult = events[len(events)-1].Data
+		}
+	default:
+		if data, ok := ctx.ShareData().Get("__" + id); ok {
+			originalResult = data
+		}
+	}
 
 	result := make(map[string]any)
-	originalResult, ok := ctx.ShareData().Get("__" + id)
-	if !ok {
-		ctx.Trace(ctx.Context(), "run end")
-		return result, nil
-	}
+	result["_type"] = "dataview"
 
 	resultMap, ok := originalResult.(map[string]any)
 	if !ok {

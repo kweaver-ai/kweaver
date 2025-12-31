@@ -89,6 +89,11 @@ func (c *DefaultDagPermChecker) Check(ctx context.Context, dag *entity.Dag, user
 		return true, nil
 	}
 
+	// 工作流 应用账号运行流程不执行后续权限校验
+	if utils.Contains(opts, OldAppTokenOperation) {
+		return true, nil
+	}
+
 	// 如果是仅Admin权限，则校验后直接返回结果
 	if utils.Contains(opts, OldOnlyAdminOperation) {
 		isAdmin := utils.IsAdminRole(userInfo.Roles)

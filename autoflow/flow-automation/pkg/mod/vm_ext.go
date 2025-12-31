@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/entity"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/log"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm/opcode"
 	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/pkg/vm/state"
+	"devops.aishu.cn/AISHUDevOps/AnyShareFamily/_git/ContentAutomation/store/rds"
 	liberrors "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/errors"
 	traceLog "devops.aishu.cn/AISHUDevOps/DIP/_git/ide-go-lib/telemetry/log"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,9 +22,11 @@ import (
 type VMExt struct {
 	*vm.VM
 
-	dagIns *entity.DagInstance `json:"-"`
-	logger traceLog.Logger     `json:"-"`
-	userID string              `json:"-"`
+	dagIns    *entity.DagInstance        `json:"-"`
+	logger    traceLog.Logger            `json:"-"`
+	userID    string                     `json:"-"`
+	events    []*entity.DagInstanceEvent `json:"-"`
+	eventLock sync.Mutex                 `json:"-"`
 }
 
 func NewVMExt(ctx context.Context, dagIns *entity.DagInstance, userID string) *VMExt {
@@ -31,6 +36,7 @@ func NewVMExt(ctx context.Context, dagIns *entity.DagInstance, userID string) *V
 		dagIns: dagIns,
 		logger: traceLog.WithContext(ctx),
 		userID: userID,
+		events: make([]*entity.DagInstanceEvent, 0),
 	}
 
 	vmIns.SetContext(ctx)
@@ -39,6 +45,34 @@ func NewVMExt(ctx context.Context, dagIns *entity.DagInstance, userID string) *V
 	vmIns.SetExtfunc(NewExtFunc(vmIns, dagIns, userID))
 	vmIns.SetHook(vmIns)
 	return vmIns
+}
+
+func (vmIns *VMExt) canPersistEvent() bool {
+	return vmIns.dagIns != nil && vmIns.dagIns.EventPersistence == entity.DagInstanceEventPersistenceSql
+}
+
+func (vmIns *VMExt) AppendEvents(events ...*entity.DagInstanceEvent) {
+	if !vmIns.canPersistEvent() {
+		return
+	}
+
+	vmIns.eventLock.Lock()
+	defer vmIns.eventLock.Unlock()
+	vmIns.events = append(vmIns.events, events...)
+}
+
+func (vmIns *VMExt) WriteEvents() error {
+
+	if !vmIns.canPersistEvent() || len(vmIns.events) == 0 {
+		return nil
+	}
+
+	vmIns.eventLock.Lock()
+	defer vmIns.eventLock.Unlock()
+	events := vmIns.events
+	vmIns.events = make([]*entity.DagInstanceEvent, 0)
+	err := vmIns.dagIns.WriteEvents(context.Background(), events)
+	return err
 }
 
 func (vmIns *VMExt) LoadDag(dag *entity.Dag) (err error) {
@@ -63,7 +97,14 @@ func (vmIns *VMExt) LoadDag(dag *entity.Dag) (err error) {
 	}
 
 	vmIns.LoadInstructions(g.Instructions)
-	return nil
+	vmIns.AppendEvents(&entity.DagInstanceEvent{
+		Type:       rds.DagInstanceEventTypeInstructions,
+		InstanceID: vmIns.dagIns.ID,
+		Data:       vmIns.Instructions,
+		Timestamp:  time.Now().UnixMicro(),
+		Visibility: rds.DagInstanceEventVisibilityPrivate,
+	})
+	return err
 }
 
 func (vmIns *VMExt) HandleDagInsError(err error) {
@@ -72,9 +113,10 @@ func (vmIns *VMExt) HandleDagInsError(err error) {
 	dagIns := vmIns.dagIns
 
 	patch := &entity.DagInstance{
-		BaseInfo: dagIns.BaseInfo,
-		EndedAt:  time.Now().Unix(),
-		Status:   entity.DagInstanceStatusFailed,
+		BaseInfo:         dagIns.BaseInfo,
+		EventPersistence: dagIns.EventPersistence,
+		EndedAt:          time.Now().Unix(),
+		Status:           entity.DagInstanceStatusFailed,
 	}
 
 	if dbErr := store.PatchDagIns(ctx, patch); dbErr != nil {
@@ -113,11 +155,15 @@ func (vmIns *VMExt) Boot() error {
 	default:
 		locked := dagIns.Lock(300 * time.Second)
 		if locked {
-			defer func() { dagIns.Unlock() }()
+			defer func() {
+				dagIns.Unlock()
+			}()
 			if dagIns.Status == entity.DagInstanceStatusScheduled {
 				if err := store.PatchDagIns(ctx, &entity.DagInstance{
-					BaseInfo: dagIns.BaseInfo,
-					Status:   entity.DagInstanceStatusRunning}); err != nil {
+					BaseInfo:         dagIns.BaseInfo,
+					Status:           entity.DagInstanceStatusRunning,
+					EventPersistence: dagIns.EventPersistence,
+				}); err != nil {
 					vmIns.HandleDagInsError(err)
 					return err
 				}
@@ -126,8 +172,10 @@ func (vmIns *VMExt) Boot() error {
 		} else {
 			if dagIns.Status == entity.DagInstanceStatusRunning {
 				if err := store.PatchDagIns(ctx, &entity.DagInstance{
-					BaseInfo: dagIns.BaseInfo,
-					Status:   entity.DagInstanceStatusScheduled}); err != nil {
+					BaseInfo:         dagIns.BaseInfo,
+					Status:           entity.DagInstanceStatusScheduled,
+					EventPersistence: dagIns.EventPersistence,
+				}); err != nil {
 					vmIns.HandleDagInsError(err)
 					return err
 				}
@@ -154,19 +202,71 @@ func (vmIns *VMExt) Boot() error {
 		return err
 	}
 
-	if dagIns.Dump == "" {
-		if err := vmIns.LoadDag(dag); err != nil {
+	switch dagIns.EventPersistence {
+	case entity.DagInstanceEventPersistenceOss:
+		return fmt.Errorf("dagIns is already archived")
+	case entity.DagInstanceEventPersistenceSql:
+
+		events, err := dagIns.ListEvents(vmIns.Context(), &rds.DagInstanceEventListOptions{
+			DagInstanceID: dagIns.ID,
+			Types:         []rds.DagInstanceEventType{rds.DagInstanceEventTypeInstructions, rds.DagInstanceEventTypeVM},
+			LatestOnly:    true,
+		})
+
+		if err != nil {
 			vmIns.HandleDagInsError(err)
 			return err
 		}
-		vmIns.Run()
-		return nil
-	}
 
-	if err := json.Unmarshal([]byte(dagIns.Dump), vmIns); err != nil {
-		err = fmt.Errorf("invalid dagIns dump: id %s", dagIns.ID)
-		vmIns.HandleDagInsError(err)
-		return err
+		var vmData, instructionsData string
+
+		for _, event := range events {
+			switch event.Type {
+			case rds.DagInstanceEventTypeInstructions:
+				instructionsData = event.Data.(string)
+			case rds.DagInstanceEventTypeVM:
+				vmData = event.Data.(string)
+			}
+		}
+
+		if vmData == "" || instructionsData == "" {
+			if err := vmIns.LoadDag(dag); err != nil {
+				vmIns.HandleDagInsError(err)
+				return err
+			}
+			vmIns.Run()
+			return nil
+		}
+
+		if err := json.Unmarshal([]byte(vmData), vmIns); err != nil {
+			err = fmt.Errorf("invalid dagIns dump: id %s", dagIns.ID)
+			vmIns.HandleDagInsError(err)
+			return err
+		}
+
+		vmIns.Instructions = make([]*opcode.Instruction, 0)
+
+		if err := json.Unmarshal([]byte(instructionsData), &vmIns.Instructions); err != nil {
+			err = fmt.Errorf("invalid dagIns instructions: id %s", dagIns.ID)
+			vmIns.HandleDagInsError(err)
+			return err
+		}
+
+	default:
+		if dagIns.Dump == "" {
+			if err := vmIns.LoadDag(dag); err != nil {
+				vmIns.HandleDagInsError(err)
+				return err
+			}
+			vmIns.Run()
+			return nil
+		}
+
+		if err := json.Unmarshal([]byte(dagIns.Dump), vmIns); err != nil {
+			err = fmt.Errorf("invalid dagIns dump: id %s", dagIns.ID)
+			vmIns.HandleDagInsError(err)
+			return err
+		}
 	}
 
 	switch vmIns.State {

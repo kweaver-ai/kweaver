@@ -59,6 +59,7 @@ service:
   # 已删除的 dag instance 关联的文件清理周期
   deleteExtDataCron: "0 1 * * *"
   deleteExpiredTaskCacheCron: "0 3 * * *"
+  dagInstanceEventMaxInlineSize: 262144
 
 flow-o11y-data-log:
   log_level: "INFO"
@@ -248,7 +249,7 @@ depServices:
     system_id: ""
     host: mariadb-mariadb-master.resource
     port: "3330"
-    database: "workflow"
+    database: "adp"
     user: "anyshare"
     password: "eisoo.com123"
     type: "mysql"
@@ -321,6 +322,8 @@ depServices:
     outputDir: /output
     backend: vlm-http-client
     serverUrl: http://127.0.0.1:8088
+    fileHost: 192.168.173.19
+    filePort: 8090
   ocr:
     privateHost: 192.168.152.11
     privatePort: 12349

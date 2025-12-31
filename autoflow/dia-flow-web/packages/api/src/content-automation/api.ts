@@ -380,6 +380,7 @@ export interface LogResult {
     inputs: any;
     outputs: any;
     name?: string;
+    metadata?: any;
 }
 
 /**

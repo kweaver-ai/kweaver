@@ -26,6 +26,14 @@ type BranchSkip interface {
 	HookBranchSkip(id string)
 }
 
+type Resume interface {
+	HookResume(name, id string, value any)
+}
+
+type ResumeError interface {
+	HookResumeError(name, id string, err any)
+}
+
 type VMStop interface {
 	HookVMStop()
 }

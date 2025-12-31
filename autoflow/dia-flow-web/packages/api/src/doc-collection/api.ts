@@ -1503,6 +1503,7 @@
              };
          },
          /**
+          *
           * @summary 请求本地提交文件
           * @param {string} taskId 任务id
           * @param {InlineObject5} [inlineObject5] 
@@ -2430,6 +2431,7 @@
              };
          },
          /**
+          *
           * @summary 请求本地提交文件
           * @param {string} taskId 任务id
           * @param {InlineObject5} [inlineObject5] 
@@ -2781,6 +2783,7 @@
              return DefaultApiFp(configuration).receivedTaskTaskIdLocalFileEndsubmitPost(taskId, inlineObject1, options)(axios, basePath);
          },
          /**
+          *
           * @summary 请求本地提交文件
           * @param {string} taskId 任务id
           * @param {InlineObject5} [inlineObject5] 
@@ -3059,6 +3062,7 @@
      }
  
      /**
+      *
       * @summary 请求本地提交文件
       * @param {string} taskId 任务id
       * @param {InlineObject5} [inlineObject5] 

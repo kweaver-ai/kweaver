@@ -137,6 +137,16 @@
                                 "type": "string",
                                 "title": "Server Url",
                                 "description": "默认值为 http://127.0.0.1:8088"
+                            },
+                            "fileHost": {
+                                "type": "string",
+                                "title": "File Host",
+                                "description": "文件服务地址"
+                            },
+                            "filePort": {
+                                "type": "number",
+                                "title": "File Port",
+                                "description": "文件服务端口"
                             }
                         }
                     }
@@ -202,6 +212,12 @@
                         "type": "string",
                         "title": "定期清理过期任务缓存 CRON 表达式",
                         "default": "0 3 * * *"
+                    },
+                    "dagInstanceEventMaxInlineSize":  {
+                        "type": "integer",
+                        "title": "DagInstanceEvent 最大内联数据比特数",
+                        "description": "超过此大小的事件数据上传到对象存储, 默认 256K",
+                        "default": 262144
                     }
                 }
             },
@@ -231,7 +247,7 @@
     },
     "dependence": [
         {
-            "name": "dip-dataflow-dm-pre"
+            "name": "dataflow-dm-pre"
         },
         {
             "name": "mongodb"

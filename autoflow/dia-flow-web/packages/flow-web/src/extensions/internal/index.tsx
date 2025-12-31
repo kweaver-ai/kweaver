@@ -651,7 +651,7 @@ export default {
                                             : input?.separator
                                             }"`}</td>
                                     </tr>
-                                    {input?.texts.map(
+                                    {input?.texts?.map(
                                         (item: any, index: number) => {
                                             return (
                                                 <tr>

@@ -335,7 +335,6 @@ func (u *uniquery) QueryDagStatusCount(ctx context.Context, startTime, endTime i
 	}
 
 	dsfBytes, _ := json.Marshal(dsl)
-	fmt.Println(string(dsfBytes))
 	if !strings.HasPrefix(token, "Bearer") {
 		token = fmt.Sprintf("Bearer %s", token)
 	}
@@ -447,7 +446,7 @@ func (u *uniquery) CheckDataViewExist(ctx context.Context, viewName string) (boo
 	headers := map[string]string{
 		"content-type":   "application/json",
 		"X-ACCOUNT-ID":   defaultAdminUser,
-		"X-ACCOUNT-TYPE": "user",
+		"X-ACCOUNT-TYPE": common.User.ToString(),
 	}
 
 	_, resp, err := u.httpClient.Get(ctx, url, headers)

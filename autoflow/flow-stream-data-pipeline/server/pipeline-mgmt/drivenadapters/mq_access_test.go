@@ -18,7 +18,6 @@ func MockNewMQAccess() *mqAccess {
 		appSetting: &common.AppSetting{
 			KafkaSetting: common.KafkaSetting{
 				Retries:                     5,
-				Protocol:                    "sasl_ssl",
 				SocketTimeoutMs:             60000,
 				AdminClientRequestTimeoutMs: 30000,
 				RetentionTime:               "7d",

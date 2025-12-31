@@ -54,10 +54,20 @@ export const hasTargetOperator = (arr: any) => {
   return checkItem(arr);
 };
 
-export const hasOperatorMessage = (getContainer: any) => {
-   return Modal.info({
-    title: '缺少数据输出节点 (索引库写入、业务知识网络写入、文档库写入、数据连接写入中任意一个节点)',
-    getContainer,
-    onOk() {},
+export const hasOperatorMessage = (getContainer: any): Promise<boolean> => {
+  return new Promise((resolve) => {
+    Modal.confirm({
+      title: '提示',
+      content: '为确保数据流可正常执行，建议您至少配置一个数据输出节点 (如索引库写入、业务知识网络写入、文档库写入、数据连接写入等)',
+      getContainer,
+      okText: "直接保存",
+      cancelText: '继续编辑',
+      onOk() {
+        resolve(true);
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
   });
 };

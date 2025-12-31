@@ -43,6 +43,9 @@ func (d *DebugExecute) SingleDeBug() (err error) {
 	executeMethods := entity.ExecuteMethods{
 		Publish: NewMQHandler().Publish,
 		GetDag:  func(ctx context.Context, id, versionID string) (*entity.Dag, error) { return &entity.Dag{}, nil },
+		PatchDagIns: func(ctx context.Context, dagIns *entity.DagInstance, mustsPatchFields ...string) error {
+			return nil
+		},
 	}
 
 	debugCtx := entity.NewDebugExecuteContext(d.ctx, d.dagIns.MemoryShareData, d.dagIns.VarsGetter(), d.dagIns.VarsIterator(), d.taskIns.ParamsGetter(), d.taskIns.GetGraphID(), d.taskIns, executeMethods, dependency.NewDriven())

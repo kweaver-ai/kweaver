@@ -66,7 +66,7 @@ func (pmAccess *pipelineMgmtAccess) GetConfigs(ctx context.Context, pipelineID s
 
 	if resCode != http.StatusOK {
 		var baseError rest.BaseError
-		if err := sonic.Unmarshal(respData, &baseError); err != nil {
+		if err = sonic.Unmarshal(respData, &baseError); err != nil {
 			logger.Errorf("Unmalshal baesError failed: %s", err.Error())
 			return nil, false, err
 		}

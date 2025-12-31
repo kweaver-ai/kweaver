@@ -22,6 +22,7 @@ interface Field {
     allowOverride?: boolean;
     data?: (RelatedRatioItem | string)[];
     description?: Record<string, any>;
+    default?: any;
 }
 
 export function isRelatedRatio(value?: RelatedRatioItem | string): value is RelatedRatioItem {
@@ -71,7 +72,8 @@ export function useFormTriggerModal() {
                 const values: Record<string, any> = {};
                 if (fields?.length) {
                     fields.forEach((field) => {
-                        values[field.key] = field.defaultValue;
+                        // 统一使用 field.default 作为默认值
+                        values[field.key] = field.default;
                     });
                 }
 
@@ -186,6 +188,7 @@ export function useFormTriggerModal() {
                                     <Form.Item
                                         key={field.key}
                                         name={field.key}
+                                        initialValue={field.default}
                                         label={
                                             <>
                                                 <Typography.Text>{field.name + t("color", "：")}</Typography.Text>

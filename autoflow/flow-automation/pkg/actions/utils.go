@@ -408,7 +408,7 @@ func convertTimeStringToMsTimestamp(timeStr string) (int64, error) {
 func checkOCRAvailable(ctx entity.ExecuteContext, token *entity.Token) error {
 	appstoreAdapter := drivenadapters.NewAppStore()
 	userManagement := drivenadapters.NewUserManagement()
-	userDetail, err := userManagement.GetUserInfoByType(token.UserID, utils.IfNot(token.IsApp, "app", "user"))
+	userDetail, err := userManagement.GetUserInfoByType(token.UserID, utils.IfNot(token.IsApp, common.APP.ToString(), common.User.ToString()))
 	if err != nil {
 		ctx.Trace(ctx.Context(), err.Error())
 		return err

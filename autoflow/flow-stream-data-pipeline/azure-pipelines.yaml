@@ -7,12 +7,9 @@ trigger:
   batch: true
   branches:
     include:
-      - "feature-*"
       - "feature/*"
       - "develop"
-      - "release-*"
       - "release/*"
-      - "patch-*"
 
 variables:
   - group: global-dip
@@ -29,11 +26,11 @@ variables:
   - name: BRANCH_NAME
     value: $[replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), '/', '-')]
   - name: BUILD_IMAGE
-    value: "acr.aishu.cn/ar/go.build:1.23.7-20250311"
+    value: "acr.aishu.cn/ar/go.build:1.24.11-20251203"
   - name: BASE_IMAGE
     value: "acr.aishu.cn/public/ubuntu:22.04.20251014"
   - name: YQ_IMAGE
-    value: "acr.aishu.cn/public/mikefarah/yq:4.26.1"
+    value: "acr.aishu.cn/public/mikefarah/yq:4.47.2"
   - name: LintReportName # 此行保持一致
     value: lint_report.xml
   - name: UTReportName # 此行保持一致
@@ -52,7 +49,7 @@ parameters:
   - name: SKIP_SONARQUBE
     displayName: skip sonarqube
     type: number
-    default: 0
+    default: 1
     values:
       - 0
       - 1
@@ -73,35 +70,8 @@ resources:
       ref: "refs/heads/develop"
 
 stages:
-  - stage: InitVariable
-    displayName: 初始化版本号
-    jobs:
-      - job: InitVariable
-        pool: anyrobot-pools
-        workspace:
-          clean: all
-        steps:
-          - checkout: self
-          - bash: |
-              set -ex
-              sdp_version=`cat VERSION`
-              set +x
-              echo "##vso[task.setvariable variable=SDP_VERSION;isoutput=true]$sdp_version"
-            name: MyOutputVar
-
-          - task: Post-Bash@3
-            inputs:
-              targetType: inline
-              script: |
-                rm -rf $(Build.SourcesDirectory)
-                ls -lah $(Agent.BuildDirectory)
-
   - stage: CodeCheck
     displayName: 代码检查
-    dependsOn:
-      - InitVariable
-    variables:
-      SDP_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.SDP_VERSION']]
     jobs:
       - job: CodeCheck
         displayName: 代码检查
@@ -140,12 +110,11 @@ stages:
                   export VERIFY_MODE_UT=true
                   export I18N_MODE_UT=true
                   export TZ='Asia/Shanghai'
-                  mkdir /mdl-shared-configmap
-                  echo '{}' > /mdl-shared-configmap/mdlconfig.json
                   mkdir -p /flow-stream-data-pipeline/server/report
                   go test -gcflags=all=-l -v -coverprofile=report/ut_coverage.out ./... 2>&1 | go-junit-report > report/$(UTReportName)
-                  gocov convert report/ut_coverage.out | gocov-xml > report/$(CoverageReportName)
-                  go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
+                  grep -v "mock" report/ut_coverage.out > report/ut_coverage.out.filtered
+                  gocov convert report/ut_coverage.out.filtered | gocov-xml > report/$(CoverageReportName)
+                  go tool cover --html=report/ut_coverage.out.filtered -o report/ut_coverage.html
                   golangci-lint run --timeout=10m --out-format junit-xml ./... > report/$(LintReportName)
                   "
 
@@ -215,7 +184,7 @@ stages:
           - task: BuildQualityChecks@8 # 此行保持一致 # UT卡点
             displayName: Quality Gate UT # 此行保持一致
             inputs:
-              checkWarnings: false # 此行保持一致
+              checkWarnings: true # 此行保持一致
               warningFailOption: "fixed"
               warningThreshold: "0"
               showStatistics: false
@@ -237,8 +206,8 @@ stages:
             inputs:
               coverageType: "lines" # 代表行覆盖率
               coverageFailOption: "fixed"
-              checkCoverage: false # 此行保持一致
-              coverageThreshold: "60" # 代码覆盖率卡点阈值
+              checkCoverage: true # 此行保持一致
+              coverageThreshold: "0" # 代码覆盖率卡点阈值
 
           - task: Post-Bash@3
             inputs:
@@ -250,10 +219,7 @@ stages:
   - stage: BuildImage
     displayName: 镜像编译
     dependsOn:
-      - InitVariable
       - CodeCheck
-    variables:
-      SDP_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.SDP_VERSION']]
     jobs:
       - job: BuildImage
         displayName: 镜像编译
@@ -294,12 +260,17 @@ stages:
 
                 cp ~/.ssh/id_rsa id_rsa
                 echo machine devops.aishu.cn login DIP password $(System.AccessToken) > .netrc
+                
+                VERSION=`cat VERSION`
 
-                CURRENT_TAG="$(SDP_VERSION)-$(BRANCH_NAME).$(Build.BuildId)"
-                LATEST_TAG="$(SDP_VERSION)-$(BRANCH_NAME)"
+                CommitID="$(Build.SourceVersion)"
+                CommitID="${CommitID:0:8}"
+
+                CURRENT_TAG="${VERSION}-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_TAG="${VERSION}-$(BRANCH_NAME)"
                 if [ $(IS_RELEASE) = True ]; then
-                    CURRENT_TAG="$(SDP_VERSION)-$(Build.BuildId)"
-                    LATEST_TAG="$(SDP_VERSION)"
+                    CURRENT_TAG="${VERSION}-$(Build.BuildNumber).${CommitID}"
+                    LATEST_TAG="${VERSION}"
                 fi
 
                 CURRENT_IMAGE="$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY):${CURRENT_TAG}.$(ARCH_TYPE)"
@@ -309,7 +280,7 @@ stages:
                   --build-arg GOPROXY_URL=$(go.proxy) \
                   --build-arg BUILD_IMAGE=$(BUILD_IMAGE) \
                   --build-arg BASE_IMAGE=$(BASE_IMAGE) \
-                  --build-arg SERVER_VERSION=$(LATEST_TAG) .
+                  --build-arg SERVER_VERSION=${LATEST_TAG} .
 
                 set +x
                 echo "##vso[task.setvariable variable=CURRENT_IMAGE;isoutput=true]$CURRENT_IMAGE"
@@ -327,12 +298,12 @@ stages:
             inputs:
               targetType: inline
               script: |
-                  #!/usr/bin/env bash
-                  set -ex
-                  docker tag $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
-                  docker push $(BuildImageTask.CURRENT_IMAGE)
-                  docker push $(BuildImageTask.LATEST_IMAGE)
-                  docker rmi $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+                #!/usr/bin/env bash
+                set -ex
+                docker tag $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
+                docker push $(BuildImageTask.CURRENT_IMAGE)
+                docker push $(BuildImageTask.LATEST_IMAGE)
+                docker rmi $(BuildImageTask.CURRENT_IMAGE) $(BuildImageTask.LATEST_IMAGE)
 
           - task: Post-Bash@3
             inputs:
@@ -346,10 +317,7 @@ stages:
   - stage: MakeManifest
     displayName: 制作多架构镜像
     dependsOn:
-      - InitVariable
       - BuildImage
-    variables:
-      SDP_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.SDP_VERSION']]
     jobs:
       - job: MakeManifest
         displayName: 制作多架构镜像
@@ -375,12 +343,17 @@ stages:
               script: |
                 #!/usr/bin/env bash
                 set -ex
+                
+                VERSION=`cat VERSION`
 
-                CURRENT_TAG="$(SDP_VERSION)-$(BRANCH_NAME).$(Build.BuildId)"
-                LATEST_TAG="$(SDP_VERSION)-$(BRANCH_NAME)"
+                CommitID="$(Build.SourceVersion)"
+                CommitID="${CommitID:0:8}"
+
+                CURRENT_TAG="${VERSION}-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_TAG="${VERSION}-$(BRANCH_NAME)"
                 if [ $(IS_RELEASE) = True ]; then
-                    CURRENT_TAG="$(SDP_VERSION)-$(Build.BuildId)"
-                    LATEST_TAG="$(SDP_VERSION)"
+                    CURRENT_TAG="${VERSION}-$(Build.BuildNumber).${CommitID}"
+                    LATEST_TAG="${VERSION}"
                 fi
 
                 CURRENT_IMAGE="$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY):${CURRENT_TAG}"
@@ -401,10 +374,6 @@ stages:
 
   - stage: ChartPush
     displayName: Chart构建
-    dependsOn:
-      - InitVariable
-    variables:
-      SDP_VERSION: $[stageDependencies.InitVariable.InitVariable.outputs['MyOutputVar.SDP_VERSION']]
     jobs:
       - job: ChartPush
         displayName: Chart构建
@@ -424,49 +393,48 @@ stages:
             inputs:
               targetType: inline
               script: |
-                #!/usr/bin/env
+                #!/usr/bin/env bash
                 set -ex
+                
+                VERSION=`cat VERSION`
+                
+                CommitID="$(Build.SourceVersion)"
+                CommitID="${CommitID:0:8}"
 
-                CURRENT_TAG="$(SDP_VERSION)-$(BRANCH_NAME).$(Build.BuildId)"
-                LATEST_TAG="$(SDP_VERSION)-$(BRANCH_NAME)"
+                CURRENT_TAG="${VERSION}-$(BRANCH_NAME).$(Build.BuildNumber).${CommitID}"
+                LATEST_TAG="${VERSION}-$(BRANCH_NAME)"
                 if [ $(IS_RELEASE) = True ]; then
-                    CURRENT_TAG="$(SDP_VERSION)-$(Build.BuildId)"
-                    LATEST_TAG="$(SDP_VERSION)"
-                fi
-
-                CURRENT_VERSION="$(SDP_VERSION)-$(BRANCH_NAME).$(Build.BuildId)"
-                LATEST_VERSION="$(SDP_VERSION)-$(BRANCH_NAME)"
-                if [ $(IS_RELEASE) = True ]; then
-                    CURRENT_VERSION="$(SDP_VERSION)-$(Build.BuildId)"
-                    LATEST_VERSION="$(SDP_VERSION)"
+                    CURRENT_TAG="${VERSION}-$(Build.BuildNumber).${CommitID}"
+                    LATEST_TAG="${VERSION}"
                 fi
 
                 chmod 777 -R $(pwd)/helm
                 docker run --rm \
-                      -v $(pwd)/helm:/chart \
+                      -v $(pwd)/helm:/helm \
                       --entrypoint='' \
                       $(YQ_IMAGE) sh -c "
                   set -ex
 
-                  yq eval -i '.image.registry = \"$(IMAGE_REGISTRY)\"' /chart/$(CHART_NAME)/values.yaml
-                  yq eval -i '.image.repository = \"$(IMAGE_REPOSITORY)\"' /chart/$(CHART_NAME)/values.yaml
-                  yq eval -i '.image.tag = \"${LATEST_TAG}\"' /chart/$(CHART_NAME)/values.yaml
+                  yq eval -i '.image.registry = \"$(IMAGE_REGISTRY)\"' /helm/$(CHART_NAME)/values.yaml
+                  yq eval -i '.image.repository = \"$(IMAGE_REPOSITORY)\"' /helm/$(CHART_NAME)/values.yaml
+                  yq eval -i '.image.tag = \"${LATEST_TAG}\"' /helm/$(CHART_NAME)/values.yaml
 
-                  yq eval -i '.name = \"$(CHART_NAME)\"' /chart/$(CHART_NAME)/Chart.yaml
-                  yq eval -i '.appVersion = \"${CURRENT_VERSION}\"' /chart/$(CHART_NAME)/Chart.yaml
-                  sed -i 's/\"version\": .*/\"version\": \"${CURRENT_VERSION}\",/g' /chart/$(CHART_NAME)/_componentMeta.json
+                  yq eval -i '.name = \"$(CHART_NAME)\"' /helm/$(CHART_NAME)/Chart.yaml
+                  yq eval -i '.appVersion = \"${CURRENT_TAG}\"' /helm/$(CHART_NAME)/Chart.yaml
 
-                  yq eval -i '.version = \"${CURRENT_VERSION}\"' /chart/$(CHART_NAME)/Chart.yaml
-                  cd /chart && tar -czf $(CHART_NAME)-${CURRENT_VERSION}.tar.gz $(CHART_NAME)
+                  yq eval -i -I=4 '.version = \"${CURRENT_TAG}\"' /helm/$(CHART_NAME)/_componentMeta.json
 
-                  yq eval -i '.version = \"${LATEST_VERSION}\"' /chart/$(CHART_NAME)/Chart.yaml
-                  cd /chart && tar -czf $(CHART_NAME)-${LATEST_VERSION}.tar.gz $(CHART_NAME)
+                  yq eval -i '.version = \"${CURRENT_TAG}\"' /helm/$(CHART_NAME)/Chart.yaml
+                  cd /helm && tar -czf $(CHART_NAME)-${CURRENT_TAG}.tar.gz $(CHART_NAME)
+
+                  yq eval -i '.version = \"${LATEST_TAG}\"' /helm/$(CHART_NAME)/Chart.yaml
+                  cd /helm && tar -czf $(CHART_NAME)-${LATEST_TAG}.tar.gz $(CHART_NAME)
                   "
 
                 cd helm
                 curlOptions="-s -u $(registry.username):$(registry.password) -H \"Content-Type:multipart/form-data\""
-                curl ${curlOptions} -F "chart=@$(CHART_NAME)-${CURRENT_VERSION}.tar.gz;type=application/x-compressed-tar" -X POST "$(CHART_REPO)"
-                curl ${curlOptions} -F "chart=@$(CHART_NAME)-${LATEST_VERSION}.tar.gz;type=application/x-compressed-tar" -X POST "$(CHART_REPO)"
+                curl ${curlOptions} -F "chart=@$(CHART_NAME)-${CURRENT_TAG}.tar.gz;type=application/x-compressed-tar" -X POST "$(CHART_REPO)"
+                curl ${curlOptions} -F "chart=@$(CHART_NAME)-${LATEST_TAG}.tar.gz;type=application/x-compressed-tar" -X POST "$(CHART_REPO)"
 
           - task: Post-Bash@3
             inputs:

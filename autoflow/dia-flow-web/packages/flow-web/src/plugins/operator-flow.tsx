@@ -65,7 +65,7 @@ function render(props?: any) {
   });
 
   message.config({
-    getContainer: () => microWidgetProps?.container,
+    getContainer: () => props?.container || document.body,
   });
 
   ReactDOM.render(

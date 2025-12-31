@@ -1,11 +1,11 @@
 import { createRef, forwardRef, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Button, Checkbox, Form, Input, Modal, Select, Space, Typography } from "antd";
+import { Button, Checkbox, Form, Input, InputNumber, Modal, Select, Space, Switch, Typography } from "antd";
 import { customAlphabet } from "nanoid";
 import { useParams } from "react-router-dom";
 import moment from "moment";
 import { isArray } from "lodash";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { API, MicroAppContext, TranslateFn, useFormatPermText, useTranslate } from "@applet/common";
+import { API, DatePickerISO, MicroAppContext, TranslateFn, useFormatPermText, useTranslate } from "@applet/common";
 import { MinusCircleOutlined, HolderOutlined } from "@ant-design/icons";
 import {
     AsDatetimeColored,
@@ -389,7 +389,7 @@ export const FileSystemTriggerAction = (fileSystemType: FileSystemType = FileSys
                                                 <Form.ErrorList errors={errors} />
                                                 {!isSelecting && (
                                                     <Button type="link" icon={<PlusOutlined className={styles["add-icon"]} />} className={styles["link-btn"]} onClick={() => setIsSelecting(true)}>
-                                                        {t("fileTrigger.add", "添加问题")}
+                                                        {t("fileTrigger.add", "添加表单组件")}
                                                     </Button>
                                                 )}
                                                 {isSelecting && (
@@ -751,258 +751,390 @@ export const FieldInput = forwardRef<Validatable, FieldInputProps>(({ t, value, 
         }
     }, [allFields]);
 
+    const defaultComponent = () => {
+      if (value?.type === "number") {
+        return <InputNumber style={{ width: "100%" }} />;
+      } else if (value?.type === "datetime") {
+        return (
+          <DatePickerISO
+            showTime
+            popupClassName="automate-oem-primary"
+            style={{
+              width: "100%",
+            }}
+          />
+        );
+      } else if (value?.type === "long_string") {
+        return (
+          <Input.TextArea placeholder={t("stringPlaceholder", "请输入内容")} />
+        );
+      } else if (value?.type === "string") {
+        return <Input placeholder="请输入" />;
+      }
+    };
+
     return (
-        <Draggable key={value?.key} draggableId={value!.key} index={index}>
-            {(provided, snapshot) => (
-                <div
-                    className={clsx(styles["fieldInput"], {
-                        [styles["isDragging"]]: snapshot.isDragging,
-                    })}
-                    key={value?.key}
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                >
-                    <span
-                        {...provided.dragHandleProps}
-                        className={clsx(styles["draggle-icon"], {
-                            [styles["visible"]]: isFocus === true,
-                        })}
-                    >
-                        <HolderOutlined style={{ fontSize: "13px" }} />
-                    </span>
-                    <span className={styles["fieldIndex"]}>{t("fileTrigger.item", { index: index + 1 })}</span>
-                    <CloseOutlined className={styles.removeButton} onClick={onClose} />
-                    <Form
-                        form={form}
-                        initialValues={value}
-                        autoComplete="off"
-                        layout="inline"
-                        onFocus={() => {
-                            setIsFocus(true);
-                        }}
-                        onBlur={() => {
-                            setIsFocus(false);
-                        }}
-                        onFieldsChange={(changedFields) => {
-                            if (typeof onChange === "function") {
-                                if ((changedFields[0].name as string[])[0] === "type" && changedFields[0].value !== value?.type) {
-                                    if (changedFields[0].value === "radio") {
-                                        onChange({
-                                            ...form.getFieldsValue(),
-                                            key: nanoid(),
-                                            data: ["", ""],
-                                        });
-                                    } else {
-                                        onChange({
-                                            ...form.getFieldsValue(),
-                                            key: nanoid(),
-                                        });
-                                    }
-                                } else {
-                                    onChange(form.getFieldsValue());
-                                }
-                            }
-                        }}
-                    >
-                        <FormItem name="key" hidden>
-                            <Input />
-                        </FormItem>
-                        <FormItem name="type" style={{ flexGrow: 1, width: "120px" }}>
-                            <Select virtual={false} className={styles["select"]}>
-                                {fieldTypes.map((field) => (
-                                    <Select.Option key={field.type}>
-                                        <div className={styles["select-item"]}>
-                                            <div className={styles["type-icon-wrapper"]}>{field?.icon || ""}</div>
-                                            <Typography.Text ellipsis title={t(field.label)}>
-                                                {t(field.label)}
-                                            </Typography.Text>
-                                        </div>
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </FormItem>
-                        <FormItem style={{ width: "270px" }}>
-                            <FormItem
-                                name="name"
-                                className={styles["fieldName"]}
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: t("emptyMessage"),
-                                    },
-                                    {
-                                        pattern: /^[^\\/:*?"<>|]{0,128}$/,
-                                        message: t("fileTrigger.field.nameInvalid"),
-                                    },
-                                ]}
-                            >
-                                <Input ref={inputRef} placeholder={t("fileTrigger.input.placeholder", "请输入组件的显示名称")} />
-                            </FormItem>
-
-                            {value?.type === "radio" && (
-                                <FormItem>
-                                    <Form.List name="data">
-                                        {(fields, { add, remove }, { errors }) => {
-                                            return (
-                                                <div className={styles["radio-wrapper"]}>
-                                                    <div className={styles["radio-label"]}>
-                                                        {t("fileTrigger.radioItem", "选项值")}
-                                                        {t("colon")}
-                                                    </div>
-                                                    <div className={styles["radio-container"]}>
-                                                        <Space>
-                                                            <Button type="link" icon={<PlusOutlined className={styles["add-icon"]} />} className={styles["link-btn"]} onClick={() => add("")}>
-                                                                {t("fileTrigger.addRadio", "添加选项")}
-                                                            </Button>
-                                                            {allFields.length > index + 1 && value.data && value.data.length > 1 ? (
-                                                                <Button
-                                                                    type="link"
-                                                                    icon={<RelatedSVG className={clsx(styles["add-icon"], ANT_ICON_PREFIX)} style={{ width: "1em", height: "1em" }} />}
-                                                                    className={styles["link-btn"]}
-                                                                    onClick={() => {
-                                                                        relationChanged.current = false;
-                                                                        setRadioData(
-                                                                            value.data!.map((item) => {
-                                                                                if (typeof item === "string") {
-                                                                                    return {
-                                                                                        value: item,
-                                                                                        related: [],
-                                                                                    };
-                                                                                }
-                                                                                return item;
-                                                                            })
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    {t("fileTrigger.addRelated", "添加关联")}
-                                                                </Button>
-                                                            ) : null}
-                                                        </Space>
-                                                        {fields.map((field, index) => {
-                                                            return (
-                                                                <div
-                                                                    style={{
-                                                                        position: "relative",
-                                                                    }}
-                                                                >
-                                                                    <FormItem
-                                                                        {...field}
-                                                                        style={{
-                                                                            maxWidth: "266px",
-                                                                        }}
-                                                                        rules={[
-                                                                            {
-                                                                                required: true,
-                                                                                transform(value) {
-                                                                                    return isRelatedRatio(value) ? value.value : value;
-                                                                                },
-                                                                                message: t("emptyMessage"),
-                                                                            },
-                                                                            {
-                                                                                pattern: /^[^\\/:*?"<>|]{0,128}$/,
-                                                                                transform(value) {
-                                                                                    return isRelatedRatio(value) ? value.value : value;
-                                                                                },
-                                                                                message: t("fileTrigger.field.nameInvalid"),
-                                                                            },
-                                                                        ]}
-                                                                    >
-                                                                        <RadioFieldInput fields={allFields} t={t} />
-                                                                    </FormItem>
-                                                                    {fields.length > 2 ? <Button type="text" className={styles["radio-remove"]} icon={<MinusCircleOutlined />} onClick={() => remove(index)} /> : null}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                        <Form.ErrorList errors={errors} />
-                                                    </div>
-                                                </div>
-                                            );
-                                        }}
-                                    </Form.List>
-                                </FormItem>
-                            )}
-                        </FormItem>
-                        <FormItem name="description" style={{ marginRight: 0, width: "28px" }}>
-                            <FormItemDescription />
-                        </FormItem>
-                        <div className={styles["required-wrapper"]}>
-                            <FormItem name="required" valuePropName="checked" noStyle>
-                                <Checkbox>{t("fileTrigger.required")}</Checkbox>
-                            </FormItem>
-                        </div>
-                    </Form>
-
-                    {value?.type === "radio" && allFields.length > index + 1 ? (
-                        <Modal
-                            transitionName=""
-                            open={!!radioData}
-                            onCancel={() => setRadioData(undefined)}
-                            title={t("fileTrigger.addRelatedTitle", "选项关联")}
-                            maskClosable={false}
-                            onOk={() => {
-                                if (relationChanged) {
-                                    message.success(t(`fileTrigger.addRelatedSuccess`, "关联成功"));
-                                    form.setFieldValue("data", radioData);
-                                    onChange?.(form.getFieldsValue());
-                                    setRadioData(undefined);
-                                }
-                            }}
-                            className={styles["addRelatedModal"]}
-                        >
-                            <div>{t("fileTrigger.addRelatedDescription", "根据选择的选项，显示其他问题，当前问题和之前的问题不能被关联显示。")}</div>
-
-                            <div className={styles.relationTable}>
-                                <div className={clsx(styles.row, styles.head)}>
-                                    <div className={styles.whenEqual}>{t("fileTrigger.whenEqual", "当选项为")}</div>
-                                    <div className={styles.related}>{t("fileTrigger.showQuestions", "显示以下问题")}</div>
-                                </div>
-
-                                {radioData?.map((item, itemIndex) => {
-                                    const label = item.value || t("fileTrigger.option", "选项{index}", { index: itemIndex });
-                                    return (
-                                        <div className={styles.row} key={itemIndex}>
-                                            <div className={styles.whenEqual} title={label}>
-                                                {label}
-                                            </div>
-                                            <div className={styles.related}>
-                                                <Select
-                                                    className={styles.questionSelect}
-                                                    mode="tags"
-                                                    value={item.related}
-                                                    placeholder={t("fileTrigger.selectPlaceholder", "请选择")}
-                                                    onChange={(related) => {
-                                                        relationChanged.current = true;
-                                                        setRadioData((data) => {
-                                                            if (!data) return;
-                                                            const newData = [...data];
-                                                            newData.splice(itemIndex, 1, { value: item.value, related });
-                                                            return newData;
-                                                        });
-                                                    }}
-                                                >
-                                                    {allFields.slice(index + 1).map((field, fieldIndex) => {
-                                                        return (
-                                                            <Select.Option className={styles.questionSelectOption} key={field.key} value={field.key}>
-                                                                {t("fileTrigger.questionSelectOption", "{index}、{title}({type})", {
-                                                                    index: index + fieldIndex + 2,
-                                                                    title: field.name || t("fileTrigger.untitled", "未命名问题"),
-                                                                    type: t(`fileTrigger.field.type.${field.type}`, field.type) || field.type,
-                                                                })}
-                                                            </Select.Option>
-                                                        );
-                                                    })}
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </Modal>
-                    ) : null}
-                </div>
+      <Draggable key={value?.key} draggableId={value!.key} index={index}>
+        {(provided, snapshot) => (
+          <div
+            className={clsx(styles["fieldInput"], {
+              [styles["isDragging"]]: snapshot.isDragging,
+            })}
+            key={value?.key}
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            style={getItemStyle(
+              snapshot.isDragging,
+              provided.draggableProps.style
             )}
-        </Draggable>
+          >
+            <span
+              {...provided.dragHandleProps}
+              className={clsx(styles["draggle-icon"], {
+                [styles["visible"]]: isFocus === true,
+              })}
+            >
+              <HolderOutlined style={{ fontSize: "13px" }} />
+            </span>
+            <span className={styles["fieldIndex"]}>
+              {t("fileTrigger.item", { index: index + 1 })}
+            </span>
+            <CloseOutlined className={styles.removeButton} onClick={onClose} />
+            <Form
+              form={form}
+              initialValues={value}
+              autoComplete="off"
+              onFocus={() => {
+                setIsFocus(true);
+              }}
+              onBlur={() => {
+                setIsFocus(false);
+              }}
+              onFieldsChange={(changedFields) => {
+                if (typeof onChange === "function") {
+                  if (
+                    (changedFields[0].name as string[])[0] === "type" &&
+                    changedFields[0].value !== value?.type
+                  ) {
+                    if (changedFields[0].value === "radio") {
+                      onChange({
+                        ...form.getFieldsValue(),
+                        key: nanoid(),
+                        data: ["", ""],
+                      });
+                    } else {
+                      onChange({
+                        ...form.getFieldsValue(),
+                        key: nanoid(),
+                      });
+                    }
+                  } else {
+                    onChange(form.getFieldsValue());
+                  }
+                }
+              }}
+            >
+              <FormItem name="key" hidden>
+                <Input />
+              </FormItem>
+              <FormItem name="type" label="表单类型">
+                <Select virtual={false} className={styles["select"]}>
+                  {fieldTypes.map((field) => (
+                    <Select.Option key={field.type}>
+                      <div className={styles["select-item"]}>
+                        <div className={styles["type-icon-wrapper"]}>
+                          {field?.icon || ""}
+                        </div>
+                        <Typography.Text ellipsis title={t(field.label)}>
+                          {t(field.label)}
+                        </Typography.Text>
+                      </div>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </FormItem>
+              <FormItem
+                name="name"
+                label="表单名称"
+                className={styles["fieldName"]}
+                rules={[
+                  {
+                    required: true,
+                    message: t("emptyMessage"),
+                  },
+                  {
+                    pattern: /^[^\\/:*?"<>|]{0,128}$/,
+                    message: t("fileTrigger.field.nameInvalid"),
+                  },
+                ]}
+              >
+                <Input
+                  ref={inputRef}
+                  placeholder={t(
+                    "fileTrigger.input.placeholder",
+                    "请输入界面显示的名称（如：用户名）"
+                  )}
+                />
+              </FormItem>
+
+              {value?.type === "radio" && (
+                <FormItem>
+                  <Form.List name="data">
+                    {(fields, { add, remove }, { errors }) => {
+                      return (
+                        <div className={styles["radio-wrapper"]}>
+                          <div className={styles["radio-label"]}>
+                            {t("fileTrigger.radioItem", "选项值")}
+                            {t("colon")}
+                          </div>
+                          <div className={styles["radio-container"]}>
+                            <Space>
+                              <Button
+                                type="link"
+                                icon={
+                                  <PlusOutlined
+                                    className={styles["add-icon"]}
+                                  />
+                                }
+                                className={styles["link-btn"]}
+                                onClick={() => add("")}
+                              >
+                                {t("fileTrigger.addRadio", "添加选项")}
+                              </Button>
+                              {allFields.length > index + 1 &&
+                              value.data &&
+                              value.data.length > 1 ? (
+                                <Button
+                                  type="link"
+                                  icon={
+                                    <RelatedSVG
+                                      className={clsx(
+                                        styles["add-icon"],
+                                        ANT_ICON_PREFIX
+                                      )}
+                                      style={{ width: "1em", height: "1em" }}
+                                    />
+                                  }
+                                  className={styles["link-btn"]}
+                                  onClick={() => {
+                                    relationChanged.current = false;
+                                    setRadioData(
+                                      value.data!.map((item) => {
+                                        if (typeof item === "string") {
+                                          return {
+                                            value: item,
+                                            related: [],
+                                          };
+                                        }
+                                        return item;
+                                      })
+                                    );
+                                  }}
+                                >
+                                  {t("fileTrigger.addRelated", "添加关联")}
+                                </Button>
+                              ) : null}
+                            </Space>
+                            {fields.map((field, index) => {
+                              return (
+                                <div
+                                  style={{
+                                    position: "relative",
+                                  }}
+                                >
+                                  <FormItem
+                                    {...field}
+                                    style={{
+                                      maxWidth: "266px",
+                                    }}
+                                    rules={[
+                                      {
+                                        required: true,
+                                        transform(value) {
+                                          return isRelatedRatio(value)
+                                            ? value.value
+                                            : value;
+                                        },
+                                        message: t("emptyMessage"),
+                                      },
+                                      {
+                                        pattern: /^[^\\/:*?"<>|]{0,128}$/,
+                                        transform(value) {
+                                          return isRelatedRatio(value)
+                                            ? value.value
+                                            : value;
+                                        },
+                                        message: t(
+                                          "fileTrigger.field.nameInvalid"
+                                        ),
+                                      },
+                                    ]}
+                                  >
+                                    <RadioFieldInput fields={allFields} t={t} />
+                                  </FormItem>
+                                  {fields.length > 2 ? (
+                                    <Button
+                                      type="text"
+                                      className={styles["radio-remove"]}
+                                      icon={<MinusCircleOutlined />}
+                                      onClick={() => remove(index)}
+                                    />
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                            <Form.ErrorList errors={errors} />
+                          </div>
+                        </div>
+                      );
+                    }}
+                  </Form.List>
+                </FormItem>
+              )}
+
+              {/* <FormItem
+                name="description"
+                style={{ marginRight: 0, width: "28px" }}
+              >
+                <FormItemDescription />
+              </FormItem> */}
+              <FormItem name={["description", "text"]} label="表单描述">
+                <Input
+                  placeholder={t(
+                    "input.placeholder",
+                    "请输入界面显示的描述，用于补充用途、示例或注意事项"
+                  )}
+                />
+              </FormItem>
+              <FormItem name={["description", "type"]} hidden>
+                <Input value="text" defaultValue="text" />
+              </FormItem>
+              {["number", "string", "long_string", "datetime"].includes(
+                value?.type || ""
+              ) && (
+                <FormItem name="default" label="默认值">
+                  {defaultComponent()}
+                </FormItem>
+              )}
+              <FormItem
+                name="required"
+                label={t("fileTrigger.required", "必填")}
+                valuePropName="checked" 
+              >
+                <Switch />
+              </FormItem>
+            </Form>
+
+            {value?.type === "radio" && allFields.length > index + 1 ? (
+              <Modal
+                transitionName=""
+                open={!!radioData}
+                onCancel={() => setRadioData(undefined)}
+                title={t("fileTrigger.addRelatedTitle", "选项关联")}
+                maskClosable={false}
+                onOk={() => {
+                  if (relationChanged) {
+                    message.success(
+                      t(`fileTrigger.addRelatedSuccess`, "关联成功")
+                    );
+                    form.setFieldValue("data", radioData);
+                    onChange?.(form.getFieldsValue());
+                    setRadioData(undefined);
+                  }
+                }}
+                className={styles["addRelatedModal"]}
+              >
+                <div>
+                  {t(
+                    "fileTrigger.addRelatedDescription",
+                    "根据选择的选项，显示其他问题，当前问题和之前的问题不能被关联显示。"
+                  )}
+                </div>
+
+                <div className={styles.relationTable}>
+                  <div className={clsx(styles.row, styles.head)}>
+                    <div className={styles.whenEqual}>
+                      {t("fileTrigger.whenEqual", "当选项为")}
+                    </div>
+                    <div className={styles.related}>
+                      {t("fileTrigger.showQuestions", "显示以下问题")}
+                    </div>
+                  </div>
+
+                  {radioData?.map((item, itemIndex) => {
+                    const label =
+                      item.value ||
+                      t("fileTrigger.option", "选项{index}", {
+                        index: itemIndex,
+                      });
+                    return (
+                      <div className={styles.row} key={itemIndex}>
+                        <div className={styles.whenEqual} title={label}>
+                          {label}
+                        </div>
+                        <div className={styles.related}>
+                          <Select
+                            className={styles.questionSelect}
+                            mode="tags"
+                            value={item.related}
+                            placeholder={t(
+                              "fileTrigger.selectPlaceholder",
+                              "请选择"
+                            )}
+                            onChange={(related) => {
+                              relationChanged.current = true;
+                              setRadioData((data) => {
+                                if (!data) return;
+                                const newData = [...data];
+                                newData.splice(itemIndex, 1, {
+                                  value: item.value,
+                                  related,
+                                });
+                                return newData;
+                              });
+                            }}
+                          >
+                            {allFields
+                              .slice(index + 1)
+                              .map((field, fieldIndex) => {
+                                return (
+                                  <Select.Option
+                                    className={styles.questionSelectOption}
+                                    key={field.key}
+                                    value={field.key}
+                                  >
+                                    {t(
+                                      "fileTrigger.questionSelectOption",
+                                      "{index}、{title}({type})",
+                                      {
+                                        index: index + fieldIndex + 2,
+                                        title:
+                                          field.name ||
+                                          t(
+                                            "fileTrigger.untitled",
+                                            "未命名问题"
+                                          ),
+                                        type:
+                                          t(
+                                            `fileTrigger.field.type.${field.type}`,
+                                            field.type
+                                          ) || field.type,
+                                      }
+                                    )}
+                                  </Select.Option>
+                                );
+                              })}
+                          </Select>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Modal>
+            ) : null}
+          </div>
+        )}
+      </Draggable>
     );
 });
 
@@ -1034,7 +1166,7 @@ function RadioFieldInput({ value, onChange, t, fields }: RadioFieldInputProps) {
             />
             {isRelatedRatio(value) && value.related?.length ? (
                 <div className={styles["radio-field-input-description"]}>
-                    {t(`fileTrigger.jumpToQuestions`, "跳转至{questions}", { questions: value.related.map((key) => t(`fileTrigger.question`, "问题{index}", { index: fieldIndexes[key] + 1 })).join(t(`fileTrigger.questionComma`, "、")) })}
+                    {t(`fileTrigger.jumpToQuestions`, "跳转至{questions}", { questions: value.related.map((key) => t(`fileTrigger.question`, "表单组件{index}", { index: fieldIndexes[key] + 1 })).join(t(`fileTrigger.questionComma`, "、")) })}
                 </div>
             ) : null}
         </div>

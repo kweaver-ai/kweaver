@@ -201,6 +201,11 @@ func (vm *VM) Resume(rets ...interface{}) {
 	}
 
 	frame := vm.Callstack[l-1]
+
+	if h, ok := vm.hook.(hook.Resume); ok {
+		h.HookResume(frame.Name, frame.Label, rets)
+	}
+
 	vm.Callstack = vm.Callstack[0 : l-1]
 
 	if frame.NRets > len(rets) {
@@ -236,6 +241,10 @@ func (vm *VM) ResumeError(err error) {
 		}
 		vm.Err = errors.New(errors.FunctionCallError, frame.Label, fmt.Sprintf("call '%s' failed", frame.Name), detail, vm.Traces)
 		vm.Traces = nil
+	}
+
+	if h, ok := vm.hook.(hook.ResumeError); ok {
+		h.HookResumeError(frame.Name, frame.Label, vm.Err)
 	}
 
 	if h, ok := vm.hook.(hook.VMStop); ok {

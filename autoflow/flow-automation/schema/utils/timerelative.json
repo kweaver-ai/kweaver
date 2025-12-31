@@ -53,6 +53,9 @@
             },
             "required": ["old_time", "relative_value", "relative_type", "relative_unit"],
             "additionalProperties": false
+        },
+        "settings":{
+            "$ref": "../common.json#/definitions/Settings"
         }
     },
     "required": ["id", "operator", "parameters"],

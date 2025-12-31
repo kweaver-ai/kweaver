@@ -57,7 +57,7 @@ function render(props?: any) {
         : props;
 
     message.config({
-    getContainer: () => props?.container || document.body,
+      getContainer: () => props?.container || document.body,
     });
     
     const getToken = () => microWidgetProps?.token?.getToken?.access_token
@@ -73,10 +73,6 @@ function render(props?: any) {
         popupContainer:microWidgetProps?.container,
         refreshToken:microWidgetProps?.token?.refreshOauth2Token,
         onTokenExpired:microWidgetProps?.token?.onTokenExpired,
-    });
-
-    message.config({
-      getContainer: () => microWidgetProps?.container,
     });
 
     ReactDOM.render(

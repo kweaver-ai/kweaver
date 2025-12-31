@@ -637,6 +637,13 @@ func (g *Generator) GenerateValue(value interface{}) (err error) {
 
 func (g *Generator) GenerateString(s string) (err error) {
 	s = utils.RemoveZeroWidthChars(s)
+
+	// 不支持超过8k长度的字符串模板拼接
+	if len(s) > 1024*8 {
+		g.append(&opcode.Instruction{OpCode: opcode.Push, Value: s})
+		return
+	}
+
 	tokens := Parse(s)
 	l := len(tokens)
 

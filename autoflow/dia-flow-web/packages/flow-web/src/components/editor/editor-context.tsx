@@ -15,7 +15,8 @@ export interface EditorContextType {
     pickVariable(
         scope: number[],
         type?: string | string[],
-        options?: VariablePickerOptions
+        options?: VariablePickerOptions,
+        pickVariable?: string[],
     ): Promise<string>;
     onConfigTrigger(step: IStep, onFinish: (step: IStep) => void): void;
     onConfigStep(step: IStep, onFinish: (step: IStep) => void): void;

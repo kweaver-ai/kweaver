@@ -689,7 +689,7 @@ func (m *mgnt) FullDebug(ctx context.Context, params FullDeBugReq, userInfo *dri
 		"userid":        userInfo.UserID,
 		"operator_id":   userInfo.UserID,
 		"operator_name": userInfo.UserName,
-		"operator_type": "user",
+		"operator_type": common.User.ToString(),
 	}
 
 	if dag.TriggerConfig != nil {
@@ -707,7 +707,7 @@ func (m *mgnt) FullDebug(ctx context.Context, params FullDeBugReq, userInfo *dri
 		return "", "", err
 	}
 
-	dagIns, err := dag.Run(ctx, trigger, runVar)
+	dagIns, err := dag.Run(ctx, trigger, runVar, nil)
 	if err != nil {
 		log.Warnf("[logic.FullDebug] RunDag err, detail: %s", err.Error())
 		return "", "", ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, aerr.DescKeyErrorDepencyService, nil)
@@ -728,23 +728,17 @@ func (m *mgnt) FullDebug(ctx context.Context, params FullDeBugReq, userInfo *dri
 				return "", "", ierr.NewPublicRestError(ctx, ierr.PErrorInternalServerError, ierr.PErrorInternalServerError, err.Error())
 			}
 
-			dagIns.ShareData.Dict = map[string]any{
+			werr := dagIns.WriteEventByVariableMap(ctx, map[string]any{
 				"__" + dag.Steps[0].ID: map[string]any{
 					"data": entries,
 				},
+			}, time.Now().UnixMicro())
+
+			if werr != nil {
+				dagIns.Status = entity.DagInstanceStatusFailed
+				dagIns.Reason = werr.Error()
 			}
 
-			serr := dagIns.SaveExtData(ctx)
-			if serr != nil {
-				log.Warnf("[logic.FullDebug] dagIns.SaveExtData err, detail: %s", serr.Error())
-				dagIns.ShareData.Dict = map[string]any{
-					"__" + dag.Steps[0].ID: map[string]any{
-						"status": entity.TaskInstanceStatusFailed,
-					},
-				}
-			} else if dagIns.ShareDataExt != nil {
-				dagIns.ShareData = nil
-			}
 			delete(runVar, "mdl_data")
 			delete(dagIns.Vars, "mdl_data")
 		}

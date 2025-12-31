@@ -63,6 +63,9 @@
             },
             "required": ["docid", "templates"],
             "additionalProperties": false
+        },
+        "settings":{
+            "$ref": "../common.json#/definitions/Settings"
         }
     },
     "required": ["id", "operator", "parameters"],

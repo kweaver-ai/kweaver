@@ -42,26 +42,15 @@ func NewMQAccess(appSetting *common.AppSetting) interfaces.MQAccess {
 // 新建 adminClient
 func (mqa *mqAccess) NewAdminClient() (*kafka.AdminClient, error) {
 	adminConfig := kafka.ConfigMap{
-		"bootstrap.servers":        mqa.appSetting.KafkaSetting.Services,
-		"security.protocol":        mqa.appSetting.KafkaSetting.Protocol,
-		"retries":                  mqa.appSetting.KafkaSetting.Retries,
-		"socket.timeout.ms":        mqa.appSetting.KafkaSetting.SocketTimeoutMs,
-		"allow.auto.create.topics": false,
-	}
-
-	// SASL
-	if mqa.appSetting.KafkaSetting.Protocol == "sasl_plaintext" ||
-		mqa.appSetting.KafkaSetting.Protocol == "sasl_ssl" {
-
-		adminConfig["sasl.mechanism"] = "PLAIN"
-		adminConfig["sasl.username"] = mqa.appSetting.KafkaSetting.Username
-		adminConfig["sasl.password"] = mqa.appSetting.KafkaSetting.Password
-	}
-	// SSL连接相关配置，不验证服务器端的证书
-	if mqa.appSetting.KafkaSetting.Protocol == "ssl" ||
-		mqa.appSetting.KafkaSetting.Protocol == "sasl_ssl" {
-
-		adminConfig["enable.ssl.certificate.verification"] = false
+		"bootstrap.servers":                   fmt.Sprintf("%s:%d", mqa.appSetting.MQSetting.MQHost, mqa.appSetting.MQSetting.MQPort),
+		"security.protocol":                   "sasl_plaintext",
+		"retries":                             mqa.appSetting.KafkaSetting.Retries,
+		"socket.timeout.ms":                   mqa.appSetting.KafkaSetting.SocketTimeoutMs,
+		"allow.auto.create.topics":            false,
+		"sasl.mechanism":                      mqa.appSetting.MQSetting.Auth.Mechanism,
+		"sasl.username":                       mqa.appSetting.MQSetting.Auth.Username,
+		"sasl.password":                       mqa.appSetting.MQSetting.Auth.Password,
+		"enable.ssl.certificate.verification": false,
 	}
 
 	admin, err := kafka.NewAdminClient(&adminConfig)
@@ -252,7 +241,8 @@ func (mqa *mqAccess) GetDefaultConfig(ctx context.Context, adminClient *kafka.Ad
 	for _, result := range results {
 		logger.Debugf("kafka defaultConfig %s %s: %s:\n", result.Type, result.Name, result.Error)
 		for _, entry := range result.Config {
-			if entry.Name == "num.partitions" {
+			switch entry.Name {
+			case "num.partitions":
 				logger.Debugf("%60s = %-60.60s   %-20s Read-only:%v Sensitive:%v Default:%v",
 					entry.Name,
 					entry.Value,
@@ -269,7 +259,7 @@ func (mqa *mqAccess) GetDefaultConfig(ctx context.Context, adminClient *kafka.Ad
 					span.SetStatus(codes.Error, "Failed to transfer entry.Value")
 					return
 				}
-			} else if entry.Name == "default.replication.factor" {
+			case "default.replication.factor":
 				logger.Debugf("%60s = %-60.60s   %-20s Read-only:%v Sensitive:%v Default:%v",
 					entry.Name,
 					entry.Value,

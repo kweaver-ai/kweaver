@@ -96,7 +96,7 @@ func NewRESTHandler() RESTHandler {
 
 // 注册开放API
 func (h *restHandler) RegisterAPI(engine *gin.RouterGroup) {
-	engine.POST("/dag", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.create)
+	engine.POST("/dag", middleware.TokenAuth(), middleware.CheckIsApp(), middleware.CheckBizDomainID(), h.create)
 	engine.PUT("/dag/:dagId", middleware.TokenAuth(), h.update)
 	engine.GET("/dag/:dagId", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.getDagByID)
 	engine.DELETE("/dag/:dagId", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.deleteDagByID)
@@ -129,7 +129,7 @@ func (h *restHandler) RegisterAPI(engine *gin.RouterGroup) {
 
 func (h *restHandler) RegisterAPIv2(engine *gin.RouterGroup) {
 	engine.GET("/dag/:dagId/results", middleware.TokenAuth(), h.listDagInstanceV2)
-	engine.POST("/run-instance-form/:dagId", middleware.TokenAuth(), middleware.SaveAppToken(), h.runInstanceWithFormV2)
+	engine.POST("/run-instance-form/:dagId", middleware.TokenAuth(), h.runInstanceWithFormV2)
 	engine.POST("/dags/:fields", middleware.TokenAuth(), h.batchListDag)
 	engine.GET("/dag/:dagId/result/:resultId", middleware.TokenAuth(), h.listTaskInstanceV2)
 	engine.GET("/dags", middleware.TokenAuth(), middleware.CheckBizDomainID(), h.listDagsWithPerm)
@@ -387,12 +387,13 @@ func (h *restHandler) runInstanceWithForm(c *gin.Context) {
 		return
 	}
 
-	err = h.mgnt.RunFormInstance(c.Request.Context(), dagID, param.Data, userInfo)
+	dagInsID, err := h.mgnt.RunFormInstance(c.Request.Context(), dagID, param.Data, userInfo)
 	if err != nil {
 		errors.ReplyError(c, err)
 		return
 	}
 
+	c.Writer.Header().Set("Location", fmt.Sprintf("/api/automation/v2/dag/%s/result/%s", dagID, dagInsID))
 	c.Status(http.StatusOK)
 }
 
@@ -421,7 +422,7 @@ func (h *restHandler) runPublicAPI(c *gin.Context) {
 		return
 	}
 
-	err = h.mgnt.RunFormInstance(c.Request.Context(), dagID, param.Data, nil)
+	_, err = h.mgnt.RunFormInstance(c.Request.Context(), dagID, param.Data, nil)
 	if err != nil {
 		errors.ReplyError(c, err)
 		return

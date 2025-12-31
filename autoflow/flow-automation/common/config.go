@@ -77,20 +77,21 @@ type Config struct {
 
 // Server 服务基础配置
 type Server struct {
-	LowestExecutorCount    int    `mapstructure:"lowest_executor_count"`
-	LowExecutorCount       int    `mapstructure:"low_executor_count"`
-	MediumExecutorCount    int    `mapstructure:"medium_executor_count"`
-	HighExecutorCount      int    `mapstructure:"high_executor_count"`
-	HighestExecutorCount   int    `mapstructure:"highest_executor_count"`
-	DebugExecutorCount     int    `mapstructure:"debug_executor_count"`
-	ParserrCount           int    `mapstructure:"parser_count"`
-	ExecutorTimeout        int    `mapstructure:"executor_timeout"`
-	ScheduleTimeout        int    `mapstructure:"schedule_timeout"`
-	ListInsCount           int    `mapstructure:"listins_count"`
-	MongoMaxInlineSize     int    `mapstructure:"mongo_max_inline_size"`
-	StoragePrefix          string `mapstructure:"storage_prefix"`
-	DeleteExtDataCron      string `mapstructure:"delete_ext_data_cron"`
-	DeleteExpiredTaskCache string `mapstructure:"delete_expired_task_cache_cron"`
+	LowestExecutorCount           int    `mapstructure:"lowest_executor_count"`
+	LowExecutorCount              int    `mapstructure:"low_executor_count"`
+	MediumExecutorCount           int    `mapstructure:"medium_executor_count"`
+	HighExecutorCount             int    `mapstructure:"high_executor_count"`
+	HighestExecutorCount          int    `mapstructure:"highest_executor_count"`
+	DebugExecutorCount            int    `mapstructure:"debug_executor_count"`
+	ParserrCount                  int    `mapstructure:"parser_count"`
+	ExecutorTimeout               int    `mapstructure:"executor_timeout"`
+	ScheduleTimeout               int    `mapstructure:"schedule_timeout"`
+	ListInsCount                  int    `mapstructure:"listins_count"`
+	MongoMaxInlineSize            int    `mapstructure:"mongo_max_inline_size"`
+	StoragePrefix                 string `mapstructure:"storage_prefix"`
+	DeleteExtDataCron             string `mapstructure:"delete_ext_data_cron"`
+	DeleteExpiredTaskCache        string `mapstructure:"delete_expired_task_cache_cron"`
+	DagInstanceEventMaxInlineSize int    `mapstructure:"dag_instance_event_max_inline_size"`
 }
 
 // DB database config
@@ -470,6 +471,8 @@ type StructureExtractor struct {
 	OutputDir   string `mapstructure:"output_dir"`
 	Backend     string `mapstructure:"backend"`
 	ServerUrl   string `mapstructure:"server_url"`
+	FileHost    string `mapstructure:"file_host"`
+	FilePort    string `mapstructure:"file_port"`
 }
 
 type BusinessDomain struct {

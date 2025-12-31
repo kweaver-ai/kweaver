@@ -108,10 +108,10 @@ func (d *dagVersion) ListDagVersions(ctx context.Context, dagID string, userInfo
 		return res, err
 	}
 
-	var accessorIDs = make(map[string]drivenadapters.AccessorType)
+	var accessorIDs = make(map[string]string)
 
 	for _, version := range versions {
-		accessorIDs[version.UserID] = drivenadapters.User
+		accessorIDs[version.UserID] = common.User.ToString()
 	}
 
 	accessors, _ := d.usermgnt.GetNameByAccessorIDs(accessorIDs)

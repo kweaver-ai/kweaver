@@ -50,35 +50,36 @@ function OperatorFlowDetail(microWidgetProps:any) {
 }
 
 function render(props?: any) {
-    const microWidgetProps = props?.microWidgetProps
-        ? props?.microWidgetProps
-        : props;
+  const microWidgetProps = props?.microWidgetProps
+    ? props?.microWidgetProps
+    : props;
 
-        // 指定弹出容器
-    message.config({
-        getContainer: () => props?.container || document.body,
-      });
-    ReactDOM.render(
-        <MicroAppProvider
-            microWidgetProps={microWidgetProps}
-            container={props?.container || document.body}
-            translations={translations}
-            prefixCls={ANT_PREFIX}
-            iconPrefixCls={ANT_ICON_PREFIX}
-            platform="operator"
-            strategyMode={props?.mode}
-            supportCustomNavigation={false}
-        >
-            <ExtensionProvider isOperator>
-                <OemConfigProvider>
-                    <OperatorFlowDetail microWidgetProps={microWidgetProps} />
-                </OemConfigProvider>
-            </ExtensionProvider>
-        </MicroAppProvider>,
-        (props?.container || document.body).querySelector(
-            "#content-automation-root"
-        )
-    );
+  // 指定弹出容器
+  message.config({
+    getContainer: () => props?.container || document.body,
+  });
+  
+  ReactDOM.render(
+    <MicroAppProvider
+      microWidgetProps={microWidgetProps}
+      container={props?.container || document.body}
+      translations={translations}
+      prefixCls={ANT_PREFIX}
+      iconPrefixCls={ANT_ICON_PREFIX}
+      platform="operator"
+      strategyMode={props?.mode}
+      supportCustomNavigation={false}
+    >
+      <ExtensionProvider isOperator>
+        <OemConfigProvider>
+          <OperatorFlowDetail microWidgetProps={microWidgetProps} />
+        </OemConfigProvider>
+      </ExtensionProvider>
+    </MicroAppProvider>,
+    (props?.container || document.body).querySelector(
+      "#content-automation-root"
+    )
+  );
 }
 
 export async function bootstrap() { }

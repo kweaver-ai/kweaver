@@ -70,6 +70,8 @@ const (
 	// InternalReturnOpt 节点结束
 	InternalReturnOpt = "@internal/return"
 
+	// InternalDefineOpt 变量初始化
+	InternalDefineOpt = "@internal/define"
 	// InternalAssignOpt 变量赋值
 	InternalAssignOpt = "@internal/assign"
 
@@ -494,7 +496,8 @@ var ActionMap = map[string]string{
 	OpEcoconfigReindex: "",
 
 	ComboOperatorPrefix:    ComboOperatorsOptSchema,
-	InternalAssignOpt:      "",
+	InternalAssignOpt:      "utils/assign.json",
+	InternalDefineOpt:      "utils/define.json",
 	OpOpenSearchBulkUpsert: "opensearch/bulkupsert.json",
 	DatabaseWriteOpt:       "database/write.json", // MySQL数据库写入操作
 

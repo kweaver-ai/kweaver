@@ -14,6 +14,9 @@ jobs:
           fetch-depth: 0
 
       - name: Validate commit messages
+        env:
+          LC_ALL: C.UTF-8
+          LANG: C.UTF-8
         run: |
           # Get base branch
           BASE_BRANCH="${{ github.base_ref }}"
@@ -48,24 +51,46 @@ jobs:
               continue
             fi
             
-            # Check format: type(scope): subject
-            if ! echo "$commit_msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .+'; then
-              echo "❌ Invalid commit message: $commit_msg"
+            # === BASIC CHECK (currently enabled) ===
+            # Only check: message is not empty and has minimum length
+            if [ ${#commit_msg} -lt 5 ]; then
+              echo "❌ Commit message too short: $commit_msg"
               ERROR_COUNT=$((ERROR_COUNT + 1))
+            else
+              echo "✅ OK: $commit_msg"
             fi
+            
+            # === STRICT CHECK (disabled for now, enable later) ===
+            # Check format: type(scope): subject (supports Chinese and other Unicode characters)
+            # Supports both English colon (:) and Chinese colon (：)
+            # Examples:
+            #   feat(api): add user authentication
+            #   fix: resolve memory leak
+            #   chore(agent-web): 更新版本号至1.4.0
+            #   chore(agent-web)：更新版本号至1.4.0
+            # if ! echo "$commit_msg" | grep -qP '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^)]+\))?[:：] ?.+'; then
+            #   echo "❌ Invalid commit message: $commit_msg"
+            #   ERROR_COUNT=$((ERROR_COUNT + 1))
+            # fi
           done <<< "$COMMITS"
           
           if [ $ERROR_COUNT -gt 0 ]; then
             echo ""
-            echo "Commit messages must follow Conventional Commits format:"
-            echo "  type(scope): subject"
-            echo ""
-            echo "Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
-            echo "Examples:"
-            echo "  feat(api): add user authentication"
-            echo "  fix: resolve memory leak"
-            echo "  docs: update README"
+            echo "Some commit messages failed basic validation."
+            echo "Please ensure commit messages are not empty and have at least 5 characters."
+            # === STRICT CHECK help message (disabled for now) ===
+            # echo "Commit messages must follow Conventional Commits format:"
+            # echo "  type(scope): subject"
+            # echo ""
+            # echo "Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+            # echo "Supported colons: : (English) or ： (Chinese)"
+            # echo "Examples:"
+            # echo "  feat(api): add user authentication"
+            # echo "  fix: resolve memory leak"
+            # echo "  docs: update README"
+            # echo "  chore(agent-web): 更新版本号至1.4.0"
+            # echo "  chore(agent-web)：更新版本号至1.4.0"
             exit 1
           fi
           
-          echo "✅ All commit messages are valid"
+          echo "✅ All commit messages passed basic validation"

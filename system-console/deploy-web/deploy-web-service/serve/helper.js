@@ -40,16 +40,20 @@ export const registryClient = async () => {
             }
         );
         logger.info("获取已注册的deploy-web client成功");
-        clients.forEach(async (client) => {
-            await fetchParse(
-                `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients/${client.client_id}`,
-                {
-                    timeout: 0,
-                    method: "DELETE",
-                }
-            );
-            logger.info(`删除client, client_id: ${client.client_id}`);
-        });
+        await Promise.all(
+            clients.map(async (client) => {
+                await fetchParse(
+                    `${hydra.protocol}://${hydra.administrativeHost}:${hydra.administrativePort}/admin/clients/${client.client_id}`,
+                    {
+                        timeout: 0,
+                        method: "DELETE",
+                    }
+                );
+                logger.info(`删除client, client_id: ${client.client_id}`);
+                return;
+            })
+        );
+
         logger.info("开始调用注册客户端接口");
         const {
             text: { client_id, client_secret },
@@ -61,13 +65,18 @@ export const registryClient = async () => {
                 body: JSON.stringify(payload),
             }
         );
+        configData.oauth = { client_id, client_secret };
         logger.info(
             `调用注册客户端接口成功, client_id: ${client_id}, client_secret: ${client_secret}`
+        );
+        logger.info(configData.oauth, "configData.oauth");
+        logger.info(
+            configData.Module2Config["deploy-web"],
+            "configData.deploy-web"
         );
     } catch (e) {
         logger.info("调用注册客户端接口失败");
         logger.info(e);
-        logger.info(JSON.stringify(e));
         throw e;
     }
 };

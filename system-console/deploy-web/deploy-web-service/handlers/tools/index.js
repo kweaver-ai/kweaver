@@ -159,15 +159,14 @@ const conf = iniFileReader("/sysvol/conf/service_access.conf");
 
 class Config {
     constructor() {
+        this._oauthClientID = "";
+        this._oauthClientSecret = "";
         this.updateModule2Config();
     }
     updateModule2Config() {
         // 仅读取rds和redis配置
         this.globalConfig = yamlFileReader(
             "/etc/globalConfig/depservice/depServices.yaml"
-        );
-        this.oauthClients = yamlFileReader(
-            "/etc/globalConfig/oauth/oauth-registry-info.yaml"
         );
         this.module2Config = {
             "proton-application": {
@@ -349,17 +348,14 @@ class Config {
     get oauth() {
         return {
             oauthOn: false,
-            oauthClientID:
-                this.oauthClients["deploy-web"] &&
-                this.oauthClients["deploy-web"].oauthClientID
-                    ? this.oauthClients["deploy-web"].oauthClientID
-                    : "",
-            oauthClientSecret:
-                this.oauthClients["deploy-web"] &&
-                this.oauthClients["deploy-web"].oauthClientSecret
-                    ? this.oauthClients["deploy-web"].oauthClientSecret
-                    : "",
+            oauthClientID: this._oauthClientID,
+            oauthClientSecret: this._oauthClientSecret,
         };
+    }
+
+    set oauth({ client_id, client_secret }) {
+        this._oauthClientID = client_id;
+        this._oauthClientSecret = client_secret;
     }
 
     get deploymanger() {

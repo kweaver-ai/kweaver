@@ -36,7 +36,7 @@ const CreateOperatorModal: React.FC<CreateToolBoxModalProps> = ({
       {
         key: CreateMetadataTypeEnum.Flow,
         icon: FlowIcon,
-        title: '流程编辑器',
+        title: '算子编排',
         desc: '通过画布编排已有算子，实现复制的业务逻辑处理',
       },
     ],

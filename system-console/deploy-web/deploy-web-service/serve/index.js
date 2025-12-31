@@ -76,19 +76,6 @@ export async function main() {
         createServer();
         server.setStoreType(storeInstaceType.Default);
     }
-
-    if (tenantMode === "") {
-        fs.watchFile(
-            path.resolve(
-                __dirname,
-                "/etc/globalConfig/oauth/oauth-registry-info.yaml"
-            ),
-            { interval: 200 },
-            () => {
-                configData.updateModule2Config();
-            }
-        );
-    }
 }
 
 export async function createServer(storeInstace = undefined) {

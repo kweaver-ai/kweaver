@@ -163,11 +163,13 @@ class Config {
         this._oauthClientSecret = "";
         this.updateModule2Config();
     }
-    updateModule2Config() {
+    updateModule2Config(client_id = "", client_secret = "") {
         // 仅读取rds和redis配置
         this.globalConfig = yamlFileReader(
             "/etc/globalConfig/depservice/depServices.yaml"
         );
+        client_id && (this._oauthClientID = client_id);
+        client_secret && (this._oauthClientSecret = client_secret);
         this.module2Config = {
             "proton-application": {
                 protocol: "http",
@@ -351,11 +353,6 @@ class Config {
             oauthClientID: this._oauthClientID,
             oauthClientSecret: this._oauthClientSecret,
         };
-    }
-
-    set oauth({ client_id, client_secret }) {
-        this._oauthClientID = client_id;
-        this._oauthClientSecret = client_secret;
     }
 
     get deploymanger() {

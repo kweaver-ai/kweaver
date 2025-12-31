@@ -65,7 +65,7 @@ export const registryClient = async () => {
                 body: JSON.stringify(payload),
             }
         );
-        configData.oauth = { client_id, client_secret };
+        configData.updateModule2Config(client_id, client_secret);
         logger.info(
             `调用注册客户端接口成功, client_id: ${client_id}, client_secret: ${client_secret}`
         );

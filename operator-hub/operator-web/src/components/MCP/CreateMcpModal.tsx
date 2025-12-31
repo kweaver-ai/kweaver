@@ -10,7 +10,6 @@ import { OperateTypeEnum } from '../OperatorList/types';
 import SkillsSection from './ConfigSection/Sections/SkillsSection';
 import HeaderList from './HeaderList';
 import { McpCreationTypeEnum, McpModeTypeEnum } from './types';
-import { OperatorTypeEnum } from '@/components/OperatorList/types';
 
 export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) {
   const microWidgetProps = useMicroWidgetProps();
@@ -147,7 +146,13 @@ export default function CreateMcpModal({ closeModal, fetchInfo, mcpInfo }: any) 
         className="create-mcp-form dip-mt-0"
       >
         <Form.Item label="新建方式" name="creation_type">
-          <Radio.Group disabled={mcpInfo?.mcp_id}>
+          <Radio.Group
+            disabled={mcpInfo?.mcp_id}
+            onChange={() => {
+              // 切换新建方式时，清空数据
+              setDataSource([]);
+            }}
+          >
             <Radio value={McpCreationTypeEnum.Custom}>连接已有MCP服务</Radio>
             <Radio value={McpCreationTypeEnum.ToolImported}>
               从工具箱添加

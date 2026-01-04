@@ -39,23 +39,20 @@ const AgentIcon = ({
   const buildInAgentIconSize = size / 2 - 2;
   const systemAgentIconSize = size / 2 - 6;
 
-  const agentAvatar = useMemo(
-    () => (
-      <Avatar
-        shape="square"
-        size={size}
-        style={{
-          cursor: onClick ? 'pointer' : 'auto',
-          ...style,
-        }}
-        src={<currentAvatar.img style={{ fontSize: size }} />}
-        onClick={onClick}
-        icon={!currentAvatar?.img && (name ? null : <UserOutlined />)}
-      >
-        {!currentAvatar?.img && name ? name.charAt(0).toUpperCase() : null}
-      </Avatar>
-    ),
-    [size, name, style, currentAvatar, onClick]
+  const agentAvatar = (
+    <Avatar
+      shape="square"
+      size={size}
+      style={{
+        cursor: onClick ? 'pointer' : 'auto',
+        ...style,
+      }}
+      src={<currentAvatar.img style={{ fontSize: size }} />}
+      onClick={onClick}
+      icon={!currentAvatar?.img && (name ? null : <UserOutlined />)}
+    >
+      {!currentAvatar?.img && name ? name.charAt(0).toUpperCase() : null}
+    </Avatar>
   );
 
   // 同时显示内置 agent logo和系统 agent logo
@@ -91,4 +88,4 @@ const AgentIcon = ({
   return agentAvatar;
 };
 
-export default memo(AgentIcon);
+export default AgentIcon;

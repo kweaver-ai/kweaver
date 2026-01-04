@@ -4,7 +4,14 @@ import _, { uniq } from 'lodash';
 import classNames from 'classnames';
 import intl from 'react-intl-universal';
 import { Row, Col, Button, message, Spin, Modal, Empty, Select, Tooltip, Carousel } from 'antd';
-import { LeftOutlined, RightOutlined, ReloadOutlined, SyncOutlined } from '@ant-design/icons';
+import {
+  LeftOutlined,
+  RightOutlined,
+  ReloadOutlined,
+  SyncOutlined,
+  UpOutlined,
+  VerticalAlignTopOutlined,
+} from '@ant-design/icons';
 import {
   getRecentVisitAgents,
   getAgentCategoryList,
@@ -38,7 +45,6 @@ import { formatTimeSlash } from '@/utils/handle-function/FormatTime';
 import { PublishSettingsModal, PublishModeEnum } from '@/components/AgentPublish';
 import LoadFailed from '@/components/LoadFailed';
 import SpaceAgentAddButton from '@/components/SpaceAgentAddButton';
-import AgentIcon from '@/components/AgentIcon';
 import BaseCard, { computeColumnCount, gap } from '@/components/BaseCard';
 import SkeletonGrid from '@/components/BaseCard/SkeletonGrid';
 import GradientContainer from '../GradientContainer';
@@ -180,6 +186,11 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
 
   // 是否显示最近访问：只有Data Agent页面显示
   const showRecent = useMemo(() => mode === ModeEnum.DataAgent, [mode]);
+
+  const [scrollMode, setScrollMode] = useState<'page' | 'list'>(() => {
+    return showRecent ? 'page' : 'list';
+  });
+  const sectionRef = useRef<HTMLElement>(null);
 
   // 是否显示分类: Data Agent、模板、自定义空间、API Agent页面显示
   const showCategory = useMemo(
@@ -927,22 +938,6 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
     [mode]
   );
 
-  const getCardIcon = useCallback(
-    (agent: any) => (
-      <AgentIcon
-        size={48}
-        fontSize="14px"
-        avatar_type={agent?.avatar_type}
-        avatar={agent?.avatar}
-        name={agent?.name}
-        style={{ minWidth: '48px' }}
-        showBuildInLogo={agent?.is_built_in === 1}
-        showSystemLogo={agent?.is_system_agent === 1}
-      />
-    ),
-    []
-  );
-
   // 在获取分类数据后开始轮询处理状态
   useEffect(() => {
     // 只有我的agent，才需要查询处理状态
@@ -987,7 +982,6 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
         getNameSuffixIcon={getCardProcessingStatus}
         getNameSuffixStatus={getCardPublishStatus}
         profile={agent.profile}
-        getIcon={getCardIcon}
         userAvatar={showUserInfo ? userAvatars[userInfo.user_id] : undefined}
         userName={showUserInfo ? userInfo?.username : undefined}
         menuItems={isExportMode ? [] : menuItems}
@@ -1217,10 +1211,36 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
           }
         }}
       >
-        <div className={classNames(styles.hideScrollbar, 'dip-flex-item-full-height dip-flex-column')}>
+        <div
+          className={classNames('dip-flex-item-full-height dip-flex-column')}
+          style={{
+            overflowY: scrollMode === 'page' ? 'auto' : 'hidden',
+          }}
+          onScroll={e => {
+            const container = e.target! as HTMLDivElement;
+            if (!showRecent || scrollMode !== 'page') {
+              return;
+            }
+            if (sectionRef.current) {
+              const rect = sectionRef.current.getBoundingClientRect();
+              const containerRect = container.getBoundingClientRect();
+              if (rect.bottom <= containerRect.top) {
+                setScrollMode('list');
+              }
+            }
+          }}
+        >
           {/* 最近访问 */}
           {showRecent && Boolean(recentLoading || recentError || recentAgents?.length) && (
-            <section className={styles.recentAgents}>
+            <section
+              ref={sectionRef}
+              className={styles.recentAgents}
+              style={{
+                height: scrollMode === 'list' ? 0 : 'auto',
+                opacity: scrollMode === 'list' ? 0 : 1,
+                marginBottom: scrollMode === 'list' ? 0 : 24,
+              }}
+            >
               <div className={classNames(styles.sectionTitle, 'dip-mb-16 dip-pl-16 dip-pr-16')}>
                 {intl.get('dataAgent.recentVisits')}
               </div>
@@ -1274,7 +1294,11 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
             </section>
           )}
 
-          <div className={classNames(styles.allAgents, 'dip-flex-column dip-flex-item-full-height')}>
+          <div
+            className={classNames(styles.allAgents, {
+              'dip-flex-column dip-flex-item-full-height': scrollMode === 'list',
+            })}
+          >
             <div className={styles.categoryContainer}>
               <div className={classNames(styles.categoryHeader)}>
                 {[ModeEnum.MyAgent, ModeEnum.MyTemplate].includes(mode) ? (
@@ -1312,7 +1336,10 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
                             { label: intl.get('dataAgent.all'), value: PublishStatusEnum.All },
                             { label: intl.get('dataAgent.published'), value: PublishStatusEnum.Published },
                             { label: intl.get('dataAgent.unpublished'), value: PublishStatusEnum.Draft },
-                            { label: intl.get('dataAgent.publishedEdited'), value: PublishStatusEnum.PublishedEdited },
+                            {
+                              label: intl.get('dataAgent.publishedEdited'),
+                              value: PublishStatusEnum.PublishedEdited,
+                            },
                           ]}
                           value={publishStatusFilter}
                           onChange={value => {
@@ -1532,9 +1559,21 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
               </div>
             )}
             <div
-              ref={listContainerRef}
+              ref={scrollMode === 'list' ? listContainerRef : undefined}
               className="dip-flex-item-full-height dip-pl-16 dip-pr-16 dip-pb-16"
-              style={{ overflowY: 'auto' }}
+              style={{
+                overflowY: scrollMode === 'list' ? 'auto' : 'hidden',
+                // overflowY: 'auto',
+              }}
+              onScroll={e => {
+                if (!showRecent || scrollMode !== 'list') {
+                  return;
+                }
+                const container = e.target! as HTMLDivElement;
+                if (container.scrollTop === 0) {
+                  setScrollMode('page');
+                }
+              }}
             >
               {agentListInitLoading ? (
                 <SkeletonGrid countOfRow={countOfRow} avatarShape="square" />
@@ -1559,6 +1598,22 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
           {contextHolder}
         </div>
       </ResizeObserver>
+
+      {showRecent && scrollMode === 'list' && (
+        <Tooltip title="返回顶部">
+          <div className={styles.backTop}>
+            <Button
+              onClick={() => {
+                setScrollMode('page');
+                listContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              size="large"
+              shape="circle"
+              icon={<VerticalAlignTopOutlined />}
+            />
+          </div>
+        </Tooltip>
+      )}
     </GradientContainer>
   );
 };

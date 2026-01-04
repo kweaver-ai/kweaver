@@ -1,6 +1,6 @@
 .listPageContainer {
   height: 100%;
-  background-color: #f5f5f5;
+  position: relative;
 
   // 区块标题
   .sectionTitle {
@@ -27,7 +27,7 @@
 
   // 最近访问区块
   .recentAgents {
-    margin-bottom: 24px;
+    //margin-bottom: 24px;
     position: relative;
 
     .recentAgentsContainer {
@@ -187,6 +187,16 @@
     .hover-operations {
       display: flex !important;
     }
+  }
+
+  .backTop {
+    position: absolute;
+    right: 24px;
+    bottom: 36px;
+    border-radius: 50%;
+    box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08),
+    0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05);
   }
 }
 

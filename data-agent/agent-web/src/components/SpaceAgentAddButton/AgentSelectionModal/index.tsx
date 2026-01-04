@@ -10,7 +10,6 @@ import { getAgentsByPost } from '@/apis/agent-factory';
 import LoadFailedIcon from '@/assets/icons/load-failed.svg';
 import { useUserAvatars } from '@/hooks/useUserAvatars';
 import { formatTimeSlash } from '@/utils/handle-function/FormatTime';
-import AgentIcon from '@/components/AgentIcon';
 import BaseCard, { rowHeight, loadingMoreRowHeight, gap } from '@/components/BaseCard';
 import styles from './index.module.less';
 
@@ -42,20 +41,6 @@ const AgentSelectionModal = ({ onCancel, onConfirm }: Props) => {
   const [list, setList] = useState<any[]>([]); // 列表的数据
   const [loadStatus, setLoadStatus] = useState<LoadStatus>(LoadStatus.Loading);
   const [selections, setSelections] = useState<any[]>([]);
-
-  const getIcon = useCallback(
-    (item: any) => (
-      <AgentIcon
-        size={48}
-        fontSize="14px"
-        avatar_type={item?.avatar_type}
-        avatar={item?.avatar}
-        name={item?.name}
-        style={{ minWidth: '48px' }}
-      />
-    ),
-    []
-  );
 
   // 单个 Agent 选中逻辑
   const handleItemCheck = item => {
@@ -206,7 +191,6 @@ const AgentSelectionModal = ({ onCancel, onConfirm }: Props) => {
           bordered={true}
           hoverable={false}
           item={item}
-          getIcon={getIcon}
           name={item?.name}
           profile={item?.profile}
           userName={item?.published_by_name}

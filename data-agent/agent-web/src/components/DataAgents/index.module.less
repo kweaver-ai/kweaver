@@ -27,7 +27,7 @@
 
   // 最近访问区块
   .recentAgents {
-    //margin-bottom: 24px;
+    margin-top: 16px;
     position: relative;
 
     .recentAgentsContainer {
@@ -87,15 +87,23 @@
 
   // 所有代理区块
   .allAgents {
-
     .categoryContainer {
-      padding-left: 16px;
-      padding-right: 16px;
-      padding-bottom: 16px;
+      padding: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
+
+      &.stickyHeader {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+
+        &.isStuck {
+          background: rgba(255, 255, 255);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+      }
 
       .categoryHeader {
         display: flex;
@@ -194,9 +202,10 @@
     right: 24px;
     bottom: 36px;
     border-radius: 50%;
-    box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08),
-    0 3px 6px -4px rgba(0, 0, 0, 0.12),
-    0 9px 28px 8px rgba(0, 0, 0, 0.05);
+    box-shadow:
+      0 6px 16px 0 rgba(0, 0, 0, 0.08),
+      0 3px 6px -4px rgba(0, 0, 0, 0.12),
+      0 9px 28px 8px rgba(0, 0, 0, 0.05);
   }
 }
 

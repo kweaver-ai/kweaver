@@ -33,7 +33,7 @@ When reporting a bug, please provide the following information:
   - OS (Windows/Linux/macOS)
   - Database version (MariaDB 11.4+ / DM8)
   - OpenSearch version (if applicable)
-  - Module affected (ontology-manager / ontology-query)
+  - Module affected (e.g., ADP, Decision Agent, DIP Studio)
 
 - **Reproduction Steps**: Clear, step-by-step instructions to reproduce the issue
 
@@ -49,20 +49,19 @@ When reporting a bug, please provide the following information:
 **Environment:**
 - Go: 1.23.0
 - OS: Linux Ubuntu 22.04
-- Module: ontology-manager
+- Module: ADP
 - Database: MariaDB 11.4
 
 **Steps to Reproduce:**
-1. Start ontology-manager service
-2. Create a new knowledge network
-3. Attempt to delete the network
-4. Error occurs
+1. Start the service
+2. Perform the action
+3. Error occurs
 
 **Expected Behavior:**
-Network should be deleted successfully
+Action should complete successfully
 
 **Actual Behavior:**
-Error: "network is in use"
+Error: "unexpected error"
 
 **Error Log:**
 [Paste error log here]
@@ -452,9 +451,7 @@ git remote add upstream https://github.com/kweaver-ai/kweaver.git
 
 ```bash
 # Navigate to the module you want to work on
-cd ontology/ontology-manager/server
-# or
-cd ontology/ontology-query/server
+cd <module-directory>/server
 
 # Download dependencies
 go mod download

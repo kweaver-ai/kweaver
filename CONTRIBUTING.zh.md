@@ -33,7 +33,7 @@
   - 操作系统（Windows/Linux/macOS）
   - 数据库版本（MariaDB 11.4+ / DM8）
   - OpenSearch 版本（如适用）
-  - 受影响的模块（ontology-manager / ontology-query）
+  - 受影响的模块（如 ADP、Decision Agent、DIP Studio）
 
 - **复现步骤**: 清晰、逐步的复现说明
 
@@ -49,20 +49,19 @@
 **环境:**
 - Go: 1.23.0
 - 操作系统: Linux Ubuntu 22.04
-- 模块: ontology-manager
+- 模块: ADP
 - 数据库: MariaDB 11.4
 
 **复现步骤:**
-1. 启动 ontology-manager 服务
-1. 创建新的知识网络
-1. 尝试删除网络
-1. 发生错误
+1. 启动服务
+2. 执行操作
+3. 发生错误
 
 **期望行为:**
-网络应该成功删除
+操作应该成功完成
 
 **实际行为:**
-错误: "network is in use"
+错误: "unexpected error"
 
 **错误日志:**
 [在此粘贴错误日志]
@@ -448,9 +447,7 @@ git remote add upstream https://github.com/kweaver-ai/kweaver.git
 
 ```bash
 # 导航到你要工作的模块
-cd ontology/ontology-manager/server
-# 或
-cd ontology/ontology-query/server
+cd <module-directory>/server
 
 # 下载依赖
 go mod download

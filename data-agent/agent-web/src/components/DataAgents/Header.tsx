@@ -27,7 +27,7 @@ const Header: FC<HeaderProps> = ({ mode, isExportMode, onCreate }) => {
   return (
     <div
       className="dip-pt-24 dip-pr-16 dip-pl-16 dip-flex-space-between"
-      style={{ paddingBottom: isMine ? '17px' : '24px' }}
+      // style={{ paddingBottom: isMine ? '17px' : '24px' }}
     >
       {Boolean(headerText) && (
         <div

@@ -56,3 +56,4 @@ storybook-static/
 # 其他
 *.tgz
 *.tar.gz
+.gemini.md

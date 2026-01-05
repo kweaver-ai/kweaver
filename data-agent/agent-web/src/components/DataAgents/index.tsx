@@ -4,14 +4,7 @@ import _, { uniq } from 'lodash';
 import classNames from 'classnames';
 import intl from 'react-intl-universal';
 import { Row, Col, Button, message, Spin, Modal, Empty, Select, Tooltip, Carousel } from 'antd';
-import {
-  LeftOutlined,
-  RightOutlined,
-  ReloadOutlined,
-  SyncOutlined,
-  UpOutlined,
-  VerticalAlignTopOutlined,
-} from '@ant-design/icons';
+import { LeftOutlined, RightOutlined, ReloadOutlined, SyncOutlined, VerticalAlignTopOutlined } from '@ant-design/icons';
 import {
   getRecentVisitAgents,
   getAgentCategoryList,
@@ -179,7 +172,6 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
   // 高亮的agent/templage id
   const [highlightId, setHighlightId] = useState<string>('');
 
-  const listContainerRef = useRef<HTMLDivElement>(null);
   const [countOfRow, setCountOfRow] = useState<number>(0);
   const recentAgentSlideRef = useRef<CarouselRef | null>(null);
   const [recentAgentSlideIndex, setRecentAgentSlideIndex] = useState<number>(-1);
@@ -187,9 +179,7 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
   // 是否显示最近访问：只有Data Agent页面显示
   const showRecent = useMemo(() => mode === ModeEnum.DataAgent, [mode]);
 
-  const [scrollMode, setScrollMode] = useState<'page' | 'list'>(() => {
-    return showRecent ? 'page' : 'list';
-  });
+  const pageContainerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   // 是否显示分类: Data Agent、模板、自定义空间、API Agent页面显示
@@ -202,7 +192,31 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
   const searchPlaceholder = useMemo(() => getSearchPlaceholder(mode), [mode]);
 
   // 当前登录的用户id
-  const currentUserId = useMemo(() => microWidgetProps?.config?.userInfo?.id, []);
+  const currentUserId = useMemo(() => microWidgetProps?.config?.userInfo?.id, [microWidgetProps]);
+
+  const [isStuck, setIsStuck] = useState(false);
+  const stickySentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showRecent) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          // 当哨兵离开视图（即滚出容器顶部）时，认为已吸顶
+          setIsStuck(!entry.isIntersecting);
+        },
+        {
+          root: pageContainerRef.current,
+          threshold: [1],
+        }
+      );
+
+      if (stickySentinelRef.current) {
+        observer.observe(stickySentinelRef.current);
+      }
+
+      return () => observer.disconnect();
+    }
+  }, []);
 
   const getFilterParams = () => {
     const filterParams: any = {};
@@ -325,7 +339,7 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
     noMore: agentListNoMore,
     mutate: forceUpdateAgentList,
   } = useInfiniteScroll(d => fetchCategoryAgentsList(d), {
-    target: listContainerRef,
+    target: pageContainerRef,
     isNoMore: (d: any) => d?.isNoMore,
     threshold: 100,
     reloadDeps: [
@@ -1202,7 +1216,6 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
 
   return (
     <GradientContainer className={classNames(styles.listPageContainer, 'dip-flex-column')}>
-      <Header mode={mode} isExportMode={isExportMode} onCreate={handleCreateClick} />
       <ResizeObserver
         onResize={({ width }) => {
           if (width > 0) {
@@ -1211,401 +1224,380 @@ const DataAgents = ({ mode: modeFromProps = ModeEnum.DataAgent }: DataAgentsProp
           }
         }}
       >
-        <div
-          className={classNames('dip-flex-item-full-height dip-flex-column')}
-          style={{
-            overflowY: scrollMode === 'page' ? 'auto' : 'hidden',
-          }}
-          onScroll={e => {
-            const container = e.target! as HTMLDivElement;
-            if (!showRecent || scrollMode !== 'page') {
-              return;
-            }
-            if (sectionRef.current) {
-              const rect = sectionRef.current.getBoundingClientRect();
-              const containerRect = container.getBoundingClientRect();
-              if (rect.bottom <= containerRect.top) {
-                setScrollMode('list');
-              }
-            }
-          }}
-        >
-          {/* 最近访问 */}
-          {showRecent && Boolean(recentLoading || recentError || recentAgents?.length) && (
-            <section
-              ref={sectionRef}
-              className={styles.recentAgents}
-              style={{
-                height: scrollMode === 'list' ? 0 : 'auto',
-                opacity: scrollMode === 'list' ? 0 : 1,
-                marginBottom: scrollMode === 'list' ? 0 : 24,
-              }}
-            >
-              <div className={classNames(styles.sectionTitle, 'dip-mb-16 dip-pl-16 dip-pr-16')}>
-                {intl.get('dataAgent.recentVisits')}
-              </div>
-              {recentLoading ? (
-                <div className="dip-pl-16 dip-pr-16">
-                  <SkeletonGrid countOfRow={countOfRow} avatarShape="square" />
-                </div>
-              ) : recentError ? (
-                <LoadFailed
-                  className={classNames(styles.emptyStateContainer, `dip-m-0 dip-p-0 dip-mr-${gap}`)}
-                  onRetry={retryRecentAgents}
-                />
-              ) : (
-                <div className={styles.recentAgentsContainer}>
-                  {recentAgentSlideIndex > 0 && (
-                    <Button
-                      className={`${styles.navArrow} ${styles.leftArrow}`}
-                      icon={<LeftOutlined />}
-                      onClick={() => {
-                        recentAgentSlideRef.current?.prev();
-                      }}
-                    />
-                  )}
-                  <Carousel
-                    dots={false}
-                    ref={recentAgentSlideRef}
-                    infinite={false}
-                    slidesToShow={countOfRow}
-                    slidesToScroll={countOfRow}
-                    afterChange={current => {
-                      setRecentAgentSlideIndex(current);
-                    }}
-                  >
-                    {recentAgentList.map((agent: any) => (
-                      <div key={agent.id} style={{ marginRight: 16, marginLeft: 16 }}>
-                        {_.isEmpty(agent.name) ? <div /> : renderAgentCard(agent, 'dip-ml-8 dip-mr-8')}
-                      </div>
-                    ))}
-                  </Carousel>
-                  {recentAgentSlideIndex < recentAgents.length - countOfRow && (
-                    <Button
-                      className={`${styles.navArrow} ${styles.rightArrow}`}
-                      icon={<RightOutlined />}
-                      onClick={() => {
-                        recentAgentSlideRef.current?.next();
-                      }}
-                    />
-                  )}
-                </div>
-              )}
-            </section>
-          )}
+        <div className="dip-flex-item-full-height dip-flex-column">
+          {/* 如果不是广场页面（没有最近访问），则 Header 固定在顶部不随页面滚动 */}
+          {!showRecent && <Header mode={mode} isExportMode={isExportMode} onCreate={handleCreateClick} />}
 
           <div
-            className={classNames(styles.allAgents, {
-              'dip-flex-column dip-flex-item-full-height': scrollMode === 'list',
-            })}
+            ref={showRecent ? pageContainerRef : null}
+            className={classNames('dip-flex-column dip-overflow-auto', showRecent ? 'dip-flex-item-full-height' : '')}
           >
-            <div className={styles.categoryContainer}>
-              <div className={classNames(styles.categoryHeader)}>
-                {[ModeEnum.MyAgent, ModeEnum.MyTemplate].includes(mode) ? (
-                  <div className={classNames('dip-font-16 dip-c-black dip-font-weight-700')}>
-                    {showMyCreatedTab ? (
-                      <MyCreatedTab
-                        activeKey={mode}
-                        onChange={(mode: any) => {
-                          nextPaginationMarkerStrRef.current = '';
-                          // 切换 我的agent、我的模板，设置加载状态 & 清空agent列表，可避免调用index-check接口
-                          setMode(mode);
-                          // 切换tab时，退出导出模式
-                          setIsExportMode(false);
-                          setSelectedIdsForExport([]);
+            {/* 只有广场页面，Header 在滚动容器内，随页面滚动 */}
+            {showRecent && <Header mode={mode} isExportMode={isExportMode} onCreate={handleCreateClick} />}
+
+            {/* 最近访问 */}
+            {showRecent && Boolean(recentLoading || recentError || recentAgents?.length) && (
+              <section ref={sectionRef} className={styles.recentAgents}>
+                <div className={classNames(styles.sectionTitle, 'dip-mb-16 dip-pl-16 dip-pr-16')}>
+                  {intl.get('dataAgent.recentVisits')}
+                </div>
+                {recentLoading ? (
+                  <div className="dip-pl-16 dip-pr-16">
+                    <SkeletonGrid countOfRow={countOfRow} avatarShape="square" />
+                  </div>
+                ) : recentError ? (
+                  <LoadFailed
+                    className={classNames(styles.emptyStateContainer, `dip-m-0 dip-p-0 dip-mr-${gap}`)}
+                    onRetry={retryRecentAgents}
+                  />
+                ) : (
+                  <div className={styles.recentAgentsContainer}>
+                    {recentAgentSlideIndex > 0 && (
+                      <Button
+                        className={`${styles.navArrow} ${styles.leftArrow}`}
+                        icon={<LeftOutlined />}
+                        onClick={() => {
+                          recentAgentSlideRef.current?.prev();
                         }}
                       />
-                    ) : (
-                      <div style={{ fontWeight: 400 }}>{intl.get('dataAgent.all')}</div>
+                    )}
+                    <Carousel
+                      dots={false}
+                      ref={recentAgentSlideRef}
+                      infinite={false}
+                      slidesToShow={countOfRow}
+                      slidesToScroll={countOfRow}
+                      afterChange={current => {
+                        setRecentAgentSlideIndex(current);
+                      }}
+                    >
+                      {recentAgentList.map((agent: any) => (
+                        <div key={agent.id} style={{ marginRight: 16, marginLeft: 16 }}>
+                          {_.isEmpty(agent.name) ? <div /> : renderAgentCard(agent, 'dip-ml-8 dip-mr-8')}
+                        </div>
+                      ))}
+                    </Carousel>
+                    {recentAgentSlideIndex < recentAgents.length - countOfRow && (
+                      <Button
+                        className={`${styles.navArrow} ${styles.rightArrow}`}
+                        icon={<RightOutlined />}
+                        onClick={() => {
+                          recentAgentSlideRef.current?.next();
+                        }}
+                      />
                     )}
                   </div>
-                ) : (
-                  <div className={classNames(styles.sectionTitle, 'dip-mb-16')}>
-                    {showCategory ? intl.get('dataAgent.browseByCategory') : ''}
-                  </div>
                 )}
+              </section>
+            )}
 
-                <div className={styles.searchWrapper}>
-                  {[ModeEnum.MyAgent, ModeEnum.MyTemplate].includes(mode) && (
-                    <>
-                      <span>
-                        <span className="dip-mr-6">{intl.get('dataAgent.status')}</span>
-                        <Select
-                          style={{ width: 140 }}
-                          options={[
-                            { label: intl.get('dataAgent.all'), value: PublishStatusEnum.All },
-                            { label: intl.get('dataAgent.published'), value: PublishStatusEnum.Published },
-                            { label: intl.get('dataAgent.unpublished'), value: PublishStatusEnum.Draft },
-                            {
-                              label: intl.get('dataAgent.publishedEdited'),
-                              value: PublishStatusEnum.PublishedEdited,
-                            },
-                          ]}
-                          value={publishStatusFilter}
-                          onChange={value => {
+            <div
+              className={classNames(styles.allAgents, {
+                'dip-flex-item-full-height dip-flex-column': !showRecent,
+              })}
+            >
+              <div ref={stickySentinelRef} style={{ height: '1px', marginTop: '-1px' }} />
+              <div
+                className={classNames(styles.categoryContainer, {
+                  [styles.stickyHeader]: showRecent,
+                  [styles.isStuck]: isStuck,
+                })}
+              >
+                <div className={classNames(styles.categoryHeader)}>
+                  {[ModeEnum.MyAgent, ModeEnum.MyTemplate].includes(mode) ? (
+                    <div className={classNames('dip-font-16 dip-c-black dip-font-weight-700')}>
+                      {showMyCreatedTab ? (
+                        <MyCreatedTab
+                          activeKey={mode}
+                          onChange={(mode: any) => {
                             nextPaginationMarkerStrRef.current = '';
-                            publishStatusFilterRef.current = value;
-                            setPublishStatusFilter(value);
+                            // 切换 我的agent、我的模板，设置加载状态 & 清空agent列表，可避免调用index-check接口
+                            setMode(mode);
+                            // 切换tab时，退出导出模式
+                            setIsExportMode(false);
+                            setSelectedIdsForExport([]);
                           }}
                         />
-                      </span>
-                      {/* 只有我的创建页面有 发布类型过滤项 */}
-                      {mode === ModeEnum.MyAgent && (
+                      ) : (
+                        <div style={{ fontWeight: 400 }}>{intl.get('dataAgent.all')}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className={classNames(styles.sectionTitle, 'dip-mb-16')}>
+                      {showCategory ? intl.get('dataAgent.browseByCategory') : ''}
+                    </div>
+                  )}
+
+                  <div className={styles.searchWrapper}>
+                    {[ModeEnum.MyAgent, ModeEnum.MyTemplate].includes(mode) && (
+                      <>
                         <span>
-                          <span className="dip-mr-6">{intl.get('dataAgent.config.type')}</span>
+                          <span className="dip-mr-6">{intl.get('dataAgent.status')}</span>
                           <Select
-                            style={{ width: 120 }}
+                            style={{ width: 140 }}
                             options={[
-                              { label: intl.get('dataAgent.all'), value: AgentPublishToBeEnum.All },
-                              { label: 'API', value: AgentPublishToBeEnum.ApiAgent },
-                              { label: intl.get('dataAgent.config.skill'), value: AgentPublishToBeEnum.SkillAgent },
+                              { label: intl.get('dataAgent.all'), value: PublishStatusEnum.All },
+                              { label: intl.get('dataAgent.published'), value: PublishStatusEnum.Published },
+                              { label: intl.get('dataAgent.unpublished'), value: PublishStatusEnum.Draft },
+                              {
+                                label: intl.get('dataAgent.publishedEdited'),
+                                value: PublishStatusEnum.PublishedEdited,
+                              },
                             ]}
-                            value={publishCategoryFilter}
+                            value={publishStatusFilter}
                             onChange={value => {
                               nextPaginationMarkerStrRef.current = '';
-                              publishCategoryFilterRef.current = value;
-                              setPublishCategoryFilter(value);
+                              publishStatusFilterRef.current = value;
+                              setPublishStatusFilter(value);
                             }}
                           />
                         </span>
+                        {/* 只有我的创建页面有 发布类型过滤项 */}
+                        {mode === ModeEnum.MyAgent && (
+                          <span>
+                            <span className="dip-mr-6">{intl.get('dataAgent.config.type')}</span>
+                            <Select
+                              style={{ width: 120 }}
+                              options={[
+                                { label: intl.get('dataAgent.all'), value: AgentPublishToBeEnum.All },
+                                { label: 'API', value: AgentPublishToBeEnum.ApiAgent },
+                                { label: intl.get('dataAgent.config.skill'), value: AgentPublishToBeEnum.SkillAgent },
+                              ]}
+                              value={publishCategoryFilter}
+                              onChange={value => {
+                                nextPaginationMarkerStrRef.current = '';
+                                publishCategoryFilterRef.current = value;
+                                setPublishCategoryFilter(value);
+                              }}
+                            />
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {!showCategory && (
+                      <div className="dip-flex dip-gap-8 dip-position-r">
+                        <SearchInput
+                          value={searchName}
+                          onChange={(e: any) => {
+                            nextPaginationMarkerStrRef.current = '';
+                            setSearchName(e.target.value);
+                          }}
+                          placeholder={searchPlaceholder}
+                          debounce
+                          style={{ width: 260 }}
+                        />
+                        <div>
+                          {mode === ModeEnum.MyAgent && (
+                            <>
+                              <Tooltip title={intl.get('dataAgent.import')}>
+                                <Button
+                                  icon={<ImportIcon />}
+                                  className={classNames(styles['icon-btn'], {
+                                    [styles['icon-btn-disabled']]: isExportMode,
+                                  })}
+                                  disabled={isExportMode}
+                                  onClick={() =>
+                                    handleImportAgent(modal, () => {
+                                      nextPaginationMarkerStrRef.current = '';
+                                      refreshCategoryList();
+                                    })
+                                  }
+                                />
+                              </Tooltip>
+                              {isExportMode ? (
+                                <Button
+                                  onClick={() => {
+                                    setIsExportMode(false);
+                                    setSelectedIdsForExport([]);
+                                  }}
+                                >
+                                  {intl.get('dataAgent.cancelExport')}
+                                </Button>
+                              ) : (
+                                <Tooltip title={intl.get('dataAgent.exportWithBuiltInAgentRestriction')}>
+                                  <Button
+                                    icon={<ExportIcon />}
+                                    className={styles['icon-btn']}
+                                    onClick={() => {
+                                      setIsExportMode(true);
+                                    }}
+                                  />
+                                </Tooltip>
+                              )}
+                            </>
+                          )}
+                          <Tooltip title={intl.get('dataAgent.reloadData')}>
+                            <Button
+                              icon={<ReloadOutlined spin={agentListInitLoading} />}
+                              className={classNames(styles['icon-btn'], {
+                                [styles['icon-btn-disabled']]: isExportMode,
+                              })}
+                              disabled={isExportMode}
+                              onClick={handleRefresh}
+                            />
+                          </Tooltip>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 自定义空间-agent列表页面，添加agent(只有空间的创建者才可以) */}
+                  {mode === ModeEnum.CustomSpace &&
+                    Boolean(customSpaceId) &&
+                    currentUserId === customSpaceInfo?.created_by && (
+                      <SpaceAgentAddButton
+                        customSpaceId={customSpaceId!}
+                        onAddSuccess={() => {
+                          nextPaginationMarkerStrRef.current = '';
+                          refreshCategoryList();
+                        }}
+                      />
+                    )}
+                </div>
+                {showCategory && (
+                  <div className={classNames(styles.categoriesWrapper, `dip-w-100 dip-gap-10`)}>
+                    <div
+                      className={classNames(
+                        styles.categories,
+                        'dip-flex-item-full-width dip-1-line dip-position-r dip-overflow-hidden'
                       )}
-                    </>
-                  )}
-                  {!showCategory && (
-                    <div className="dip-flex dip-gap-8 dip-position-r">
+                      ref={containerRef}
+                    >
+                      <div ref={scrollableRef} style={{ width: 'fit-content' }}>
+                        <Button
+                          type={selectedCategory.category_id === '' ? 'primary' : 'default'}
+                          className={styles.categoryTag}
+                          onClick={() => handleCategoryClick({ category_id: '', name: '全部' })}
+                        >
+                          {intl.get('dataAgent.all')}
+                        </Button>
+                        {categories.map((category, index) => (
+                          <Button
+                            key={category.category_id}
+                            type={selectedCategory.category_id === category.category_id ? 'primary' : 'default'}
+                            className={styles.categoryTag}
+                            style={index === categories.length - 1 ? { marginRight: 0 } : {}}
+                            onClick={() => handleCategoryClick(category)}
+                          >
+                            {category.name}
+                          </Button>
+                        ))}
+                      </div>
+                      {showScrollArrows.left && (
+                        <div className={classNames(styles['arrow-icon-wrapper'], styles['left-arrow-wrapper'])}>
+                          <Button
+                            className={classNames(styles['arrow-icon'])}
+                            icon={<LeftOutlined className="dip-font-12" />}
+                            onClick={scrollLeft}
+                          />
+                        </div>
+                      )}
+                      {showScrollArrows.right && (
+                        <div className={classNames(styles['arrow-icon-wrapper'], styles['right-arrow-wrapper'])}>
+                          <Button
+                            className={classNames(styles['arrow-icon'])}
+                            icon={<RightOutlined className="dip-font-12" />}
+                            onClick={scrollRight}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="dip-flex" style={{ gap: 8 }}>
                       <SearchInput
                         value={searchName}
+                        style={{ width: 260 }}
                         onChange={(e: any) => {
                           nextPaginationMarkerStrRef.current = '';
                           setSearchName(e.target.value);
                         }}
                         placeholder={searchPlaceholder}
                         debounce
-                        style={{ width: 260 }}
                       />
-                      <div>
-                        {mode === ModeEnum.MyAgent && (
-                          <>
-                            <Tooltip title={intl.get('dataAgent.import')}>
-                              <Button
-                                icon={<ImportIcon />}
-                                className={classNames(styles['icon-btn'], {
-                                  [styles['icon-btn-disabled']]: isExportMode,
-                                })}
-                                disabled={isExportMode}
-                                onClick={() =>
-                                  handleImportAgent(modal, () => {
-                                    nextPaginationMarkerStrRef.current = '';
-                                    refreshCategoryList();
-                                  })
-                                }
-                              />
-                            </Tooltip>
-                            {isExportMode ? (
-                              <Button
-                                onClick={() => {
-                                  setIsExportMode(false);
-                                  setSelectedIdsForExport([]);
-                                }}
-                              >
-                                {intl.get('dataAgent.cancelExport')}
-                              </Button>
-                            ) : (
-                              <Tooltip title={intl.get('dataAgent.exportWithBuiltInAgentRestriction')}>
-                                <Button
-                                  icon={<ExportIcon />}
-                                  className={styles['icon-btn']}
-                                  onClick={() => {
-                                    setIsExportMode(true);
-                                  }}
-                                />
-                              </Tooltip>
-                            )}
-                          </>
-                        )}
-                        <Tooltip title={intl.get('dataAgent.reloadData')}>
-                          <Button
-                            icon={<ReloadOutlined spin={agentListInitLoading} />}
-                            className={classNames(styles['icon-btn'], {
-                              [styles['icon-btn-disabled']]: isExportMode,
-                            })}
-                            disabled={isExportMode}
-                            onClick={handleRefresh}
-                          />
-                        </Tooltip>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 自定义空间-agent列表页面，添加agent(只有空间的创建者才可以) */}
-                {mode === ModeEnum.CustomSpace &&
-                  Boolean(customSpaceId) &&
-                  currentUserId === customSpaceInfo?.created_by && (
-                    <SpaceAgentAddButton
-                      customSpaceId={customSpaceId!}
-                      onAddSuccess={() => {
-                        nextPaginationMarkerStrRef.current = '';
-                        refreshCategoryList();
-                      }}
-                    />
-                  )}
-              </div>
-              {showCategory && (
-                <div className={classNames(styles.categoriesWrapper, `dip-mr-${gap} dip-w-100 dip-gap-10`)}>
-                  <div
-                    className={classNames(
-                      styles.categories,
-                      'dip-flex-item-full-width dip-1-line dip-position-r dip-overflow-hidden'
-                    )}
-                    ref={containerRef}
-                  >
-                    <div ref={scrollableRef} style={{ width: 'fit-content' }}>
-                      <Button
-                        type={selectedCategory.category_id === '' ? 'primary' : 'default'}
-                        className={styles.categoryTag}
-                        onClick={() => handleCategoryClick({ category_id: '', name: '全部' })}
-                      >
-                        {intl.get('dataAgent.all')}
-                      </Button>
-                      {categories.map((category, index) => (
+                      <Tooltip title={intl.get('dataAgent.reloadData')}>
                         <Button
-                          key={category.category_id}
-                          type={selectedCategory.category_id === category.category_id ? 'primary' : 'default'}
-                          className={styles.categoryTag}
-                          style={index === categories.length - 1 ? { marginRight: 0 } : {}}
-                          onClick={() => handleCategoryClick(category)}
-                        >
-                          {category.name}
+                          icon={<ReloadOutlined spin={agentListInitLoading} />}
+                          onClick={handleRefresh}
+                          className={classNames(styles['icon-btn'])}
+                        />
+                      </Tooltip>
+                      {mode === ModeEnum.MyAgent && (
+                        <Button type="primary" onClick={handleCreateClick}>
+                          <PlusIcon />
+                          <span style={{ color: 'white' }}>{intl.get('dataAgent.createNew')}</span>
                         </Button>
-                      ))}
+                      )}
                     </div>
-                    {showScrollArrows.left && (
-                      <div className={classNames(styles['arrow-icon-wrapper'], styles['left-arrow-wrapper'])}>
-                        <Button
-                          className={classNames(styles['arrow-icon'])}
-                          icon={<LeftOutlined className="dip-font-12" />}
-                          onClick={scrollLeft}
-                        />
-                      </div>
-                    )}
-                    {showScrollArrows.right && (
-                      <div className={classNames(styles['arrow-icon-wrapper'], styles['right-arrow-wrapper'])}>
-                        <Button
-                          className={classNames(styles['arrow-icon'])}
-                          icon={<RightOutlined className="dip-font-12" />}
-                          onClick={scrollRight}
-                        />
-                      </div>
-                    )}
                   </div>
-                  <div className="dip-flex" style={{ gap: 8 }}>
-                    <SearchInput
-                      value={searchName}
-                      style={{ width: 260 }}
-                      onChange={(e: any) => {
-                        nextPaginationMarkerStrRef.current = '';
-                        setSearchName(e.target.value);
-                      }}
-                      placeholder={searchPlaceholder}
-                      debounce
-                    />
-                    <Tooltip title={intl.get('dataAgent.reloadData')}>
-                      <Button
-                        icon={<ReloadOutlined spin={agentListInitLoading} />}
-                        onClick={handleRefresh}
-                        className={classNames(styles['icon-btn'])}
-                      />
-                    </Tooltip>
-                    {mode === ModeEnum.MyAgent && (
-                      <Button type="primary" onClick={handleCreateClick}>
-                        <PlusIcon />
-                        <span style={{ color: 'white' }}>{intl.get('dataAgent.createNew')}</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {isExportMode && (
-              <div
-                className={classNames(
-                  'dip-flex-space-between dip-mr-16 dip-mb-16 dip-border-radius-8',
-                  styles['export-header']
                 )}
-              >
-                <span>{intl.get('dataAgent.itemsSelected', { count: selectedIdsForExport.length })}</span>
-                <div>
-                  <Button
-                    type="link"
-                    disabled={!selectedIdsForExport.length}
-                    className="dip-p-0"
-                    onClick={() => {
-                      setSelectedIdsForExport([]);
-                    }}
-                  >
-                    {intl.get('dataAgent.clearAll')}
-                  </Button>
-                  <Button
-                    type="link"
-                    disabled={!selectedIdsForExport.length}
-                    className="dip-p-0 dip-ml-12"
-                    onClick={handleExportAgent}
-                  >
-                    {intl.get('dataAgent.exportSelectedItems')}
-                  </Button>
-                </div>
               </div>
-            )}
-            <div
-              ref={scrollMode === 'list' ? listContainerRef : undefined}
-              className="dip-flex-item-full-height dip-pl-16 dip-pr-16 dip-pb-16"
-              style={{
-                overflowY: scrollMode === 'list' ? 'auto' : 'hidden',
-                // overflowY: 'auto',
-              }}
-              onScroll={e => {
-                if (!showRecent || scrollMode !== 'list') {
-                  return;
-                }
-                const container = e.target! as HTMLDivElement;
-                if (container.scrollTop === 0) {
-                  setScrollMode('page');
-                }
-              }}
-            >
-              {agentListInitLoading ? (
-                <SkeletonGrid countOfRow={countOfRow} avatarShape="square" />
-              ) : categoryError ? (
-                <LoadFailed className={styles.emptyStateContainer} onRetry={retryCategoryAgents} />
-              ) : (
-                renderCategoryAgents()
+
+              {isExportMode && (
+                <div
+                  className={classNames(
+                    'dip-flex-space-between dip-mb-16 dip-border-radius-8',
+                    styles['export-header']
+                  )}
+                >
+                  <span>{intl.get('dataAgent.itemsSelected', { count: selectedIdsForExport.length })}</span>
+                  <div>
+                    <Button
+                      type="link"
+                      disabled={!selectedIdsForExport.length}
+                      className="dip-p-0"
+                      onClick={() => {
+                        setSelectedIdsForExport([]);
+                      }}
+                    >
+                      {intl.get('dataAgent.clearAll')}
+                    </Button>
+                    <Button
+                      type="link"
+                      disabled={!selectedIdsForExport.length}
+                      className="dip-p-0 dip-ml-12"
+                      onClick={handleExportAgent}
+                    >
+                      {intl.get('dataAgent.exportSelectedItems')}
+                    </Button>
+                  </div>
+                </div>
               )}
+              <div
+                ref={!showRecent ? pageContainerRef : null}
+                className={classNames('dip-pl-16 dip-pr-16 dip-pb-16', {
+                  'dip-flex-item-full-height dip-overflow-auto': !showRecent,
+                })}
+              >
+                {agentListInitLoading ? (
+                  <SkeletonGrid countOfRow={countOfRow} avatarShape="square" />
+                ) : categoryError ? (
+                  <LoadFailed className={styles.emptyStateContainer} onRetry={retryCategoryAgents} />
+                ) : (
+                  renderCategoryAgents()
+                )}
+              </div>
             </div>
+
+            {/* 发布设置弹窗 */}
+            {publishModalVisible && (
+              <PublishSettingsModal
+                onCancel={handlePublishCancel}
+                onOk={handlePublishSubmit}
+                agent={selectedAgent}
+                mode={publishModeRef.current}
+              />
+            )}
+
+            {contextHolder}
           </div>
-
-          {/* 发布设置弹窗 */}
-          {publishModalVisible && (
-            <PublishSettingsModal
-              onCancel={handlePublishCancel}
-              onOk={handlePublishSubmit}
-              agent={selectedAgent}
-              mode={publishModeRef.current}
-            />
-          )}
-
-          {contextHolder}
         </div>
       </ResizeObserver>
 
-      {showRecent && scrollMode === 'list' && (
+      {showRecent && isStuck && (
         <Tooltip title="返回顶部">
           <div className={styles.backTop}>
             <Button
               onClick={() => {
-                setScrollMode('page');
-                listContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                pageContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               size="large"
               shape="circle"

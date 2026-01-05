@@ -9,7 +9,7 @@ import {
     MenuType,
     MicrofrontedLoadingMode,
     PathMatchMode,
-} from "@aishu-tech/workshop-framework-system";
+} from "@kweaver-ai/workshop-framework-system";
 import { Domain } from "./declare.d";
 import { UserInfo } from "../../api/oauth/declare";
 import { OemConfigInfo } from "../../api/oem-config/declare";

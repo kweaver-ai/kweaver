@@ -1,8 +1,19 @@
-declare module "@aishu-tech/template" {
+declare module "@kweaver-ai/template" {
     const Template: any;
     export default Template;
 }
-declare module "@aishu-tech/workshop-framework-system" {
+declare module "rsa.min" {
+    export class RSAKey {
+        constructor();
+        setPublic(n: string, e: string): void;
+        encrypt(text: string): string;
+        // 添加其他需要的方法和属性
+    }
+
+    export function hex2b64(hex: string): string;
+}
+
+declare module "@kweaver-ai/workshop-framework-system" {
     export interface Config {
         /**
          * 导航

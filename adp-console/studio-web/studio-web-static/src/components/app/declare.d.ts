@@ -5,7 +5,7 @@ import { Domain } from "../../core/workshop-framework/declare";
 import {
     Config as WorkShopFrameWorkConfig,
     Locale,
-} from "@aishu-tech/workshop-framework-studio";
+} from "@kweaver-ai/workshop-framework-studio";
 
 export interface Props extends React.ClassAttributes<any> {
     /**

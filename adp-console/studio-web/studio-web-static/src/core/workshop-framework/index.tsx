@@ -8,7 +8,7 @@ import {
     ThemeModeType,
     MicrofrontedLoadingMode,
     PathMatchMode,
-} from "@aishu-tech/workshop-framework-studio";
+} from "@kweaver-ai/workshop-framework-studio";
 import { Domain } from "./declare.d";
 import { UserInfo } from "../../api/oauth/declare";
 import { RegistryInfo } from "../../api/workstation-backend/declare";

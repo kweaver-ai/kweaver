@@ -16,7 +16,7 @@ import {
     openPrivacyPolicy,
     openUserAgreement,
 } from "../../core/about";
-import { Locale } from "@aishu-tech/workshop-framework-studio";
+import { Locale } from "@kweaver-ai/workshop-framework-studio";
 import { Domain } from "../../core/workshop-framework/declare";
 import { PageTag, defaultPathList, getPathnameByTag } from "../../core/path";
 import { signup } from "../../core/auth";

@@ -1,4 +1,4 @@
-import { MenuType } from "@aishu-tech/workshop-framework-system";
+import { MenuType } from "@kweaver-ai/workshop-framework-system";
 import { MicroWidgetInfo } from ".";
 import { getLocaleByEnv } from "../language";
 import { defaultPathList } from "../path";

@@ -28,12 +28,12 @@ import { ModuleConfigs } from "./api/module-config/declare";
 import {
     Config as WorkShopFrameWorkConfig,
     Locale,
-} from "@aishu-tech/workshop-framework-system";
+} from "@kweaver-ai/workshop-framework-system";
 import { Keys, Modules } from "./api/module-config";
 import antenUS from "antd/es/locale/en_US";
 import antzhCN from "antd/es/locale/zh_CN";
 // css 顺序不要改变
-import "@aishu-tech/workshop-framework-system/dist/workshop-framework-system.umd.css";
+import "@kweaver-ai/workshop-framework-system/dist/workshop-framework-system.umd.css";
 import "antd/dist/antd.less";
 import "./reset.less";
 

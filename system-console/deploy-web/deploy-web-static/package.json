@@ -3,11 +3,11 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "@aishu-tech/template": "^1.0.0",
-        "@aishu-tech/workshop-framework-system": "^1.0.1",
         "@ant-design/icons": "^5.6.0",
         "@babel/core": "^7.18.10",
         "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+        "@kweaver-ai/template": "^1.0.0",
+        "@kweaver-ai/workshop-framework-system": "^1.0.0",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
         "@reduxjs/toolkit": "^1.8.5",
         "@svgr/webpack": "^6.3.1",
@@ -30,6 +30,7 @@
         "babel-plugin-named-asset-import": "^0.3.8",
         "babel-preset-react-app": "^10.0.1",
         "bfj": "^7.0.2",
+        "blueimp-md5": "^2.19.0",
         "browserslist": "^4.21.3",
         "camelcase": "^6.2.1",
         "case-sensitive-paths-webpack-plugin": "^2.4.0",
@@ -214,6 +215,7 @@
         ]
     },
     "devDependencies": {
+        "@types/blueimp-md5": "^2.18.2",
         "babel-plugin-import": "^1.13.6"
     }
 }

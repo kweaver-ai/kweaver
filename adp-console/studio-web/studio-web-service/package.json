@@ -1,6 +1,6 @@
 {
-    "name": "@anyshare/studiowebservice",
-    "version": "7.0.0",
+    "name": "studio-web-service",
+    "version": "1.0.0",
     "scripts": {
         "link": "yarn add git+ssh://git@gitlab.aishu.cn:AnyShareFamily/web/ShareWebPublic.git#MISSION --latest --production --no-lockfile",
         "test": "jest",
@@ -48,7 +48,6 @@
         "nodemon": "^2.0.7",
         "redis": "^3.1.2",
         "session-file-store": "^1.2.0",
-        "thrift": "^0.10.0",
         "ts-loader": "^9.4.1",
         "tslib": "^2.4.0",
         "typescript": "^4.8.4",

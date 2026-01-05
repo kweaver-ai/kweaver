@@ -6,11 +6,11 @@ import "core-js/stable/string/starts-with";
 import "core-js/web/url";
 import React, { useState, FC, useEffect } from "react";
 import { getDefaultAppConfig } from "../../core/bootstrap";
-import { FrameWork } from "@aishu-tech/workshop-framework-system";
-// import { ChangePassword, redirectToLoginPage } from "mediator";
+import { FrameWork } from "@kweaver-ai/workshop-framework-system";
 import { Props } from "./declare";
 import { signup } from "../../core/auth";
 import { session } from "../../core/mediator";
+import ChangePassword from "../ChangePassword/component.view";
 
 export const App: FC<Props> = React.memo(
     ({
@@ -55,17 +55,17 @@ export const App: FC<Props> = React.memo(
         return (
             <>
                 <FrameWork config={appConfig} />
-                {/* {isShowChangePwd && (
+                {isShowChangePwd && (
                     <ChangePassword
                         account={session.get("deploy.userInfo").user.loginName}
                         onChangePwdSuccess={() => setIsShowChangePwd(false)}
                         onChangePwdCancel={() => setIsShowChangePwd(false)}
-                        onUserLocked={redirectToLoginPage}
+                        onUserLocked={() => location.replace(location.pathname)}
                         signup={(...args: any[]) => {
                             signup(...args);
                         }}
                     />
-                )} */}
+                )}
             </>
         );
     }

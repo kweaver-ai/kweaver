@@ -9,8 +9,8 @@ import {
     TemplateType,
 } from "../../core/oem-config";
 import { oauth2Ui } from "../../api/oauth2-ui";
-import Template from "@aishu-tech/template";
-import "@aishu-tech/template/style.css";
+import Template from "@kweaver-ai/template";
+import "@kweaver-ai/template/style.css";
 import { HeaderBar } from "../HeaderBar/component.view";
 import { Languages } from "../../core/language";
 import LoginCluster from "../LoginCluster/component.view";

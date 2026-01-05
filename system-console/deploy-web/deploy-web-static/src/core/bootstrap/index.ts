@@ -16,7 +16,7 @@ import { ModuleConfig, ModuleConfigs } from "../../api/module-config/declare";
 import {
     Config as WorkShopFrameWorkConfig,
     Locale,
-} from "@aishu-tech/workshop-framework-system";
+} from "@kweaver-ai/workshop-framework-system";
 import { defaultModuleConfig, Keys } from "../../api/module-config";
 import { defaultPathList, setupDefaultPath, getFirstPathname } from "../path";
 import { OemConfigInfo } from "../../api/oem-config/declare";

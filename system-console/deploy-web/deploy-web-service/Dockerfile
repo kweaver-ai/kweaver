@@ -1,11 +1,11 @@
 # 拉取基础镜像
 FROM acr.aishu.cn/as/env-node:22.04.20251021
 
-# 创建服务目录并安装curl
+# 创建服务目录
 RUN mkdir /AnyShare/ \
 && mkdir /AnyShare/DeployWebService \
 && mkdir /AnyShare/tmp \
-&& chmod 757 -R /AnyShare/tmp 
+&& chmod 757 -R /AnyShare/tmp
 
 # 导入前端服务d
 COPY build /AnyShare/DeployWebService/build/

@@ -69,11 +69,6 @@ export const registryClient = async () => {
         logger.info(
             `调用注册客户端接口成功, client_id: ${client_id}, client_secret: ${client_secret}`
         );
-        logger.info(configData.oauth, "configData.oauth");
-        logger.info(
-            configData.Module2Config["deploy-web"],
-            "configData.deploy-web"
-        );
     } catch (e) {
         logger.info("调用注册客户端接口失败");
         logger.info(e);

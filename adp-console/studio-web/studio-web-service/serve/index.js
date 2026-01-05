@@ -17,8 +17,10 @@ import {
 } from "../handlers/tools";
 import RedisStore from "connect-redis";
 import logger from "../common/logger";
+import { registryClient } from "./helper";
 
 export async function main() {
+    await registryClient();
     try {
         let timer = null;
         const redisInstance = await createRedisStore();
@@ -67,17 +69,6 @@ export async function main() {
         createServer();
         server.setStoreType(storeInstaceType.Default);
     }
-
-    fs.watchFile(
-        path.resolve(
-            __dirname,
-            "/etc/globalConfig/oauth/oauth-registry-info.yaml"
-        ),
-        { interval: 200 },
-        () => {
-            configData.updateModule2Config();
-        }
-    );
 }
 
 export async function createServer(storeInstace = undefined) {

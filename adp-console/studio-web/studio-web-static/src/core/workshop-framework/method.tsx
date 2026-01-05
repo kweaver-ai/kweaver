@@ -15,7 +15,7 @@ import { CDLManage } from "../../components/cdl-manage";
 import { UserInfo } from "../../api/oauth/declare";
 import { defaultAccountNames } from "../roles";
 import { getLocaleByEnv } from "../language";
-import { MenuType } from "@aishu-tech/workshop-framework-studio";
+import { MenuType } from "@kweaver-ai/workshop-framework-studio";
 
 export const getIcon = (icon: string) => {
     if (!icon) return undefined;

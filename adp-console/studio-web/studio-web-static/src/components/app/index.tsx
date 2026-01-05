@@ -6,12 +6,8 @@ import "core-js/stable/string/starts-with";
 import "core-js/web/url";
 import React, { useState, FC, useEffect, useCallback } from "react";
 import { getDefaultAppConfig } from "../../core/bootstrap";
-import { FrameWork } from "@aishu-tech/workshop-framework-studio";
-import {
-    // ChangePassword,
-    // redirectToLoginPage,
-    session,
-} from "../../core/mediator";
+import { FrameWork } from "@kweaver-ai/workshop-framework-studio";
+import { session } from "../../core/mediator";
 import { Props } from "./declare";
 import { signup } from "../../core/auth";
 import { HomeSideBar } from "../homeSidebar";
@@ -23,6 +19,7 @@ import { user } from "../../api/oauth";
 import { businessDomain } from "../../api/business-domain";
 import { handleError } from "../../tools/request-utils/handleError";
 import { BusinessDomainConfig } from "../../api/business-domain/declare";
+import ChangePassword from "../ChangePassword/component.view";
 
 // let timer: any = null;
 
@@ -150,15 +147,15 @@ export const App: FC<Props> = React.memo(
         return (
             <>
                 <FrameWork config={appConfig} />
-                {/* {isShowChangePwd && (
+                {isShowChangePwd && (
                     <ChangePassword
                         account={session.get("studio.userInfo").user.loginName}
                         onChangePwdSuccess={() => setIsShowChangePwd(false)}
                         onChangePwdCancel={() => setIsShowChangePwd(false)}
-                        onUserLocked={redirectToLoginPage}
+                        onUserLocked={() => location.replace(location.pathname)}
                         signup={signup}
                     />
-                )} */}
+                )}
             </>
         );
     }

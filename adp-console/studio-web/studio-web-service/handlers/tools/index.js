@@ -159,16 +159,17 @@ const conf = iniFileReader("/sysvol/conf/service_access.conf");
 
 class Config {
     constructor() {
+        this._oauthClientID = "";
+        this._oauthClientSecret = "";
         this.updateModule2Config();
     }
-    updateModule2Config() {
+    updateModule2Config(client_id = "", client_secret = "") {
         // 仅读取rds和redis配置
         this.globalConfig = yamlFileReader(
             "/etc/globalConfig/depservice/depServices.yaml"
         );
-        this.oauthClients = yamlFileReader(
-            "/etc/globalConfig/oauth/oauth-registry-info.yaml"
-        );
+        client_id && (this._oauthClientID = client_id);
+        client_secret && (this._oauthClientSecret = client_secret);
         this.module2Config = {
             workstation: {
                 protocol: "http",
@@ -349,16 +350,8 @@ class Config {
     get oauth() {
         return {
             oauthOn: false,
-            oauthClientID:
-                this.oauthClients["studio-web"] &&
-                this.oauthClients["studio-web"].oauthClientID
-                    ? this.oauthClients["studio-web"].oauthClientID
-                    : "",
-            oauthClientSecret:
-                this.oauthClients["studio-web"] &&
-                this.oauthClients["studio-web"].oauthClientSecret
-                    ? this.oauthClients["studio-web"].oauthClientSecret
-                    : "",
+            oauthClientID: this._oauthClientID,
+            oauthClientSecret: this._oauthClientSecret,
         };
     }
 

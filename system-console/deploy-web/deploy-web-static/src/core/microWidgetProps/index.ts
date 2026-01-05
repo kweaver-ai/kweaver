@@ -1,7 +1,7 @@
 import { loadMicroApp } from "qiankun";
 import { UserInfo } from "../../api/oauth/declare";
 import { OemConfigInfo } from "../../api/oem-config/declare";
-import { Locale } from "@aishu-tech/workshop-framework-system";
+import { Locale } from "@kweaver-ai/workshop-framework-system";
 import { generate } from "@ant-design/colors";
 import {
     formatEntry,

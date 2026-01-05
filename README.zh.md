@@ -1,6 +1,6 @@
 # KWeaver
 
-[中文](README.zh.md) | [English](README.md)
+中文 | [English](README.md)
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.txt)
 
@@ -18,20 +18,31 @@ DIP 平台包括 ADP、Decision Agent、DIP Studio、AI Store 等关键子系统
 ## 平台架构
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                        DIP 平台                              │
-├─────────────┬─────────────┬─────────────┬───────────────────┤
-│     ADP     │  Decision   │    DIP      │     AI Store      │
-│             │    Agent    │   Studio    │                   │
-└─────────────┴─────────────┴─────────────┴───────────────────┘
+┌─────────────────────────────────────────────┐
+│               DIP 平台                       │
+│  ┌───────────────────────────────────────┐  │
+│  │             AI Store                  │  │
+│  ├───────────────────────────────────────┤  │
+│  │            DIP Studio                 │  │
+│  ├───────────────────────────────────────┤  │
+│  │          Decision Agent               │  │
+│  ├───────────────────────────────────────┤  │
+│  │               ADP                     │  │
+│  └───────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
 ```
 
 ### 核心子系统
 
-- **ADP (应用开发平台)**: 构建 AI 应用的核心开发框架
-- **Decision Agent**: 智能决策代理系统
-- **DIP Studio**: 可视化开发与管理工作室
-- **AI Store**: AI 应用与组件市场
+| 子项目 | 描述 | 仓库地址 |
+| --- | --- | --- |
+| **DIP** | 决策智能平台 (Decision Intelligence Platform) | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
+| **AI Store** | AI 应用与组件市场 | *即将开源* |
+| **Studio** | DIP Studio - 可视化开发与管理界面 | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
+| **Decision Agent** | 决策智能体 | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **ADP** | 智能数据平台 - 核心开发框架，包含本体引擎、ContextLoader 和 VEGA 数据虚拟化引擎 | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **Operator Hub** | 算子平台，负责算子管理与编排 | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
+| **Sandbox** | 沙箱运行环境 | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |
 
 ## 贡献指南
 

@@ -12,12 +12,15 @@ Please read this guide before submitting contributions to ensure consistent proc
 
 KWeaver is an open-source ecosystem consisting of multiple sub-projects. Please navigate to the corresponding repository based on the component you want to contribute to:
 
-| Sub-Project      | Description                                                                                      | Repository                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| **ADP**          | Application Development Platform - Core development framework including Ontology Engine and VEGA | [kweaver-ai/adp](https://github.com/kweaver-ai/adp)                  |
-| **Operator Hub** | Operator management and orchestration hub                                                        | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub)|
-| **Data Agent**   | Intelligent data agent system                                                                    | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent)    |
-| **Studio**       | DIP Studio - Visual development and management interface                                         | [kweaver-ai/studio](https://github.com/kweaver-ai/studio)            |
+| Sub-Project | Description | Repository |
+| --- | --- | --- |
+| **DIP** | Decision Intelligence Platform - Enterprise AI application platform for development, discovery, and consumption | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
+| **AI Store** | AI application and component marketplace | *Coming soon* |
+| **Studio** | DIP Studio - Visual development and management interface | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
+| **Decision Agent** | Decision Agent - Intelligent decision agent | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **ADP** | AI Data Platform - Including Ontology Engine, ContextLoader, and VEGA data virtualization engine | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **Operator Hub** | Operator Platform - Operator management and orchestration | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
+| **Sandbox** | Sandbox runtime environment | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |
 
 > **Note**: Each sub-project has its own README and contribution guidelines. Please refer to the specific repository for detailed setup and development instructions.
 

@@ -18,20 +18,31 @@ The DIP platform includes key subsystems such as ADP, Decision Agent, DIP Studio
 ## Platform Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                        DIP Platform                         │
-├─────────────┬─────────────┬─────────────┬─────────────────-─┤
-│     ADP     │  Decision   │    DIP      │     AI Store      │
-│             │    Agent    │   Studio    │                   │
-└─────────────┴─────────────┴─────────────┴───────────────────┘
+┌─────────────────────────────────────────────┐
+│              DIP Platform                   │
+│  ┌───────────────────────────────────────┐  │
+│  │             AI Store                  │  │
+│  ├───────────────────────────────────────┤  │
+│  │            DIP Studio                 │  │
+│  ├───────────────────────────────────────┤  │
+│  │          Decision Agent               │  │
+│  ├───────────────────────────────────────┤  │
+│  │               ADP                     │  │
+│  └───────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
 ```
 
 ### Core Subsystems
 
-- **ADP (Application Development Platform)**: Core development framework for building AI applications
-- **Decision Agent**: Intelligent decision-making agent system
-- **DIP Studio**: Visual development and management studio
-- **AI Store**: AI application and component marketplace
+| Sub-project | Description | Repository |
+| --- | --- | --- |
+| **DIP** | Decision Intelligence Platform (DIP) | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
+| **AI Store** | AI application and component marketplace | *Coming soon* |
+| **Studio** | DIP Studio - Visual development and management interface | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
+| **Decision Agent** | Intelligent decision agent | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **ADP** | AI Data Platform - Core development framework, including Ontology Engine, ContextLoader, and VEGA data virtualization engine | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **Operator Hub** | Operator management and orchestration platform | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
+| **Sandbox** | Sandbox runtime environment | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |
 
 ## Contributing
 

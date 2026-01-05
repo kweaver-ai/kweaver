@@ -8,6 +8,21 @@ Please read this guide before submitting contributions to ensure consistent proc
 
 ---
 
+## 🏗 Sub-Projects
+
+KWeaver is an open-source ecosystem consisting of multiple sub-projects. Please navigate to the corresponding repository based on the component you want to contribute to:
+
+| Sub-Project      | Description                                                                                      | Repository                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| **ADP**          | Application Development Platform - Core development framework including Ontology Engine and VEGA | [kweaver-ai/adp](https://github.com/kweaver-ai/adp)                  |
+| **Operator Hub** | Operator management and orchestration hub                                                        | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub)|
+| **Data Agent**   | Intelligent data agent system                                                                    | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent)    |
+| **Studio**       | DIP Studio - Visual development and management interface                                         | [kweaver-ai/studio](https://github.com/kweaver-ai/studio)            |
+
+> **Note**: Each sub-project has its own README and contribution guidelines. Please refer to the specific repository for detailed setup and development instructions.
+
+---
+
 ## 🧩 Types of Contributions
 
 You can contribute in the following ways:

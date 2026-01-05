@@ -8,6 +8,21 @@
 
 ---
 
+## 🏗 子项目
+
+KWeaver 是一个由多个子项目组成的开源生态系统。请根据你想贡献的组件，导航到相应的仓库：
+
+| 子项目 | 描述 | 仓库地址 |
+| --- | --- | --- |
+| **ADP** | 应用开发平台 - 核心开发框架，包含本体引擎和 VEGA | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **Operator Hub** | 算子管理与编排中心 | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
+| **Data Agent** | 智能数据代理系统 | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **Studio** | DIP Studio - 可视化开发与管理界面 | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
+
+> **说明**：每个子项目都有自己的 README 和贡献指南。请参阅具体仓库获取详细的设置和开发说明。
+
+---
+
 ## 🧩 贡献方式类型
 
 你可以通过以下方式参与：

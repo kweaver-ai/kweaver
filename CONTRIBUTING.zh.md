@@ -1,10 +1,28 @@
 # 贡献指南
 
-[中文](CONTRIBUTING.zh.md) | [English](CONTRIBUTING.md)
+中文 | [English](CONTRIBUTING.md)
 
 感谢你对 KWeaver 项目的兴趣！我们欢迎所有形式的贡献，包括修复 Bug、提出新特性、编写文档、回答问题等。
 
 请在提交贡献前阅读本文，确保流程一致、提交规范统一。
+
+---
+
+## 🏗 子项目
+
+KWeaver 是一个由多个子项目组成的开源生态。请根据你想贡献的组件，导航到相应的仓库：
+
+| 子项目 | 描述 | 仓库地址 |
+| --- | --- | --- |
+| **DIP** | Decision Intelligence Platform - 企业级 AI 应用平台，提供应用开发、发现和消费能力 | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
+| **AI Store** | AI 应用与组件市场 | *即将开源* |
+| **Studio** | DIP Studio - 可视化开发与管理界面 | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
+| **Decision Agent** | 决策智能体 | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **ADP** | AI Data Platform（智能数据平台）- 包含本体引擎、ContextLoader 和 VEGA 数据虚拟化引擎 | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **Operator Hub** | 算子平台 - 负责算子管理与编排 | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
+| **Sandbox** | 沙箱运行环境 | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |
+
+> **说明**：每个子项目都有自己的 README 和贡献指南。请参阅具体仓库获取详细的设置和开发说明。
 
 ---
 
@@ -33,7 +51,7 @@
   - 操作系统（Windows/Linux/macOS）
   - 数据库版本（MariaDB 11.4+ / DM8）
   - OpenSearch 版本（如适用）
-  - 受影响的模块（ontology-manager / ontology-query）
+  - 受影响的模块（如 ADP、Decision Agent、DIP Studio）
 
 - **复现步骤**: 清晰、逐步的复现说明
 
@@ -49,20 +67,19 @@
 **环境:**
 - Go: 1.23.0
 - 操作系统: Linux Ubuntu 22.04
-- 模块: ontology-manager
+- 模块: ADP
 - 数据库: MariaDB 11.4
 
 **复现步骤:**
-1. 启动 ontology-manager 服务
-1. 创建新的知识网络
-1. 尝试删除网络
-1. 发生错误
+1. 启动服务
+2. 执行操作
+3. 发生错误
 
 **期望行为:**
-网络应该成功删除
+操作应该成功完成
 
 **实际行为:**
-错误: "network is in use"
+错误: "unexpected error"
 
 **错误日志:**
 [在此粘贴错误日志]
@@ -448,9 +465,7 @@ git remote add upstream https://github.com/kweaver-ai/kweaver.git
 
 ```bash
 # 导航到你要工作的模块
-cd ontology/ontology-manager/server
-# 或
-cd ontology/ontology-query/server
+cd <module-directory>/server
 
 # 下载依赖
 go mod download

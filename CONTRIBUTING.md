@@ -8,6 +8,24 @@ Please read this guide before submitting contributions to ensure consistent proc
 
 ---
 
+## 🏗 Sub-Projects
+
+KWeaver is an open-source ecosystem consisting of multiple sub-projects. Please navigate to the corresponding repository based on the component you want to contribute to:
+
+| Sub-Project | Description | Repository |
+| --- | --- | --- |
+| **DIP** | Decision Intelligence Platform - Enterprise AI application platform for development, discovery, and consumption | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
+| **AI Store** | AI application and component marketplace | *Coming soon* |
+| **Studio** | DIP Studio - Visual development and management interface | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
+| **Decision Agent** | Decision Agent - Intelligent decision agent | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **ADP** | AI Data Platform - Including Ontology Engine, ContextLoader, and VEGA data virtualization engine | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **Operator Hub** | Operator Platform - Operator management and orchestration | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
+| **Sandbox** | Sandbox runtime environment | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |
+
+> **Note**: Each sub-project has its own README and contribution guidelines. Please refer to the specific repository for detailed setup and development instructions.
+
+---
+
 ## 🧩 Types of Contributions
 
 You can contribute in the following ways:
@@ -33,7 +51,7 @@ When reporting a bug, please provide the following information:
   - OS (Windows/Linux/macOS)
   - Database version (MariaDB 11.4+ / DM8)
   - OpenSearch version (if applicable)
-  - Module affected (ontology-manager / ontology-query)
+  - Module affected (e.g., ADP, Decision Agent, DIP Studio)
 
 - **Reproduction Steps**: Clear, step-by-step instructions to reproduce the issue
 
@@ -49,20 +67,19 @@ When reporting a bug, please provide the following information:
 **Environment:**
 - Go: 1.23.0
 - OS: Linux Ubuntu 22.04
-- Module: ontology-manager
+- Module: ADP
 - Database: MariaDB 11.4
 
 **Steps to Reproduce:**
-1. Start ontology-manager service
-2. Create a new knowledge network
-3. Attempt to delete the network
-4. Error occurs
+1. Start the service
+2. Perform the action
+3. Error occurs
 
 **Expected Behavior:**
-Network should be deleted successfully
+Action should complete successfully
 
 **Actual Behavior:**
-Error: "network is in use"
+Error: "unexpected error"
 
 **Error Log:**
 [Paste error log here]
@@ -452,9 +469,7 @@ git remote add upstream https://github.com/kweaver-ai/kweaver.git
 
 ```bash
 # Navigate to the module you want to work on
-cd ontology/ontology-manager/server
-# or
-cd ontology/ontology-query/server
+cd <module-directory>/server
 
 # Download dependencies
 go mod download

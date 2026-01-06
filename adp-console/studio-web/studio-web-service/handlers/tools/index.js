@@ -162,7 +162,15 @@ class Config {
         this._oauthClientID = "";
         this._oauthClientSecret = "";
         this.updateModule2Config();
+        this.updateAccessAddr();
     }
+
+    updateAccessAddr() {
+        this._accessAddr = yamlFileReader(
+            "/etc/globalConfig/depservice/accessAddr.yaml"
+        );
+    }
+
     updateModule2Config(client_id = "", client_secret = "") {
         // 仅读取rds和redis配置
         this.globalConfig = yamlFileReader(
@@ -370,6 +378,10 @@ class Config {
      */
     get Module2Config() {
         return this.module2Config;
+    }
+
+    get accessAddr() {
+        return this._accessAddr;
     }
 }
 

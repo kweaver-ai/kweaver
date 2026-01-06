@@ -1,5 +1,10 @@
 affinity: {}
 
+accessAddress:
+  host: 10.0.4.10
+  port: 443
+  scheme: https
+  path: /
 depServices:
   deploy-installer:
     mode: ""
@@ -39,7 +44,6 @@ depServices:
     HttpPort: 9703
 env:
   timezone: Asia/Shanghai
-  type: core
 image:
   deploy_web_service:
     pullPolicy: ifNotPresent

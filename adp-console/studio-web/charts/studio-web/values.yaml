@@ -1,5 +1,9 @@
 affinity: {}
-
+accessAddress:
+  host: 10.0.4.10
+  port: 443
+  scheme: https
+  path: /
 depServices:
   deploy-installer:
     mode: ""

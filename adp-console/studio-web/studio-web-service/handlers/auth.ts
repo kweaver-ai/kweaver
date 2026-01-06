@@ -50,19 +50,8 @@ const login = async (req: any, res: any) => {
             "deploy-manager": deployManager,
         } = configData.Module2Config!;
         const { oauthClientID, oauthClientSecret } = studioweb;
-        const {
-            text: { host, port, scheme = "https" },
-        } = await fetchParse(
-            `${deployManager.protocol}://${deployManager.host}:${deployManager.port}/api/deploy-manager/v1/access-addr/app`,
-            {
-                timeout: 0,
-                method: "GET",
-                headers: {
-                    sessionID: req.sessionID,
-                    Cookie: `clustersid=${studioclustersid}`,
-                },
-            }
-        );
+
+        const { host, port, scheme = "https" } = configData.accessAddr;
         req.session.state = state;
         req.session.lang = lang;
         req.session.integrated = integrated;
@@ -435,19 +424,7 @@ const getUserInfoByQueryToken = async (req: any, res: any) => {
             "deploy-manager": deployManager,
         } = configData.Module2Config!;
         const { oauthClientID, oauthClientSecret } = studioweb;
-        const {
-            text: { host, port, scheme = "https" },
-        } = await fetchParse(
-            `${deployManager.protocol}://${deployManager.host}:${deployManager.port}/api/deploy-manager/v1/access-addr/app`,
-            {
-                timeout: 0,
-                method: "GET",
-                headers: {
-                    sessionID: req.sessionID,
-                    Cookie: `clustersid=${studioclustersid}`,
-                },
-            }
-        );
+        const { host, port, scheme = "https" } = configData.accessAddr;
         req.session.serviceConfig = {
             hydra,
             studioweb: {
@@ -563,19 +540,7 @@ const loginBySSO = async (req: any, res: any) => {
         } = configData.Module2Config!;
         const { oauthClientID, oauthClientSecret } = studioweb;
         logger.info("开始获取访问地址");
-        const {
-            text: { host, port, scheme = "https" },
-        } = await fetchParse(
-            `${deployManager.protocol}://${deployManager.host}:${deployManager.port}/api/deploy-manager/v1/access-addr/app`,
-            {
-                timeout: 0,
-                method: "GET",
-                headers: {
-                    sessionID: req.sessionID,
-                    Cookie: `clustersid=${studioclustersid}`,
-                },
-            }
-        );
+        const { host, port, scheme = "https" } = configData.accessAddr;
         logger.info("获取访问地址成功");
 
         const payload = {
@@ -755,19 +720,7 @@ const loginByInternalSSO = async (req: any, res: any) => {
         } = configData.Module2Config!;
         const { oauthClientID, oauthClientSecret } = studioweb;
         logger.info("开始获取访问地址");
-        const {
-            text: { host, port, scheme = "https" },
-        } = await fetchParse(
-            `${deployManager.protocol}://${deployManager.host}:${deployManager.port}/api/deploy-manager/v1/access-addr/app`,
-            {
-                timeout: 0,
-                method: "GET",
-                headers: {
-                    sessionID: req.sessionID,
-                    Cookie: `clustersid=${studioclustersid}`,
-                },
-            }
-        );
+        const { host, port, scheme = "https" } = configData.accessAddr;
         logger.info("获取访问地址成功");
         logger.info(`校验${product} token是否有效`);
         const {

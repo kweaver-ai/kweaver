@@ -46,13 +46,6 @@ spec:
       - name: depservice
         configMap:
           name: {{ include "template.fullname" $}}
-      - name: cms-release-config-oauth-registry-info
-        secret:
-          defaultMode: 420
-          items:
-          - key: default.yaml
-            path: oauth-registry-info.yaml
-          secretName: cms-release-config-oauth-registry-info
       containers:
         - name: studio-web-service
           securityContext:
@@ -93,8 +86,6 @@ spec:
           volumeMounts:
           - name: depservice
             mountPath: "/etc/globalConfig/depservice"
-          - mountPath: /etc/globalConfig/oauth
-            name: cms-release-config-oauth-registry-info
           env:
           - name: TZ
             value: "{{ $.Values.env.timezone }}"
@@ -139,8 +130,6 @@ spec:
           volumeMounts:
           - name: depservice
             mountPath: "/etc/globalConfig/depservice"
-          - mountPath: /etc/globalConfig/oauth
-            name: cms-release-config-oauth-registry-info
           env:
           - name: TZ
             value: "{{ $.Values.env.timezone }}"

@@ -8,6 +8,8 @@ metadata:
 data: 
   depServices.yaml: |
     {{- toYaml .Values.depServices |  nindent 4 }}
+  accessAddr.yaml: |
+    {{- toYaml .Values.accessAddress |  nindent 4 }}
 
 ---
 apiVersion: v1

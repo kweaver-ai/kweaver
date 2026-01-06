@@ -43,19 +43,7 @@ const login = async (req: any, res: any) => {
             "deploy-manager": deployManager,
         } = configData.Module2Config!;
         const { oauthClientID, oauthClientSecret } = deployweb;
-        const {
-            text: { host, port, scheme = "https" },
-        } = await fetchParse(
-            `${deployManager.protocol}://${deployManager.host}:${deployManager.port}/api/deploy-manager/v1/access-addr/app`,
-            {
-                timeout: 0,
-                method: "GET",
-                headers: {
-                    sessionID: req.sessionID,
-                    Cookie: `clustersid=${clustersid}`,
-                },
-            }
-        );
+        const { host, port, scheme = "https" } = configData.accessAddr;
         req.session.state = state;
         req.session.lang = lang;
         const redirectUri =

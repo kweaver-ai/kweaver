@@ -22,11 +22,6 @@ import { registryClient } from "./helper";
 
 export async function main() {
     await registryClient();
-    // deploy-web-core-service不使用session
-    if (process.env.type === "core") {
-        createServer();
-        return;
-    }
 
     try {
         let timer = null;
@@ -80,43 +75,29 @@ export async function main() {
 
 export async function createServer(storeInstace = undefined) {
     const app = express();
-    if (process.env.type === "core") {
-        app.get("/health/ready", test) // k8s探针
-            .get("/health/alive", test) // k8s探针
-            .use(cookieParser())
-            .use(jsonOnly)
-            .use(bodyParser.json({ limit: "5MB" }))
-            .use(
-                bodyParser.json({ type: "application/vnd.apache.thrift.json" })
-            )
-            .use(bodyParser.urlencoded({ extended: false, limit: "5MB" }))
-            .options("*", cors());
-    } else {
-        logger.info(
-            "本地存储session类型为：",
-            storeInstace ? storeInstaceType.Redis : storeInstaceType.Default
-        );
-        app.get("/health/ready", test) // k8s探针
-            .get("/health/alive", test) // k8s探针
-            .use(
-                session({
-                    secret: "eisoo", // 用来对session id相关的cookie进行签名
-                    name: "clustersid",
-                    store: storeInstace, // 本地存储session（文本文件）
-                    // resave: false, // required: force lightweight session keep alive (touch)
-                    // saveUninitialized: false, // 是否自动保存未初始化的会话
-                    httpOnly: true,
-                })
-            )
-            .use(cookieParser())
-            .use(jsonOnly)
-            .use(bodyParser.json({ limit: "5MB" }))
-            .use(
-                bodyParser.json({ type: "application/vnd.apache.thrift.json" })
-            )
-            .use(bodyParser.urlencoded({ extended: false, limit: "5MB" }))
-            .options("*", cors());
-    }
+
+    logger.info(
+        "本地存储session类型为：",
+        storeInstace ? storeInstaceType.Redis : storeInstaceType.Default
+    );
+    app.get("/health/ready", test) // k8s探针
+        .get("/health/alive", test) // k8s探针
+        .use(
+            session({
+                secret: "eisoo", // 用来对session id相关的cookie进行签名
+                name: "clustersid",
+                store: storeInstace, // 本地存储session（文本文件）
+                // resave: false, // required: force lightweight session keep alive (touch)
+                // saveUninitialized: false, // 是否自动保存未初始化的会话
+                httpOnly: true,
+            })
+        )
+        .use(cookieParser())
+        .use(jsonOnly)
+        .use(bodyParser.json({ limit: "5MB" }))
+        .use(bodyParser.json({ type: "application/vnd.apache.thrift.json" }))
+        .use(bodyParser.urlencoded({ extended: false, limit: "5MB" }))
+        .options("*", cors());
 
     // 注册路由
     resgisterRouting(app);

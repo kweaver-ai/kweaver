@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [v0.1.0] 2026-01-09
 
 ### Added
 
@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial project documentation
 - Contributing guidelines (CONTRIBUTING.md)
 - Release guidelines (RELEASE.md)
+- Reset version to 0.1.0
+
+### Removed
+
+- Remove feature module code Ontology
 
 ---
 

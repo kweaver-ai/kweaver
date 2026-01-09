@@ -17,7 +17,7 @@ KWeaver 是一个由多个子项目组成的开源生态。请根据你想贡献
 | **DIP** | Decision Intelligence Platform - 企业级 AI 应用平台，提供应用开发、发现和消费能力 | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
 | **AI Store** | AI 应用与组件市场 | *即将开源* |
 | **Studio** | DIP Studio - 可视化开发与管理界面 | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
-| **Decision Agent** | 决策智能体 | [kweaver-ai/data-agent](https://github.com/kweaver-ai/data-agent) |
+| **Decision Agent** | 决策智能体 | [kweaver-ai/decision-agent](https://github.com/kweaver-ai/decision-agent) |
 | **ADP** | AI Data Platform（智能数据平台）- 包含本体引擎、ContextLoader 和 VEGA 数据虚拟化引擎 | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
 | **Operator Hub** | 算子平台 - 负责算子管理与编排 | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
 | **Sandbox** | 沙箱运行环境 | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |

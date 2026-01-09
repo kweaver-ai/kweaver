@@ -7,7 +7,7 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/)，
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## v0.1.0
+## [v0.1.0] 2026-01-09
 
 ### 新增
 
@@ -15,6 +15,11 @@
 - 项目初始文档
 - 贡献指南 (CONTRIBUTING.md)
 - 发布规范 (RELEASE.md)
+- 版本号重置为 0.1.0
+
+### 移除
+
+- 移除功能模块代码 Ontology
 
 ---
 

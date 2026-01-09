@@ -1,0 +1,79 @@
+# 命名空间
+namespace: default
+# 环境变量：语言/时区
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+# zookeeper副本数
+replicaCount: 3
+# 节点选择器
+nodeSelector: {}
+# 镜像
+image:
+  registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai
+  pullPolicy: IfNotPresent # 可选参数 Always, IfNotPresent, Never
+  zookeeper:
+    repository: proton/proton-zookeeper
+    tag: 5.6.0-20250625.2.138fb9
+  exporter:
+    repository: proton/proton-zookeeper-exporter
+    tag: 5.6.0-20250625.2.138fb9
+# 服务端口  
+service:
+  enableDualStack: false
+  zookeeper:
+    port: 2181
+  exporter:
+    port: 9101
+  jmxExporter:
+    port: 9995
+# 反亲和性设置
+antiAffinity:
+  enabled: true
+  rule: "soft" # 可选参数 hard, soft
+# 应用配置
+config:
+  logLevel: INFO # 可选参数 TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+  enableSSL: false
+  zookeeperENV:
+    JVMFLAGS: -Xms500m -Xmx500m
+    ZOO_TICK_TIME: 5000
+    ZOO_4LW_COMMANDS_WHITELIST: mntr, ruok
+    ZOO_AUTOPURGE_SNAPRETAINCOUNT: 7
+    ZOO_AUTOPURGE_PURGEINTERVAL: 168
+  sasl:
+    enabled: true
+    user:
+      - username: kafka
+        password: adp@zookeeper123
+# 加密信息
+secret:
+  secretName: "" # if secretName is empty, default is {{ template "zookeeper.defaultSSLSecretName" . }}
+  trustStoreName: truststore.jks
+  trustStorePassWordName: truststorepassword
+  keyStoreName: keystore.jks
+  keyStorePassWordName: keystorepassword
+  certName: cert.pem
+  keyName: key.pem
+# 数据持久化存储配置
+storage:
+  storageClassName: ""
+  capacity: 1Gi
+  local:
+    0:
+      host: node0
+      path: /sysvol/zookeeper
+    1:
+      host: node1
+      path: /sysvol/zookeeper
+    2:
+      host: node2
+      path: /sysvol/zookeeper
+# 资源限额
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi

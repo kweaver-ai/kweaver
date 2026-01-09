@@ -1,0 +1,64 @@
+# MongoDB Chart Values
+
+# MongoDB Configuration
+mongodb:
+  # Image configuration
+  image:
+    repository: acr.aishu.cn/proton/proton-mongo
+    tag: "2.1.0-feature-mongo-4.4.30"
+    pullPolicy: IfNotPresent
+
+  # Replica configuration
+  replicas: 1
+  replSet:
+    enabled: true  # Default: single-node replica set mode (requires keyfile)
+    name: "rs0"
+
+  # Service configuration
+  service:
+    type: ClusterIP  # ClusterIP, NodePort, or None
+    port: 30280
+    enableDualStack: false
+
+  # MongoDB configuration
+  conf:
+    wiredTigerCacheSizeGB: 4
+    tls:
+      enabled: false
+      tlsSecretName: ""  # Optional: custom TLS secret name
+
+  # Debug mode
+  debug: "0"
+
+  # Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+# Storage configuration
+storage:
+  # If storageClassName is empty, will use local volume (requires manual PV creation)
+  # If storageClassName is set, will use dynamic provisioning
+  storageClassName: ""  # e.g., "local-path" for dynamic provisioning
+  capacity: 10Gi
+  # For local volume (when storageClassName is empty)
+  volume: []  # Array of {host: "node-name", path: "/path/to/data"}
+
+# Secret configuration
+secret:
+  # Secret name containing MongoDB admin credentials
+  # Secret must have keys: username, password, and mongodb.keyfile
+  name: mongodb-secret
+  # If createSecret is true, will create secret with these values
+  createSecret: false
+  username: admin
+  password: ""  # Will be auto-generated if empty and createSecret is true
+  keyfile: ""  # MongoDB keyfile content (base64 encoded), will be auto-generated if empty
+
+# Global settings
+global:
+  timezone: "Asia/Shanghai"

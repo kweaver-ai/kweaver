@@ -1,0 +1,27 @@
+{{- if not $.Values.storage.storageClassName }}
+{{- $r := int $.Values.replicaCount }}
+{{- range $i, $v := list "0" "1" "2" }}
+{{- if lt $i $r }}
+{{- range $key, $value := $.Values.storage.local }}
+{{- if eq $v $key }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-datadir-{{ template "redis.name" $ }}-{{ $i }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $.Values.storage.capacity }}
+  selector:
+    matchLabels:
+      app: {{ template "redis.name" $ }}
+      podindex: '{{ $i }}'
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mongodb.fullname" . }}-mongodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mongodb.labels" . | nindent 4 }}
+data:
+  mongodb.conf: |
+    net:
+      ipv6: true
+      bindIpAll: true
+      maxIncomingConnections: 10000
+      tls:
+        {{- if .Values.mongodb.conf.tls.enabled }}
+        mode: allowTLS
+        certificateKeyFile: /mongodb/tls/server-cert-key.pem
+        CAFile: /mongodb/tls/ca.pem
+        {{- else }}
+        mode: disabled
+        {{- end }}
+      unixDomainSocket:
+        pathPrefix: /data/mongodb_data
+      serviceExecutor: adaptive
+    operationProfiling:
+      mode: slowOp
+      slowOpThresholdMs: 1000
+    processManagement:
+      pidFilePath: /data/mongodb_data/mongodb.pid
+    storage:
+      dbPath: /data/mongodb_data
+      directoryPerDB: true
+      engine: wiredTiger
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: {{ .Values.mongodb.conf.wiredTigerCacheSizeGB }}
+          directoryForIndexes: true
+    security:
+      javascriptEnabled: false
+    systemLog:
+      destination: file
+      logAppend: true
+      logRotate: reopen
+      path: /data/mongodb_data/mongodb.log
+      quiet: true
+      traceAllExceptions: false

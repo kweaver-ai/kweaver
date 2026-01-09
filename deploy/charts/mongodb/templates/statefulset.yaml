@@ -1,0 +1,177 @@
+{{- $fullName := include "mongodb.fullname" . -}}
+{{- $labels := include "mongodb.labels" . -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $fullName }}-mongodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  serviceName: {{ $fullName }}-mongodb
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.mongodb.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $fullName }}-mongodb
+  template:
+    metadata:
+      labels:
+        app: {{ $fullName }}-mongodb
+    spec:
+      securityContext:
+        fsGroup: 1001
+      restartPolicy: Always
+      initContainers:
+        {{- if .Values.mongodb.replSet.enabled }}
+        - name: fix-keyfile-permissions
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              echo "Copying keyfile to writable location..."
+              # Copy keyfile from read-only Secret mount to writable location
+              cp /mongodb/config-source/mongodb.keyfile /mongodb/config/mongodb.keyfile
+              chmod 600 /mongodb/config/mongodb.keyfile
+              ls -la /mongodb/config/mongodb.keyfile
+              echo "Keyfile copied and permissions set successfully"
+          volumeMounts:
+            - name: mongodb-keyfile-source
+              mountPath: /mongodb/config-source
+              readOnly: true
+            - name: mongodb-keyfile-writable
+              mountPath: /mongodb/config
+              readOnly: false
+        {{- end }}
+        - name: fix-data-permissions
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              echo "Fixing data directory permissions..."
+              # Ensure data directory exists and has correct permissions
+              mkdir -p /data/mongodb_data
+              chown -R 1001:1001 /data/mongodb_data || chown -R $(id -u):$(id -g) /data/mongodb_data || true
+              chmod -R 755 /data/mongodb_data || true
+              ls -ld /data/mongodb_data
+              echo "Data directory permissions fixed"
+          volumeMounts:
+            - name: mongodb-datadir
+              mountPath: /data/mongodb_data
+              readOnly: false
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          args:
+            - mongod
+            - --config
+            - /mongodb/mongoconfig/mongodb.conf
+            - --port
+            - "28000"
+            {{- if .Values.mongodb.replSet.enabled }}
+            - --auth
+            - --keyFile
+            - /mongodb/config/mongodb.keyfile
+            - --replSet
+            - {{ .Values.mongodb.replSet.name }}
+            {{- else }}
+            - --auth
+            {{- end }}
+          ports:
+            - name: mongodb
+              containerPort: 28000
+              protocol: TCP
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: password
+            - name: MONGODB_PORT
+              value: "28000"
+            - name: TRACE
+              value: {{ .Values.mongodb.debug | quote }}
+            - name: TZ
+              value: {{ .Values.global.timezone }}
+          livenessProbe:
+            tcpSocket:
+              port: 28000
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 10
+          readinessProbe:
+            # Use TCP check for simplicity and reliability
+            # Replica set status will be checked during initialization
+            tcpSocket:
+              port: 28000
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 100
+          volumeMounts:
+            - name: mongodb-conf
+              mountPath: /mongodb/mongoconfig
+            {{- if .Values.mongodb.replSet.enabled }}
+            - name: mongodb-keyfile-writable
+              mountPath: /mongodb/config
+              readOnly: false
+            {{- end }}
+            - name: mongodb-datadir
+              mountPath: /data/mongodb_data
+            {{- if .Values.mongodb.conf.tls.enabled }}
+            - name: tls-file
+              mountPath: /mongodb/tls
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+      volumes:
+        - name: mongodb-conf
+          configMap:
+            name: {{ $fullName }}-mongodb
+            items:
+              - key: mongodb.conf
+                path: mongodb.conf
+        {{- if .Values.mongodb.replSet.enabled }}
+        - name: mongodb-keyfile-source
+          secret:
+            secretName: {{ .Values.secret.name }}
+            items:
+              - key: mongodb.keyfile
+                path: mongodb.keyfile
+        - name: mongodb-keyfile-writable
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.mongodb.conf.tls.enabled }}
+        - name: tls-file
+          secret:
+            secretName: {{ if .Values.mongodb.conf.tls.tlsSecretName }}{{ .Values.mongodb.conf.tls.tlsSecretName }}{{ else }}mongo-tls-secret{{ end }}
+            items:
+              - key: ca
+                path: ca.pem
+              - key: server-cert-key
+                path: server-cert-key.pem
+        {{- end }}
+  {{- if .Values.storage.storageClassName }}
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-datadir
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: {{ .Values.storage.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.storage.capacity }}
+  {{- end }}

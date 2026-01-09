@@ -1,0 +1,122 @@
+{{- $r := int $.Values.replicaCount }}
+{{- range $i, $v := list "0" "1" "2" }}
+{{- if lt $i $r }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "redis.name" $ }}-announce-{{ $i }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ template "redis.name" $ }}
+  annotations:
+    # Create endpoints also if the related pod isn't ready
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+{{- if $.Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+{{- end }}
+  publishNotReadyAddresses: true
+  selector:
+    app: {{ template "redis.name" $ }}
+    "statefulset.kubernetes.io/pod-name": {{ template "redis.name" $ }}-{{ $i }}
+  type: ClusterIP
+  ports:
+  - name: redis
+    protocol: TCP
+    port: {{ $.Values.service.redis.port }}
+    targetPort: redis
+  - name: redis-tls
+    protocol: TCP
+    port: {{ $.Values.service.redisTls.port }}
+    targetPort: redis-tls
+  - name: sentinel
+    protocol: TCP
+    port: {{ $.Values.service.sentinel.port }}
+    targetPort: sentinel
+---
+{{- end }}
+{{- end }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "redis.name" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "redis.name" . }}
+spec:
+{{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: RequireDualStack
+{{- end }}
+  selector:
+    app: {{ template "redis.name" . }}
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: redis
+    protocol: TCP
+    port: {{ .Values.service.redis.port }}
+    targetPort: redis
+  - name: redis-tls
+    protocol: TCP
+    port: {{ $.Values.service.redisTls.port }}
+    targetPort: redis-tls
+  - name: sentinel
+    protocol: TCP
+    port: {{ .Values.service.sentinel.port }}
+    targetPort: sentinel
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "redis.name" . }}-sentinel
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "redis.name" . }}
+spec:
+{{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+{{- end }}
+  selector:
+    app: {{ template "redis.name" . }}
+  type: ClusterIP
+  ports:
+  - name: sentinel
+    protocol: TCP
+    port: {{ .Values.service.sentinel.port }}
+    targetPort: sentinel
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "redis.name" . }}-exporter
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "redis.name" . }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9121"
+spec:
+{{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: RequireDualStack
+{{- end }}
+  selector:
+    app: {{ template "redis.name" . }}
+  clusterIP: None
+  ports:
+  - name: exporter
+    protocol: TCP
+    port: 9121
+    targetPort: exporter

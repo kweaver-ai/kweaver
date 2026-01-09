@@ -1,0 +1,35 @@
+{{- if .Values.config.sasl.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "zookeeper.name" . }}-cm
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "zookeeper.name" . }}
+data:
+  jaas.conf: |
+    Server {
+          org.apache.zookeeper.server.auth.DigestLoginModule required
+          {{- range $idx, $value := $.Values.config.sasl.user }}
+          user_{{ $value.username }}="{{ $value.password }}"
+          {{- end }}
+          user_zkclient="adp@zookeeper123";
+    };
+
+    Client {
+          org.apache.zookeeper.server.auth.DigestLoginModule required
+          username="zkclient"
+          password="adp@zookeeper123";
+    };
+
+    QuorumServer {
+          org.apache.zookeeper.server.auth.DigestLoginModule required
+          user_zkserver="adp@zookeeper123";
+    };
+
+    QuorumLearner {
+          org.apache.zookeeper.server.auth.DigestLoginModule required
+          username="zkserver"
+          password="adp@zookeeper123";
+    };
+{{- end }}

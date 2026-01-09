@@ -1,0 +1,75 @@
+{{- $fullName := include "mongodb.fullname" . -}}
+{{- $labels := include "mongodb.labels" . -}}
+---
+# Headless Service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-mongodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  publishNotReadyAddresses: true
+  clusterIP: None
+  ports:
+    - name: mongodb
+      port: 28000
+      targetPort: 28000
+  selector:
+    app: {{ $fullName }}-mongodb
+  {{- if .Values.mongodb.service.enableDualStack }}
+  ipFamilies:
+    - IPv6
+    - IPv4
+  ipFamilyPolicy: RequireDualStack
+  {{- end }}
+---
+{{- if and (ne .Values.mongodb.service.type "None") (ne .Values.mongodb.service.type "") }}
+# ClusterIP or NodePort Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-mongodb-{{ if eq .Values.mongodb.service.type "NodePort" }}nodeport{{ else }}cluster{{ end }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  type: {{ .Values.mongodb.service.type }}
+  publishNotReadyAddresses: true
+  ports:
+    - name: mongodb
+      port: {{ .Values.mongodb.service.port }}
+      targetPort: 28000
+      {{- if eq .Values.mongodb.service.type "NodePort" }}
+      nodePort: {{ .Values.mongodb.service.port }}
+      {{- end }}
+  selector:
+    app: {{ $fullName }}-mongodb
+  {{- if .Values.mongodb.service.enableDualStack }}
+  ipFamilies:
+    - IPv6
+    - IPv4
+  ipFamilyPolicy: RequireDualStack
+  {{- end }}
+{{- end }}
+
+---
+# Convenience ClusterIP Service for in-cluster clients (stable DNS: <release>.<ns>.svc.cluster.local)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: mongodb
+      port: 28000
+      targetPort: 28000
+  selector:
+    app: {{ $fullName }}-mongodb

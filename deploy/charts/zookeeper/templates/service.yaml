@@ -1,0 +1,62 @@
+# zookeeper service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "zookeeper.name" . }}-headless
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "zookeeper.name" . }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "{{ .Values.service.jmxExporter.port }}"
+spec:
+  {{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+  {{- end }}
+  clusterIP: None
+  publishNotReadyAddresses: true # Create endpoints also if the related pod isn't ready
+  selector:
+    app: {{ template "zookeeper.name" . }}
+  ports:
+    - name: zookeeper
+      port: {{ .Values.service.zookeeper.port }}
+      protocol: TCP
+      targetPort: zookeeper
+    - name: jmx-exporter
+      port: {{ .Values.service.jmxExporter.port }}
+      protocol: TCP
+      targetPort: jmx-exporter
+
+# exporter service
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "zookeeper.name" . }}-exporter
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "zookeeper.name" . }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "{{ .Values.service.exporter.port }}"
+spec:
+  {{- if .Values.service.enableDualStack }}
+  ipFamilies:
+  - IPv6
+  - IPv4
+  ipFamilyPolicy: PreferDualStack
+  {{- end }}
+  type: ClusterIP
+  publishNotReadyAddresses: true # Create endpoints also if the related pod isn't ready
+  selector:
+    app: {{ template "zookeeper.name" . }}
+  ports:
+    - name: exporter 
+      port: {{ .Values.service.exporter.port }}
+      protocol: TCP
+      targetPort: exporter

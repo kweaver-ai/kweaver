@@ -1,0 +1,250 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "redis.name" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "redis.name" . }}
+spec:
+  serviceName: {{ template "redis.name" . }}
+  podManagementPolicy: OrderedReady
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "redis.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "redis.name" . }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "redis.name" . }}
+                topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+{{- if eq .Values.enableSecurityContext true }}
+        sysctls:
+        - name: net.core.somaxconn
+          value: "2048"
+{{- end }}
+      initContainers:
+      - name: config-init
+        image: {{ template "redis.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - sh
+        args:
+{{- if eq .Values.debug true }}
+        - -x
+{{- end }}
+        - /config-init.sh
+        env:
+        - name: TZ
+          value: "{{ .Values.env.timezone }}"
+{{- if lt 1 (int .Values.replicaCount) }}
+        - name: MIN_REPLICAS_TO_WRITE
+          value: "1"
+{{- end }}
+        - name: SERVICE
+          value: "{{ template "redis.name" . }}"
+        - name: DOMAIN
+          value: "{{ .Values.namespace }}.svc.cluster.local."
+        - name: REDIS_PORT
+          value: "{{ .Values.service.redis.port }}"
+        - name: SENTINEL_PORT
+          value: "{{ .Values.service.sentinel.port }}"
+        - name: MASTER_GROUP
+          value: "{{ .Values.redis.masterGroupName }}"
+        - name: QUORUM
+          value: "{{ .Values.sentinel.quorum }}"
+        - name: ROOT_USER
+          value: "{{ .Values.redis.rootUsername }}"
+        - name: ROOT_PASS_ENCODE
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: password
+        - name: MONITOR_USER
+          value: "monitor-user"
+        - name: MONITOR_PASS_ENCODE
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: monitor-password
+        - name: SENTINEL_USER
+          value: "sentinel-user"
+        - name: SENTINEL_PASS_ENCODE
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: sentinel-password
+        - name: SET_DEFAULT_USER
+          value: "{{ .Values.redis.requireDefault }}"
+        volumeMounts:
+        - name: config
+          mountPath: /readonly-config
+          readOnly: true
+        - name: redis-datadir
+          mountPath: /data
+      containers:
+      - name: redis
+        image: {{ template "redis.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - -c
+          - "cp /data/conf/redis.conf /data/conf/redise.conf;sed -i 's/secretpwd/$(REDIS_PASSWORD)/g' /data/conf/redise.conf;/usr/local/bin/docker-entrypoint.sh redis-server /data/conf/redise.conf"
+        ports:
+        - name: redis
+          protocol: TCP
+          containerPort: 6379
+        - name: redis-tls
+          protocol: TCP
+          containerPort: 6380
+        env:
+        - name: TZ
+          value: "{{ .Values.env.timezone }}"
+        - name: PORT
+          value: "6379"
+        - name: MASTER_GROUP
+          value: "{{ .Values.redis.masterGroupName }}"
+        - name: MONITOR_USER
+          value: "monitor-user"
+        - name: MONITOR_PASS_ENCODE
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: monitor-password
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: nonEncrpt-password
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+          exec:
+            command:
+            - sh
+            - -c
+            - /liveness-check.sh
+        resources:
+          {{- with .Values.resources }}
+{{ toYaml . | indent 10 }}
+          {{- end }}
+        volumeMounts:
+        - name: redis-datadir
+          mountPath: /data
+{{- if .Values.enableSSL }}
+        - name: ssl-file
+          mountPath: /data/tls
+{{- end }}
+      - name: sentinel
+        image: {{ template "redis.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - -c
+          - "cp /data/conf/sentinel.conf /data/conf/sentinele.conf;sed -i 's/secretpwd/$(REDIS_PASSWORD)/g' /data/conf/sentinele.conf;/usr/local/bin/docker-entrypoint.sh redis-server /data/conf/sentinele.conf --sentinel"
+        ports:
+        - name: sentinel
+          protocol: TCP
+          containerPort: 26379
+        env:
+        - name: TZ
+          value: "{{ .Values.env.timezone }}"
+        - name: PORT
+          value: "26379"
+        - name: MASTER_GROUP
+          value: "{{ .Values.redis.masterGroupName }}"
+        - name: MONITOR_USER
+          value: "monitor-user"
+        - name: MONITOR_PASS_ENCODE
+          value: "YWRwQHJlZGlzMTIz"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: nonEncrpt-password
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+          exec:
+            command:
+            - sh
+            - -c
+            - /liveness-check.sh
+        volumeMounts:
+        - name: redis-datadir
+          mountPath: /data
+      - name: exporter
+        image: {{ template "exporter.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: []
+        ports:
+        - name: exporter
+          protocol: TCP
+          containerPort: 9121
+        env:
+        - name: REDIS_ADDR
+          value: redis://127.0.0.1:6379
+        - name: REDIS_USER
+          value: monitor-user
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "redis.name" . }}-secret
+              key: nonEncrpt-password
+        - name: REDIS_EXPORTER_CONFIG_COMMAND
+          value: {{ .Values.redis.renameCommand.CONFIG }}
+        livenessProbe:
+          tcpSocket:
+            port: 9121
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 2
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "redis.name" . }}-configmap
+{{- if .Values.enableSSL }}
+      - name: ssl-file
+        secret:
+        {{- if .Values.secret.secretName }}
+          secretName: {{ .Values.secret.secretName }}
+        {{- else }}
+          secretName: {{ template "redis.name" . }}-ssl-secret
+          {{- end }}
+          items:
+          - key: {{ .Values.secret.caName }}
+            path: ca.pem
+          - key: {{ .Values.secret.certName }}
+            path: server-cert.pem
+          - key: {{ .Values.secret.keyName }}
+            path: server-key.pem
+{{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-datadir
+    spec:
+{{- if .Values.storage.storageClassName }}
+      storageClassName: "{{ .Values.storage.storageClassName }}"
+{{- end }}
+      accessModes: [ ReadWriteOnce ]
+      resources:
+        requests:
+          storage: {{ .Values.storage.capacity }}

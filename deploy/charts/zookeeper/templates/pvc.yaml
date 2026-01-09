@@ -1,0 +1,24 @@
+{{- if not .Values.storage.storageClassName }}
+{{- range $i, $e := until (int .Values.replicaCount) -}}
+{{- range $key, $value := $.Values.storage.local }}
+{{- if eq (toString ($i)) $key }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-{{ template "zookeeper.name" $ }}-{{ $i }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  accessModes: [ ReadWriteOnce ]
+  resources:
+    requests:
+      storage: {{ $.Values.storage.capacity }}
+  storageClassName: ""
+  selector:
+    matchLabels:
+      app: {{ template "zookeeper.name" $ }}
+      podindex: "{{ $i }}"
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

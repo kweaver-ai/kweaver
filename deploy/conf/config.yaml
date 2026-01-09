@@ -1,0 +1,67 @@
+namespace: kweaver-ai
+replicaCount: 1
+mode: Community
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+image:
+  registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai
+accessAddress:
+  host: 10.4.175.152
+  port: 443
+  scheme: https
+  path: /
+ingressClassName: nginx
+depServices:
+  mq:
+    auth:
+      mechanism: 'PLAIN'
+      username: 'kafkauser'
+      password: 'weeiYwtTWQVPNckUWVVgZKKk'
+    mqHost: 'kafka.resource.svc.cluster.local'
+    mqLookupdHost: ""
+    mqLookupdPort: 0
+    mqPort: 9092
+    mqType: kafka
+  opensearch:
+    distribution: opensearch
+    host: 'opensearch-cluster-master.resource.svc.cluster.local'
+    user: 'admin'
+    password: 'OpenSearch@123456'
+    port: 9200
+    protocol: https
+    version: ""
+  mongodb:
+    source_type: external
+    host: 'mongodb.resource.svc.cluster.local'
+    port: 28000
+    user: 'admin'
+    password: 'YuHcFu2dOQuuCe+bq+1DnvGluRiUwrIFDR+Jysn3MY4='
+    replicaSet: 'rs0'
+    options:
+      authSource: 'anyshare'
+  rds:
+    admin_key: 'YWRwOmFkcEAxMjM0NTY='
+    host: 'mariadb.resource.svc.cluster.local'
+    hostRead: 'mariadb.resource.svc.cluster.local'
+    port: 3306
+    portRead: 3306
+    source_type: external
+    type: MariaDB
+    user: 'adp'
+    password: 'adp@123456'
+    database: 'adp'
+  redis:
+    connectInfo:
+      masterGroupName: mymaster
+      password: adp@redis123
+      sentinelHost: proton-redis-proton-redis-sentinel.resource.svc.cluster.local
+      sentinelPassword: adp@redis123
+      sentinelPort: 26379
+      sentinelUsername: root
+      username: root
+    connectType: sentinel
+    sourceType: external
+
+  class-443:
+    ingressClass: nginx

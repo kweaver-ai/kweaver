@@ -1,0 +1,73 @@
+namespace: default
+env:
+  language: en_US.UTF-8
+  timezone: Asia/Shanghai
+# Setting Sysctls for Pod
+enableSecurityContext: true
+replicaCount: 3
+debug: false
+image:
+  registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai
+  pullPolicy: IfNotPresent
+  #pullPolicy: Always
+  redis:
+    repository: proton/proton-redis
+    tag: 1.11.2-20251029.2.169ac3c0
+  exporter:
+    repository: public/oliver006/redis_exporter
+    tag: v1.77.0
+#admin user, default: root/adp@redis123
+redis:
+  #debug, verbose, notice, warning
+  loglevel: notice
+  rootUsername: root
+  rootPassword: YWRwQHJlZGlzMTIz
+  masterGroupName: mymaster
+  maxmemory: 4GB
+  maxmemoryPolicy: volatile-lru
+  requireDefault: true
+  maxclients: 10000
+  renameCommand:
+    FLUSHALL: "FLUSHALL_NEW"
+    FLUSHDB: "FLUSHDB_NEW"
+    CONFIG: "CONFIG_NEW"
+    KEYS: "KEYS_NEW"
+    SHUTDOWN: "SHUTDOWN_NEW"
+sentinel:
+  quorum: 2
+#port
+service:
+  enableDualStack: false
+  redis:
+    port: 6379
+  sentinel:
+    port: 26379
+  redisTls:
+    port: 6380
+storage:
+  storageClassName: ""
+  capacity: 10Gi
+  local:
+    0:
+      host: node0
+      path: /sysvol/redis/redis-0
+    1:
+      host: node1
+      path: /sysvol/redis/redis-1
+    2:
+      host: node2
+      path: /sysvol/redis/redis-2
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+#  limits:
+#    cpu: 4
+#    memory: 8Gi
+
+enableSSL: true
+secret:
+  secretName: ""
+  caName: ca
+  certName: server-cert
+  keyName: server-key

@@ -143,11 +143,16 @@ git checkout -b fix/bug-description
 
 **Branch Naming Convention:**
 
-- `feature/` - for new features
-- `fix/` - for bug fixes
-- `docs/` - for documentation changes
-- `refactor/` - for code refactoring
-- `test/` - for adding or updating tests
+| Branch Type | Format | Description | Example |
+| --- | --- | --- | --- |
+| Feature | `feature/*` | New feature development | `feature/add-oauth-support` |
+| Fix | `fix/*` | Bug fixes | `fix/memory-leak-in-loader` |
+| Release | `release/x.x.x` | Release preparation | `release/1.2.0` |
+| Docs | `docs/*` | Documentation changes | `docs/update-api-reference` |
+| Refactor | `refactor/*` | Code refactoring | `refactor/simplify-auth-flow` |
+| Test | `test/*` | Adding or updating tests | `test/add-unit-tests-for-loader` |
+
+> **Note**: For branching strategy, versioning rules, and release process, see [Release Guidelines](RELEASE.md).
 
 ### 3. Make Your Changes
 
@@ -228,13 +233,21 @@ Closes #123"
 
 Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
-- `feat:` - A new feature
-- `fix:` - A bug fix
-- `docs:` - Documentation only changes
-- `style:` - Code style changes (formatting, etc.)
-- `refactor:` - Code refactoring
-- `test:` - Adding or updating tests
-- `chore:` - Maintenance tasks
+| Type | Description |
+| --- | --- |
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `docs` | Documentation only changes |
+| `style` | Code style changes (formatting, etc.) |
+| `refactor` | Code refactoring (not feat/fix) |
+| `perf` | Performance improvements |
+| `test` | Adding or updating tests |
+| `build` | Build system or dependencies |
+| `ci` | CI configuration changes |
+| `chore` | Other maintenance tasks |
+| `revert` | Revert a previous commit |
+
+> **Note**: For detailed commit conventions and versioning rules, see [Release Guidelines](RELEASE.md).
 
 ### 7. Keep Your Branch Up to Date
 

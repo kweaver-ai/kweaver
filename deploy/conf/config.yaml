@@ -1,4 +1,4 @@
-namespace: kweaver-ai
+namespace: kweaver
 replicaCount: 1
 mode: Community
 env:
@@ -17,7 +17,7 @@ depServices:
     auth:
       mechanism: 'PLAIN'
       username: 'kafkauser'
-      password: 'weeiYwtTWQVPNckUWVVgZKKk'
+      password: ''
     mqHost: 'kafka.resource.svc.cluster.local'
     mqLookupdHost: ""
     mqLookupdPort: 0
@@ -27,7 +27,7 @@ depServices:
     distribution: opensearch
     host: 'opensearch-cluster-master.resource.svc.cluster.local'
     user: 'admin'
-    password: 'OpenSearch@123456'
+    password: ''
     port: 9200
     protocol: https
     version: ""
@@ -36,12 +36,12 @@ depServices:
     host: 'mongodb.resource.svc.cluster.local'
     port: 28000
     user: 'admin'
-    password: 'YuHcFu2dOQuuCe+bq+1DnvGluRiUwrIFDR+Jysn3MY4='
+    password: ''
     replicaSet: 'rs0'
     options:
-      authSource: 'anyshare'
+      authSource: 'admin'
   rds:
-    admin_key: 'YWRwOmFkcEAxMjM0NTY='
+    admin_key: ''
     host: 'mariadb.resource.svc.cluster.local'
     hostRead: 'mariadb.resource.svc.cluster.local'
     port: 3306
@@ -49,19 +49,18 @@ depServices:
     source_type: external
     type: MariaDB
     user: 'adp'
-    password: 'adp@123456'
+    password: ''
     database: 'adp'
   redis:
     connectInfo:
       masterGroupName: mymaster
-      password: adp@redis123
+      password: ''
       sentinelHost: proton-redis-proton-redis-sentinel.resource.svc.cluster.local
-      sentinelPassword: adp@redis123
+      sentinelPassword: ''
       sentinelPort: 26379
       sentinelUsername: root
       username: root
     connectType: sentinel
     sourceType: external
-
   class-443:
     ingressClass: nginx

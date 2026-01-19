@@ -51,13 +51,15 @@ parse_dataagent_args() {
 
 # Initialize DataAgent database using common database initialization function
 init_dataagent_database() {
+    local sql_dir="${SCRIPT_DIR}/scripts/sql/dataagent"
+    
     # Only initialize database if RDS is internal (MariaDB installed in cluster)
     if ! is_rds_internal; then
-        log_info "RDS is external, skipping DataAgent database initialization"
+        warn_external_rds_sql_required "DataAgent" "${sql_dir}"
+        log_warn "Skipping automatic DataAgent database initialization (external RDS)"
         return 0
     fi
     
-    local sql_dir="${SCRIPT_DIR}/scripts/sql/dataagent"
     init_module_database "dataagent" "${sql_dir}"
 }
 
@@ -65,7 +67,7 @@ init_dataagent_database() {
 install_dataagent() {
     log_info "Installing DataAgent services via Helm..."
     log_info "  Version: ${HELM_CHART_VERSION:-0.1.0}"
-    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://aishu-technology.github.io/helm-repo/}"
+    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 
     # Get namespace from config.yaml
     local namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
@@ -116,6 +118,7 @@ install_dataagent_release() {
         "--namespace" "${namespace}"
         "-f" "${values_file}"
         "--version" "${release_version}"
+        "--devel"
         "--wait" "--timeout=600s"
     )
     

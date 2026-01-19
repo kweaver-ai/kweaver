@@ -4,7 +4,7 @@ declare -a ONTOLOGY_RELEASES=(
     "ontology-manager:"
     "ontology-query:"
     "vega-web:"
-    # "data-connection:"
+    "data-connection:"
     "vega-gateway:"
     "vega-gateway-pro:"
     "vega-metadata:"
@@ -59,7 +59,7 @@ parse_ontology_args() {
 install_ontology() {
     log_info "Installing Ontology services via Helm..."
     log_info "  Version: ${HELM_CHART_VERSION:-0.1.0}"
-    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://aishu-technology.github.io/helm-repo/}"
+    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 
     # Get namespace from config.yaml
     local namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
@@ -169,6 +169,7 @@ install_ontology_release() {
         "--namespace" "${namespace}"
         "-f" "${values_file}"
         "--version" "${release_version}"
+        "--devel"
         "--wait" "--timeout=600s"
     )
     
@@ -202,6 +203,7 @@ install_ontology_release_no_wait() {
         "--namespace" "${namespace}"
         "-f" "${values_file}"
         "--version" "${release_version}"
+        "--devel"
     )
     
     # Execute Helm install/upgrade
@@ -249,6 +251,7 @@ install_vega_calculate() {
         "${chart_ref}"
         "--namespace" "${namespace}"
         "--version" "${release_version}"
+        "--devel"
         "--set" "namespace=${namespace}"
         "--set" "kafka.host=${kafka_host}"
         "--set" "kafka.port=${kafka_port}"

@@ -32,7 +32,7 @@ depServices:
     protocol: https
     version: ""
   mongodb:
-    source_type: external
+    source_type: internal
     host: 'mongodb.resource.svc.cluster.local'
     port: 28000
     user: 'admin'
@@ -46,7 +46,7 @@ depServices:
     hostRead: 'mariadb.resource.svc.cluster.local'
     port: 3306
     portRead: 3306
-    source_type: external
+    source_type: internal
     type: MariaDB
     user: 'adp'
     password: ''
@@ -61,6 +61,6 @@ depServices:
       sentinelUsername: root
       username: root
     connectType: sentinel
-    sourceType: external
+    sourceType: internal
   class-443:
     ingressClass: nginx

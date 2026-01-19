@@ -88,7 +88,7 @@ spec:
       serviceAccountName: local-path-provisioner-service-account
       containers:
         - name: local-path-provisioner
-          image: rancher/local-path-provisioner:v0.0.32
+          image: swr.cn-east-3.myhuaweicloud.com/kweaver-ai/rancher/local-path-provisioner:v0.0.32
           imagePullPolicy: IfNotPresent
           command:
             - local-path-provisioner
@@ -157,5 +157,5 @@ data:
           effect: NoSchedule
       containers:
       - name: helper-pod
-        image: busybox
+        image: swr.cn-east-3.myhuaweicloud.com/kweaver-ai/busybox:1.36.1
         imagePullPolicy: IfNotPresent

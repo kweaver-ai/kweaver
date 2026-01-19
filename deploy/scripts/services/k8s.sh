@@ -213,15 +213,21 @@ EOF
     cp -f /etc/kubernetes/admin.conf /root/.kube/config
     chown root:root /root/.kube/config
     
+    # Fix API server address to use IPv4 (in case IPv6 is disabled)
+    log_info "Ensuring kubeconfig uses IPv4 API server address..."
+    sed -i "s|https://\[::1\]:6443|https://${API_SERVER_ADVERTISE_ADDRESS}:6443|g" /root/.kube/config
+    sed -i "s|https://localhost:6443|https://${API_SERVER_ADVERTISE_ADDRESS}:6443|g" /root/.kube/config
+    sed -i "s|https://127.0.0.1:6443|https://${API_SERVER_ADVERTISE_ADDRESS}:6443|g" /root/.kube/config
+    
     # Setup kubeconfig for current user if not root
     if [[ -n "${SUDO_USER}" ]]; then
         USER_HOME=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
         mkdir -p "${USER_HOME}/.kube"
-        cp -f /etc/kubernetes/admin.conf "${USER_HOME}/.kube/config"
+        cp -f /root/.kube/config "${USER_HOME}/.kube/config"
         chown -R "${SUDO_USER}:${SUDO_USER}" "${USER_HOME}/.kube"
     fi
     
-    export KUBECONFIG=/etc/kubernetes/admin.conf
+    export KUBECONFIG=/root/.kube/config
     
     log_info "Kubernetes master node initialized successfully"
 }
@@ -252,10 +258,10 @@ install_cni() {
         fi
     fi
     
-    # Install Flannel CNI (ensure network CIDR matches POD_CIDR and use configured image repository)
+    # Install Flannel CNI (ensure network CIDR matches POD_CIDR)
+    # Note: Image addresses are already configured in the YAML file
     read_or_fetch "${FLANNEL_MANIFEST_PATH}" "${FLANNEL_MANIFEST_URL}" | \
         sed "s|10.244.0.0/16|${POD_CIDR}|g" | \
-        sed "s|docker.io/flannel/|${FLANNEL_IMAGE_REPO}flannel/|g" | \
         kubectl apply -f -
     
     log_info "Waiting for Flannel pods to be ready..."
@@ -291,6 +297,52 @@ install_cni() {
             log_info "Waiting for CNI to initialize after taint removal..."
             sleep 15
         fi
+    fi
+    
+    # Wait for subnet.env file to be created (required by pods for networking)
+    log_info "Waiting for Flannel subnet configuration..."
+    local subnet_attempts=0
+    local subnet_max_attempts=30
+    while [[ ${subnet_attempts} -lt ${subnet_max_attempts} ]]; do
+        if [[ -f /run/flannel/subnet.env ]]; then
+            log_info "Flannel subnet.env created successfully"
+            cat /run/flannel/subnet.env
+            break
+        fi
+        subnet_attempts=$((subnet_attempts + 1))
+        log_info "Waiting for /run/flannel/subnet.env... (${subnet_attempts}/${subnet_max_attempts})"
+        sleep 2
+    done
+    
+    if [[ ! -f /run/flannel/subnet.env ]]; then
+        log_warn "Flannel subnet.env not found after waiting, CoreDNS may have issues"
+    fi
+    
+    # Delete any existing CoreDNS pods that might be stuck
+    log_info "Deleting existing CoreDNS pods to restart with CNI ready..."
+    kubectl -n kube-system delete pod -l k8s-app=kube-dns --force --grace-period=0 2>/dev/null || true
+    sleep 5
+    
+    # Wait for new CoreDNS pods to be ready using kubectl wait
+    log_info "Waiting for CoreDNS pods to be ready..."
+    local dns_attempts=0
+    local dns_max_attempts=60
+    while [[ ${dns_attempts} -lt ${dns_max_attempts} ]]; do
+        # Count ready pods using simple parsing
+        local ready_count
+        ready_count=$(kubectl get pods -n kube-system -l k8s-app=kube-dns --no-headers 2>/dev/null | grep -c "1/1.*Running" || echo "0")
+        
+        if [[ ${ready_count} -ge 2 ]]; then
+            log_info "CoreDNS is ready (${ready_count} pods running)"
+            break
+        fi
+        dns_attempts=$((dns_attempts + 1))
+        log_info "Waiting for CoreDNS pods to be ready... (${dns_attempts}/${dns_max_attempts}, ${ready_count}/2 ready)"
+        sleep 5
+    done
+    
+    if [[ ${dns_attempts} -ge ${dns_max_attempts} ]]; then
+        log_warn "CoreDNS may not be fully ready, but continuing..."
     fi
     
     log_info "Flannel CNI plugin installed successfully"
@@ -366,14 +418,42 @@ install_helm() {
 
 # Install containerd container runtime
 install_containerd() {
-    log_info "Installing containerd..."
+    log_info "Checking containerd installation..."
 
     detect_package_manager
     
-    # Function to configure Docker repo and handle mirrors (defined at function level for availability in retries)
+    # Step 1: Check if containerd service already exists and is running
+    if systemctl is-active --quiet containerd 2>/dev/null; then
+        log_info "containerd service is already running, skipping installation"
+        # Still ensure configuration is correct
+        configure_containerd_runtime
+        return 0
+    fi
+    
+    # Step 2: Check if containerd is installed but not running
+    if command -v containerd &> /dev/null; then
+        log_info "containerd is installed but not running, attempting to start..."
+        systemctl start containerd 2>/dev/null || true
+        sleep 2
+        if systemctl is-active --quiet containerd 2>/dev/null; then
+            log_info "containerd started successfully"
+            configure_containerd_runtime
+            return 0
+        fi
+        log_warn "containerd is installed but failed to start, will try to reconfigure..."
+    fi
+    
+    # Step 3: containerd is not installed, proceed with installation
+    log_info "containerd is not installed, proceeding with installation..."
+    
+    # Function to configure Docker repo (Tsinghua mirror)
     configure_docker_repo() {
         local url="$1"
         curl -fsSLo /etc/yum.repos.d/docker-ce.repo "${url}"
+        
+        # Replace official Docker download URLs with Tsinghua mirror
+        log_info "Replacing Docker official URLs with Tsinghua mirror..."
+        sed -i 's+https://download.docker.com+https://mirrors.tuna.tsinghua.edu.cn/docker-ce+g' /etc/yum.repos.d/docker-ce.repo
         
         # Fix for openEuler: replace $releasever with 9 in repo file
         if [[ -f /etc/os-release ]]; then
@@ -392,11 +472,38 @@ install_containerd() {
     if [[ "${PKG_MANAGER}" == "dnf" ]] || [[ "${PKG_MANAGER}" == "yum" ]]; then
         # For RHEL/CentOS/Fedora systems
         
-        # Check if Docker CE repo already exists
+        # Detect OS version for CentOS 7 special handling
+        local os_id=""
+        local os_version_id=""
+        if [[ -f /etc/os-release ]]; then
+            source /etc/os-release
+            os_id="${ID}"
+            os_version_id="${VERSION_ID%%.*}"  # Get major version only
+        fi
+        
+        # For CentOS 7: configure Aliyun base repo (official CentOS repos are EOL)
+        if [[ "${os_id}" == "centos" ]] && [[ "${os_version_id}" == "7" ]]; then
+            if [[ ! -f /etc/yum.repos.d/CentOS-Base.repo ]] || ! grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo 2>/dev/null; then
+                log_info "Detected CentOS 7 (EOL), configuring Aliyun base repo..."
+                curl -fsSLo /etc/yum.repos.d/CentOS-Base.repo https://mirrors.tuna.tsinghua.edu.cn/repo/Centos-7.repo
+                ${PKG_MANAGER} clean all
+                rm -rf /var/cache/yum
+            fi
+            
+            # Install prerequisite dependencies from base repo
+            log_info "Installing prerequisite dependencies (tar, libseccomp, container-selinux)..."
+            set +e
+            ${PKG_MANAGER_INSTALL} tar libseccomp container-selinux
+            local dep_rc=$?
+            set -e
+            if [[ ${dep_rc} -ne 0 ]]; then
+                log_warn "Some dependencies may not have installed correctly, continuing anyway..."
+            fi
+        fi
+        
+        # Configure Docker CE repo if not exists (Aliyun mirror only)
         if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then
             log_info "Configuring Docker CE yum repo: ${DOCKER_CE_REPO_URL}"
-            
-            # Try Aliyun first
             configure_docker_repo "${DOCKER_CE_REPO_URL}"
             
             set +e
@@ -405,83 +512,138 @@ install_containerd() {
             set -e
 
             if [[ ${update_rc} -ne 0 ]]; then
-                log_warn "Failed to update metadata with Aliyun Docker repo. Trying Tsinghua mirror..."
-                configure_docker_repo "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo"
-                ${PKG_MANAGER_UPDATE}
+                log_error "Failed to update package metadata with Docker CE repo."
+                log_error "Please ensure network connectivity and try again, or manually install containerd.io package."
+                log_info "You can manually install containerd using one of these methods:"
+                log_info "  1. dnf install -y containerd.io (after configuring Docker repo)"
+                log_info "  2. Download and install RPM: https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/"
+                return 1
             fi
         fi
 
-        if command -v containerd &> /dev/null; then
-            log_info "containerd is already installed"
-            # Ensure configuration is correct even if installed
-        else
-        # Try installation with retries
-        local i
-        local max_retries=3
+        # Attempt installation with both base and docker-ce repos for CentOS 7
+        log_info "Attempting to install containerd.io..."
         local docker_repo_name="docker-ce-stable"
         
-        for ((i=1; i<=max_retries; i++)); do
-            log_info "Attempting to install containerd.io (Attempt $i/$max_retries)..."
-            set +e
+        set +e
+        if [[ "${os_id}" == "centos" ]] && [[ "${os_version_id}" == "7" ]]; then
+            # CentOS 7: use both base and docker-ce repos for dependency resolution
+            ${PKG_MANAGER_INSTALL} --enablerepo="base,extras,${docker_repo_name}" --nogpgcheck containerd.io
+        else
+            # Other distros: only use docker-ce repo
+            ${PKG_MANAGER_INSTALL} --disablerepo="*" --enablerepo="${docker_repo_name}" --nogpgcheck containerd.io
+        fi
+        local install_rc=$?
+        set -e
+        
+        if [[ ${install_rc} -ne 0 ]]; then
+            log_warn "Failed to install containerd.io from package repo, attempting to download and install RPM directly..."
             
-            # First attempt: try with only docker-ce repo (no AppStream to avoid conflicts)
-            if [[ $i -eq 1 ]]; then
-                log_info "Trying with docker-ce repo only..."
-                ${PKG_MANAGER_INSTALL} --disablerepo="*" --enablerepo="${docker_repo_name}" --nogpgcheck containerd.io
-                local install_rc=$?
-            # Second attempt: include base repo for dependencies
-            elif [[ $i -eq 2 ]]; then
-                log_info "Trying with docker-ce and base repos..."
-                ${PKG_MANAGER_INSTALL} --disablerepo="*" --enablerepo="${docker_repo_name},base" --nogpgcheck containerd.io
-                local install_rc=$?
-            # Third attempt: include all necessary repos
+            # Detect OS type and version
+            local os_id=""
+            local rhel_version=""
+            if [[ -f /etc/os-release ]]; then
+                source /etc/os-release
+                os_id="${ID}"
+                rhel_version="${VERSION_ID%%.*}"
+            fi
+            
+            # Default to 8 if version detection fails
+            if [[ -z "${rhel_version}" ]]; then
+                rhel_version="8"
+            fi
+            
+            local arch=$(uname -m)
+            local rpm_url
+            
+            # Construct correct URL based on OS type
+            if [[ "${os_id}" == "rhel" ]] || [[ "${os_id}" == "rocky" ]] || [[ "${os_id}" == "almalinux" ]]; then
+                # RHEL-based systems use /rhel/ path
+                rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/rhel/${rhel_version}/${arch}/stable/Packages/containerd.io-1.6.33-3.1.el${rhel_version}.${arch}.rpm"
             else
-                log_info "Trying with docker-ce, base, and extras repos..."
-                ${PKG_MANAGER_INSTALL} --disablerepo="*" --enablerepo="${docker_repo_name},base,extras" --nogpgcheck containerd.io
-                local install_rc=$?
+                # CentOS uses /centos/ path
+                rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/${rhel_version}/${arch}/stable/Packages/containerd.io-1.6.33-3.1.el${rhel_version}.${arch}.rpm"
             fi
             
+            local rpm_file="/tmp/containerd.io.rpm"
+            
+            log_info "Downloading containerd.io v1.6.33 RPM from Tsinghua mirror..."
+            log_info "URL: ${rpm_url}"
+            
+            set +e
+            if curl -fsSLo "${rpm_file}" "${rpm_url}"; then
+                log_info "Downloaded RPM successfully, installing..."
+                ${PKG_MANAGER_INSTALL} "${rpm_file}"
+                install_rc=$?
+                rm -f "${rpm_file}"
+                
+                if [[ ${install_rc} -eq 0 ]]; then
+                    log_info "✓ containerd.io installed successfully from RPM"
+                else
+                    log_error "Failed to install downloaded RPM"
+                fi
+            else
+                log_error "Failed to download containerd.io RPM"
+                install_rc=1
+            fi
             set -e
-            if [[ ${install_rc} -eq 0 ]]; then
-                break
-            fi
-            
-            if [[ $i -eq 1 ]]; then
-                log_warn "Installation with docker-ce repo only failed, switching to Tsinghua mirror..."
-                configure_docker_repo "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo"
-                ${PKG_MANAGER_UPDATE}
-            fi
-            
-            if [[ $i -eq $max_retries ]]; then
-                log_warn "DNF installation failed after $max_retries attempts. Trying direct RPM download and install..."
-                # Fallback to direct RPM install if dnf fails
-                local rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/8/x86_64/stable/Packages/containerd.io-1.6.32-3.1.el8.x86_64.rpm"
-                curl -L -o /tmp/containerd.io.rpm "${rpm_url}"
-                rpm -ivh /tmp/containerd.io.rpm --nodeps --force
-                if [[ $? -eq 0 ]]; then break; fi
-                log_error "Failed to install containerd.io."
-                return 1
-            fi
-            log_warn "Installation failed, cleaning cache and retrying..."
-            ${PKG_MANAGER} clean all
-            rm -rf /var/cache/dnf /var/cache/yum
-        done
+        fi
+        
+        if [[ ${install_rc} -ne 0 ]]; then
+            log_error "=========================================="
+            log_error "Failed to install containerd.io package."
+            log_error "=========================================="
+            log_error ""
+            log_error "Please install containerd manually using one of these methods:"
+            log_error ""
+            log_info "  Option 1: Download and install RPM directly"
+            log_info "    curl -fsSLo /tmp/containerd.io.rpm https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/\$(rpm -E %rhel)/\$(uname -m)/stable/Packages/containerd.io-1.6.33-3.1.el\$(rpm -E %rhel).\$(uname -m).rpm"
+            log_info "    dnf install -y /tmp/containerd.io.rpm"
+            log_error ""
+            log_info "  Option 2: Install from Aliyun mirror"
+            log_info "    dnf config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo"
+            log_info "    dnf install -y containerd.io"
+            log_error ""
+            log_error "After installing containerd, run this script again."
+            log_error "=========================================="
+            return 1
         fi
     else
         # For Ubuntu/Debian systems
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
-            tee /etc/apt/sources.list.d/docker.list > /dev/null
-        
-        ${PKG_MANAGER_UPDATE}
-
-        if command -v containerd &> /dev/null; then
-            log_info "containerd is already installed"
-            return 0
+        if [[ ! -f /etc/apt/sources.list.d/docker.list ]]; then
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg 2>/dev/null || true
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+                tee /etc/apt/sources.list.d/docker.list > /dev/null
+            ${PKG_MANAGER_UPDATE}
         fi
 
+        set +e
         ${PKG_MANAGER_INSTALL} containerd.io
+        local install_rc=$?
+        set -e
+        
+        if [[ ${install_rc} -ne 0 ]]; then
+            log_error "=========================================="
+            log_error "Failed to install containerd.io package."
+            log_error "=========================================="
+            log_error ""
+            log_error "Please install containerd manually:"
+            log_info "  apt-get update && apt-get install -y containerd.io"
+            log_error ""
+            log_error "After installing containerd, run this script again."
+            log_error "=========================================="
+            return 1
+        fi
     fi
+    
+    # Configure containerd after installation
+    configure_containerd_runtime
+    
+    log_info "containerd installed and configured successfully"
+}
+
+# Configure containerd runtime (extracted for reuse)
+configure_containerd_runtime() {
     
     # Configure containerd
     mkdir -p /etc/containerd
@@ -530,7 +692,7 @@ EOF
         fi
     fi
     
-    log_info "containerd installed and configured"
+    log_info "containerd runtime configured successfully"
 }
 
 # Install crictl (container runtime interface CLI)

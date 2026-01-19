@@ -2,9 +2,8 @@
 install_localpv() {
     log_info "Installing local-path-provisioner (hostPath local PV)..."
 
+    # Note: Image addresses are already configured in the YAML file
     read_or_fetch "${LOCALPV_MANIFEST_PATH}" "${LOCALPV_MANIFEST_URL}" | \
-        sed "s|image: rancher/local-path-provisioner:.*$|image: ${LOCALPV_PROVISIONER_IMAGE}|g" | \
-        sed "s|image: busybox.*$|image: ${LOCALPV_HELPER_IMAGE}|g" | \
         sed "s|/opt/local-path-provisioner|${LOCALPV_BASE_PATH}|g" | \
         kubectl apply -f -
 

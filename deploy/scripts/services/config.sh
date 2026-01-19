@@ -375,7 +375,7 @@ STORAGE_EOF
     if [[ "${mongodb_configured}" == "true" ]]; then
         mongodb_section=$(cat <<MONGODB_EOF
   mongodb:
-    source_type: external
+    source_type: internal
     host: $(yaml_quote "${mongodb_host}")
     port: ${mongodb_port}
     user: $(yaml_quote "${mongodb_user}")
@@ -470,7 +470,7 @@ INGRESS_CLASS_EOF
       sentinelUsername: $(yaml_quote "${redis_user}")
       username: $(yaml_quote "${redis_user}")
     connectType: $(yaml_quote "${redis_connect_type}")
-    sourceType: external
+    sourceType: internal
 REDIS_SENTINEL_EOF
 )
     else
@@ -482,7 +482,7 @@ REDIS_SENTINEL_EOF
       username: $(yaml_quote "${redis_user}")
       password: $(yaml_quote "${redis_password}")
     connectType: $(yaml_quote "${redis_connect_type}")
-    sourceType: external
+    sourceType: internal
 REDIS_STANDALONE_EOF
 )
     fi
@@ -527,7 +527,7 @@ ${zookeeper_section}
     hostRead: $(yaml_quote "${mariadb_host}")
     port: 3306
     portRead: 3306
-    source_type: external
+    source_type: internal
     type: MariaDB
     user: $(yaml_quote "${mariadb_user}")
     password: $(yaml_quote "${mariadb_password}")

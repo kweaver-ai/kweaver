@@ -56,13 +56,15 @@ parse_flowautomation_args() {
 
 # Initialize FlowAutomation database using common database initialization function
 init_flowautomation_database() {
+    local sql_dir="${SCRIPT_DIR}/scripts/sql/flowautomation"
+    
     # Only initialize database if RDS is internal (MariaDB installed in cluster)
     if ! is_rds_internal; then
-        log_info "RDS is external, skipping FlowAutomation database initialization"
+        warn_external_rds_sql_required "FlowAutomation" "${sql_dir}"
+        log_warn "Skipping automatic FlowAutomation database initialization (external RDS)"
         return 0
     fi
     
-    local sql_dir="${SCRIPT_DIR}/scripts/sql/flowautomation"
     init_module_database "flowautomation" "${sql_dir}"
 }
 
@@ -70,7 +72,7 @@ init_flowautomation_database() {
 install_flowautomation() {
     log_info "Installing FlowAutomation services via Helm..."
     log_info "  Version: ${HELM_CHART_VERSION:-0.1.0}"
-    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-dip} -> ${HELM_CHART_REPO_URL:-https://aishu-technology.github.io/helm-repo/}"
+    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-dip} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 
     # Get namespace from config.yaml
     local namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")

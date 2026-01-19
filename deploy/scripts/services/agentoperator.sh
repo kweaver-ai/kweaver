@@ -50,13 +50,15 @@ parse_agentoperator_args() {
 
 # Initialize agentoperator database using common database initialization function
 init_agentoperator_database() {
+    local sql_dir="${SCRIPT_DIR}/scripts/sql/agentoperator"
+    
     # Only initialize database if RDS is internal (MariaDB installed in cluster)
     if ! is_rds_internal; then
-        log_info "RDS is external, skipping agentoperator database initialization"
+        warn_external_rds_sql_required "AgentOperator" "${sql_dir}"
+        log_warn "Skipping automatic AgentOperator database initialization (external RDS)"
         return 0
     fi
     
-    local sql_dir="${SCRIPT_DIR}/scripts/sql/agentoperator"
     init_module_database "agentoperator" "${sql_dir}"
 }
 
@@ -64,7 +66,7 @@ init_agentoperator_database() {
 install_agentoperator() {
     log_info "Installing agentoperator services via Helm..."
     log_info "  Version: ${HELM_CHART_VERSION:-0.1.0}"
-    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://aishu-technology.github.io/helm-repo/}"
+    log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 
     # Get namespace from config.yaml
     local namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
@@ -115,6 +117,7 @@ install_agentoperator_release() {
         "--namespace" "${namespace}"
         "-f" "${values_file}"
         "--version" "${release_version}"
+        "--devel"
         "--wait" "--timeout=600s"
     )
     

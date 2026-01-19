@@ -60,6 +60,33 @@ is_rds_internal() {
     grep -A 10 "^  rds:" "${CONFIG_YAML_PATH}" | grep -q "source_type: internal"
 }
 
+# Show prominent warning when RDS is external and manual SQL import is required
+warn_external_rds_sql_required() {
+    local module_name="$1"
+    local sql_dir="$2"
+    
+    echo ""
+    echo "╔════════════════════════════════════════════════════════════════════════════╗"
+    echo "║                                                                            ║"
+    echo "║  ⚠️  WARNING: EXTERNAL DATABASE - MANUAL SQL INITIALIZATION REQUIRED  ⚠️   ║"
+    echo "║                                                                            ║"
+    echo "╠════════════════════════════════════════════════════════════════════════════╣"
+    echo "║                                                                            ║"
+    echo "║  RDS source_type is set to 'external' in config.yaml.                      ║"
+    echo "║  You MUST manually execute SQL scripts to initialize the database.         ║"
+    echo "║                                                                            ║"
+    echo "║  Module: ${module_name}"
+    echo "║  SQL Directory: ${sql_dir}"
+    echo "║                                                                            ║"
+    echo "║  Steps:                                                                    ║"
+    echo "║    1. Connect to your external database server                             ║"
+    echo "║    2. Execute all .sql files in the directory above                        ║"
+    echo "║    3. Ensure all required databases and tables are created                 ║"
+    echo "║                                                                            ║"
+    echo "╚════════════════════════════════════════════════════════════════════════════╝"
+    echo ""
+}
+
 # Image registry prefix loaded from conf/config.yaml (image.registry) or env
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-}"
 
@@ -94,12 +121,12 @@ HELM_TARBALL_BASEURL="${HELM_TARBALL_BASEURL:-https://repo.huaweicloud.com/helm/
 
 # Global Helm Chart Configuration (for Studio, Ontology, and other modules)
 HELM_CHART_VERSION="${HELM_CHART_VERSION:-0.1.0}"
-HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://aishu-technology.github.io/helm-repo/}"
+HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
 
 DOCKER_IO_MIRROR_PREFIX="${DOCKER_IO_MIRROR_PREFIX:-swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/}"
 DOCKER_CE_REPO_URL="${DOCKER_CE_REPO_URL:-http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo}"
-LOCALPV_PROVISIONER_IMAGE="${LOCALPV_PROVISIONER_IMAGE:-swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/rancher/local-path-provisioner:v0.0.32}"
+LOCALPV_PROVISIONER_IMAGE="${LOCALPV_PROVISIONER_IMAGE:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai/rancher/local-path-provisioner:v0.0.32}"
 LOCALPV_HELPER_IMAGE="${LOCALPV_HELPER_IMAGE:-swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/busybox:1.36.1}"
 LOCALPV_MANIFEST_PATH="${LOCALPV_MANIFEST_PATH:-${CONF_DIR}/local-path-storage.yaml}"
 LOCALPV_MANIFEST_URL="${LOCALPV_MANIFEST_URL:-https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.32/deploy/local-path-storage.yaml}"
@@ -138,7 +165,6 @@ REDIS_IMAGE="${REDIS_IMAGE:-}"
 REDIS_IMAGE_REGISTRY="${REDIS_IMAGE_REGISTRY:-}"
 REDIS_IMAGE_REPOSITORY="${REDIS_IMAGE_REPOSITORY:-proton/proton-redis}"
 REDIS_IMAGE_TAG="${REDIS_IMAGE_TAG:-1.11.2-20251029.2.169ac3c0}"
-REDIS_IMAGE_FALLBACK="${REDIS_IMAGE_FALLBACK:-swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/redis:8.4.0-alpine}"
 REDIS_PERSISTENCE_ENABLED="${REDIS_PERSISTENCE_ENABLED:-true}"
 REDIS_STORAGE_CLASS="${REDIS_STORAGE_CLASS:-}"
 REDIS_PURGE_PVC="${REDIS_PURGE_PVC:-true}"
@@ -224,7 +250,7 @@ MONGODB_CHART_TGZ="${MONGODB_CHART_TGZ:-${SCRIPT_DIR}/charts/mongodb-1.0.0.tgz}"
 MONGODB_NAMESPACE="${MONGODB_NAMESPACE:-${RESOURCE_NAMESPACE}}"
 MONGODB_RELEASE_NAME="${MONGODB_RELEASE_NAME:-mongodb}"
 MONGODB_IMAGE="${MONGODB_IMAGE:-}"
-MONGODB_IMAGE_REPOSITORY="${MONGODB_IMAGE_REPOSITORY:-acr.aishu.cn/proton/proton-mongo}"
+MONGODB_IMAGE_REPOSITORY="${MONGODB_IMAGE_REPOSITORY:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai/proton/proton-mongo}"
 MONGODB_IMAGE_TAG="${MONGODB_IMAGE_TAG:-2.1.0-feature-mongo-4.4.30}"
 MONGODB_REPLICAS="${MONGODB_REPLICAS:-1}"
 MONGODB_REPLSET_ENABLED="${MONGODB_REPLSET_ENABLED:-true}"  # Default: single-node replica set mode (requires keyfile)
@@ -252,7 +278,7 @@ ZOOKEEPER_CHART_VERSION="${ZOOKEEPER_CHART_VERSION:-}"  # Chart version (--versi
 ZOOKEEPER_CHART_DEVEL="${ZOOKEEPER_CHART_DEVEL:-false}"  # Use --devel flag
 ZOOKEEPER_VALUES_FILE="${ZOOKEEPER_VALUES_FILE:-}"  # Additional values file (e.g., conf/config.yaml)
 ZOOKEEPER_REPLICAS="${ZOOKEEPER_REPLICAS:-1}"
-ZOOKEEPER_IMAGE_REGISTRY="${ZOOKEEPER_IMAGE_REGISTRY:-acr.aishu.cn}"
+ZOOKEEPER_IMAGE_REGISTRY="${ZOOKEEPER_IMAGE_REGISTRY:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai}"
 ZOOKEEPER_IMAGE_REPOSITORY="${ZOOKEEPER_IMAGE_REPOSITORY:-proton/proton-zookeeper}"
 ZOOKEEPER_IMAGE_TAG="${ZOOKEEPER_IMAGE_TAG:-5.6.0-20250625.2.138fb9}"
 ZOOKEEPER_EXPORTER_IMAGE_REPOSITORY="${ZOOKEEPER_EXPORTER_IMAGE_REPOSITORY:-proton/proton-zookeeper-exporter}"

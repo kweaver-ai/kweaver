@@ -85,8 +85,11 @@ install_ontology() {
             release_version="${HELM_CHART_VERSION}"
         fi
         
+        # Special handling for vega-metadata
+        if [[ "${release_name}" == "vega-metadata" ]]; then
+            install_vega_metadata "${release_name}" "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${release_version}"
         # Special handling for vega-calculate
-        if [[ "${release_name}" == "vega-calculate" ]]; then
+        elif [[ "${release_name}" == "vega-calculate" ]]; then
             install_vega_calculate "${release_name}" "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${release_version}"
         # Special handling for vega-hdfs - create temporary config with expanded storage configs
         elif [[ "${release_name}" == "vega-hdfs" ]]; then
@@ -215,6 +218,41 @@ install_ontology_release_no_wait() {
     fi
 }
 
+# Install vega-metadata with special configuration
+install_vega_metadata() {
+    local release_name="$1"
+    local chart_name="$2"
+    local namespace="$3"
+    local helm_repo_name="$4"
+    local release_version="$5"
+    local values_file="${6:-${SCRIPT_DIR}/conf/config.yaml}"
+    
+    log_info "Installing ${release_name} (special configuration)..."
+    
+    # Build Helm chart reference
+    local chart_ref="${helm_repo_name}/${chart_name}"
+    
+    # Build Helm command with special values
+    local -a helm_args=(
+        "upgrade" "--install" "${release_name}"
+        "${chart_ref}"
+        "--namespace" "${namespace}"
+        "-f" "${values_file}"
+        "--version" "${release_version}"
+        "--devel"
+        "--set" "depServices.kafka.enable=false"
+        "--wait" "--timeout=600s"
+    )
+    
+    # Execute Helm install/upgrade
+    if helm "${helm_args[@]}"; then
+        log_info "✓ ${release_name} installed successfully"
+    else
+        log_error "✗ Failed to install ${release_name}"
+        return 1
+    fi
+}
+
 # Install vega-calculate with special configuration
 install_vega_calculate() {
     local release_name="$1"
@@ -222,6 +260,7 @@ install_vega_calculate() {
     local namespace="$3"
     local helm_repo_name="$4"
     local release_version="$5"
+    local values_file="${SCRIPT_DIR}/conf/config.yaml"
     
     log_info "Installing ${release_name} (special configuration)..."
     
@@ -250,6 +289,7 @@ install_vega_calculate() {
         "upgrade" "--install" "${release_name}"
         "${chart_ref}"
         "--namespace" "${namespace}"
+        "-f" "${values_file}"
         "--version" "${release_version}"
         "--devel"
         "--set" "namespace=${namespace}"

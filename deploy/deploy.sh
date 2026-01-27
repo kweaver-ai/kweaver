@@ -20,7 +20,7 @@ source "${SCRIPT_DIR}/scripts/services/opensearch.sh"
 source "${SCRIPT_DIR}/scripts/services/studio.sh"
 source "${SCRIPT_DIR}/scripts/services/ontology.sh"
 source "${SCRIPT_DIR}/scripts/services/agentoperator.sh"
-source "${SCRIPT_DIR}/scripts/services/dataagent.sh"
+source "${SCRIPT_DIR}/scripts/services/decisionagent.sh"
 source "${SCRIPT_DIR}/scripts/services/flowautomation.sh"
 source "${SCRIPT_DIR}/scripts/services/sandboxruntime.sh"
 source "${SCRIPT_DIR}/scripts/services/isf.sh"
@@ -57,9 +57,9 @@ usage() {
     echo "  agent_operator init           Install Agent Operator services (agent-operator-app, operator-web, etc.)"
     echo "  agent_operator uninstall      Uninstall Agent Operator services"
     echo "  agent_operator status         Show Agent Operator services status"
-    echo "  dataagent init                Install DataAgent services (data-retrieval, etc.)"
-    echo "  dataagent uninstall           Uninstall DataAgent services"
-    echo "  dataagent status              Show DataAgent services status"
+    echo "  decisionagent init            Install DecisionAgent services (agent-backend, agent-web, etc.)"
+    echo "  decisionagent uninstall       Uninstall DecisionAgent services"
+    echo "  decisionagent status          Show DecisionAgent services status"
     echo "  flowautomation init           Install FlowAutomation services (flow-web, flow-automation, etc.)"
     echo "  flowautomation uninstall      Uninstall FlowAutomation services"
     echo "  flowautomation status         Show FlowAutomation services status"
@@ -416,24 +416,24 @@ main() {
         return 0
     fi
     
-    # Handle dataagent module
-    if [[ "${module}" == "dataagent" ]]; then
+    # Handle decisionagent module
+    if [[ "${module}" == "decisionagent" ]]; then
         case "${action}" in
             init)
                 shift 2
-                parse_dataagent_args "init" "$@"
-                install_dataagent
+                parse_decisionagent_args "init" "$@"
+                install_decisionagent
                 ;;
             uninstall)
                 shift 2
-                parse_dataagent_args "uninstall" "$@"
-                uninstall_dataagent
+                parse_decisionagent_args "uninstall" "$@"
+                uninstall_decisionagent
                 ;;
             status)
-                show_dataagent_status
+                show_decisionagent_status
                 ;;
             *)
-                log_error "Unknown dataagent action: ${action}"
+                log_error "Unknown decisionagent action: ${action}"
                 usage
                 exit 1
                 ;;
@@ -621,7 +621,7 @@ main() {
                 install_studio
                 install_ontology
                 install_agentoperator
-                install_dataagent
+                install_decisionagent
                 install_flowautomation
                 install_sandboxruntime
 
@@ -632,7 +632,7 @@ main() {
                 log_info "Uninstalling KWeaver application services..."
                 uninstall_sandboxruntime || true
                 uninstall_flowautomation || true
-                uninstall_dataagent || true
+                uninstall_decisionagent || true
                 uninstall_agentoperator || true
                 uninstall_ontology || true
                 uninstall_studio || true
@@ -645,7 +645,7 @@ main() {
                 show_studio_status
                 show_ontology_status
                 show_agentoperator_status
-                show_dataagent_status
+                show_decisionagent_status
                 show_flowautomation_status
                 show_sandboxruntime_status
                 ;;
@@ -726,7 +726,7 @@ main() {
                 install_studio
                 install_ontology
                 install_agentoperator
-                install_dataagent
+                install_decisionagent
                 install_flowautomation
                 install_sandboxruntime
 
@@ -743,7 +743,7 @@ main() {
                 # Uninstall KWeaver services first
                 uninstall_sandboxruntime || true
                 uninstall_flowautomation || true
-                uninstall_dataagent || true
+                uninstall_decisionagent || true
                 uninstall_agentoperator || true
                 uninstall_ontology || true
                 uninstall_studio || true

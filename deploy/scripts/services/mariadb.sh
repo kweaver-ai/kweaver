@@ -97,6 +97,14 @@ install_mariadb_helm() {
     if helm status mariadb -n "${ns}" >/dev/null 2>&1; then
         fresh_install="false"
         log_info "MariaDB is already installed (Helm release exists). Skipping installation."
+        # Even if MariaDB is already installed, regenerate config.yaml if password is missing
+        local existing_pass
+        existing_pass=$(grep -A 20 "^  rds:" "${CONFIG_YAML_PATH}" 2>/dev/null | grep "password:" | head -1 | awk '{print $2}' | tr -d "'\"")
+        if [[ -z "${existing_pass}" ]] && [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
+            log_info "MariaDB password is missing in config.yaml, regenerating..."
+            generate_config_yaml
+            update_rds_type_to_internal
+        fi
         return 0
     fi
 
@@ -238,6 +246,14 @@ install_mariadb_official() {
 
     if kubectl -n "${ns}" get statefulset mariadb >/dev/null 2>&1; then
         log_info "MariaDB is already installed (StatefulSet exists). Skipping installation."
+        # Even if MariaDB is already installed, regenerate config.yaml if password is missing
+        local existing_pass
+        existing_pass=$(grep -A 20 "^  rds:" "${CONFIG_YAML_PATH}" 2>/dev/null | grep "password:" | head -1 | awk '{print $2}' | tr -d "'\"")
+        if [[ -z "${existing_pass}" ]] && [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
+            log_info "MariaDB password is missing in config.yaml, regenerating..."
+            generate_config_yaml
+            update_rds_type_to_internal
+        fi
         return 0
     fi
 
@@ -507,6 +523,14 @@ install_mariadb_bitnami() {
     if is_helm_installed "mariadb" "${ns}"; then
         fresh_install="false"
         log_info "MariaDB is already installed (Helm release exists). Skipping installation."
+        # Even if MariaDB is already installed, regenerate config.yaml if password is missing
+        local existing_pass
+        existing_pass=$(grep -A 20 "^  rds:" "${CONFIG_YAML_PATH}" 2>/dev/null | grep "password:" | head -1 | awk '{print $2}' | tr -d "'\"")
+        if [[ -z "${existing_pass}" ]] && [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
+            log_info "MariaDB password is missing in config.yaml, regenerating..."
+            generate_config_yaml
+            update_rds_type_to_internal
+        fi
         return 0
     fi
 

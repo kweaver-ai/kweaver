@@ -56,34 +56,29 @@ STORAGE_EOF
     local mariadb_password="${MARIADB_PASSWORD}"
     local mariadb_root_password="${MARIADB_ROOT_PASSWORD}"
     local mariadb_database="${MARIADB_DATABASE:-adp}"
-    local mariadb_auth_secret="mariadb-auth"
-    local from_secret
-    from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_auth_secret}" mariadb-user)"
-    if [[ -n "${from_secret}" ]]; then
-        mariadb_user="${from_secret}"
-    fi
-    from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_auth_secret}" mariadb-password)"
-    if [[ -n "${from_secret}" ]]; then
-        mariadb_password="${from_secret}"
-    else
-        local mariadb_secret
-        mariadb_secret="$(kubectl -n "${mariadb_ns}" get secret -l app.kubernetes.io/instance=mariadb -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
-        if [[ -n "${mariadb_secret}" ]]; then
-            from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_secret}" mariadb-password)"
-            if [[ -n "${from_secret}" ]]; then
-                mariadb_password="${from_secret}"
-            fi
+
+    # Try to find MariaDB secret by label first (more reliable than hardcoded name)
+    # The proton-mariadb chart creates a secret named mariadb-proton-mariadb-auth
+    local mariadb_secret
+    mariadb_secret="$(kubectl -n "${mariadb_ns}" get secret -l app.kubernetes.io/instance=mariadb,app=mariadb -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
+    if [[ -n "${mariadb_secret}" ]]; then
+        local from_secret
+        from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_secret}" mariadb-user 2>/dev/null || echo "")"
+        if [[ -n "${from_secret}" ]]; then
+            mariadb_user="${from_secret}"
         fi
-    fi
-    # Get root password from secret if available
-    from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_auth_secret}" mariadb-root-password)"
-    if [[ -n "${from_secret}" ]]; then
-        mariadb_root_password="${from_secret}"
-    fi
-    # Get database name from secret if available
-    from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_auth_secret}" mariadb-database)"
-    if [[ -n "${from_secret}" ]]; then
-        mariadb_database="${from_secret}"
+        from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_secret}" mariadb-password 2>/dev/null || echo "")"
+        if [[ -n "${from_secret}" ]]; then
+            mariadb_password="${from_secret}"
+        fi
+        from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_secret}" mariadb-root-password 2>/dev/null || echo "")"
+        if [[ -n "${from_secret}" ]]; then
+            mariadb_root_password="${from_secret}"
+        fi
+        from_secret="$(get_secret_b64_key "${mariadb_ns}" "${mariadb_secret}" mariadb-database 2>/dev/null || echo "")"
+        if [[ -n "${from_secret}" ]]; then
+            mariadb_database="${from_secret}"
+        fi
     fi
     # Generate admin_key: base64 encoded "user:password"
     local mariadb_admin_key

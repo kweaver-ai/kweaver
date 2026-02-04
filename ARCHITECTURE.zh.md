@@ -142,34 +142,7 @@ name: decision-agent.query
 version: 1.0.0
 stability: public
 description: "Query Decision Agent and return structured results."
-
-auth:
-  required: true
-  scopes:
-    - decision_agent:read
-tenant:
-  required: true
-audit:
-  required: true
-
-runtime:
-  timeout_ms: 15000
-
-io:
-  input_schema:
-    type: object
-    additionalProperties: false
-    properties:
-      question:
-        type: string
-        minLength: 1
-    required: ["question"]
-  output_schema:
-    type: object
-    additionalProperties: false
-    properties:
-      answer: { type: string }
-      requestId: { type: string }
-    required: ["answer", "requestId"]
 ---
+
+# X SKILL
 ```

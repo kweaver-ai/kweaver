@@ -4,7 +4,7 @@
 
 This document defines the KWeaver architecture rules. **For day-to-day work, read Sections 1–2**. The appendix is only for terminology and copy-paste examples.
 
-## 1. One-page rules (MUST)
+## 1. Architecture Rules (MUST)
 
 ### 1.1 Layers and dependencies
 

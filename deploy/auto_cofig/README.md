@@ -2,7 +2,7 @@
 
 ## 简介
 
-一个自动化配置脚本 `auto_config.sh`，用于快速配置数据源、导入业务知识网络和DataAgent。
+一个自动化配置脚本 `kw_auto_config.sh`，用于快速配置数据源、导入业务知识网络和DataAgent。
 
 ## 配置文件说明
 
@@ -60,7 +60,7 @@ DS_COMMENT=备注信息  # 数据源备注信息
 在Git Bash或WSL中执行以下命令：
 
 ```bash
-chmod +x auto_config.sh
+chmod +x kw_auto_config.sh
 ```
 
 ## 执行脚本
@@ -74,8 +74,29 @@ chmod +x auto_config.sh
 执行全部4个步骤：获取token、创建数据源并扫描、导入业务知识网络、导入DataAgent、导入数据流。
 
 ```bash
-./auto_config agent.json 业务知识网络.json 数据流.json
+./kw_auto_config.sh agent.json 业务知识网络.json 数据流.json
 ```
+
+### 执行示例
+
+1. 赋予脚本执行权限（如需使用 `auto_config.sh` 文件名，可先复制一份）：
+
+```bash
+cp kw_auto_config.sh auto_config.sh
+chmod +x auto_config.sh
+```
+
+2. 执行完整流程：
+
+```bash
+./auto_config.sh agent.json 业务知识网络.json 数据流.json
+```
+
+3. 登录 Studio 做后续配置：
+
+- 使用 `test` 账号登录 Studio
+- 编辑已导入的 **HD供应链Agent** 并发布
+- 编辑业务知识网络，在“关联/添加数据源”处，选择新建的数据源并关联其中对应的视图
 
 #### 2. 单步执行模式
 
@@ -83,19 +104,19 @@ chmod +x auto_config.sh
 
 ```bash
 # 仅执行步骤1：获取token
-./auto_config.sh --step 1
+./kw_auto_config.sh --step 1
 
 # 仅执行步骤2：创建数据源并扫描
-./auto_config.sh --step 2
+./kw_auto_config.sh --step 2
 
 # 仅执行步骤3：导入业务知识网络
-./auto_config.sh --step 3 业务知识网络.json
+./kw_auto_config.sh --step 3 业务知识网络.json
 
 # 仅执行步骤4：导入DataAgent
-./auto_config.sh --step 4 agent.json
+./kw_auto_config.sh --step 4 agent.json
 
 # 仅执行步骤5：导入数据流
-./auto_config.sh --step 5 数据流.json
+./kw_auto_config.sh --step 5 数据流.json
 ```
 
 ### 参数说明
@@ -141,9 +162,11 @@ export IP_ADDRESS=192.168.1.100  # 替换为实际IP地址
 
 ### 4. 脚本执行权限不足
 
-**解决方法**：执行 `chmod +x auto_config.sh` 赋予执行权限
+**解决方法**：执行 `chmod +x kw_auto_config.sh` 赋予执行权限
 
 ## 支持的数据库类型
 
 - mysql
 - maria
+
+

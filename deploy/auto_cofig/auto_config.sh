@@ -103,9 +103,10 @@ if [ "$STEP_MODE" = false ]; then
   KNOWLEDGE_NETWORK_FILE=$2
   DATAFLOW_FILE=$3
 else
-  AGENT_FILE=${2:-"agent.json"}
-  KNOWLEDGE_NETWORK_FILE=${3:-"业务知识网络.json"}
-  DATAFLOW_FILE=${4:-"dataflow.json"}
+  # In step mode, after `--step N` is shifted out, $1 is the first file argument
+  AGENT_FILE=${1:-"agent.json"}
+  KNOWLEDGE_NETWORK_FILE=${2:-"业务知识网络.json"}
+  DATAFLOW_FILE=${3:-"dataflow.json"}
 fi
 
 # Load datasource config (prefer config.env; otherwise use env/defaults)
@@ -565,9 +566,6 @@ import_knowledge_network() {
     return 1
   fi
 
-  # Read knowledge network content
-  local KNOWLEDGE_NETWORK_JSON_CONTENT=$(cat "$KNOWLEDGE_NETWORK_FILE")
-
   # Ensure token exists
   ensure_token_exists || return 1
 
@@ -577,7 +575,7 @@ import_knowledge_network() {
     -H "Content-Type: application/json" \
     -H "x-business-domain: ${BUSINESS_DOMAIN}" \
     -H "Authorization: Bearer ${TOKEN}" \
-    -d "$KNOWLEDGE_NETWORK_JSON_CONTENT")
+    --data-binary "@${KNOWLEDGE_NETWORK_FILE}")
 
   local KN_ID=$(echo $KN_RESPONSE | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
   if [ -z "$KN_ID" ]; then
@@ -612,7 +610,6 @@ import_agent() {
     "${BASE_URL}/api/agent-factory/v3/agent-inout/import" \
     -H "x-business-domain: ${BUSINESS_DOMAIN}" \
     -H "Authorization: Bearer ${TOKEN}" \
-    -H "Content-Type: multipart/form-data" \
     -F "file=@${AGENT_FILE};type=application/json" \
     -F "import_type=create")
 

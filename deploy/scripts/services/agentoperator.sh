@@ -1,7 +1,6 @@
 
 # AgentOperator releases list
 declare -a AGENTOPERATOR_RELEASES=(
-    "agent-operator-app"
     "agent-operator-integration"
     "operator-web"
     "agent-retrieval"

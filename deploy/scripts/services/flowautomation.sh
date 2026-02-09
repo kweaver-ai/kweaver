@@ -2,10 +2,7 @@
 # FlowAutomation releases list
 declare -a FLOWAUTOMATION_RELEASES=(
     "flow-web"
-    "flow-automation"
-    "flow-stream-data-pipeline"
-    "ecron-analysis"
-    "ecron-management"
+    "dataflow"
     "coderunner"
 )
 

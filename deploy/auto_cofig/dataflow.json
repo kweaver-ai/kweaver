@@ -1,0 +1,194 @@
+{
+  "title": "供应链问答智能体",
+  "description": "",
+  "steps": [
+    {
+      "id": "0",
+      "title": "",
+      "operator": "@trigger/dataview",
+      "parameters": {
+        "batchSize": 10000,
+        "fields": [
+          {
+            "business_timestamp": false,
+            "comment": "",
+            "data_accuracy": 0,
+            "data_length": 100,
+            "display_name": "difficulty",
+            "is_nullable": "YES",
+            "name": "difficulty",
+            "original_name": "difficulty",
+            "status": "new",
+            "type": "string"
+          },
+          {
+            "business_timestamp": false,
+            "comment": "",
+            "data_accuracy": 0,
+            "data_length": 100,
+            "display_name": "dimension",
+            "is_nullable": "YES",
+            "name": "dimension",
+            "original_name": "dimension",
+            "status": "new",
+            "type": "string"
+          },
+          {
+            "business_timestamp": false,
+            "comment": "",
+            "data_accuracy": 0,
+            "data_length": 256,
+            "display_name": "expected_answer",
+            "is_nullable": "YES",
+            "name": "expected_answer",
+            "original_name": "expected_answer",
+            "status": "new",
+            "type": "string"
+          },
+          {
+            "business_timestamp": false,
+            "comment": "",
+            "data_accuracy": 0,
+            "data_length": 100,
+            "display_name": "id",
+            "is_nullable": "YES",
+            "name": "id",
+            "original_name": "id",
+            "status": "new",
+            "type": "string"
+          },
+          {
+            "business_timestamp": false,
+            "comment": "",
+            "data_accuracy": 0,
+            "data_length": 100,
+            "display_name": "question",
+            "is_nullable": "YES",
+            "name": "question",
+            "original_name": "question",
+            "status": "new",
+            "type": "string"
+          },
+          {
+            "business_timestamp": false,
+            "comment": "",
+            "data_accuracy": 0,
+            "data_length": 256,
+            "display_name": "reasoning_path",
+            "is_nullable": "YES",
+            "name": "reasoning_path",
+            "original_name": "reasoning_path",
+            "status": "new",
+            "type": "string"
+          }
+        ],
+        "id": "2016401550172352513",
+        "incrementField": "question",
+        "syncMode": "incremental"
+      }
+    },
+    {
+      "id": "1",
+      "title": "",
+      "operator": "@internal/tool/py3",
+      "parameters": {
+        "code": "def main(qa_test):\n    result = [\n        {\"question\": emp[\"question\"]} \n        for emp in qa_test \n      ]\n    return result",
+        "input_params": [
+          {
+            "id": "kwe43",
+            "key": "qa_test",
+            "type": "array",
+            "value": "{{__0.data}}"
+          }
+        ],
+        "output_params": [
+          {
+            "id": "al6vk",
+            "key": "result",
+            "type": "array"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "title": "",
+      "operator": "@control/flow/loop",
+      "parameters": {
+        "array": "{{__1.result}}",
+        "limit": 1,
+        "mode": "array",
+        "outputs": []
+      },
+      "steps": [
+        {
+          "id": "8",
+          "title": "",
+          "operator": "@internal/tool/py3",
+          "parameters": {
+            "code": "import json\ndef main(qa):\n    info = json.loads(qa)\n    return info[\"question\"]",
+            "input_params": [
+              {
+                "id": "svnr5",
+                "key": "qa",
+                "type": "string",
+                "value": "{{__3.value}}"
+              }
+            ],
+            "output_params": [
+              {
+                "id": "n5526",
+                "key": "question",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        {
+          "id": "6",
+          "title": "",
+          "operator": "@anydata/call-agent",
+          "parameters": {
+            "agent_id": "01KFT0E68A1RES94ZV6DA131X4",
+            "inputs": {
+              "query": "{{__8.question}}"
+            }
+          }
+        },
+        {
+          "id": "1002",
+          "title": "",
+          "operator": "@internal/text/join",
+          "parameters": {
+            "custom": "---",
+            "separator": "custom",
+            "texts": [
+              "{{__8.question}}",
+              "{{__6.answer}}"
+            ]
+          }
+        },
+        {
+          "id": "1001",
+          "title": "",
+          "operator": "@anyshare/file/edit",
+          "parameters": {
+            "content": "{{__1002.text}}",
+            "docid": "gns://A8C3DAD1F8324331A80A63CB9E60C95E/6D2CD745965540B8AFFB093ED30CF811/7BBF4BB9A7E04349929F13BC63696E77",
+            "insert_type": "append",
+            "type": "docx"
+          }
+        }
+      ]
+    }
+  ],
+  "trigger_config": {
+    "operator": "@trigger/manual",
+    "dataSource": {
+      "operator": "",
+      "parameters": {
+        "accessorid": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}

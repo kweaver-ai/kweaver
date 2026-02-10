@@ -14,8 +14,7 @@ KWeaver 是一个由多个子项目组成的开源生态。请根据你想贡献
 
 | 子项目 | 描述 | 仓库地址 |
 | --- | --- | --- |
-| **DIP** | Decision Intelligence Platform - 企业级 AI 应用平台，提供应用开发、发现和消费能力 | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
-| **AI Store** | AI 应用与组件市场 | *即将开源* |
+| **AI Store** | AI 应用与组件市场 | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
 | **Studio** | DIP Studio - 可视化开发与管理界面 | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
 | **Decision Agent** | 决策智能体 | [kweaver-ai/decision-agent](https://github.com/kweaver-ai/decision-agent) |
 | **ADP** | AI Data Platform（智能数据平台）- 包含本体引擎、ContextLoader 和 VEGA 数据虚拟化引擎 | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
@@ -142,11 +141,16 @@ git checkout -b fix/bug-description
 
 **分支命名规范：**
 
-- `feature/` - 新功能
-- `fix/` - Bug 修复
-- `docs/` - 文档更改
-- `refactor/` - 代码重构
-- `test/` - 添加或更新测试
+| 分支类型 | 命名格式 | 说明 | 示例 |
+| --- | --- | --- | --- |
+| 功能分支 | `feature/*` | 新功能开发 | `feature/add-oauth-support` |
+| 修复分支 | `fix/*` | Bug 修复 | `fix/memory-leak-in-loader` |
+| 发布分支 | `release/x.x.x` | 发布准备 | `release/1.2.0` |
+| 文档分支 | `docs/*` | 文档更改 | `docs/update-api-reference` |
+| 重构分支 | `refactor/*` | 代码重构 | `refactor/simplify-auth-flow` |
+| 测试分支 | `test/*` | 添加或更新测试 | `test/add-unit-tests-for-loader` |
+
+> **说明**：分支策略、版本规则和发布流程请参阅 [发布规范](RELEASE.zh.md)。
 
 ### 3. 进行更改
 
@@ -225,15 +229,23 @@ Closes #123"
 
 **提交消息格式：**
 
-遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
+遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/) 规范：
 
-- `feat:` - 新功能
-- `fix:` - Bug 修复
-- `docs:` - 仅文档更改
-- `style:` - 代码样式更改（格式化等）
-- `refactor:` - 代码重构
-- `test:` - 添加或更新测试
-- `chore:` - 维护任务
+| 类型 | 说明 |
+| --- | --- |
+| `feat` | 新功能 |
+| `fix` | Bug 修复 |
+| `docs` | 仅文档更改 |
+| `style` | 代码样式更改（格式化等） |
+| `refactor` | 代码重构（非 feat/fix） |
+| `perf` | 性能优化 |
+| `test` | 添加或更新测试 |
+| `build` | 构建系统或外部依赖 |
+| `ci` | CI 配置更改 |
+| `chore` | 其他维护任务 |
+| `revert` | 回滚提交 |
+
+> **说明**：详细的 Commit 规范和版本规则请参阅 [发布规范](RELEASE.zh.md)。
 
 ### 7. 保持分支与主分支同步
 

@@ -12,6 +12,18 @@ accessAddress:
   scheme: https
   path: /
 ingressClassName: nginx
+flowAutomation:
+  s3:
+    default: "default"
+    connections:
+      - name: default
+        endpoint: ""
+        region: us-east-1
+        accessKeyID: ""
+        secretAccessKey: ""
+        bucketName: ""
+        skipVerify: true
+        disableHTTPS: false
 depServices:
   mq:
     auth:
@@ -62,5 +74,13 @@ depServices:
       username: root
     connectType: sentinel
     sourceType: internal
+  structure-extractor:
+    privateHost: 127.0.0.1
+    privatePort: 8089
+    outputDir: /output
+    backend: vlm-http-client
+    serverUrl: http://127.0.0.1:8089
+    fileHost: 127.0.0.1
+    filePort: 8090
   class-443:
     ingressClass: nginx

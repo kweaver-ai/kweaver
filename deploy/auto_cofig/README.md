@@ -17,11 +17,11 @@ chmod +x auto_config.sh
 ```bash
 ./auto_config.sh agent.json HD供应链业务知识网络.json dataflow.json
 ./auto_config.sh --step 7 contextloader工具集_020.adp
-./auto_config.sh --step 7 5002_基础结构化数据分析工具箱.adp
+./auto_config.sh --step 7 基础结构化数据分析工具箱2.adp
 ```
 
 3. 登录 Studio 进行后续配置：
 
 - 使用 `test` 账号登录 Studio，登录地址：https://ip/studio 
 - BKN引擎-业务知识网络中编辑**HD供应链业务知识网络**中对象类、关系类、行动类等，关联导入的数据源
-- 决策智能体-开发-决策智能体中编辑 **HD供应链业务问答助手** 中知识来源-业务知识网络中添加**HD供应链业务知识网络**并在默认模型配置中选择添加模型后发布
+- 决策智能体-开发-决策智能体中编辑 **HD供应链业务问答助手** 中知识来源-业务知识网络中添加**HD供应链业务知识网络**在默认模型配置中选择添加模型然后将技能中工具用到模型的选项中选择添加的模型然后发布

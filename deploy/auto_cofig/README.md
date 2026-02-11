@@ -74,7 +74,7 @@ chmod +x auto_config.sh
 执行全部4个步骤：获取token、创建数据源并扫描、导入业务知识网络、导入DataAgent、导入数据流。
 
 ```bash
-./auto_config.sh agent.json 业务知识网络.json 数据流.json
+./auto_config.sh agent.json HD供应链业务知识网络.json dataflow.json
 ```
 
 ### 执行示例

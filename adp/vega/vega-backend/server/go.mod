@@ -30,6 +30,7 @@ require (
 )
 
 require (
+	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	gitee.com/chunanyong/dm v1.8.22 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect

@@ -225,9 +225,6 @@ func (s *sqlQueryService) Execute(ctx context.Context, req *interfaces.SQLQueryR
 
 			// 直接执行SQL，不进行转换
 			result, err := s.executeSQLWithQueryType(ctx, catalog, replacedSQL, req.QueryType)
-			if err != nil {
-				return nil, err
-			}
 
 			// standard模式下，限制最大返回数据量为10000
 			if req.QueryType == "" || req.QueryType == "standard" {
@@ -304,11 +301,7 @@ func (s *sqlQueryService) Execute(ctx context.Context, req *interfaces.SQLQueryR
 	result, err := s.executeSQLWithQueryType(ctx, dataSource, finalSQL, req.QueryType)
 	if err != nil {
 		return nil, err
-	}
 	// standard查询模式下，如果返回数据条数等于10000，则has_more设置为true
-	if len(result.Entries) >= 10000 {
-		result.Stats.HasMore = true
-	}
 	return result, nil
 }
 

@@ -18,136 +18,213 @@ global:
   imageRegistry: ""          # e.g. harbor.internal/kweaver (for offline)
   imagePullSecrets: []
   storageClass: "local-path"
-  namespace: kweaver
+
+# =============================================================================
+# Common Subchart Values (Injected via YAML Anchors)
+# =============================================================================
+# The following block contains all common configurations that each subchart expects
+# at its root level (based on the original config.yaml template).
+x-common-values: &commonValues
+  replicaCount: 1
+  mode: Community
+  env:
+    language: en_US.UTF-8
+    timezone: Asia/Shanghai
+  image:
+    registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai
+  accessAddress:
+    host: 10.4.175.152
+    port: 443
+    scheme: https
+    path: /
+  ingressClassName: nginx
+  flowAutomation:
+    s3:
+      default: "default"
+      connections:
+        - name: default
+          endpoint: ""
+          region: us-east-1
+          accessKeyID: ""
+          secretAccessKey: ""
+          bucketName: ""
+          skipVerify: true
+          disableHTTPS: false
+  depServices:
+    mq:
+      auth:
+        mechanism: 'PLAIN'
+        username: 'kafkauser'
+        password: ''
+      mqHost: 'kafka.resource.svc.cluster.local'
+      mqLookupdHost: ""
+      mqLookupdPort: 0
+      mqPort: 9092
+      mqType: kafka
+    opensearch:
+      distribution: opensearch
+      host: 'opensearch-cluster-master.resource.svc.cluster.local'
+      user: 'admin'
+      password: ''
+      port: 9200
+      protocol: https
+      version: ""
+    mongodb:
+      source_type: internal
+      host: 'mongodb.resource.svc.cluster.local'
+      port: 28000
+      user: 'admin'
+      password: ''
+      replicaSet: 'rs0'
+      options:
+        authSource: 'admin'
+    rds:
+      admin_key: ''
+      host: 'mariadb.resource.svc.cluster.local'
+      hostRead: 'mariadb.resource.svc.cluster.local'
+      port: 3306
+      portRead: 3306
+      source_type: internal
+      type: MariaDB
+      user: 'adp'
+      password: ''
+      database: 'adp'
+    redis:
+      connectInfo:
+        masterGroupName: mymaster
+        password: ''
+        sentinelHost: proton-redis-proton-redis-sentinel.resource.svc.cluster.local
+        sentinelPassword: ''
+        sentinelPort: 26379
+        sentinelUsername: root
+        username: root
+      connectType: sentinel
+      sourceType: internal
+    structure-extractor:
+      privateHost: 127.0.0.1
+      privatePort: 8089
+      outputDir: /output
+      backend: vlm-http-client
+      serverUrl: http://127.0.0.1:8089
+      fileHost: 127.0.0.1
+      filePort: 8090
+    class-443:
+      ingressClass: nginx
+
+
+# =============================================================================
+# Injection Mapping
+# =============================================================================
+# We bundle all core subcharts into one anchor, and merge it depending on whether
+# we are deploying kweaver-core alone, or as part of kweaver-dip.
+
+x-core-subs: &coreSubs
+  agent-operator-integration:
+    <<: *commonValues
+  operator-web:
+    <<: *commonValues
+  agent-retrieval:
+    <<: *commonValues
+  data-retrieval:
+    <<: *commonValues
+  agent-backend:
+    <<: *commonValues
+  agent-web:
+    <<: *commonValues
+  agent-app:
+    <<: *commonValues
+  agent-executor:
+    <<: *commonValues
+  agent-factory:
+    <<: *commonValues
+  agent-memory:
+    <<: *commonValues
+  coderunner:
+    <<: *commonValues
+  dataflow:
+    <<: *commonValues
+  agent-operator-app:
+    <<: *commonValues
+  ontology-manager:
+    <<: *commonValues
+  ontology-query:
+    <<: *commonValues
+  vega-web:
+    <<: *commonValues
+  data-connection:
+    <<: *commonValues
+  vega-gateway:
+    <<: *commonValues
+  vega-gateway-pro:
+    <<: *commonValues
+  mdl-data-model:
+    <<: *commonValues
+  mdl-uniquery:
+    <<: *commonValues
+  mdl-data-model-job:
+    <<: *commonValues
+  hydra:
+    <<: *commonValues
+  sharemgnt-single:
+    <<: *commonValues
+  user-management:
+    <<: *commonValues
+  sharemgnt:
+    <<: *commonValues
+  authentication:
+    <<: *commonValues
+  policy-management:
+    <<: *commonValues
+  audit-log:
+    <<: *commonValues
+  eacp:
+    <<: *commonValues
+  thirdparty-message-plugin:
+    <<: *commonValues
+  isfwebthrift:
+    <<: *commonValues
+  message:
+    <<: *commonValues
+  isfweb:
+    <<: *commonValues
+  authorization:
+    <<: *commonValues
+  news-feed:
+    <<: *commonValues
+  ingress-informationsecurityfabric:
+    <<: *commonValues
+  eacp-single:
+    <<: *commonValues
+  oauth2-ui:
+    <<: *commonValues
+  sandbox:
+    <<: *commonValues
 
 # ---------------------------------------------------------------------------
-# Module switches
+# 1. 注入到 core 子图 (当单独部署 kweaver-core 时生效)
 # ---------------------------------------------------------------------------
-modules:
-  isf:
-    enabled: true
-  agentoperator:
-    enabled: true
-  dataagent:
-    enabled: true
-  ontology:
-    enabled: true
-  sandboxruntime:
-    enabled: true
-  studio:
-    enabled: true
-  modelfactory:
-    enabled: true
+<<: *coreSubs
 
 # ---------------------------------------------------------------------------
-# kweaver-core conditional (only relevant when installing kweaver-dip)
-# Set to false if you have already installed kweaver-core as a separate release
+# 2. 注入到 kweaver-core 层级下 (当部署 kweaver-dip，间接包含 core 时生效)
 # ---------------------------------------------------------------------------
 kweaver-core:
-  enabled: true
+  <<: *coreSubs
 
 # ---------------------------------------------------------------------------
-# Environment
+# 3. 注入到 dip 的直属子图 (只有部署 kweaver-dip 时才包含这部分子图)
 # ---------------------------------------------------------------------------
-env:
-  language: "en_US.UTF-8"
-  timezone: "Asia/Shanghai"
-
-# ---------------------------------------------------------------------------
-# Access address
-# ---------------------------------------------------------------------------
-accessAddress:
-  host: "10.x.x.x"          # <-- CHANGE: your node IP or domain
-  port: 443
-  scheme: https
-  path: /
-  ingressClass: "class-443"
-
-# ---------------------------------------------------------------------------
-# Dependent services — fill in your actual connection info
-# ---------------------------------------------------------------------------
-depServices:
-  # --- MariaDB ---
-  rds:
-    host: "mariadb-proton-mariadb.kweaver.svc.cluster.local"  # <-- CHANGE
-    hostRead: "mariadb-proton-mariadb.kweaver.svc.cluster.local"
-    port: 3306
-    portRead: 3306
-    user: "adp"              # <-- CHANGE
-    password: ""             # <-- CHANGE
-    root_password: ""        # <-- CHANGE
-    database: "adp"
-    admin_key: ""            # base64("user:password")
-    source_type: internal
-    type: MariaDB
-
-  # --- Redis ---
-  redis:
-    connectType: standalone  # or "sentinel"
-    sourceType: internal
-    connectInfo:
-      host: "redis.kweaver.svc.cluster.local"    # <-- CHANGE
-      port: 6379
-      username: "root"
-      password: ""           # <-- CHANGE
-      # Sentinel mode (uncomment if connectType=sentinel)
-      # sentinelHost: "redis-sentinel.kweaver.svc.cluster.local"
-      # sentinelPort: 26379
-      # sentinelUsername: "root"
-      # sentinelPassword: ""
-      # masterGroupName: "mymaster"
-
-  # --- Kafka ---
-  mq:
-    mqType: kafka
-    mqHost: "kafka.kweaver.svc.cluster.local"    # <-- CHANGE
-    mqPort: 9092
-    mqLookupdHost: ""
-    mqLookupdPort: 0
-    auth:
-      mechanism: ""          # e.g. SCRAM-SHA-256
-      username: ""
-      password: ""
-
-  # --- OpenSearch ---
-  opensearch:
-    distribution: opensearch
-    host: "opensearch-cluster-master.kweaver.svc.cluster.local"  # <-- CHANGE
-    port: 9200
-    protocol: http
-    user: "admin"
-    password: ""             # <-- CHANGE
-    version: ""
-
-  # --- MongoDB (optional) ---
-  mongodb:
-    source_type: internal
-    host: "mongodb.kweaver.svc.cluster.local"    # <-- CHANGE
-    port: 28000
-    user: ""                 # <-- CHANGE
-    password: ""             # <-- CHANGE
-    replicaSet: "rs0"
-    options:
-      authSource: admin
-
-  # --- ZooKeeper (optional) ---
-  zookeeper:
-    host: "zookeeper-headless.kweaver.svc.cluster.local"  # <-- CHANGE
-    port: 2181
-
-# ---------------------------------------------------------------------------
-# Database initialization
-# ---------------------------------------------------------------------------
-dbInit:
-  enabled: true
-  image:
-    repository: kweaver/db-migrate
-    tag: "0.1.0"
-    pullPolicy: IfNotPresent
-  backoffLimit: 3
-
-# ---------------------------------------------------------------------------
-# Storage
-# ---------------------------------------------------------------------------
-storage:
-  storageClassName: "local-path"
+deploy-web:
+  <<: *commonValues
+studio-web:
+  <<: *commonValues
+business-system-frontend:
+  <<: *commonValues
+business-system-service:
+  <<: *commonValues
+mf-model-manager-nginx:
+  <<: *commonValues
+mf-model-manager:
+  <<: *commonValues
+mf-model-api:
+  <<: *commonValues

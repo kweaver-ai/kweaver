@@ -1,0 +1,153 @@
+# =============================================================================
+# KWeaver Products Values — Unified configuration for kweaver-core / kweaver-dip
+#
+# Usage:
+#   helm upgrade --install kweaver-core oci://ghcr.io/kweaver-ai/kweaver-core \
+#     --version 0.1.0 -n kweaver --create-namespace \
+#     -f products-values.yaml --wait --timeout 30m
+#
+#   helm upgrade --install kweaver-dip oci://ghcr.io/kweaver-ai/kweaver-dip \
+#     --version 0.1.0 -n kweaver --create-namespace \
+#     -f products-values.yaml --wait --timeout 30m
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global
+# ---------------------------------------------------------------------------
+global:
+  imageRegistry: ""          # e.g. harbor.internal/kweaver (for offline)
+  imagePullSecrets: []
+  storageClass: "local-path"
+  namespace: kweaver
+
+# ---------------------------------------------------------------------------
+# Module switches
+# ---------------------------------------------------------------------------
+modules:
+  isf:
+    enabled: true
+  agentoperator:
+    enabled: true
+  dataagent:
+    enabled: true
+  ontology:
+    enabled: true
+  sandboxruntime:
+    enabled: true
+  studio:
+    enabled: true
+  modelfactory:
+    enabled: true
+
+# ---------------------------------------------------------------------------
+# kweaver-core conditional (only relevant when installing kweaver-dip)
+# Set to false if you have already installed kweaver-core as a separate release
+# ---------------------------------------------------------------------------
+kweaver-core:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+env:
+  language: "en_US.UTF-8"
+  timezone: "Asia/Shanghai"
+
+# ---------------------------------------------------------------------------
+# Access address
+# ---------------------------------------------------------------------------
+accessAddress:
+  host: "10.x.x.x"          # <-- CHANGE: your node IP or domain
+  port: 443
+  scheme: https
+  path: /
+  ingressClass: "class-443"
+
+# ---------------------------------------------------------------------------
+# Dependent services — fill in your actual connection info
+# ---------------------------------------------------------------------------
+depServices:
+  # --- MariaDB ---
+  rds:
+    host: "mariadb-proton-mariadb.kweaver.svc.cluster.local"  # <-- CHANGE
+    hostRead: "mariadb-proton-mariadb.kweaver.svc.cluster.local"
+    port: 3306
+    portRead: 3306
+    user: "adp"              # <-- CHANGE
+    password: ""             # <-- CHANGE
+    root_password: ""        # <-- CHANGE
+    database: "adp"
+    admin_key: ""            # base64("user:password")
+    source_type: internal
+    type: MariaDB
+
+  # --- Redis ---
+  redis:
+    connectType: standalone  # or "sentinel"
+    sourceType: internal
+    connectInfo:
+      host: "redis.kweaver.svc.cluster.local"    # <-- CHANGE
+      port: 6379
+      username: "root"
+      password: ""           # <-- CHANGE
+      # Sentinel mode (uncomment if connectType=sentinel)
+      # sentinelHost: "redis-sentinel.kweaver.svc.cluster.local"
+      # sentinelPort: 26379
+      # sentinelUsername: "root"
+      # sentinelPassword: ""
+      # masterGroupName: "mymaster"
+
+  # --- Kafka ---
+  mq:
+    mqType: kafka
+    mqHost: "kafka.kweaver.svc.cluster.local"    # <-- CHANGE
+    mqPort: 9092
+    mqLookupdHost: ""
+    mqLookupdPort: 0
+    auth:
+      mechanism: ""          # e.g. SCRAM-SHA-256
+      username: ""
+      password: ""
+
+  # --- OpenSearch ---
+  opensearch:
+    distribution: opensearch
+    host: "opensearch-cluster-master.kweaver.svc.cluster.local"  # <-- CHANGE
+    port: 9200
+    protocol: http
+    user: "admin"
+    password: ""             # <-- CHANGE
+    version: ""
+
+  # --- MongoDB (optional) ---
+  mongodb:
+    source_type: internal
+    host: "mongodb.kweaver.svc.cluster.local"    # <-- CHANGE
+    port: 28000
+    user: ""                 # <-- CHANGE
+    password: ""             # <-- CHANGE
+    replicaSet: "rs0"
+    options:
+      authSource: admin
+
+  # --- ZooKeeper (optional) ---
+  zookeeper:
+    host: "zookeeper-headless.kweaver.svc.cluster.local"  # <-- CHANGE
+    port: 2181
+
+# ---------------------------------------------------------------------------
+# Database initialization
+# ---------------------------------------------------------------------------
+dbInit:
+  enabled: true
+  image:
+    repository: kweaver/db-migrate
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  backoffLimit: 3
+
+# ---------------------------------------------------------------------------
+# Storage
+# ---------------------------------------------------------------------------
+storage:
+  storageClassName: "local-path"

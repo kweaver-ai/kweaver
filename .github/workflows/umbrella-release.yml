@@ -1,0 +1,41 @@
+name: Release Umbrella Charts
+
+on:
+  push:
+    tags: ['v*']
+    paths:
+      - 'deploy/charts/kweaver-core/**'
+      - 'deploy/charts/kweaver-dip/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    name: Build & Push Umbrella Charts to OCI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & Push kweaver-core
+        run: |
+          helm dependency update deploy/charts/kweaver-core
+          helm package deploy/charts/kweaver-core -d /tmp/pkg
+          helm push /tmp/pkg/kweaver-core-*.tgz oci://ghcr.io/${{ github.repository_owner }}
+
+      - name: Build & Push kweaver-dip
+        run: |
+          helm dependency update deploy/charts/kweaver-dip
+          helm package deploy/charts/kweaver-dip -d /tmp/pkg
+          helm push /tmp/pkg/kweaver-dip-*.tgz oci://ghcr.io/${{ github.repository_owner }}

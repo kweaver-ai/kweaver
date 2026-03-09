@@ -1,0 +1,53 @@
+apiVersion: v2
+name: kweaver-dip
+description: KWeaver DIP umbrella chart — Studio + ModelFactory, conditionally includes kweaver-core
+type: application
+version: 0.1.0
+appVersion: "0.3.0"
+
+dependencies:
+  # ---------------------------------------------------------------------------
+  # kweaver-core (conditional — disable if core is already installed separately)
+  # ---------------------------------------------------------------------------
+  - name: kweaver-core
+    version: "0.1.0"
+    repository: "oci://ghcr.io/kweaver-ai"
+    condition: kweaver-core.enabled
+
+  # ---------------------------------------------------------------------------
+  # DIP business charts (7)
+  # ---------------------------------------------------------------------------
+  - name: deploy-web
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.studio.enabled
+
+  - name: studio-web
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.studio.enabled
+
+  - name: business-system-frontend
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.studio.enabled
+
+  - name: business-system-service
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.studio.enabled
+
+  - name: mf-model-manager-nginx
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.modelfactory.enabled
+
+  - name: mf-model-manager
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.modelfactory.enabled
+
+  - name: mf-model-api
+    version: "0.3.0"
+    repository: "oci://ghcr.io/kweaver-ai/charts"
+    condition: modules.modelfactory.enabled

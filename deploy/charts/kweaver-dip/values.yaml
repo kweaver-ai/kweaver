@@ -1,0 +1,128 @@
+# =============================================================================
+# KWeaver DIP — Default Values
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# kweaver-core conditional dependency
+# Set to false if kweaver-core is already installed as a separate Helm release
+# ---------------------------------------------------------------------------
+kweaver-core:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Global settings (propagated to all subcharts via Helm globals)
+# ---------------------------------------------------------------------------
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  namespace: kweaver
+
+# ---------------------------------------------------------------------------
+# DIP module switches
+# ---------------------------------------------------------------------------
+modules:
+  studio:
+    enabled: true
+  modelfactory:
+    enabled: true
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+env:
+  language: "en_US.UTF-8"
+  timezone: "Asia/Shanghai"
+
+# ---------------------------------------------------------------------------
+# Access address (ingress endpoint)
+# ---------------------------------------------------------------------------
+accessAddress:
+  host: ""
+  port: 443
+  scheme: https
+  path: /
+  ingressClass: "class-443"
+
+# ---------------------------------------------------------------------------
+# Dependent services connection info
+# (same schema as kweaver-core; filled by user in products-values.yaml)
+# ---------------------------------------------------------------------------
+depServices:
+  rds:
+    host: ""
+    hostRead: ""
+    port: 3306
+    portRead: 3306
+    user: ""
+    password: ""
+    root_password: ""
+    database: "adp"
+    admin_key: ""
+    source_type: internal
+    type: MariaDB
+
+  redis:
+    connectType: standalone
+    sourceType: internal
+    connectInfo:
+      host: ""
+      port: 6379
+      username: "root"
+      password: ""
+      sentinelHost: ""
+      sentinelPort: 26379
+      sentinelUsername: ""
+      sentinelPassword: ""
+      masterGroupName: "mymaster"
+
+  mq:
+    mqType: kafka
+    mqHost: ""
+    mqPort: 9092
+    mqLookupdHost: ""
+    mqLookupdPort: 0
+    auth:
+      mechanism: ""
+      username: ""
+      password: ""
+
+  opensearch:
+    distribution: opensearch
+    host: ""
+    port: 9200
+    protocol: http
+    user: "admin"
+    password: ""
+    version: ""
+
+  mongodb:
+    source_type: internal
+    host: ""
+    port: 28000
+    user: ""
+    password: ""
+    replicaSet: ""
+    options:
+      authSource: admin
+
+  zookeeper:
+    host: ""
+    port: 2181
+
+# ---------------------------------------------------------------------------
+# Database initialization hook (DIP-specific tables)
+# ---------------------------------------------------------------------------
+dbInit:
+  enabled: true
+  image:
+    repository: kweaver/db-migrate
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  backoffLimit: 3
+
+# ---------------------------------------------------------------------------
+# Storage
+# ---------------------------------------------------------------------------
+storage:
+  storageClassName: ""

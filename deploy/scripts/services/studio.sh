@@ -104,14 +104,12 @@ install_studio_release() {
     local helm_repo_name="$4"
     local default_version="$5"
     
-    log_info "Installing ${release_name}..."
-    
     # Build Helm chart reference
     local chart_ref="${helm_repo_name}/${chart_name}"
     
-    # Build Helm command
+    # Build Helm command args
     local -a helm_args=(
-        "upgrade" "--install" "${release_name}"
+        "${release_name}"
         "${chart_ref}"
         "--namespace" "${namespace}"
         "-f" "${SCRIPT_DIR}/conf/config.yaml"
@@ -122,15 +120,9 @@ install_studio_release() {
         helm_args+=("--version" "${default_version}")
     fi
     
-    helm_args+=("--devel" "--wait" "--timeout=600s")
+    helm_args+=("--devel" "--wait")
     
-    # Execute Helm install/upgrade
-    if helm "${helm_args[@]}"; then
-        log_info "✓ ${release_name} installed successfully"
-    else
-        log_error "✗ Failed to install ${release_name}"
-        return 1
-    fi
+    helm_install_with_retry "${release_name}" "${helm_args[@]}"
 }
 
 # Uninstall Studio services

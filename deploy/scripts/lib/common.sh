@@ -38,6 +38,7 @@ generate_random_password() {
 
 # Try to disable IPv6 if connectivity check fails with IPv6 enabled.
 # Many cloud VMs have broken IPv6 routing that causes DNS/HTTPS timeouts.
+# When disabling IPv6, also patches kubeconfig to use 127.0.0.1 instead of [::1].
 maybe_disable_ipv6() {
     local test_host="$1"
     if [[ -z "${test_host}" ]]; then
@@ -50,6 +51,12 @@ maybe_disable_ipv6() {
             log_warn "Disabling IPv6 to work around cloud VM routing issues..."
             sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null 2>&1 || true
             sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1 || true
+
+            local kubeconfig="${KUBECONFIG:-$HOME/.kube/config}"
+            if [[ -f "${kubeconfig}" ]] && grep -q '\[::1\]' "${kubeconfig}"; then
+                log_warn "Patching kubeconfig: replacing [::1] with 127.0.0.1 in ${kubeconfig}"
+                sed -i 's/\[::1\]/127.0.0.1/g' "${kubeconfig}"
+            fi
         fi
     fi
 }

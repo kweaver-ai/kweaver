@@ -229,4 +229,43 @@ insert into t_prompt_list(f_create_by, f_create_time, f_icon, f_is_delete, f_is_
                     '[]', 1
                 from DUAL where not exists(select f_prompt_id from t_prompt_list where f_prompt_id = '1100000000000000030');
 
+-- ==================== Storage Configuration Table ====================
+CREATE TABLE IF NOT EXISTS `t_storage_config` (
+    `f_storage_id` VARCHAR(50) PRIMARY KEY COMMENT 'Storage ID (Snowflake ID)',
+    `f_storage_name` VARCHAR(128) NOT NULL COMMENT 'Storage name',
+    `f_vendor_type` VARCHAR(32) NOT NULL COMMENT 'Vendor type: OSS/OBS/ECEPH',
+    `f_endpoint` VARCHAR(256) NOT NULL COMMENT 'Service endpoint URL',
+    `f_bucket_name` VARCHAR(128) NOT NULL COMMENT 'Bucket name',
+    `f_access_key_id` VARCHAR(256) NOT NULL COMMENT 'AccessKeyID (encrypted)',
+    `f_access_key` VARCHAR(512) NOT NULL COMMENT 'AccessKeySecret (encrypted)',
+    `f_region` VARCHAR(64) DEFAULT '' COMMENT 'Region (required for OSS/OBS, optional for ECEPH)',
+    `f_is_default` TINYINT(1) DEFAULT 0 COMMENT 'Is default storage',
+    `f_is_enabled` TINYINT(1) DEFAULT 1 COMMENT 'Is enabled',
+    `f_internal_endpoint` VARCHAR(256) DEFAULT '' COMMENT 'Internal access endpoint',
+    `f_site_id` VARCHAR(64) DEFAULT '' COMMENT 'Site ID for multi-tenant isolation',
+    `f_created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+    `f_updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+    KEY `idx_vendor_type` (`f_vendor_type`),
+    KEY `idx_is_enabled` (`f_is_enabled`),
+    KEY `idx_bucket_endpoint` (`f_bucket_name`, `f_endpoint`(255)),
+    KEY `idx_bucket_site` (`f_bucket_name`, `f_site_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Storage configuration table';
+
+-- ==================== Multipart Upload Task Table ====================
+CREATE TABLE IF NOT EXISTS `t_multipart_upload_task` (
+    `f_id` VARCHAR(50) PRIMARY KEY COMMENT 'Task ID (Snowflake ID)',
+    `f_storage_id` VARCHAR(50) NOT NULL COMMENT 'Associated storage ID',
+    `f_object_key` VARCHAR(512) NOT NULL COMMENT 'Object key',
+    `f_upload_id` VARCHAR(256) NOT NULL COMMENT 'Upload ID from vendor',
+    `f_total_size` BIGINT NOT NULL COMMENT 'Total file size',
+    `f_part_size` INT NOT NULL COMMENT 'Part size in bytes',
+    `f_total_parts` INT NOT NULL COMMENT 'Total number of parts',
+    `f_status` SMALLINT DEFAULT 0 COMMENT 'Status: 0=in progress, 1=completed, 2=cancelled',
+    `f_created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+    `f_expires_at` TIMESTAMP NOT NULL COMMENT 'Expiration time',
+    KEY `idx_storage_id` (`f_storage_id`),
+    KEY `idx_status` (`f_status`),
+    KEY `idx_expires_at` (`f_expires_at`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Multipart upload task table';
+
 

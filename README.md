@@ -36,6 +36,9 @@ Click the image to watch the KWeaver demo on Bilibili
 3. **Run installation scripts**:
 
 ```bash
+# git clone https://github.com/kweaver-ai/kweaver.git
+# cd kweaver/deploy
+
 # Full one-click deployment (recommended)
 ./deploy.sh full init     # Infrastructure + KWeaver application services
 # Layered deployment

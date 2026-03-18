@@ -39,7 +39,8 @@ Click the image to watch the KWeaver demo on Bilibili
 
 1. **Source deployment**: see the [Deployment Guide](deploy/README.md).
 2. **Prerequisites**: follow the prerequisites described in `deploy/README.md`.
-3. **Run installation scripts**:
+3. If you deploy on a cloud VM, make sure `accessAddress.host` in `conf/config.yaml` is set to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
+4. **Run installation scripts**:
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver.git
@@ -55,9 +56,7 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
-If you deploy on a cloud VM, make sure `accessAddress.host` in `conf/config.yaml` is set to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
-
-4. **Verify the deployment**:
+5. **Verify the deployment**:
 
 ```bash
 # Check cluster status
@@ -68,7 +67,7 @@ kubectl get pods -A
 ./deploy.sh kweaver status
 ```
 
-5. **Access the system**:
+6. **Access the system**:
    - Deployment console: `https://<node-ip>/deploy`, account `admin`, initial password `eisoo.com`
    - KWeaver Studio: `https://<node-ip>/studio`
 

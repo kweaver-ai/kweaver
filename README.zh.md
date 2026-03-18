@@ -39,7 +39,8 @@ KWeaver 项目包含 KWeaver Core 与 KWeaver DIP。
 
 1. 源码部署：参考 [部署文档](deploy/README.zh.md)。
 2. 前置要求：参考 `deploy/README.zh.md` 中前置条件。
-3. 执行安装部署脚本：
+3. 如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
+4. 执行安装部署脚本：
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver.git
@@ -55,9 +56,7 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
-如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
-
-4. 验证部署：
+5. 验证部署：
 
 ```bash
 # 检查集群状态
@@ -68,7 +67,7 @@ kubectl get pods -A
 ./deploy.sh kweaver status
 ```
 
-5. 部署完成后，可按以下地址访问：
+6. 部署完成后，可按以下地址访问：
    - 部署工作台：`https://<节点IP>/deploy`，账号 `admin`，初始密码 `eisoo.com`
    - KWeaver 页面：`https://<节点IP>/studio`
 

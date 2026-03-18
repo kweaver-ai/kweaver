@@ -20,6 +20,10 @@ generate_config_yaml() {
     fi
 
     local node_ip
+    local access_host=""
+    local access_port="443"
+    local access_scheme="https"
+    local access_path="/"
     # Try to get the first non-loopback IP address
     node_ip="$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -v '^127\.' | head -1 | tr -d '\n' || true)"
     # If no valid IP found, try alternative methods
@@ -31,6 +35,21 @@ generate_config_yaml() {
     if [[ -z "${node_ip}" ]]; then
         node_ip="10.x.x.x"
     fi
+
+    # Preserve existing accessAddress settings if the user has already configured them.
+    if [[ -f "${out}" ]]; then
+        access_host="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="host:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
+        access_port="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="port:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
+        access_scheme="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="scheme:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
+        access_path="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="path:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
+    fi
+
+    if [[ -z "${access_host}" ]]; then
+        access_host="${node_ip}"
+    fi
+    access_port="${access_port:-443}"
+    access_scheme="${access_scheme:-https}"
+    access_path="${access_path:-/}"
 
     # Storage (local-path)
     local storage_class_name="${STORAGE_STORAGE_CLASS_NAME}"
@@ -491,10 +510,10 @@ image:
   registry: ${IMAGE_REGISTRY}
 ${storage_section}
 accessAddress:
-  host: ${node_ip}
-  port: 443
-  scheme: https
-  path: /
+  host: ${access_host}
+  port: ${access_port}
+  scheme: ${access_scheme}
+  path: ${access_path}
 depServices:
   mq:
     auth:

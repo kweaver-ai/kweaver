@@ -636,3 +636,63 @@ show_status() {
     echo ""
     kubectl get pods -A
 }
+
+print_web_access_info() {
+    local cfg="${CONFIG_YAML_PATH}"
+    if [[ ! -f "${cfg}" ]]; then
+        return 0
+    fi
+
+    local host port scheme path
+    host="$(awk '
+      $1 == "accessAddress:" { in_block=1; next }
+      in_block && $1 == "host:" { print $2; exit }
+      in_block && $0 ~ /^[^ ]/ { in_block=0 }
+    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
+    port="$(awk '
+      $1 == "accessAddress:" { in_block=1; next }
+      in_block && $1 == "port:" { print $2; exit }
+      in_block && $0 ~ /^[^ ]/ { in_block=0 }
+    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
+    scheme="$(awk '
+      $1 == "accessAddress:" { in_block=1; next }
+      in_block && $1 == "scheme:" { print $2; exit }
+      in_block && $0 ~ /^[^ ]/ { in_block=0 }
+    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
+    path="$(awk '
+      $1 == "accessAddress:" { in_block=1; next }
+      in_block && $1 == "path:" { print $2; exit }
+      in_block && $0 ~ /^[^ ]/ { in_block=0 }
+    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
+
+    if [[ -z "${host}" ]]; then
+        log_warn "Web access address is not configured. Please set accessAddress.host in conf/config.yaml."
+        return 0
+    fi
+
+    scheme="${scheme:-https}"
+    path="${path:-/}"
+    if [[ "${path}" != /* ]]; then
+        path="/${path}"
+    fi
+    if [[ "${path}" == "/" ]]; then
+        path=""
+    else
+        path="${path%/}"
+    fi
+
+    local port_part=""
+    if [[ -n "${port}" ]]; then
+        if ! { [[ "${scheme}" == "https" && "${port}" == "443" ]] || [[ "${scheme}" == "http" && "${port}" == "80" ]]; }; then
+            port_part=":${port}"
+        fi
+    fi
+
+    local base_url="${scheme}://${host}${port_part}${path}"
+    log_info ""
+    log_info "Web access URLs:"
+    log_info "  Deployment console: ${base_url}/deploy"
+    log_info "  KWeaver Studio: ${base_url}/studio"
+    log_info "  Default account: admin"
+    log_info "  Initial password: eisoo.com"
+}

@@ -55,6 +55,8 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
+If you deploy on a cloud VM, make sure `accessAddress.host` in `conf/config.yaml` is set to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
+
 4. **Verify the deployment**:
 
 ```bash

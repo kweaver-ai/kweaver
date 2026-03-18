@@ -137,6 +137,12 @@ namespace: kweaver          # 部署命名空间
 image:
   registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai  # 镜像仓库
 
+accessAddress:
+  host: <公网 IP 或域名>  # 云主机部署时必须设置
+  port: 443
+  scheme: https
+  path: /
+
 depServices:
   rds:
     source_type: internal   # internal=内置MariaDB, external=外部数据库
@@ -144,6 +150,8 @@ depServices:
     user: 'adp'
     password: ''            # 自动生成
 ```
+
+如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
 
 ### 使用外部数据库
 

@@ -69,7 +69,6 @@ usage() {
     echo "  isf init                      Install ISF services (informationsecurityfabric, hydra, sharemgnt, etc.)"
     echo "  isf uninstall                 Uninstall ISF services"
     echo "  isf status                    Show ISF services status"
-    echo "  all init                      Run full initialization (k8s + mariadb + redis + ingress-nginx)"
     echo ""
     echo "Examples:"
     echo "  $0 k8s init                   # Initialize K8s master node with default settings"
@@ -102,7 +101,8 @@ usage() {
     echo "  $0 ingress-nginx init         # Install ingress-nginx-controller"
     echo "  $0 ingress-nginx uninstall    # Uninstall ingress-nginx-controller"
     echo "  $0 config generate            # Generate/update conf/config.yaml"
-    echo "  $0 all init                   # Full initialization with all components"
+    echo "  $0 infra init                 # Initialize infrastructure components"
+    echo "  $0 full init                  # Full initialization with all components"
 }
 
 
@@ -516,9 +516,8 @@ main() {
         return 0
     fi
     
-    # Handle all/infra module (infrastructure: k8s + data services)
-    # 'all' is an alias for 'infra' for backward compatibility
-    if [[ "${module}" == "all" ]] || [[ "${module}" == "infra" ]]; then
+    # Handle infra module (infrastructure: k8s + data services)
+    if [[ "${module}" == "infra" ]]; then
         case "${action}" in
             init)
                 check_root
@@ -626,6 +625,7 @@ main() {
                 install_sandboxruntime
 
                 log_info "KWeaver application services deployment completed!"
+                print_web_access_info
                 ;;
             uninstall)
                 check_root
@@ -735,6 +735,7 @@ main() {
                 log_info "╔════════════════════════════════════════════════════════════════╗"
                 log_info "║                   Full Deployment Completed!                   ║"
                 log_info "╚════════════════════════════════════════════════════════════════╝"
+                print_web_access_info
                 ;;
             reset)
                 check_root

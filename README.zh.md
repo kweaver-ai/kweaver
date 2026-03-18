@@ -55,6 +55,8 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
+如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
+
 4. 验证部署：
 
 ```bash

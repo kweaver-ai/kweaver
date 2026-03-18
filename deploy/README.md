@@ -137,6 +137,12 @@ namespace: kweaver          # Namespace
 image:
   registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai  # Image registry
 
+accessAddress:
+  host: <public-ip-or-domain>  # Required on cloud VMs
+  port: 443
+  scheme: https
+  path: /
+
 depServices:
   rds:
     source_type: internal   # internal=embedded MariaDB, external=external DB
@@ -144,6 +150,8 @@ depServices:
     user: 'adp'
     password: ''            # Auto-generated
 ```
+
+If you deploy on a cloud VM, you must set `accessAddress.host` in `conf/config.yaml` to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
 
 ### Use an external database
 

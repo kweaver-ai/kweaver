@@ -85,7 +85,7 @@ export default function BlogPostItemWrapper(props) {
         <>
           <LikeButton />
           {/* Hidden Giscus: only used to fetch reaction count */}
-          <div style={{position: 'absolute', width: 0, height: 0, overflow: 'hidden'}}>
+          <div style={{position: 'fixed', left: '-9999px', width: '300px', height: '300px', opacity: 0, pointerEvents: 'none'}}>
             <Giscus
               {...GISCUS_PROPS}
               theme={colorMode === 'dark' ? 'dark' : 'light'}

@@ -34,7 +34,7 @@ function ReactionCount() {
         color: 'var(--ifm-color-emphasis-700)',
         cursor: 'pointer',
       }}
-      title="点击查看详情"
+      title="点击点赞"
       onClick={() => {
         document.querySelector('.giscus')?.scrollIntoView({behavior: 'smooth'});
       }}
@@ -68,7 +68,7 @@ export default function BlogPostItemWrapper(props) {
       {isBlogPostPage && (
         <>
           <ReactionCount />
-          <div style={{marginTop: '2rem'}}>
+          <div className="giscus-reactions-only" style={{marginTop: '2rem'}}>
             <Giscus
               {...GISCUS_PROPS}
               theme={colorMode === 'dark' ? 'dark' : 'light'}

@@ -17,7 +17,7 @@ KWeaver is an open-source ecosystem consisting of multiple sub-projects. Please 
 | **AI Store** | AI application and component marketplace | [kweaver-ai/dip](https://github.com/kweaver-ai/dip) |
 | **Studio** | DIP Studio - Visual development and management interface | [kweaver-ai/studio](https://github.com/kweaver-ai/studio) |
 | **Decision Agent** | Decision Agent - Intelligent decision agent | [kweaver-ai/decision-agent](https://github.com/kweaver-ai/decision-agent) |
-| **ADP** | AI Data Platform - Including Ontology Engine, ContextLoader, and VEGA data virtualization engine | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
+| **ADP** | AI Data Platform - Including BKN Engine, ContextLoader, and VEGA data virtualization engine | [kweaver-ai/adp](https://github.com/kweaver-ai/adp) |
 | **Operator Hub** | Operator Platform - Operator management and orchestration | [kweaver-ai/operator-hub](https://github.com/kweaver-ai/operator-hub) |
 | **Sandbox** | Sandbox runtime environment | [kweaver-ai/sandbox](https://github.com/kweaver-ai/sandbox) |
 

@@ -18,6 +18,7 @@ The KWeaver project includes KWeaver Core and KWeaver DIP.
 
 - 🤝 [Contributing](rules/CONTRIBUTING.md) - Guidelines for contributing to the project
 - 🚢 [Deployment](deploy/README.md) - One-click deploy to Kubernetes
+- 📘 [Documentation](docs/) - Product documentation and usage guides
 - 🚀 [Release Guidelines](rules/RELEASE.md) - Version management and release process
 - 🏗️ [Architecture](rules/ARCHITECTURE.md) - Architecture design specification
 - 🧾 [Changelog](rules/CHANGELOG.md) - All notable changes

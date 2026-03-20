@@ -195,6 +195,7 @@ if [ -f "$CONF_YAML" ]; then
       in_datasource=0
       datasource_updated=0
       datasource_exists=0
+      datasource_added=0
     }
     /^datasource:/ { 
       in_datasource=1
@@ -220,16 +221,17 @@ if [ -f "$CONF_YAML" ]; then
       print
       next
     }
-    !in_datasource && /^depServices:/ && datasource_exists == 0 {
+    !in_datasource && /^depServices:/ && datasource_exists == 0 && datasource_added == 0 {
       print "datasource:"
       print "  host: '\''" host "'\''"
       print ""
       print
+      datasource_added=1
       next
     }
     { print }
     END {
-      if (datasource_exists == 0 && datasource_updated == 0) {
+      if (datasource_exists == 0 && datasource_updated == 0 && datasource_added == 0) {
         print "datasource:"
         print "  host: '\''" host "'\''"
       }

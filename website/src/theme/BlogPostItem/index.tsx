@@ -25,7 +25,7 @@ export default function BlogPostItemWrapper(props) {
     <>
       <BlogPostItem {...props} />
       {isBlogPostPage && (
-        <div className="giscus-reactions-only" style={{marginTop: '1.5rem'}}>
+        <div style={{marginTop: '1.5rem'}}>
           <Giscus
             {...GISCUS_PROPS}
             theme={colorMode === 'dark' ? 'dark' : 'light'}

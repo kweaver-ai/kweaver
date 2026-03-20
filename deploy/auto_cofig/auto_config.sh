@@ -696,6 +696,14 @@ check_model_config() {
     return 1
   fi
 
+  # Debug: show model types found in response
+  if command -v jq >/dev/null 2>&1; then
+    local model_types=$(echo "$resp" | jq -r '.data[]?.model_type' 2>/dev/null | sort -u | tr '\n' ' ')
+    if [ -n "$model_types" ]; then
+      echo -e "${YELLOW}  检测到的模型类型: ${model_types}${NC}"
+    fi
+  fi
+
   local has_llm has_embed
   has_llm=$(echo "$resp" | grep -o '"model_type":"llm"' | head -1)
   has_embed=$(echo "$resp" | grep -o '"model_type":"embedding"' | head -1)

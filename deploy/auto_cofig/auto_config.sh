@@ -698,6 +698,11 @@ check_model_config() {
     return 1
   fi
 
+  # Debug: show raw response (first 500 chars) if no models found
+  if ! echo "$llm_resp" | grep -q '"data"' || echo "$llm_resp" | jq -e '.data | length == 0' >/dev/null 2>&1; then
+    echo -e "${YELLOW}  调试: 大模型接口响应前500字符: ${llm_resp:0:500}${NC}"
+  fi
+
   # Check embedding models using small-model/list API
   echo -e "${YELLOW}  检查向量模型配置...${NC}"
   local embed_resp
@@ -709,6 +714,11 @@ check_model_config() {
   if [ $? -ne 0 ] || [ -z "$embed_resp" ]; then
     echo -e "${RED}错误: 无法访问向量模型接口${NC}"
     return 1
+  fi
+
+  # Debug: show raw response (first 500 chars) if no models found
+  if ! echo "$embed_resp" | grep -q '"data"' || echo "$embed_resp" | jq -e '.data | length == 0' >/dev/null 2>&1; then
+    echo -e "${YELLOW}  调试: 向量模型接口响应前500字符: ${embed_resp:0:500}${NC}"
   fi
 
   # Debug: show model counts and raw response (first 200 chars)

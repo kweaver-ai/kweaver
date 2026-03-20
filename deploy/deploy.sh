@@ -181,7 +181,7 @@ main() {
                 fi
 
                 if [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
-                    generate_config_yaml
+                    FORCE_REGENERATE_CONFIG=true generate_config_yaml
                 fi
                 show_status
                 ;;
@@ -553,7 +553,7 @@ main() {
                 fi
                 install_opensearch
                 if [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
-                    generate_config_yaml
+                    FORCE_REGENERATE_CONFIG=true generate_config_yaml
                 fi
                 show_status
                 log_info "Infrastructure deployment completed!"
@@ -705,7 +705,7 @@ main() {
                 fi
                 install_opensearch
                 if [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
-                    generate_config_yaml
+                    FORCE_REGENERATE_CONFIG=true generate_config_yaml
                 fi
                 
                 # Step 2: Deploy KWeaver services

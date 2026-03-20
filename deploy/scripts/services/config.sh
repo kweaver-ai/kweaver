@@ -5,11 +5,9 @@ generate_config_yaml() {
     mkdir -p "$(dirname "${out}")"
     
     # Skip regeneration if config.yaml already has meaningful content.
-    # Check two independent signals:
-    #   1. Any non-empty password field exists (infra secrets already populated)
-    #   2. accessAddress.host is already configured (user has set the IP)
-    # Either signal alone is sufficient to skip — avoids overwriting user config.
-    if [[ -f "${out}" ]]; then
+    # FORCE_REGENERATE_CONFIG=true bypasses this guard (used by full init after fresh infra install).
+    # accessAddress is always preserved even when force-regenerating (see Guard 2 below).
+    if [[ "${FORCE_REGENERATE_CONFIG}" != "true" ]] && [[ -f "${out}" ]]; then
         local filled
         filled=$(grep 'password:' "${out}" 2>/dev/null | grep -cv "password: *'*'* *$" || true)
         if [[ "${filled}" -gt 0 ]]; then
@@ -22,6 +20,9 @@ generate_config_yaml() {
             log_info "accessAddress.host already configured (${existing_host}), skipping regeneration."
             return 0
         fi
+    fi
+    if [[ "${FORCE_REGENERATE_CONFIG}" == "true" ]]; then
+        log_info "FORCE_REGENERATE_CONFIG=true, regenerating config.yaml (accessAddress preserved)..."
     fi
 
     load_image_registry_from_config

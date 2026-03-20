@@ -188,7 +188,10 @@ If you use an external database:
 
 ### Scenario-based auto configuration
 
-The `auto_cofig` directory provides automated environment setup scripts for common deployment scenarios. You can use these scripts to quickly configure data sources, knowledge networks, agents, data flows, operators, toolboxes, and MCPs.
+The `auto_cofig` directory provides scripts to quickly set up a demo scenario (e.g. supply chain) after deployment. The workflow revolves around a central config file `config.env`:
+
+1. **`setup_tem_db.sh`** reads database credentials from `conf/config.yaml`, creates the demo database in MariaDB, imports sample data (`dump-tem.sql`), and **writes back** the connection info (`DS_HOST`, `DS_USERNAME`, `DS_PASSWORD`) into `config.env`.
+2. **`auto_config.sh`** reads `config.env` for authentication and data source settings, then creates data sources, imports knowledge networks, agents, data flows, etc.
 
 **Prerequisites:**
 
@@ -199,64 +202,20 @@ The `auto_cofig` directory provides automated environment setup scripts for comm
 
 **Usage:**
 
-1. Navigate to the `auto_cofig` directory:
-   ```bash
-   cd deploy/auto_cofig
-   ```
+```bash
+cd deploy/auto_cofig
 
-2. Configure the environment file (`config.env`):
-   ```bash
-   # Authentication
-   USERNAME=test
-   PASSWORD=your_password
-   
-   # Data source configuration
-   DS_TYPE=mysql              # Database type
-   DS_NAME=Your Data Source    # Connection name
-   DS_DATABASE_NAME=your_db   # Database name
-   DS_HOST=your_host          # Database host
-   DS_PORT=3306              # Database port
-   DS_USERNAME=db_user        # Database username
-   DS_PASSWORD=db_password    # Database password
-   ```
+# Step 1: Prepare demo database (auto-fills config.env with DB credentials)
+chmod +x setup_tem_db.sh auto_config.sh
+./setup_tem_db.sh
 
-3. Run the auto-configuration script:
-   ```bash
-   chmod +x auto_config.sh
-   
-   # Full configuration (all steps)
-   ./auto_config.sh agent.json knowledge_network.json dataflow.json
-   
-   # Or run individual steps
-   ./auto_config.sh --step 1                    # Get token
-   ./auto_config.sh --step 2                    # Create datasource and scan
-   ./auto_config.sh --step 3 knowledge_network.json  # Import knowledge network
-   ./auto_config.sh --step 4 agent.json        # Import DataAgent
-   ./auto_config.sh --step 5 dataflow.json     # Import data flow
-   ./auto_config.sh --step 6 operator.adp      # Import operator
-   ./auto_config.sh --step 7 toolbox.adp      # Import toolbox
-   ./auto_config.sh --step 8 mcp.adp           # Import MCP
-   ```
+# Step 2: Import scenario configuration
+./auto_config.sh agent.json 供应链业务知识网络.json dataflow.json
 
-**Available steps:**
-
-- Step 1: Get authentication token
-- Step 2: Create datasource and scan
-- Step 3: Import business knowledge network
-- Step 4: Import DataAgent
-- Step 5: Import data flow
-- Step 6: Import operator (optional)
-- Step 7: Import toolbox (optional)
-- Step 8: Import MCP (optional)
-
-**Example scenario files:**
-
-The `auto_cofig` directory includes example configuration files for a supply chain scenario:
-- `agent.json` - DataAgent configuration
-- `供应链业务知识网络.json` - Business knowledge network
-- `dataflow.json` - Data flow configuration
-- `contextloader工具集_020.adp` - Toolbox example
-- `基础结构化数据分析工具箱2.adp` - Toolbox example
+# Step 3: Import toolboxes
+./auto_config.sh --step 7 contextloader工具集_020.adp
+./auto_config.sh --step 7 基础结构化数据分析工具箱2.adp
+```
 
 For detailed usage instructions, see `auto_cofig/README.md`.
 

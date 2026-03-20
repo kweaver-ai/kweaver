@@ -999,7 +999,16 @@ prepare_supply_chain_kn_json() {
     embedding_model_id=""
   fi
   echo -e "${YELLOW}  替换 JSON 中的 data_view id 与 vector model_id...${NC}"
+  
+  # Debug: show data view map and embedding model ID
+  if command -v jq >/dev/null 2>&1; then
+    local dv_count=$(echo "$dv_map" | jq 'length' 2>/dev/null || echo "0")
+    echo -e "${YELLOW}    数据视图映射数量: ${dv_count}${NC}"
+    echo -e "${YELLOW}    向量模型ID: ${embedding_model_id:-未找到}${NC}"
+  fi
+  
   local jq_script
+  local jq_err_file="/tmp/jq_error_$$.txt"
   if [[ -n "$embedding_model_id" ]]; then
     jq_script='
       .object_types |= map(
@@ -1016,7 +1025,8 @@ prepare_supply_chain_kn_json() {
         else . end
       )
     '
-    jq --argjson dv_map "$dv_map" --arg embed_id "$embedding_model_id" "$jq_script" "$src_file" > "$out_file" 2>/dev/null
+    jq --argjson dv_map "$dv_map" --arg embed_id "$embedding_model_id" "$jq_script" "$src_file" > "$out_file" 2>"$jq_err_file"
+    local jq_exit=$?
   else
     jq_script='
       .object_types |= map(
@@ -1028,12 +1038,27 @@ prepare_supply_chain_kn_json() {
         else . end
       )
     '
-    jq --argjson dv_map "$dv_map" "$jq_script" "$src_file" > "$out_file" 2>/dev/null
+    jq --argjson dv_map "$dv_map" "$jq_script" "$src_file" > "$out_file" 2>"$jq_err_file"
+    local jq_exit=$?
   fi
-  if [[ $? -ne 0 || ! -s "$out_file" ]]; then
+  
+  if [[ $jq_exit -ne 0 || ! -s "$out_file" ]]; then
     echo -e "${RED}错误: jq 替换失败${NC}"
+    if [[ -s "$jq_err_file" ]]; then
+      echo -e "${RED}  jq 错误信息: $(cat "$jq_err_file")${NC}"
+    fi
+    rm -f "$jq_err_file"
     return 1
   fi
+  rm -f "$jq_err_file"
+  
+  # Verify replacement results
+  if command -v jq >/dev/null 2>&1; then
+    local replaced_count=$(jq '[.object_types[]? | select(.data_source.type == "data_view" and .data_source.id != null)] | length' "$out_file" 2>/dev/null || echo "0")
+    local vector_replaced_count=$(jq '[.object_types[].data_properties[]? | select(.index_config.vector_config.enabled == true and .index_config.vector_config.model_id != "" and .index_config.vector_config.model_id != null)] | length' "$out_file" 2>/dev/null || echo "0")
+    echo -e "${GREEN}    ✓ 替换完成: 数据视图 ${replaced_count} 个, 向量模型配置 ${vector_replaced_count} 个${NC}"
+  fi
+  
   return 0
 }
 

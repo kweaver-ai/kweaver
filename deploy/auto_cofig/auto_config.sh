@@ -980,9 +980,25 @@ prepare_supply_chain_kn_json() {
     "${BASE_URL}/api/mdl-data-model/v1/data-views?sort=update_time&direction=desc&offset=0&limit=100" \
     -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     -H "Content-Type: application/json" 2>/dev/null)
+  
+  # Debug: check response
+  if [[ -z "$dv_resp" ]] || echo "$dv_resp" | grep -q "error\|Error\|Bad Request"; then
+    echo -e "${YELLOW}    警告: 数据视图API响应异常，前200字符: ${dv_resp:0:200}${NC}"
+  fi
+  
   local dv_map
   dv_map=$(echo "$dv_resp" | jq -r '[.entries[]? | select((.technical_name // .name) != null and .id != null) | {key: (.technical_name // .name), value: .id}] | from_entries' 2>/dev/null)
+  
+  # Debug: show data view names if map is empty
   if [[ -z "$dv_map" || "$dv_map" == "null" ]]; then
+    echo -e "${YELLOW}    调试: 数据视图映射为空，检查响应结构...${NC}"
+    if command -v jq >/dev/null 2>&1; then
+      local entries_count=$(echo "$dv_resp" | jq '.entries | length' 2>/dev/null || echo "0")
+      echo -e "${YELLOW}    响应中的 entries 数量: ${entries_count}${NC}"
+      if [[ "${entries_count}" -gt 0 ]]; then
+        echo -e "${YELLOW}    前3个数据视图名称: $(echo "$dv_resp" | jq -r '.entries[0:3] | .[] | (.technical_name // .name)' 2>/dev/null | tr '\n' ' ')${NC}"
+      fi
+    fi
     echo -e "${RED}错误: 无法获取数据视图列表或列表为空${NC}"
     return 1
   fi

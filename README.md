@@ -37,6 +37,12 @@ Click the image to watch the KWeaver demo on Bilibili
 
 ## 🚀 Quick Start
 
+1. **Quick install**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+```
+
 1. **Source deployment**: see the [Deployment Guide](deploy/README.md).
 2. **Prerequisites**: follow the prerequisites described in `deploy/README.md`.
 3. If you deploy on a cloud VM, make sure `accessAddress.host` in `conf/config.yaml` is set to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
@@ -55,6 +61,8 @@ chmod +x deploy.sh
 # Help
 ./deploy.sh --help
 ```
+
+For first-time installation, especially on cloud VMs or slower networks, the full deployment process may take a while. In some environments it can take more than an hour to complete.
 
 5. **Verify the deployment**:
 

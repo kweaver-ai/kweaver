@@ -37,6 +37,12 @@ KWeaver 项目包含 KWeaver Core 与 KWeaver DIP。
 
 ## 🚀 快速开始
 
+1. 快速安装：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+```
+
 1. 源码部署：参考 [部署文档](deploy/README.zh.md)。
 2. 前置要求：参考 `deploy/README.zh.md` 中前置条件。
 3. 如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
@@ -55,6 +61,8 @@ chmod +x deploy.sh
 # 查看帮助
 ./deploy.sh --help
 ```
+
+首次安装时，尤其是在云主机或网络较慢的环境中，完整部署过程可能需要较长时间。在某些环境下，完成安装可能会超过 1 小时。
 
 5. 验证部署：
 

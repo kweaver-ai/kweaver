@@ -9,6 +9,10 @@
 ## 🚀 Quick Start
 
 ```bash
+# 方式 1：快速安装引导脚本
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+
+# 方式 2：克隆仓库
 # 1. 克隆仓库
 git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/deploy
@@ -19,6 +23,8 @@ cd kweaver/deploy
 # 3. 一键部署所有组件，默认安装最新版本
 bash ./deploy.sh full init
 ```
+
+首次安装时，尤其是在云主机或网络较慢的环境中，完整部署过程可能需要较长时间。在某些环境下，完成安装可能会超过 1 小时。
 
 部署完成后，访问 `https://<节点IP>/studio` 即可使用,账号admin，初始密码eisoo.com
 

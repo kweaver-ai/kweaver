@@ -9,6 +9,10 @@ One-click deployment of the KWeaver AI platform to a single-node Kubernetes clus
 ## 🚀 Quick Start
 
 ```bash
+# Option 1: Quick install bootstrap
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+
+# Option 2: Clone the repository
 # 1. Clone the repository
 git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/deploy
@@ -19,6 +23,8 @@ cd kweaver/deploy
 # 3. Deploy all components (installs the latest version by default)
 bash ./deploy.sh full init
 ```
+
+For first-time installation, especially on cloud VMs or slower networks, the full deployment process may take a while. In some environments it can take more than an hour to complete.
 
 After deployment, open `https://<node-ip>/studio`. Username: `admin`, initial password: `eisoo.com`.
 

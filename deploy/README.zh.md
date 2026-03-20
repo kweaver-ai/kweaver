@@ -9,8 +9,12 @@
 ## 🚀 Quick Start
 
 ```bash
-# 方式 1：快速安装引导脚本
+# 方式 1：从 Release 包快速安装（推荐）
+# 自动安装最新版本
 curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+
+# 安装指定版本
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --version v1.0.0
 
 # 方式 2：克隆仓库
 # 1. 克隆仓库

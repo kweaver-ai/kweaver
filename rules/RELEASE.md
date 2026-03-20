@@ -121,20 +121,22 @@ git tag v1.0.0.rc.1
 
 ### Automated Releases
 
-KWeaver uses a **tag-triggered** automated release process:
+**Tag-triggered flow (this repository):**
 
 ```text
-Developer pushes tag  →  CI detects tag  →  Run tests  →  Build artifacts  →  Publish Release
+Developer pushes version tag (v*)  →  GitHub Actions  →  Deploy-only tarball  →  GitHub Release asset
 ```
 
-CI will automatically perform the following:
+**Implemented today** (see `.github/workflows/`):
 
-1. ✅ Run full test suite
-2. ✅ Build binaries for all platforms
-3. ✅ Build Docker images
-4. ✅ Generate Release Notes
-5. ✅ Publish to GitHub Releases
-6. ✅ Push images to Container Registry
+| Workflow | Trigger | What it does |
+| --- | --- | --- |
+| `commitlint.yml` | Pull requests | Basic commit message checks |
+| `package.yml` | Push tag `v*` | Builds `kweaver-deploy-<version>.tar.gz` (only the `deploy/` tree, layout compatible with `install.sh`) and creates/updates the GitHub Release for that tag with generated release notes. Pre-release tags (`-rc`, `-alpha`, `-beta`) are marked as prereleases. |
+
+**Install integration:** `install.sh` downloads and installs from release packages only. Use `--version vX.Y.Z` to install a specific version, or omit it to automatically use the latest release.
+
+**Roadmap** (not automated in this repo yet): full test suite on tag, multi-platform binaries, Docker image build/push, and container registry publication may be added later; the table above describes the current CI surface.
 
 ### Release Process (Release With Freeze / RC Flow)
 

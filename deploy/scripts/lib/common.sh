@@ -23,6 +23,63 @@ CONFIG_YAML_PATH="${CONFIG_YAML_PATH:-${CONF_DIR}/config.yaml}"
 
 AUTO_GENERATE_CONFIG="${AUTO_GENERATE_CONFIG:-true}"
 
+# Read accessAddress.* from conf/config.yaml for preservation across generate_config_yaml.
+# Prints four lines: host, port, scheme, path (may be empty). Tolerates CRLF, comments between
+# keys, host:value without space after colon, and IPv6 (full remainder of line after "host:").
+# Callers should only substitute defaults (node IP, 443, https, /) when a line is empty — do not
+# overwrite user-configured values.
+extract_config_access_address_fields() {
+    local cfg="${1:-${CONFIG_YAML_PATH}}"
+    if [[ ! -f "${cfg}" ]]; then
+        printf '\n\n\n\n'
+        return 0
+    fi
+    awk '
+    /^accessAddress:/ { ina=1; next }
+    !ina { next }
+    /^[[:space:]]*#/ { next }
+    /^[^[:space:]#]/ { ina=0; next }
+    /^[[:space:]]*host:/ {
+        line=$0
+        sub(/\r$/, "", line)
+        sub(/^[[:space:]]*host:[[:space:]]*/, "", line)
+        gsub(/^["'\'']|["'\'']$/, "", line)
+        host=line
+        next
+    }
+    /^[[:space:]]*port:/ {
+        line=$0
+        sub(/\r$/, "", line)
+        sub(/^[[:space:]]*port:[[:space:]]*/, "", line)
+        gsub(/^["'\'']|["'\'']$/, "", line)
+        port=line
+        next
+    }
+    /^[[:space:]]*scheme:/ {
+        line=$0
+        sub(/\r$/, "", line)
+        sub(/^[[:space:]]*scheme:[[:space:]]*/, "", line)
+        gsub(/^["'\'']|["'\'']$/, "", line)
+        scheme=line
+        next
+    }
+    /^[[:space:]]*path:/ {
+        line=$0
+        sub(/\r$/, "", line)
+        sub(/^[[:space:]]*path:[[:space:]]*/, "", line)
+        gsub(/^["'\'']|["'\'']$/, "", line)
+        path=line
+        next
+    }
+    END {
+        print host
+        print port
+        print scheme
+        print path
+    }
+    ' "${cfg}"
+}
+
 # Local Helm charts directory
 LOCAL_CHARTS_DIR="${LOCAL_CHARTS_DIR:-${SCRIPT_DIR}/charts}"
 
@@ -687,26 +744,16 @@ print_web_access_info() {
     fi
 
     local host port scheme path
-    host="$(awk '
-      $1 == "accessAddress:" { in_block=1; next }
-      in_block && $1 == "host:" { print $2; exit }
-      in_block && $0 ~ /^[^ ]/ { in_block=0 }
-    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
-    port="$(awk '
-      $1 == "accessAddress:" { in_block=1; next }
-      in_block && $1 == "port:" { print $2; exit }
-      in_block && $0 ~ /^[^ ]/ { in_block=0 }
-    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
-    scheme="$(awk '
-      $1 == "accessAddress:" { in_block=1; next }
-      in_block && $1 == "scheme:" { print $2; exit }
-      in_block && $0 ~ /^[^ ]/ { in_block=0 }
-    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
-    path="$(awk '
-      $1 == "accessAddress:" { in_block=1; next }
-      in_block && $1 == "path:" { print $2; exit }
-      in_block && $0 ~ /^[^ ]/ { in_block=0 }
-    ' "${cfg}" 2>/dev/null | tr -d "\"'")"
+    {
+        read -r host
+        read -r port
+        read -r scheme
+        read -r path
+    } < <(extract_config_access_address_fields "${cfg}")
+    host="$(printf '%s' "${host}" | tr -d "\"'\r")"
+    port="$(printf '%s' "${port}" | tr -d "\"'\r")"
+    scheme="$(printf '%s' "${scheme}" | tr -d "\"'\r")"
+    path="$(printf '%s' "${path}" | tr -d "\"'\r")"
 
     if [[ -z "${host}" ]]; then
         log_warn "Web access address is not configured. Please set accessAddress.host in conf/config.yaml."

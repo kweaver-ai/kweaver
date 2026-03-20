@@ -121,20 +121,22 @@ git tag v1.0.0.rc.1
 
 ### 自动化发布
 
-KWeaver 采用 **Tag 触发** 的自动化发布流程：
+**Tag 触发流程（本仓库）：**
 
 ```text
-开发者 push tag  →  CI 检测到 tag  →  运行测试  →  构建制品  →  发布 Release
+开发者 push 版本 tag (v*)  →  GitHub Actions  →  仅 deploy 制品包  →  作为 GitHub Release 资源发布
 ```
 
-CI 将自动完成以下步骤：
+**当前已实现**（见 `.github/workflows/`）：
 
-1. ✅ 运行完整测试套件
-2. ✅ 构建各平台二进制文件
-3. ✅ 构建 Docker 镜像
-4. ✅ 生成 Release Notes
-5. ✅ 发布到 GitHub Releases
-6. ✅ 推送镜像到 Container Registry
+| 工作流 | 触发条件 | 行为 |
+| --- | --- | --- |
+| `commitlint.yml` | Pull Request | 对 commit message 做基础校验 |
+| `package.yml` | Push tag `v*` | 打包 `kweaver-deploy-<version>.tar.gz`（仅 `deploy/` 目录，目录结构与 `install.sh` 兼容），为该 tag 创建/更新 GitHub Release 并上传制品、生成 Release Notes；`-rc` / `-alpha` / `-beta` 等预发布 tag 会标记为 prerelease。 |
+
+**与安装脚本联动：** `install.sh` 仅从 Release 包下载安装。使用 `--version vX.Y.Z` 安装指定版本，或省略以自动使用最新 release。
+
+**后续规划**（本仓库尚未接入）：在 tag 上跑全量测试、多平台二进制构建、Docker 镜像构建与推送、容器仓库发布等；上表仅描述**当前** CI 能力。
 
 ### 发布流程 (Release With Freeze / RC Flow)
 

@@ -37,21 +37,44 @@ KWeaver 项目包含 KWeaver Core 与 KWeaver DIP。
 
 ## 🚀 快速开始
 
-1. 快速安装：
+1. 快速安装（从 [GitHub Releases](https://github.com/kweaver-ai/kweaver/releases) 下载）：
 
 ```bash
+# 安装最新版本（自动获取最新 release）
 curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+
+# 安装指定版本
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --version v1.0.0
+
+# 指定对外访问地址（部署前写入 config 中的 accessAddress；不写 --version 则使用最新 release）
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --access-host 203.0.113.10
 ```
 
-1. 源码部署：参考 [部署文档](deploy/README.zh.md)。
-2. 前置要求：参考 `deploy/README.zh.md` 中前置条件。
-3. 如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
-4. 执行安装部署脚本：
+   常用 `install.sh` 参数（完整说明见 `install.sh --help`）：
+
+   | 参数 | 说明 |
+   | --- | --- |
+   | `--version <tag>` | 发布 tag（如 `v1.0.0`）；省略则使用最新 release |
+   | `--dir <path>` | 安装目录（默认：`$HOME/kweaver`） |
+   | `--access-host <host>` | 设置 `deploy/conf/config.yaml` 中的 `accessAddress.host`（公网 IP 或域名） |
+   | `--access-port <port>` | 设置 `accessAddress.port`（文件中默认多为 `443`） |
+   | `--access-scheme <scheme>` | 设置 `accessAddress.scheme`（如 `https`） |
+   | `--access-path <path>` | 设置 `accessAddress.path`（如 `/`） |
+   | `--skip-run` | 仅下载解压，不执行 `deploy.sh` |
+
+   对应环境变量：`KWEAVER_REF`、`KWEAVER_INSTALL_DIR`、`KWEAVER_ACCESS_HOST`、`KWEAVER_ACCESS_PORT`、`KWEAVER_ACCESS_SCHEME`、`KWEAVER_ACCESS_PATH`。
+
+2. **源码部署**：克隆仓库后须**先配置** [`deploy/conf/config.yaml`](deploy/conf/config.yaml)（必填项：按环境设置 `accessAddress` 等；云主机请把 `accessAddress.host` 设为对外访问的公网 IP 或域名），再执行部署脚本。前置条件与细节见 [部署文档](deploy/README.zh.md)。
+3. **前置要求**：见 `deploy/README.zh.md`。
+4. **执行部署脚本**（请先编辑 `deploy/conf/config.yaml`）：
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/deploy
 chmod +x deploy.sh
+
+# 必填：部署前编辑配置（accessAddress 等）
+# vim conf/config.yaml
 
 # 完整一键部署（推荐）
 ./deploy.sh full init     # 基础设施 + KWeaver 应用服务

@@ -1,0 +1,41 @@
+# Packs deploy directory into a tarball and publishes it as a GitHub Release asset.
+# Triggered on tag push (v*). Asset: kweaver-deploy-<version>.tar.gz
+# Archive layout: kweaver-<version>/deploy/... (compatible with install.sh)
+
+name: Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Package deploy directory
+        id: pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          PKG_NAME="kweaver-deploy-${VERSION}.tar.gz"
+          mkdir -p "staging/kweaver-${VERSION}"
+          cp -R deploy "staging/kweaver-${VERSION}/"
+          tar -czf "${PKG_NAME}" -C staging "kweaver-${VERSION}"
+          echo "asset=${PKG_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.pack.outputs.asset }}
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}

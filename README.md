@@ -37,21 +37,44 @@ Click the image to watch the KWeaver demo on Bilibili
 
 ## 🚀 Quick Start
 
-1. **Quick install**:
+1. **Quick install** (from [GitHub Releases](https://github.com/kweaver-ai/kweaver/releases)):
 
 ```bash
+# Install latest release (automatically fetches latest version)
 curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+
+# Install specific version
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --version v1.0.0
+
+# Set external access address (writes accessAddress in config before deploy; uses latest release if --version omitted)
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --access-host 203.0.113.10
 ```
 
-1. **Source deployment**: see the [Deployment Guide](deploy/README.md).
-2. **Prerequisites**: follow the prerequisites described in `deploy/README.md`.
-3. If you deploy on a cloud VM, make sure `accessAddress.host` in `conf/config.yaml` is set to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
-4. **Run installation scripts**:
+   Common `install.sh` options (see `install.sh --help` for full list):
+
+   | Option | Description |
+   | --- | --- |
+   | `--version <tag>` | Release tag (e.g. `v1.0.0`); omit to use latest release |
+   | `--dir <path>` | Install directory (default: `$HOME/kweaver`) |
+   | `--access-host <host>` | Set `accessAddress.host` in `deploy/conf/config.yaml` (public IP or domain) |
+   | `--access-port <port>` | Set `accessAddress.port` (default in file: `443`) |
+   | `--access-scheme <scheme>` | Set `accessAddress.scheme` (e.g. `https`) |
+   | `--access-path <path>` | Set `accessAddress.path` (e.g. `/`) |
+   | `--skip-run` | Only download and unpack; do not run `deploy.sh` |
+
+   Equivalent environment variables: `KWEAVER_REF`, `KWEAVER_INSTALL_DIR`, `KWEAVER_ACCESS_HOST`, `KWEAVER_ACCESS_PORT`, `KWEAVER_ACCESS_SCHEME`, `KWEAVER_ACCESS_PATH`.
+
+2. **Source deployment**: clone the repo, **configure** [`deploy/conf/config.yaml`](deploy/conf/config.yaml) (required — set `accessAddress` and other values for your environment; on cloud VMs use the public IP or domain for `accessAddress.host`), then run the deploy scripts. See the [Deployment Guide](deploy/README.md) for prerequisites and details.
+3. **Prerequisites**: follow the prerequisites described in `deploy/README.md`.
+4. **Run installation scripts** (after editing `deploy/conf/config.yaml`):
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/deploy
 chmod +x deploy.sh
+
+# Required: edit configuration before deploy (accessAddress, etc.)
+# vim conf/config.yaml
 
 # Full one-click deployment (recommended)
 ./deploy.sh full init     # Infrastructure + KWeaver application services

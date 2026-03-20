@@ -9,8 +9,12 @@ One-click deployment of the KWeaver AI platform to a single-node Kubernetes clus
 ## 🚀 Quick Start
 
 ```bash
-# Option 1: Quick install bootstrap
+# Option 1: Quick install from release package (recommended)
+# Installs latest release automatically
 curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
+
+# Install specific version
+curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --version v1.0.0
 
 # Option 2: Clone the repository
 # 1. Clone the repository

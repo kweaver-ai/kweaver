@@ -19,37 +19,46 @@ generate_config_yaml() {
         if [[ -n "${v}" ]]; then cfg_tz="${v}"; fi
     fi
 
-    local node_ip
+    # accessAddress: only fill defaults when a field is empty — never overwrite user-set values.
+    # Host default uses auto-detected node IP only if host was empty after reading existing file.
+    local node_ip=""
     local access_host=""
-    local access_port="443"
-    local access_scheme="https"
-    local access_path="/"
-    # Try to get the first non-loopback IP address
-    node_ip="$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -v '^127\.' | head -1 | tr -d '\n' || true)"
-    # If no valid IP found, try alternative methods
-    if [[ -z "${node_ip}" ]] || [[ "${node_ip}" == "127.0.0.1" ]]; then
-        # Try to get IP from ip command (more reliable)
-        node_ip="$(ip addr show 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '^127\.' | head -1 || true)"
-    fi
-    # Final fallback
-    if [[ -z "${node_ip}" ]]; then
-        node_ip="10.x.x.x"
-    fi
+    local access_port=""
+    local access_scheme=""
+    local access_path=""
 
     # Preserve existing accessAddress settings if the user has already configured them.
+    # (Uses extract_config_access_address_fields in common.sh — tolerant of CRLF, comments, host:IP
+    # without space after colon, IPv6; see common.sh.)
     if [[ -f "${out}" ]]; then
-        access_host="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="host:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
-        access_port="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="port:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
-        access_scheme="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="scheme:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
-        access_path="$(awk '$1=="accessAddress:"{in=1; next} in && $1=="path:"{print $2; exit} in && $0~/^[^ ]/{in=0}' "${out}" 2>/dev/null | sed -e 's/^["'\'']//; s/["'\'']$//' || true)"
+        {
+            read -r access_host
+            read -r access_port
+            read -r access_scheme
+            read -r access_path
+        } < <(extract_config_access_address_fields "${out}")
+        access_host="$(printf '%s' "${access_host}" | tr -d '\r')"
+        access_port="$(printf '%s' "${access_port}" | tr -d '\r')"
+        access_scheme="$(printf '%s' "${access_scheme}" | tr -d '\r')"
+        access_path="$(printf '%s' "${access_path}" | tr -d '\r')"
     fi
 
+    # Only when host is empty: probe node IP and use as default access host.
     if [[ -z "${access_host}" ]]; then
+        node_ip="$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -v '^127\.' | head -1 | tr -d '\n' || true)"
+        if [[ -z "${node_ip}" ]] || [[ "${node_ip}" == "127.0.0.1" ]]; then
+            node_ip="$(ip addr show 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '^127\.' | head -1 || true)"
+        fi
+        if [[ -z "${node_ip}" ]]; then
+            node_ip="10.x.x.x"
+        fi
         access_host="${node_ip}"
     fi
-    access_port="${access_port:-443}"
-    access_scheme="${access_scheme:-https}"
-    access_path="${access_path:-/}"
+
+    # Only when empty: schema defaults for port / scheme / path.
+    [[ -n "${access_port}" ]] || access_port="443"
+    [[ -n "${access_scheme}" ]] || access_scheme="https"
+    [[ -n "${access_path}" ]] || access_path="/"
 
     # Storage (local-path)
     local storage_class_name="${STORAGE_STORAGE_CLASS_NAME}"

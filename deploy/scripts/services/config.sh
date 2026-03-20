@@ -3,6 +3,17 @@ generate_config_yaml() {
     log_info "Generating config.yaml..."
     local out="${CONFIG_YAML_PATH}"
     mkdir -p "$(dirname "${out}")"
+    
+    # Skip regeneration if passwords already exist in config.yaml.
+    # Count password lines that have a real value (not empty '' or "").
+    if [[ -f "${out}" ]]; then
+        local filled
+        filled=$(grep 'password:' "${out}" 2>/dev/null | grep -cv "password: *'*'* *$")
+        if [[ "${filled}" -gt 0 ]]; then
+            log_info "Passwords already present in config.yaml, skipping regeneration."
+            return 0
+        fi
+    fi
 
     load_image_registry_from_config
 

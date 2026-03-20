@@ -4,13 +4,22 @@ generate_config_yaml() {
     local out="${CONFIG_YAML_PATH}"
     mkdir -p "$(dirname "${out}")"
     
-    # Skip regeneration if passwords already exist in config.yaml.
-    # Count password lines that have a real value (not empty '' or "").
+    # Skip regeneration if config.yaml already has meaningful content.
+    # Check two independent signals:
+    #   1. Any non-empty password field exists (infra secrets already populated)
+    #   2. accessAddress.host is already configured (user has set the IP)
+    # Either signal alone is sufficient to skip — avoids overwriting user config.
     if [[ -f "${out}" ]]; then
         local filled
         filled=$(grep 'password:' "${out}" 2>/dev/null | grep -cv "password: *'*'* *$" || true)
         if [[ "${filled}" -gt 0 ]]; then
             log_info "Passwords already present in config.yaml, skipping regeneration."
+            return 0
+        fi
+        local existing_host
+        existing_host="$(extract_config_access_address_fields "${out}" | head -1 | tr -d "\"' \r")"
+        if [[ -n "${existing_host}" ]]; then
+            log_info "accessAddress.host already configured (${existing_host}), skipping regeneration."
             return 0
         fi
     fi

@@ -1020,7 +1020,7 @@ prepare_supply_chain_kn_json() {
         ))
       ) |
       .relation_types |= map(
-        if .mapping_rules and .mapping_rules.backing_data_source and .mapping_rules.backing_data_source.name and ($dv_map[.mapping_rules.backing_data_source.name] != null) then
+        if .mapping_rules and (.mapping_rules | type == "object") and .mapping_rules.backing_data_source and .mapping_rules.backing_data_source.name and ($dv_map[.mapping_rules.backing_data_source.name] != null) then
           .mapping_rules.backing_data_source.id = $dv_map[.mapping_rules.backing_data_source.name]
         else . end
       )
@@ -1033,7 +1033,7 @@ prepare_supply_chain_kn_json() {
         if .data_source and .data_source.type == "data_view" and .data_source.name and ($dv_map[.data_source.name] != null) then .data_source.id = $dv_map[.data_source.name] else . end
       ) |
       .relation_types |= map(
-        if .mapping_rules and .mapping_rules.backing_data_source and .mapping_rules.backing_data_source.name and ($dv_map[.mapping_rules.backing_data_source.name] != null) then
+        if .mapping_rules and (.mapping_rules | type == "object") and .mapping_rules.backing_data_source and .mapping_rules.backing_data_source.name and ($dv_map[.mapping_rules.backing_data_source.name] != null) then
           .mapping_rules.backing_data_source.id = $dv_map[.mapping_rules.backing_data_source.name]
         else . end
       )

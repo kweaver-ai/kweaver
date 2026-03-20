@@ -941,7 +941,7 @@ reset_k8s() {
     
     # Confirmation prompt
     echo ""
-    echo "WARNING: This will reset Kubernetes and clean up CNI/kubeconfig files."
+    echo "WARNING: This will reset Kubernetes and clean up all related data."
     echo "This action cannot be undone."
     read -p "Type 'Y' or 'y' to confirm: " -r confirm
     
@@ -953,11 +953,42 @@ reset_k8s() {
     systemctl stop kubelet 2>/dev/null || true
     kubeadm reset -f 2>/dev/null || true
     
+    # CNI
     rm -rf /etc/cni/net.d 2>/dev/null || true
     rm -rf /var/lib/cni 2>/dev/null || true
+    rm -rf /run/flannel 2>/dev/null || true
+
+    # Kubernetes config and state
+    rm -rf /etc/kubernetes 2>/dev/null || true
+    rm -rf /var/lib/kubelet 2>/dev/null || true
+    rm -rf /var/lib/etcd 2>/dev/null || true
     rm -rf /root/.kube 2>/dev/null || true
-    rm -f /etc/kubernetes/admin.conf 2>/dev/null || true
-    
-    log_warn "Reset completed. iptables/IPVS rules are not automatically cleaned by this script."
-    log_info "Kubernetes reset done"
+    rm -rf "${HOME}/.kube" 2>/dev/null || true
+    if [[ -n "${SUDO_USER:-}" ]]; then
+        rm -rf "/home/${SUDO_USER}/.kube" 2>/dev/null || true
+    fi
+
+    # PV data (local-path-provisioner)
+    if [[ -d /opt/local-path-provisioner ]]; then
+        log_info "Cleaning up local-path PV data..."
+        rm -rf /opt/local-path-provisioner/* 2>/dev/null || true
+    fi
+
+    # iptables: flush KUBE-* chains
+    log_info "Cleaning up iptables rules..."
+    iptables-save 2>/dev/null | grep -oP '(?<=-j )KUBE-[A-Z0-9-]+' | sort -u | while read -r chain; do
+        iptables -F "${chain}" 2>/dev/null || true
+        iptables -X "${chain}" 2>/dev/null || true
+    done
+    # Also clean nat table
+    iptables -t nat -F 2>/dev/null || true
+    iptables -t nat -X 2>/dev/null || true
+    iptables -t mangle -F 2>/dev/null || true
+
+    # IPVS
+    if command -v ipvsadm >/dev/null 2>&1; then
+        ipvsadm --clear 2>/dev/null || true
+    fi
+
+    log_info "Kubernetes reset done (cluster, data, and network rules cleaned)"
 }

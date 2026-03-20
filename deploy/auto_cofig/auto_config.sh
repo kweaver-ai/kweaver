@@ -839,6 +839,48 @@ create_datasource() {
 
   echo -e "数据源类型: $DS_TYPE, 主机: $DS_HOST:$DS_PORT, 数据库: $DS_DATABASE_NAME"
 
+  # Check if datasource with same name already exists
+  local existing_ds_resp
+  existing_ds_resp=$(curl -s -k -X GET \
+    "${BASE_URL}/api/data-connection/v1/datasource?page=1&size=100" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Content-Type: application/json" 2>/dev/null)
+
+  local existing_ds_id=""
+  if command -v jq >/dev/null 2>&1; then
+    existing_ds_id=$(echo "$existing_ds_resp" | jq -r --arg name "$DS_NAME" '.entries[]? | select(.name == $name) | .id' 2>/dev/null | head -1)
+  else
+    existing_ds_id=$(echo "$existing_ds_resp" | grep -o "\"name\":\"${DS_NAME}\"" >/dev/null 2>&1 && \
+      echo "$existing_ds_resp" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+  fi
+
+  if [[ -n "$existing_ds_id" ]]; then
+    echo -e "${GREEN}✓ 数据源已存在，跳过创建${NC}"
+    echo "  数据源ID: $existing_ds_id"
+    echo "  数据源名称: $DS_NAME"
+    DATASOURCE_ID="$existing_ds_id"
+    DATASOURCE_NAME="$DS_NAME"
+    echo "export DATASOURCE_ID=\"$DATASOURCE_ID\"" > "/tmp/datasource_${temp_suffix}.env"
+    echo "export DATASOURCE_NAME=\"$DATASOURCE_NAME\"" >> "/tmp/datasource_${temp_suffix}.env"
+
+    # Check if scan already completed (data views exist)
+    local dv_check
+    dv_check=$(curl -s -k -X GET \
+      "${BASE_URL}/api/mdl-data-model/v1/data-views?sort=update_time&direction=desc&offset=0&limit=10" \
+      -H "Authorization: Bearer ${TOKEN}" \
+      -H "Content-Type: application/json" 2>/dev/null)
+    local dv_count
+    dv_count=$(echo "$dv_check" | jq '.entries | length' 2>/dev/null || echo "0")
+    if [[ "$dv_count" -gt 0 ]]; then
+      echo -e "${GREEN}✓ 数据源扫描已完成（${dv_count} 个数据视图），跳过扫描${NC}"
+      return 0
+    fi
+
+    echo -e "${YELLOW}  数据源已存在但未发现数据视图，重新扫描...${NC}"
+    scan_datasource_by_id "$DATASOURCE_ID" "$DATASOURCE_NAME"
+    return $?
+  fi
+
   # Create a temp public key file for openssl
   DATABASE_PUBKEY_FILE="/tmp/database_public_key_${temp_suffix}"
   echo "$DATABASE_PUBLIC_KEY" > "$DATABASE_PUBKEY_FILE"
@@ -883,7 +925,6 @@ EOF
     rm -f "$DATABASE_PUBKEY_FILE" 
     return 1
   else
-    # Save datasource info for scan step
     echo "export DATASOURCE_ID=\"$DATASOURCE_ID\"" > "/tmp/datasource_${temp_suffix}.env"
     echo "export DATASOURCE_NAME=\"$DATASOURCE_NAME\"" >> "/tmp/datasource_${temp_suffix}.env"
 
@@ -893,7 +934,6 @@ EOF
     rm -f "$DATABASE_PUBKEY_FILE"
   fi
 
-  # Scan immediately after creating the datasource
   scan_datasource_by_id "$DATASOURCE_ID" "$DATASOURCE_NAME"
   local SCAN_RESULT=$?
 
@@ -1099,19 +1139,38 @@ import_knowledge_network() {
   # Ensure token exists
   ensure_token_exists || return 1
 
+  # Pre-check: see if KN already exists by checking the ID from the file
+  local kn_file_id
+  if command -v jq >/dev/null 2>&1; then
+    kn_file_id=$(jq -r '.id // empty' "$KNOWLEDGE_NETWORK_FILE" 2>/dev/null)
+  else
+    kn_file_id=$(grep -o '"id":"[^"]*"' "$KNOWLEDGE_NETWORK_FILE" | head -1 | cut -d'"' -f4)
+  fi
+
+  if [[ -n "$kn_file_id" ]]; then
+    local kn_check_resp
+    kn_check_resp=$(curl -s -k -o /dev/null -w '%{http_code}' \
+      "${BASE_URL}/api/ontology-manager/v1/knowledge-networks/${kn_file_id}" \
+      -H "Authorization: Bearer ${TOKEN}" \
+      -H "x-business-domain: ${BUSINESS_DOMAIN}" 2>/dev/null)
+    if [[ "$kn_check_resp" == "200" ]]; then
+      echo "export KN_ID=\"$kn_file_id\"" > "/tmp/knowledge_network_${temp_suffix}.env"
+      echo -e "${GREEN}✓ 业务知识网络已存在，跳过导入${NC}"
+      echo "  知识网络ID: $kn_file_id"
+      return 0
+    fi
+  fi
+
   local kn_file_to_import="$KNOWLEDGE_NETWORK_FILE"
   local kn_basename
   kn_basename=$(basename "$KNOWLEDGE_NETWORK_FILE")
   if [[ "$kn_basename" == "供应链业务知识网络.json" ]]; then
-    # 直接修改原文件，备份原文件
     local backup_file="${KNOWLEDGE_NETWORK_FILE}.bak.${temp_suffix}"
     cp "$KNOWLEDGE_NETWORK_FILE" "$backup_file"
     echo -e "${YELLOW}  已备份原文件到: ${backup_file}${NC}"
     
-    # 使用临时文件进行替换，然后替换原文件
     local tmp_kn="/tmp/kn_supply_chain_${temp_suffix}.json"
     if prepare_supply_chain_kn_json "$KNOWLEDGE_NETWORK_FILE" "$tmp_kn"; then
-      # 替换成功，将临时文件内容复制到原文件
       mv "$tmp_kn" "$KNOWLEDGE_NETWORK_FILE"
       echo -e "${GREEN}  ✓ 已更新文件: ${KNOWLEDGE_NETWORK_FILE}${NC}"
       echo -e "${YELLOW}  备份文件: ${backup_file}（可对比查看）${NC}"
@@ -1136,11 +1195,21 @@ import_knowledge_network() {
 
   local KN_ID=$(echo $KN_RESPONSE | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
   if [ -z "$KN_ID" ]; then
+    # Check if KN already exists
+    if echo "$KN_RESPONSE" | grep -q "KNIDExisted\|已经存在"; then
+      KN_ID=$(jq -r '.id // empty' "$kn_file_to_import" 2>/dev/null)
+      if [[ -z "$KN_ID" ]]; then
+        KN_ID=$(grep -o '"id":"[^"]*"' "$kn_file_to_import" | head -1 | cut -d'"' -f4)
+      fi
+      echo "export KN_ID=\"$KN_ID\"" > "/tmp/knowledge_network_${temp_suffix}.env"
+      echo -e "${GREEN}✓ 业务知识网络已存在，跳过导入${NC}"
+      echo "  知识网络ID: $KN_ID"
+      return 0
+    fi
     echo -e "${RED}错误: 无法从知识网络响应中提取ID${NC}"
     echo "响应内容: $KN_RESPONSE"
     return 1
   else
-    # Save knowledge network ID to temp file
     echo "export KN_ID=\"$KN_ID\"" > "/tmp/knowledge_network_${temp_suffix}.env"
 
     echo -e "${GREEN}✓ 业务知识网络导入成功${NC}"
@@ -1175,7 +1244,15 @@ import_agent() {
     echo -e "${GREEN}✓ DataAgent导入成功${NC}"
     return 0
   else
-    echo -e "${RED}警告: DataAgent导入可能失败${NC}"
+    # Check if agent already exists (key conflict)
+    if echo "$AGENT_RESPONSE" | grep -q "agent_key_conflict.*agent_key"; then
+      local existing_agent_name
+      existing_agent_name=$(echo "$AGENT_RESPONSE" | grep -o '"agent_name":"[^"]*"' | head -1 | cut -d'"' -f4)
+      echo -e "${GREEN}✓ DataAgent已存在，跳过导入${NC}"
+      echo "  Agent名称: ${existing_agent_name:-未知}"
+      return 0
+    fi
+    echo -e "${RED}警告: DataAgent导入失败${NC}"
     echo "响应内容: $AGENT_RESPONSE"
     return 1
   fi
@@ -1209,11 +1286,18 @@ import_data_flow() {
   local DF_ID=$(echo $DATA_FLOW_RESPONSE | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
   
   if [ -z "$DF_ID" ]; then
+    # Check if data flow already exists (duplicate name)
+    if echo "$DATA_FLOW_RESPONSE" | grep -q "DuplicatedName\|已存在同名"; then
+      local existing_title
+      existing_title=$(echo "$DATA_FLOW_RESPONSE" | grep -o '"title":"[^"]*"' | head -1 | cut -d'"' -f4)
+      echo -e "${GREEN}✓ 数据流已存在（同名），跳过导入${NC}"
+      echo "  数据流名称: ${existing_title:-未知}"
+      return 0
+    fi
     echo -e "${RED}错误: 无法从数据流响应中提取ID${NC}"
     echo "响应内容: $DATA_FLOW_RESPONSE"
     return 1
   else
-    # Save data flow ID to temp file
     echo "export DF_ID=\"$DF_ID\"" > "/tmp/dataflow_${temp_suffix}.env"
     
     echo -e "${GREEN}✓ 数据流导入成功${NC}"
@@ -1263,6 +1347,10 @@ import_operator() {
     echo -e "${GREEN}✓ 算子导入成功${NC}"
     return 0
   else
+    if echo "$BODY" | grep -qi "already.exist\|Duplicated\|已存在\|upsert"; then
+      echo -e "${GREEN}✓ 算子已存在，跳过导入${NC}"
+      return 0
+    fi
     echo -e "${RED}错误: 算子导入失败 (HTTP $HTTP_CODE)${NC}"
     echo "响应内容: $BODY"
     return 1
@@ -1316,6 +1404,10 @@ import_toolbox() {
     echo -e "${GREEN}✓ 工具导入成功${NC}"
     return 0
   else
+    if echo "$BODY" | grep -qi "already.exist\|Duplicated\|已存在\|upsert"; then
+      echo -e "${GREEN}✓ 工具已存在，跳过导入${NC}"
+      return 0
+    fi
     echo -e "${RED}错误: 工具导入失败 (HTTP $HTTP_CODE)${NC}"
     echo "响应内容: $BODY"
     return 1
@@ -1351,6 +1443,10 @@ import_mcp() {
     echo -e "${GREEN}✓ MCP导入成功${NC}"
     return 0
   else
+    if echo "$BODY" | grep -qi "already.exist\|Duplicated\|已存在\|upsert"; then
+      echo -e "${GREEN}✓ MCP已存在，跳过导入${NC}"
+      return 0
+    fi
     echo -e "${RED}错误: MCP导入失败 (HTTP $HTTP_CODE)${NC}"
     echo "响应内容: $BODY"
     return 1

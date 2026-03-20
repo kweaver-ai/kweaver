@@ -64,7 +64,7 @@ curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh 
 
    对应环境变量：`KWEAVER_REF`、`KWEAVER_INSTALL_DIR`、`KWEAVER_ACCESS_HOST`、`KWEAVER_ACCESS_PORT`、`KWEAVER_ACCESS_SCHEME`、`KWEAVER_ACCESS_PATH`。
 
-2. **源码部署**：克隆仓库后须**先配置** [`deploy/conf/config.yaml`](deploy/conf/config.yaml)（必填项：按环境设置 `accessAddress` 等；云主机请把 `accessAddress.host` 设为对外访问的公网 IP 或域名），再执行部署脚本。前置条件与细节见 [部署文档](deploy/README.zh.md)。
+2. **源码部署**：克隆仓库后须**先配置** [`deploy/conf/config.yaml`](deploy/conf/config.yaml)（必填项：按环境设置 `accessAddress` 等；云主机请把 `accessAddress.host` 设为对外访问的公网 IP 或域名），再执行部署脚本。**注意：** `deploy.sh` 需要 root 权限（使用 `sudo`）。前置条件与细节见 [部署文档](deploy/README.zh.md)。
 3. **前置要求**：见 `deploy/README.zh.md`。
 4. **执行部署脚本**（请先编辑 `deploy/conf/config.yaml`）：
 
@@ -77,10 +77,11 @@ chmod +x deploy.sh
 # vim conf/config.yaml
 
 # 完整一键部署（推荐）
-./deploy.sh full init     # 基础设施 + KWeaver 应用服务
+# 注意：deploy.sh 需要 root 权限
+sudo ./deploy.sh full init     # 基础设施 + KWeaver 应用服务
 # 分层部署
-./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
-./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
+sudo ./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
+sudo ./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
 # 查看帮助
 ./deploy.sh --help
 ```

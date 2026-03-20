@@ -4,7 +4,7 @@
 
 一键部署 KWeaver AI 平台到单节点 Kubernetes 集群。
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](../LICENSE.txt)
+[License](../LICENSE.txt)
 
 ## 🚀 Quick Start
 
@@ -25,7 +25,8 @@ cd kweaver/deploy
 # vim conf/config.yaml
 
 # 3. 一键部署所有组件，默认安装最新版本
-bash ./deploy.sh full init
+# 注意：deploy.sh 需要 root 权限
+sudo ./deploy.sh full init
 ```
 
 首次安装时，尤其是在云主机或网络较慢的环境中，完整部署过程可能需要较长时间。在某些环境下，完成安装可能会超过 1 小时。
@@ -34,14 +35,26 @@ bash ./deploy.sh full init
 
 ## 📋 Prerequisites
 
+### 权限要求
+
+**`./deploy.sh` 需要 root 权限**，用于安装系统软件包、配置 Kubernetes 和管理集群资源。请使用 `sudo` 或以 root 用户运行：
+
+```bash
+sudo ./deploy.sh full init
+# 或
+sudo ./deploy.sh kweaver init
+```
+
 ### 系统要求
 
-| 项目 | 最低配置 | 推荐配置 |
-|------|---------|---------|
-| OS | CentOS 7/8+, RHEL 8 | CentOS 7 |
-| CPU | 16 核 | 24 核 |
-| 内存 | 48 GB | 64 GB |
-| 磁盘 | 200 GB | 500 GB |
+
+| 项目  | 最低配置                | 推荐配置     |
+| --- | ------------------- | -------- |
+| OS  | CentOS 7/8+, RHEL 8 | CentOS 7 |
+| CPU | 16 核                | 24 核     |
+| 内存  | 48 GB               | 64 GB    |
+| 磁盘  | 200 GB              | 500 GB   |
+
 
 ### 前置条件（必须）
 
@@ -62,14 +75,16 @@ setenforce 0
 
 部署脚本需要访问以下域名：
 
-| 域名 | 用途 |
-|------|------|
-| `mirrors.aliyun.com` | RPM 软件包源 |
-| `mirrors.tuna.tsinghua.edu.cn` | 清华大学containerd.io RPM源  |
-| `registry.aliyuncs.com` | Kubernetes 组件镜像 |
-| `swr.cn-east-3.myhuaweicloud.com` | 应用镜像仓库 |
-| `repo.huaweicloud.com` | Helm 二进制文件 |
-| `kweaver-ai.github.io` | Kweaver 服务Helm Chart 仓库 |
+
+| 域名                                | 用途                      |
+| --------------------------------- | ----------------------- |
+| `mirrors.aliyun.com`              | RPM 软件包源                |
+| `mirrors.tuna.tsinghua.edu.cn`    | 清华大学containerd.io RPM源  |
+| `registry.aliyuncs.com`           | Kubernetes 组件镜像         |
+| `swr.cn-east-3.myhuaweicloud.com` | 应用镜像仓库                  |
+| `repo.huaweicloud.com`            | Helm 二进制文件              |
+| `kweaver-ai.github.io`            | Kweaver 服务Helm Chart 仓库 |
+
 
 ## 📦 Components
 
@@ -93,35 +108,37 @@ setenforce 0
 
 ### 部署命令
 
+**注意：** 所有 `deploy.sh` 命令都需要 root 权限。请使用 `sudo` 或以 root 用户运行。
+
 ```bash
 # 完整一键部署（推荐）
-./deploy.sh full init     # 基础设施 + KWeaver 应用服务
+sudo ./deploy.sh full init     # 基础设施 + KWeaver 应用服务
 
 # 分层部署
-./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
-./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
+sudo ./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
+sudo ./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
 
 # 部署单个基础设施组件
-./deploy.sh k8s init      # Kubernetes 集群
-./deploy.sh mariadb init  # MariaDB
-./deploy.sh mongodb init  # MongoDB
-./deploy.sh redis init    # Redis
-./deploy.sh kafka init    # Kafka
-./deploy.sh opensearch init  # OpenSearch
+sudo ./deploy.sh k8s init      # Kubernetes 集群
+sudo ./deploy.sh mariadb init  # MariaDB
+sudo ./deploy.sh mongodb init  # MongoDB
+sudo ./deploy.sh redis init    # Redis
+sudo ./deploy.sh kafka init    # Kafka
+sudo ./deploy.sh opensearch init  # OpenSearch
 
 # 部署单个应用服务
-./deploy.sh isf init      # ISF 服务
-./deploy.sh studio init   # Studio 服务
+sudo ./deploy.sh isf init      # ISF 服务
+sudo ./deploy.sh studio init   # Studio 服务
 
 # 指定 Helm 仓库和版本
-./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
+sudo ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
 
 # 支持多种版本类型
-./deploy.sh kweaver init --version=0.1.0                    # 稳定版
-./deploy.sh kweaver init --version=0.0.0-feature-xxx        # 分支/开发版
-./deploy.sh kweaver init                                     # 最新版
+sudo ./deploy.sh kweaver init --version=0.1.0                    # 稳定版
+sudo ./deploy.sh kweaver init --version=0.0.0-feature-xxx        # 分支/开发版
+sudo ./deploy.sh kweaver init                                     # 最新版
 
-# 查看帮助
+# 查看帮助（无需 root）
 ./deploy.sh --help
 ```
 
@@ -132,7 +149,7 @@ setenforce 0
 kubectl get nodes
 kubectl get pods -A
 
-# 检查服务状态
+# 检查服务状态（无需 root）
 ./deploy.sh kweaver status
 ```
 
@@ -162,6 +179,8 @@ depServices:
 ```
 
 如果部署在云主机上，务必在 `conf/config.yaml` 中将 `accessAddress.host` 设置为对外访问使用的公网 IP 或公网域名。若使用内网地址，安装完成后可能会出现访问失败。
+
+**重要提示：** 在云主机上部署时，还需要在云服务商的安全组/防火墙中开放 **80** 和 **443** 端口，以允许外部访问。ingress-nginx 控制器会监听这些端口来提供 KWeaver 平台服务。
 
 ### 使用外部数据库
 
@@ -196,17 +215,19 @@ deploy/
 
 ## 🗑️ Uninstall
 
+**注意：** 卸载命令也需要 root 权限。
+
 ```bash
 # 完整卸载
-./deploy.sh full reset     # 卸载全部（应用服务 + 基础设施）
+sudo ./deploy.sh full reset     # 卸载全部（应用服务 + 基础设施）
 
 # 分层卸载
-./deploy.sh kweaver uninstall  # 仅卸载应用服务
-./deploy.sh infra reset        # 仅卸载基础设施
+sudo ./deploy.sh kweaver uninstall  # 仅卸载应用服务
+sudo ./deploy.sh infra reset        # 仅卸载基础设施
 
 # 卸载单个组件
-./deploy.sh mariadb uninstall
-./deploy.sh k8s reset
+sudo ./deploy.sh mariadb uninstall
+sudo ./deploy.sh k8s reset
 ```
 
 ## 🔍 Troubleshooting
@@ -264,6 +285,34 @@ sudo apt update
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
+
+### 无法从外部网络访问
+
+如果部署完成后无法从外部网络访问 `https://<节点IP>/studio`：
+
+1. **检查云服务商的安全组/防火墙设置**：
+   - 开放 **80**（HTTP）和 **443**（HTTPS）端口的入站流量
+   - 协议：TCP
+   - 源：`0.0.0.0/0`（或你的特定 IP 范围）
+   - 动作：允许
+
+2. **验证服务是否运行**：
+   ```bash
+   kubectl get pods -n kweaver
+   kubectl get ingress -n kweaver
+   ```
+
+3. **检查端口是否在监听**：
+   ```bash
+   sudo ss -tlnp | grep -E ':80 |:443 '
+   ```
+
+4. **测试本地访问**：
+   ```bash
+   curl -I http://localhost/studio
+   ```
+
+如果本地访问正常但外部访问失败，通常是安全组/防火墙配置问题。
 
 ### 查看组件日志
 

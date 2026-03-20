@@ -25,7 +25,8 @@ cd kweaver/deploy
 # vim conf/config.yaml
 
 # 3. Deploy all components (installs the latest version by default)
-bash ./deploy.sh full init
+# Note: deploy.sh requires root privileges
+sudo ./deploy.sh full init
 ```
 
 For first-time installation, especially on cloud VMs or slower networks, the full deployment process may take a while. In some environments it can take more than an hour to complete.
@@ -33,6 +34,16 @@ For first-time installation, especially on cloud VMs or slower networks, the ful
 After deployment, open `https://<node-ip>/studio`. Username: `admin`, initial password: `eisoo.com`.
 
 ## 📋 Prerequisites
+
+### Permissions
+
+**`./deploy.sh` requires root privileges** to install system packages, configure Kubernetes, and manage cluster resources. Run with `sudo` or as root:
+
+```bash
+sudo ./deploy.sh full init
+# or
+sudo ./deploy.sh kweaver init
+```
 
 ### System requirements
 
@@ -93,35 +104,37 @@ The deployment scripts need access to the following domains:
 
 ### Deployment commands
 
+**Note:** All `deploy.sh` commands require root privileges. Use `sudo` or run as root.
+
 ```bash
 # Full one-click deployment (recommended)
-./deploy.sh full init     # Infrastructure + KWeaver application services
+sudo ./deploy.sh full init     # Infrastructure + KWeaver application services
 
 # Layered deployment
-./deploy.sh infra init    # Infrastructure only: K8s + data services
-./deploy.sh kweaver init  # Application services only: ISF/Studio/Ontology, etc.
+sudo ./deploy.sh infra init    # Infrastructure only: K8s + data services
+sudo ./deploy.sh kweaver init  # Application services only: ISF/Studio/Ontology, etc.
 
 # Deploy a single infrastructure component
-./deploy.sh k8s init         # Kubernetes cluster
-./deploy.sh mariadb init     # MariaDB
-./deploy.sh mongodb init     # MongoDB
-./deploy.sh redis init       # Redis
-./deploy.sh kafka init       # Kafka
-./deploy.sh opensearch init  # OpenSearch
+sudo ./deploy.sh k8s init         # Kubernetes cluster
+sudo ./deploy.sh mariadb init     # MariaDB
+sudo ./deploy.sh mongodb init     # MongoDB
+sudo ./deploy.sh redis init       # Redis
+sudo ./deploy.sh kafka init       # Kafka
+sudo ./deploy.sh opensearch init  # OpenSearch
 
 # Deploy a single application service
-./deploy.sh isf init         # ISF service
-./deploy.sh studio init      # Studio service
+sudo ./deploy.sh isf init         # ISF service
+sudo ./deploy.sh studio init      # Studio service
 
 # Specify Helm repo and version
-./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
+sudo ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
 
 # Multiple version types are supported
-./deploy.sh kweaver init --version=0.1.0              # Stable release
-./deploy.sh kweaver init --version=0.0.0-feature-xxx  # Branch/dev build
-./deploy.sh kweaver init                              # Latest
+sudo ./deploy.sh kweaver init --version=0.1.0              # Stable release
+sudo ./deploy.sh kweaver init --version=0.0.0-feature-xxx  # Branch/dev build
+sudo ./deploy.sh kweaver init                              # Latest
 
-# Help
+# Help (no root required)
 ./deploy.sh --help
 ```
 
@@ -132,7 +145,7 @@ The deployment scripts need access to the following domains:
 kubectl get nodes
 kubectl get pods -A
 
-# Service status
+# Service status (no root required)
 ./deploy.sh kweaver status
 ```
 
@@ -162,6 +175,8 @@ depServices:
 ```
 
 If you deploy on a cloud VM, you must set `accessAddress.host` in `conf/config.yaml` to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
+
+**Important:** For cloud VM deployments, you must also open ports **80** and **443** in your cloud provider's security group/firewall settings to allow external access. The ingress-nginx controller listens on these ports to serve the KWeaver platform.
 
 ### Use an external database
 
@@ -196,17 +211,19 @@ deploy/
 
 ## 🗑️ Uninstall
 
+**Note:** Uninstall commands also require root privileges.
+
 ```bash
 # Full uninstall
-./deploy.sh full reset         # Uninstall everything (apps + infrastructure)
+sudo ./deploy.sh full reset         # Uninstall everything (apps + infrastructure)
 
 # Layered uninstall
-./deploy.sh kweaver uninstall  # Uninstall application services only
-./deploy.sh infra reset        # Uninstall infrastructure only
+sudo ./deploy.sh kweaver uninstall  # Uninstall application services only
+sudo ./deploy.sh infra reset        # Uninstall infrastructure only
 
 # Uninstall a single component
-./deploy.sh mariadb uninstall
-./deploy.sh k8s reset
+sudo ./deploy.sh mariadb uninstall
+sudo ./deploy.sh k8s reset
 ```
 
 ## 🔍 Troubleshooting
@@ -264,6 +281,34 @@ sudo apt update
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
+
+### Cannot access from external network
+
+If you cannot access `https://<node-ip>/studio` from external networks after deployment:
+
+1. **Check security group/firewall settings** in your cloud provider console:
+   - Open port **80** (HTTP) and **443** (HTTPS) for inbound traffic
+   - Protocol: TCP
+   - Source: `0.0.0.0/0` (or your specific IP range)
+   - Action: Allow
+
+2. **Verify service is running**:
+   ```bash
+   kubectl get pods -n kweaver
+   kubectl get ingress -n kweaver
+   ```
+
+3. **Check if ports are listening**:
+   ```bash
+   sudo ss -tlnp | grep -E ':80 |:443 '
+   ```
+
+4. **Test local access**:
+   ```bash
+   curl -I http://localhost/studio
+   ```
+
+If local access works but external access fails, it's likely a security group/firewall configuration issue.
 
 ### View component logs
 

@@ -64,7 +64,7 @@ curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh 
 
    Equivalent environment variables: `KWEAVER_REF`, `KWEAVER_INSTALL_DIR`, `KWEAVER_ACCESS_HOST`, `KWEAVER_ACCESS_PORT`, `KWEAVER_ACCESS_SCHEME`, `KWEAVER_ACCESS_PATH`.
 
-2. **Source deployment**: clone the repo, **configure** [`deploy/conf/config.yaml`](deploy/conf/config.yaml) (required — set `accessAddress` and other values for your environment; on cloud VMs use the public IP or domain for `accessAddress.host`), then run the deploy scripts. See the [Deployment Guide](deploy/README.md) for prerequisites and details.
+2. **Source deployment**: clone the repo, **configure** [`deploy/conf/config.yaml`](deploy/conf/config.yaml) (required — set `accessAddress` and other values for your environment; on cloud VMs use the public IP or domain for `accessAddress.host`), then run the deploy scripts. **Note:** `deploy.sh` requires root privileges (use `sudo`). See the [Deployment Guide](deploy/README.md) for prerequisites and details.
 3. **Prerequisites**: follow the prerequisites described in `deploy/README.md`.
 4. **Run installation scripts** (after editing `deploy/conf/config.yaml`):
 
@@ -77,10 +77,11 @@ chmod +x deploy.sh
 # vim conf/config.yaml
 
 # Full one-click deployment (recommended)
-./deploy.sh full init     # Infrastructure + KWeaver application services
+# Note: deploy.sh requires root privileges
+sudo ./deploy.sh full init     # Infrastructure + KWeaver application services
 # Layered deployment
-./deploy.sh infra init    # Only infrastructure: K8s + data services
-./deploy.sh kweaver init  # Only application services: ISF/Studio/Ontology etc.
+sudo ./deploy.sh infra init    # Only infrastructure: K8s + data services
+sudo ./deploy.sh kweaver init  # Only application services: ISF/Studio/Ontology etc.
 # Help
 ./deploy.sh --help
 ```

@@ -228,5 +228,3 @@ insert into t_prompt_list(f_create_by, f_create_time, f_icon, f_is_delete, f_is_
                     'chat', 'admin', current_timestamp,
                     '[]', 1
                 from DUAL where not exists(select f_prompt_id from t_prompt_list where f_prompt_id = '1100000000000000030');
-
-

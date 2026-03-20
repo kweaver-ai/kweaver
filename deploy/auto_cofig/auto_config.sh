@@ -685,35 +685,55 @@ check_model_config() {
     return 1
   fi
 
-  local resp
-  resp=$(curl -s -k -X GET \
+  # Check LLM models using llm/list API
+  echo -e "${YELLOW}  检查大模型配置...${NC}"
+  local llm_resp
+  llm_resp=$(curl -s -k -X GET \
+    "${BASE_URL}/api/mf-model-manager/v1/llm/list?page=1&size=100&order=desc&rule=update_time&name=" \
+    -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+    -H "Content-Type: application/json" 2>/dev/null)
+  
+  if [ $? -ne 0 ] || [ -z "$llm_resp" ]; then
+    echo -e "${RED}错误: 无法访问大模型接口${NC}"
+    return 1
+  fi
+
+  # Check embedding models using small-model/list API
+  echo -e "${YELLOW}  检查向量模型配置...${NC}"
+  local embed_resp
+  embed_resp=$(curl -s -k -X GET \
     "${BASE_URL}/api/mf-model-manager/v1/small-model/list?page=1&size=100&order=desc&rule=update_time&model_name=" \
     -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     -H "Content-Type: application/json" 2>/dev/null)
   
-  if [ $? -ne 0 ] || [ -z "$resp" ]; then
-    echo -e "${RED}错误: 无法访问模型接口${NC}"
+  if [ $? -ne 0 ] || [ -z "$embed_resp" ]; then
+    echo -e "${RED}错误: 无法访问向量模型接口${NC}"
     return 1
   fi
 
-  # Debug: show model types found in response
+  # Debug: show model counts
   if command -v jq >/dev/null 2>&1; then
-    local model_types=$(echo "$resp" | jq -r '.data[]?.model_type' 2>/dev/null | sort -u | tr '\n' ' ')
-    if [ -n "$model_types" ]; then
-      echo -e "${YELLOW}  检测到的模型类型: ${model_types}${NC}"
-    else
-      local total=$(echo "$resp" | jq -r '.total // .data | length' 2>/dev/null)
-      echo -e "${YELLOW}  模型列表总数: ${total:-0}${NC}"
-    fi
-  else
-    # Fallback: use grep to find model_type
-    local model_count=$(echo "$resp" | grep -o '"model_type"' | wc -l)
-    echo -e "${YELLOW}  响应中包含 ${model_count} 个模型类型字段${NC}"
+    local llm_count=$(echo "$llm_resp" | jq -r '.count // (.data | length)' 2>/dev/null)
+    local embed_count=$(echo "$embed_resp" | jq -r '.count // (.data | length)' 2>/dev/null)
+    echo -e "${YELLOW}  大模型数量: ${llm_count:-0}, 向量模型数量: ${embed_count:-0}${NC}"
   fi
 
-  local has_llm has_embed
-  has_llm=$(echo "$resp" | grep -o '"model_type":"llm"' | head -1)
-  has_embed=$(echo "$resp" | grep -o '"model_type":"embedding"' | head -1)
+  # Check if LLM models exist
+  local has_llm
+  if command -v jq >/dev/null 2>&1; then
+    has_llm=$(echo "$llm_resp" | jq -r '.data[]? | select(.model_type == "llm") | .model_id' 2>/dev/null | head -1)
+  else
+    has_llm=$(echo "$llm_resp" | grep -o '"model_type":"llm"' | head -1)
+  fi
+  
+  # Check if embedding models exist
+  local has_embed
+  if command -v jq >/dev/null 2>&1; then
+    has_embed=$(echo "$embed_resp" | jq -r '.data[]? | select(.model_type == "embedding") | .model_id' 2>/dev/null | head -1)
+  else
+    has_embed=$(echo "$embed_resp" | grep -o '"model_type":"embedding"' | head -1)
+  fi
+
   if [[ -z "${has_llm}" ]]; then
     echo -e "${RED}错误: 未配置大模型（model_type=llm）${NC}"
     echo "请在控制台/Studio 中先添加大模型。"

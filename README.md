@@ -80,10 +80,10 @@ chmod +x deploy.sh
 
 # Full one-click deployment (recommended)
 # Note: deploy.sh requires root privileges
-sudo ./deploy.sh full init     # Infrastructure + KWeaver application services
+sudo bash ./deploy.sh full init     # Infrastructure + KWeaver application services
 # Layered deployment
-sudo ./deploy.sh infra init    # Only infrastructure: K8s + data services
-sudo ./deploy.sh kweaver init  # Only application services: ISF/Studio/Ontology etc.
+sudo bash ./deploy.sh infra init    # Only infrastructure: K8s + data services
+sudo bash ./deploy.sh kweaver init  # Only application services: ISF/Studio/Ontology etc.
 # Help
 ./deploy.sh --help
 ```

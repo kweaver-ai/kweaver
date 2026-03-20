@@ -79,10 +79,10 @@ chmod +x deploy.sh
 
 # 完整一键部署（推荐）
 # 注意：deploy.sh 需要 root 权限
-sudo ./deploy.sh full init     # 基础设施 + KWeaver 应用服务
+sudo bash ./deploy.sh full init     # 基础设施 + KWeaver 应用服务
 # 分层部署
-sudo ./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
-sudo ./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
+sudo bash ./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
+sudo bash ./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
 # 查看帮助
 ./deploy.sh --help
 ```

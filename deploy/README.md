@@ -26,7 +26,7 @@ cd kweaver/deploy
 
 # 3. Deploy all components (installs the latest version by default)
 # Note: deploy.sh requires root privileges
-sudo ./deploy.sh full init
+sudo bash ./deploy.sh full init
 ```
 
 For first-time installation, especially on cloud VMs or slower networks, the full deployment process may take a while. In some environments it can take more than an hour to complete.
@@ -40,9 +40,9 @@ After deployment, open `https://<node-ip>/studio`. Username: `admin`, initial pa
 **`./deploy.sh` requires root privileges** to install system packages, configure Kubernetes, and manage cluster resources. Run with `sudo` or as root:
 
 ```bash
-sudo ./deploy.sh full init
+sudo bash ./deploy.sh full init
 # or
-sudo ./deploy.sh kweaver init
+sudo bash ./deploy.sh kweaver init
 ```
 
 ### System requirements
@@ -108,31 +108,31 @@ The deployment scripts need access to the following domains:
 
 ```bash
 # Full one-click deployment (recommended)
-sudo ./deploy.sh full init     # Infrastructure + KWeaver application services
+sudo bash ./deploy.sh full init     # Infrastructure + KWeaver application services
 
 # Layered deployment
-sudo ./deploy.sh infra init    # Infrastructure only: K8s + data services
-sudo ./deploy.sh kweaver init  # Application services only: ISF/Studio/Ontology, etc.
+sudo bash ./deploy.sh infra init    # Infrastructure only: K8s + data services
+sudo bash ./deploy.sh kweaver init  # Application services only: ISF/Studio/Ontology, etc.
 
 # Deploy a single infrastructure component
-sudo ./deploy.sh k8s init         # Kubernetes cluster
-sudo ./deploy.sh mariadb init     # MariaDB
-sudo ./deploy.sh mongodb init     # MongoDB
-sudo ./deploy.sh redis init       # Redis
-sudo ./deploy.sh kafka init       # Kafka
-sudo ./deploy.sh opensearch init  # OpenSearch
+sudo bash ./deploy.sh k8s init         # Kubernetes cluster
+sudo bash ./deploy.sh mariadb init     # MariaDB
+sudo bash ./deploy.sh mongodb init     # MongoDB
+sudo bash ./deploy.sh redis init       # Redis
+sudo bash ./deploy.sh kafka init       # Kafka
+sudo bash ./deploy.sh opensearch init  # OpenSearch
 
 # Deploy a single application service
-sudo ./deploy.sh isf init         # ISF service
-sudo ./deploy.sh studio init      # Studio service
+sudo bash ./deploy.sh isf init         # ISF service
+sudo bash ./deploy.sh studio init      # Studio service
 
 # Specify Helm repo and version
-sudo ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
+sudo bash ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
 
 # Multiple version types are supported
-sudo ./deploy.sh kweaver init --version=0.1.0              # Stable release
-sudo ./deploy.sh kweaver init --version=0.0.0-feature-xxx  # Branch/dev build
-sudo ./deploy.sh kweaver init                              # Latest
+sudo bash ./deploy.sh kweaver init --version=0.1.0              # Stable release
+sudo bash ./deploy.sh kweaver init --version=0.0.0-feature-xxx  # Branch/dev build
+sudo bash ./deploy.sh kweaver init                              # Latest
 
 # Help (no root required)
 ./deploy.sh --help
@@ -253,15 +253,15 @@ deploy/
 
 ```bash
 # Full uninstall
-sudo ./deploy.sh full reset         # Uninstall everything (apps + infrastructure)
+sudo bash ./deploy.sh full reset         # Uninstall everything (apps + infrastructure)
 
 # Layered uninstall
-sudo ./deploy.sh kweaver uninstall  # Uninstall application services only
-sudo ./deploy.sh infra reset        # Uninstall infrastructure only
+sudo bash ./deploy.sh kweaver uninstall  # Uninstall application services only
+sudo bash ./deploy.sh infra reset        # Uninstall infrastructure only
 
 # Uninstall a single component
-sudo ./deploy.sh mariadb uninstall
-sudo ./deploy.sh k8s reset
+sudo bash ./deploy.sh mariadb uninstall
+sudo bash ./deploy.sh k8s reset
 ```
 
 ## 🔍 Troubleshooting

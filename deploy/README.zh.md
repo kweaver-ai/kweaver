@@ -26,7 +26,7 @@ cd kweaver/deploy
 
 # 3. 一键部署所有组件，默认安装最新版本
 # 注意：deploy.sh 需要 root 权限
-sudo ./deploy.sh full init
+sudo bash ./deploy.sh full init
 ```
 
 首次安装时，尤其是在云主机或网络较慢的环境中，完整部署过程可能需要较长时间。在某些环境下，完成安装可能会超过 1 小时。
@@ -40,9 +40,9 @@ sudo ./deploy.sh full init
 **`./deploy.sh` 需要 root 权限**，用于安装系统软件包、配置 Kubernetes 和管理集群资源。请使用 `sudo` 或以 root 用户运行：
 
 ```bash
-sudo ./deploy.sh full init
+sudo bash ./deploy.sh full init
 # 或
-sudo ./deploy.sh kweaver init
+sudo bash ./deploy.sh kweaver init
 ```
 
 ### 系统要求
@@ -112,31 +112,31 @@ setenforce 0
 
 ```bash
 # 完整一键部署（推荐）
-sudo ./deploy.sh full init     # 基础设施 + KWeaver 应用服务
+sudo bash ./deploy.sh full init     # 基础设施 + KWeaver 应用服务
 
 # 分层部署
-sudo ./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
-sudo ./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
+sudo bash ./deploy.sh infra init    # 仅基础设施：K8s + 数据服务
+sudo bash ./deploy.sh kweaver init  # 仅应用服务：ISF/Studio/Ontology 等
 
 # 部署单个基础设施组件
-sudo ./deploy.sh k8s init      # Kubernetes 集群
-sudo ./deploy.sh mariadb init  # MariaDB
-sudo ./deploy.sh mongodb init  # MongoDB
-sudo ./deploy.sh redis init    # Redis
-sudo ./deploy.sh kafka init    # Kafka
-sudo ./deploy.sh opensearch init  # OpenSearch
+sudo bash ./deploy.sh k8s init      # Kubernetes 集群
+sudo bash ./deploy.sh mariadb init  # MariaDB
+sudo bash ./deploy.sh mongodb init  # MongoDB
+sudo bash ./deploy.sh redis init    # Redis
+sudo bash ./deploy.sh kafka init    # Kafka
+sudo bash ./deploy.sh opensearch init  # OpenSearch
 
 # 部署单个应用服务
-sudo ./deploy.sh isf init      # ISF 服务
-sudo ./deploy.sh studio init   # Studio 服务
+sudo bash ./deploy.sh isf init      # ISF 服务
+sudo bash ./deploy.sh studio init   # Studio 服务
 
 # 指定 Helm 仓库和版本
-sudo ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
+sudo bash ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
 
 # 支持多种版本类型
-sudo ./deploy.sh kweaver init --version=0.1.0                    # 稳定版
-sudo ./deploy.sh kweaver init --version=0.0.0-feature-xxx        # 分支/开发版
-sudo ./deploy.sh kweaver init                                     # 最新版
+sudo bash ./deploy.sh kweaver init --version=0.1.0                    # 稳定版
+sudo bash ./deploy.sh kweaver init --version=0.0.0-feature-xxx        # 分支/开发版
+sudo bash ./deploy.sh kweaver init                                     # 最新版
 
 # 查看帮助（无需 root）
 ./deploy.sh --help
@@ -257,15 +257,15 @@ deploy/
 
 ```bash
 # 完整卸载
-sudo ./deploy.sh full reset     # 卸载全部（应用服务 + 基础设施）
+sudo bash ./deploy.sh full reset     # 卸载全部（应用服务 + 基础设施）
 
 # 分层卸载
-sudo ./deploy.sh kweaver uninstall  # 仅卸载应用服务
-sudo ./deploy.sh infra reset        # 仅卸载基础设施
+sudo bash ./deploy.sh kweaver uninstall  # 仅卸载应用服务
+sudo bash ./deploy.sh infra reset        # 仅卸载基础设施
 
 # 卸载单个组件
-sudo ./deploy.sh mariadb uninstall
-sudo ./deploy.sh k8s reset
+sudo bash ./deploy.sh mariadb uninstall
+sudo bash ./deploy.sh k8s reset
 ```
 
 ## 🔍 Troubleshooting

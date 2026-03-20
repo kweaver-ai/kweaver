@@ -2,15 +2,15 @@ import React, {useState, useRef, useEffect} from 'react';
 import Info from '@theme-original/BlogPostItem/Header/Info';
 import {useBlogPost} from '@docusaurus/plugin-content-blog/client';
 import {QRCodeSVG} from 'qrcode.react';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 function ShareButton() {
   const [open, setOpen] = useState(false);
+  const [pageUrl, setPageUrl] = useState('');
   const popoverRef = useRef<HTMLDivElement>(null);
-  const {siteConfig} = useDocusaurusContext();
-  const {metadata} = useBlogPost();
 
-  const pageUrl = `${siteConfig.url}${siteConfig.baseUrl}${metadata.permalink.replace(/^\//, '')}`;
+  useEffect(() => {
+    setPageUrl(window.location.href);
+  }, []);
 
   useEffect(() => {
     if (!open) return;

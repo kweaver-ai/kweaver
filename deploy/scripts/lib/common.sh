@@ -29,6 +29,72 @@ LOCAL_CHARTS_DIR="${LOCAL_CHARTS_DIR:-${SCRIPT_DIR}/charts}"
 # Default namespace for infrastructure components (MariaDB/Redis/Kafka/OpenSearch, etc.)
 RESOURCE_NAMESPACE="${RESOURCE_NAMESPACE:-resource}"
 
+# Retry and Timeout Configuration for Helm operations
+HELM_REPO_TIMEOUT="${HELM_REPO_TIMEOUT:-300}"
+HELM_REPO_RETRY_COUNT="${HELM_REPO_RETRY_COUNT:-3}"
+HELM_REPO_RETRY_DELAY="${HELM_REPO_RETRY_DELAY:-5}"
+HELM_OPERATION_TIMEOUT="${HELM_OPERATION_TIMEOUT:-600}"
+
+retry_with_timeout() {
+    local max_attempts="${1}"
+    local timeout_sec="${2}"
+    local delay_sec="${3}"
+    shift 3
+    local cmd=("$@")
+    local attempt=1
+
+    while [[ ${attempt} -le ${max_attempts} ]]; do
+        echo "[Retry ${attempt}/${max_attempts}] Running: ${cmd[*]}"
+        if timeout "${timeout_sec}" "${cmd[@]}"; then
+            echo "[Success] Command succeeded on attempt ${attempt}"
+            return 0
+        else
+            local exit_code=$?
+            echo "[Warning] Command failed with exit code ${exit_code} (attempt ${attempt}/${max_attempts})"
+            if [[ ${attempt} -lt ${max_attempts} ]]; then
+                echo "Waiting ${delay_sec}s before retry..."
+                sleep "${delay_sec}"
+            fi
+        fi
+        ((attempt++))
+    done
+
+    echo "[Error] Command failed after ${max_attempts} attempts"
+    return 1
+}
+
+helm_repo_add_with_retry() {
+    local repo_name="$1"
+    local repo_url="$2"
+
+    retry_with_timeout \
+        "${HELM_REPO_RETRY_COUNT}" \
+        "${HELM_REPO_TIMEOUT}" \
+        "${HELM_REPO_RETRY_DELAY}" \
+        helm repo add --force-update "${repo_name}" "${repo_url}"
+}
+
+helm_repo_update_with_retry() {
+    retry_with_timeout \
+        "${HELM_REPO_RETRY_COUNT}" \
+        "${HELM_REPO_TIMEOUT}" \
+        "${HELM_REPO_RETRY_DELAY}" \
+        helm repo update
+}
+
+helm_upgrade_install_with_retry() {
+    local release_name="$1"
+    local chart_ref="$2"
+    shift 2
+    local extra_args=("$@")
+
+    retry_with_timeout \
+        "${HELM_REPO_RETRY_COUNT}" \
+        "${HELM_OPERATION_TIMEOUT}" \
+        "${HELM_REPO_RETRY_DELAY}" \
+        helm upgrade --install "${release_name}" "${chart_ref}" "${extra_args[@]}"
+}
+
 # Generate a random password
 generate_random_password() {
     local length="${1:-16}"

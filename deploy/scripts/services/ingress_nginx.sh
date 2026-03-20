@@ -57,8 +57,8 @@ install_ingress_nginx() {
     fi
 
     if [[ "${use_local_chart}" != "true" ]]; then
-        helm repo add --force-update ingress-nginx "${HELM_REPO_INGRESS_NGINX}"
-        helm repo update
+        helm_repo_add_with_retry ingress-nginx "${HELM_REPO_INGRESS_NGINX}"
+        helm_repo_update_with_retry
     fi
 
     local -a helm_args

@@ -83,8 +83,8 @@ install_ontology() {
     
     # Add Helm repo
     log_info "Adding Helm repo: ${HELM_CHART_REPO_NAME} -> ${HELM_CHART_REPO_URL}"
-    helm repo add --force-update "${HELM_CHART_REPO_NAME}" "${HELM_CHART_REPO_URL}"
-    helm repo update
+    helm_repo_add_with_retry "${HELM_CHART_REPO_NAME}" "${HELM_CHART_REPO_URL}"
+    helm_repo_update_with_retry
 
     # Initialize database first
     if ! init_ontology_database; then

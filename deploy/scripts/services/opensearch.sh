@@ -73,8 +73,8 @@ install_opensearch() {
     fi
 
     if [[ "${use_local_chart}" != "true" ]]; then
-        helm repo add --force-update opensearch "${HELM_REPO_OPENSEARCH}"
-        helm repo update
+        helm_repo_add_with_retry opensearch "${HELM_REPO_OPENSEARCH}"
+        helm_repo_update_with_retry
     fi
 
     local disable_security="${OPENSEARCH_DISABLE_SECURITY}"

@@ -102,8 +102,8 @@ EOF
     fi
 
     if [[ "${use_local_chart}" != "true" ]]; then
-        helm repo add --force-update bitnami "${HELM_REPO_BITNAMI}"
-        helm repo update
+        helm_repo_add_with_retry bitnami "${HELM_REPO_BITNAMI}"
+        helm_repo_update_with_retry
     fi
 
     # Use a temporary values file for Kafka config overrides.

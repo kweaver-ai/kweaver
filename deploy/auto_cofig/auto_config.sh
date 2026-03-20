@@ -346,20 +346,23 @@ get_token() {
     return 1
   fi
 
-  # Extract CSRF token and challenge (more flexible regex)
-  CSRFTOKEN_REGEX='"csrftoken"[[:space:]]*:[[:space:]]*"[^"]*"'
-  CHALLENGE_REGEX='"challenge"[[:space:]]*:[[:space:]]*"[^"]*"'
-
-  CSRFTOKEN_LINE=$(echo "$LOGIN_PAGE_RESPONSE" | grep -oP "$CSRFTOKEN_REGEX" | head -1)
-  CHALLENGE_LINE=$(echo "$LOGIN_PAGE_RESPONSE" | grep -oP "$CHALLENGE_REGEX" | head -1)
-
-  # Extract token/challenge values
+  # Extract CSRF token from cookie first, then from page content
   local CSRF_TOKEN=""
-  local CHALLENGE=""
-  if [ -n "$CSRFTOKEN_LINE" ]; then
-    CSRF_TOKEN=$(echo "$CSRFTOKEN_LINE" | cut -d'"' -f4)
+  CSRF_TOKEN=$(awk '/_csrf/ {print $7}' "/tmp/session_cookies_${temp_suffix}.txt" 2>/dev/null | head -1)
+  
+  # If not in cookie, try extracting from page content
+  if [[ -z "$CSRF_TOKEN" ]]; then
+    CSRFTOKEN_REGEX='"csrftoken"[[:space:]]*:[[:space:]]*"[^"]*"'
+    CSRFTOKEN_LINE=$(echo "$LOGIN_PAGE_RESPONSE" | grep -oP "$CSRFTOKEN_REGEX" | head -1)
+    if [ -n "$CSRFTOKEN_LINE" ]; then
+      CSRF_TOKEN=$(echo "$CSRFTOKEN_LINE" | cut -d'"' -f4)
+    fi
   fi
 
+  # Extract challenge from page content
+  CHALLENGE_REGEX='"challenge"[[:space:]]*:[[:space:]]*"[^"]*"'
+  CHALLENGE_LINE=$(echo "$LOGIN_PAGE_RESPONSE" | grep -oP "$CHALLENGE_REGEX" | head -1)
+  local CHALLENGE=""
   if [ -n "$CHALLENGE_LINE" ]; then
     CHALLENGE=$(echo "$CHALLENGE_LINE" | cut -d'"' -f4)
   fi

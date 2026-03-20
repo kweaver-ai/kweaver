@@ -346,17 +346,13 @@ get_token() {
     return 1
   fi
 
-  # Extract CSRF token from cookie first, then from page content
-  local CSRF_TOKEN=""
-  CSRF_TOKEN=$(awk '/_csrf/ {print $7}' "/tmp/session_cookies_${temp_suffix}.txt" 2>/dev/null | head -1)
+  # Extract CSRF token from page content (csrftoken field), not from cookie (_csrf)
+  CSRFTOKEN_REGEX='"csrftoken"[[:space:]]*:[[:space:]]*"[^"]*"'
+  CSRFTOKEN_LINE=$(echo "$LOGIN_PAGE_RESPONSE" | grep -oP "$CSRFTOKEN_REGEX" | head -1)
   
-  # If not in cookie, try extracting from page content
-  if [[ -z "$CSRF_TOKEN" ]]; then
-    CSRFTOKEN_REGEX='"csrftoken"[[:space:]]*:[[:space:]]*"[^"]*"'
-    CSRFTOKEN_LINE=$(echo "$LOGIN_PAGE_RESPONSE" | grep -oP "$CSRFTOKEN_REGEX" | head -1)
-    if [ -n "$CSRFTOKEN_LINE" ]; then
-      CSRF_TOKEN=$(echo "$CSRFTOKEN_LINE" | cut -d'"' -f4)
-    fi
+  local CSRF_TOKEN=""
+  if [ -n "$CSRFTOKEN_LINE" ]; then
+    CSRF_TOKEN=$(echo "$CSRFTOKEN_LINE" | cut -d'"' -f4)
   fi
 
   # Extract challenge from page content

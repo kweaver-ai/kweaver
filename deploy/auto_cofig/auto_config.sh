@@ -711,27 +711,39 @@ check_model_config() {
     return 1
   fi
 
-  # Debug: show model counts
+  # Debug: show model counts and raw response (first 200 chars)
   if command -v jq >/dev/null 2>&1; then
     local llm_count=$(echo "$llm_resp" | jq -r '.count // (.data | length)' 2>/dev/null)
     local embed_count=$(echo "$embed_resp" | jq -r '.count // (.data | length)' 2>/dev/null)
     echo -e "${YELLOW}  大模型数量: ${llm_count:-0}, 向量模型数量: ${embed_count:-0}${NC}"
+    
+    # Debug: show first model info if exists
+    if [[ "${llm_count:-0}" -gt 0 ]]; then
+      local first_llm=$(echo "$llm_resp" | jq -r '.data[0]? | {model_id, model_name, model_type}' 2>/dev/null)
+      echo -e "${YELLOW}  大模型示例: ${first_llm}${NC}"
+    fi
+    if [[ "${embed_count:-0}" -gt 0 ]]; then
+      local first_embed=$(echo "$embed_resp" | jq -r '.data[0]? | {model_id, model_name, model_type}' 2>/dev/null)
+      echo -e "${YELLOW}  向量模型示例: ${first_embed}${NC}"
+    fi
   fi
 
   # Check if LLM models exist
+  # LLM API returns all items with model_type="llm", so just check if data array has items
   local has_llm
   if command -v jq >/dev/null 2>&1; then
-    has_llm=$(echo "$llm_resp" | jq -r '.data[]? | select(.model_type == "llm") | .model_id' 2>/dev/null | head -1)
+    has_llm=$(echo "$llm_resp" | jq -r '.data[0]?.model_id // empty' 2>/dev/null)
   else
-    has_llm=$(echo "$llm_resp" | grep -o '"model_type":"llm"' | head -1)
+    has_llm=$(echo "$llm_resp" | grep -o '"model_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
   fi
   
   # Check if embedding models exist
+  # Small-model API returns all items with model_type="embedding", so just check if data array has items
   local has_embed
   if command -v jq >/dev/null 2>&1; then
-    has_embed=$(echo "$embed_resp" | jq -r '.data[]? | select(.model_type == "embedding") | .model_id' 2>/dev/null | head -1)
+    has_embed=$(echo "$embed_resp" | jq -r '.data[0]?.model_id // empty' 2>/dev/null)
   else
-    has_embed=$(echo "$embed_resp" | grep -o '"model_type":"embedding"' | head -1)
+    has_embed=$(echo "$embed_resp" | grep -o '"model_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
   fi
 
   if [[ -z "${has_llm}" ]]; then

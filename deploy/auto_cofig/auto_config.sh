@@ -182,6 +182,61 @@ fi
 
 BASE_URL="https://${IP_ADDRESS}"
 
+# Get DS_HOST from config.yaml (datasource.host or depServices.rds.host), fallback to config.env
+echo -e "${YELLOW}正在获取数据源地址...${NC}"
+if [ -n "$DS_HOST" ]; then
+  echo "使用环境变量/config.env 中的数据源地址: $DS_HOST"
+elif [ -f "$CONF_YAML" ]; then
+  # Try to read from config.yaml datasource.host first
+  DS_HOST=$(awk '
+    BEGIN { in_datasource=0 }
+    /^[[:space:]]*datasource:[[:space:]]*$/ { in_datasource=1; next }
+    in_datasource && /^[[:space:]]{2}host:[[:space:]]*/ {
+      line=$0
+      sub("^[[:space:]]{2}host:[[:space:]]*", "", line)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+      gsub(/^'\''|'\''$/, "", line)
+      gsub(/^"|"$/, "", line)
+      if (line != "" && line != "null") {
+        print line
+        exit
+      }
+    }
+    in_datasource && /^[[:space:]]{2}[a-zA-Z0-9_-]+:[[:space:]]*/ && $1 !~ /^host:$/ { }
+  ' "$CONF_YAML" 2>/dev/null)
+  
+  # If not found, try depServices.rds.host as fallback
+  if [ -z "$DS_HOST" ]; then
+    DS_HOST=$(awk '
+      BEGIN { in_rds=0 }
+      /^[[:space:]]*rds:[[:space:]]*$/ { in_rds=1; next }
+      in_rds && /^[[:space:]]{4}host:[[:space:]]*$/ { next }
+      in_rds && /^[[:space:]]{4}host:[[:space:]]*/ {
+        line=$0
+        sub("^[[:space:]]{4}host:[[:space:]]*", "", line)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+        gsub(/^'\''|'\''$/, "", line)
+        gsub(/^"|"$/, "", line)
+        if (line != "" && line != "null") {
+          print line
+          exit
+        }
+      }
+      in_rds && /^[[:space:]]{2}[a-zA-Z0-9_-]+:[[:space:]]*/ && $1 !~ /^rds:$/ { in_rds=0 }
+    ' "$CONF_YAML" 2>/dev/null)
+  fi
+  
+  if [ -n "$DS_HOST" ]; then
+    echo "从 config.yaml 读取数据源地址: $DS_HOST"
+  fi
+fi
+
+# Fallback to default if not found
+if [ -z "$DS_HOST" ]; then
+  DS_HOST="${DS_HOST:-127.0.0.1}"
+  echo "使用默认数据源地址: $DS_HOST"
+fi
+
 # Get auth settings from config
 USERNAME="${USERNAME:-admin}"
 PASSWORD="${PASSWORD:-}"

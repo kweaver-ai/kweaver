@@ -186,5 +186,57 @@ update_env_kv "${CONFIG_ENV_FILE}" "DS_DATABASE_NAME" "tem"
 update_env_kv "${CONFIG_ENV_FILE}" "DS_USERNAME" "${RDS_USER}"
 update_env_kv "${CONFIG_ENV_FILE}" "DS_PASSWORD" "${RDS_PASSWORD}"
 
+# Update config.yaml datasource.host
+if [ -f "$CONF_YAML" ]; then
+  echo "更新 ${CONF_YAML}（datasource.host 为集群内地址）"
+  # Use awk to update or add datasource.host
+  awk -v host="$DS_HOST" '
+    BEGIN { 
+      in_datasource=0
+      datasource_updated=0
+      datasource_exists=0
+    }
+    /^datasource:/ { 
+      in_datasource=1
+      datasource_exists=1
+      print
+      next
+    }
+    in_datasource && /^  host:/ {
+      print "  host: '\''" host "'\''"
+      datasource_updated=1
+      next
+    }
+    in_datasource && /^[[:space:]]{2}[a-zA-Z0-9_-]+:/ && $1 !~ /^host:$/ {
+      if (!datasource_updated) {
+        print "  host: '\''" host "'\''"
+        datasource_updated=1
+      }
+      in_datasource=0
+      print
+      next
+    }
+    in_datasource && /^[[:space:]]*$/ {
+      print
+      next
+    }
+    !in_datasource && /^depServices:/ && datasource_exists == 0 {
+      print "datasource:"
+      print "  host: '\''" host "'\''"
+      print ""
+      print
+      next
+    }
+    { print }
+    END {
+      if (datasource_exists == 0 && datasource_updated == 0) {
+        print "datasource:"
+        print "  host: '\''" host "'\''"
+      }
+    }
+  ' "$CONF_YAML" > "${CONF_YAML}.tmp" && mv "${CONF_YAML}.tmp" "$CONF_YAML"
+  echo "已更新 config.yaml: datasource.host = ${DS_HOST}"
+fi
+
 echo "完成：tem 数据库已创建并导入成功。"
 echo "DS_HOST=${DS_HOST}（集群内地址，供 KWeaver 扫描）"

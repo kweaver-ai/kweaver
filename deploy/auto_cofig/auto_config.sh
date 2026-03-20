@@ -312,52 +312,6 @@ check_data_import() {
   return 0
 }
 
-check_model_config() {
-  echo -e "${YELLOW}检查模型配置（大模型、向量模型）...${NC}"
-  local resp
-  resp=$(curl -s -k -X GET \
-    "${BASE_URL}/api/mf-model-manager/v1/small-model/list?page=1&size=100&order=desc&rule=update_time&model_name=" \
-    -H "Authorization: Bearer ${TOKEN}" \
-    -H "Content-Type: application/json" 2>/dev/null)
-  local has_llm has_embed
-  has_llm=$(echo "$resp" | grep -o '"model_type":"llm"' | head -1)
-  has_embed=$(echo "$resp" | grep -o '"model_type":"embedding"' | head -1)
-  if [[ -z "${has_llm}" ]]; then
-    echo -e "${RED}错误: 未配置大模型（model_type=llm）${NC}"
-    echo "请在控制台/Studio 中先添加大模型。"
-    return 1
-  fi
-  if [[ -z "${has_embed}" ]]; then
-    echo -e "${RED}错误: 未配置向量模型（model_type=embedding）${NC}"
-    echo "请在控制台/Studio 中先添加向量模型。"
-    return 1
-  fi
-  echo -e "${GREEN}✓ 模型配置检查通过（大模型、向量模型已配置）${NC}"
-  return 0
-}
-
-# 执行前必须通过的检查
-run_pre_checks() {
-  check_data_import || exit 1
-  get_token || exit 1
-  if [[ -f "/tmp/token_$$.env" ]]; then
-    # shellcheck disable=SC1090
-    . "/tmp/token_$$.env"
-  fi
-  check_model_config || exit 1
-}
-
-echo -e "${GREEN}开始自动配置环境...${NC}"
-echo "IP地址: $IP_ADDRESS (自动获取)"
-echo "用户名: $USERNAME"
-echo "Agent文件: $AGENT_FILE"
-echo "知识网络文件: $KNOWLEDGE_NETWORK_FILE"
-echo "数据流文件: $DATAFLOW_FILE"
-echo ""
-
-# 执行前检查（数据导入、模型配置）并获取 token
-run_pre_checks
-
 # Get token
 get_token() {
   local temp_suffix=$$
@@ -514,6 +468,52 @@ EOF
 
   return 0
 }
+
+check_model_config() {
+  echo -e "${YELLOW}检查模型配置（大模型、向量模型）...${NC}"
+  local resp
+  resp=$(curl -s -k -X GET \
+    "${BASE_URL}/api/mf-model-manager/v1/small-model/list?page=1&size=100&order=desc&rule=update_time&model_name=" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    -H "Content-Type: application/json" 2>/dev/null)
+  local has_llm has_embed
+  has_llm=$(echo "$resp" | grep -o '"model_type":"llm"' | head -1)
+  has_embed=$(echo "$resp" | grep -o '"model_type":"embedding"' | head -1)
+  if [[ -z "${has_llm}" ]]; then
+    echo -e "${RED}错误: 未配置大模型（model_type=llm）${NC}"
+    echo "请在控制台/Studio 中先添加大模型。"
+    return 1
+  fi
+  if [[ -z "${has_embed}" ]]; then
+    echo -e "${RED}错误: 未配置向量模型（model_type=embedding）${NC}"
+    echo "请在控制台/Studio 中先添加向量模型。"
+    return 1
+  fi
+  echo -e "${GREEN}✓ 模型配置检查通过（大模型、向量模型已配置）${NC}"
+  return 0
+}
+
+# 执行前必须通过的检查
+run_pre_checks() {
+  check_data_import || exit 1
+  get_token || exit 1
+  if [[ -f "/tmp/token_$$.env" ]]; then
+    # shellcheck disable=SC1090
+    . "/tmp/token_$$.env"
+  fi
+  check_model_config || exit 1
+}
+
+echo -e "${GREEN}开始自动配置环境...${NC}"
+echo "IP地址: $IP_ADDRESS (自动获取)"
+echo "用户名: $USERNAME"
+echo "Agent文件: $AGENT_FILE"
+echo "知识网络文件: $KNOWLEDGE_NETWORK_FILE"
+echo "数据流文件: $DATAFLOW_FILE"
+echo ""
+
+# 执行前检查（数据导入、模型配置）并获取 token
+run_pre_checks
 
 # Helper: ensure token exists
 ensure_token_exists() {

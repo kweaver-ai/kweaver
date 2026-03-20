@@ -10,7 +10,7 @@ const GISCUS_PROPS = {
   category: 'Announcements',
   categoryId: 'DIC_kwDOH8FKw84C4wpZ',
   mapping: 'pathname' as const,
-  strict: '1' as const,
+  strict: '0' as const,
   reactionsEnabled: '1' as const,
   emitMetadata: '0' as const,
   inputPosition: 'top' as const,

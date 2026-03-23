@@ -8,19 +8,19 @@
 
 | 模块 | Chart 名称 | Github 地址 | 改造已完成 | 备注 |
 | --- | --- | --- | --- | --- |
-| ISF | hydra | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/hydra/chart/hydra |  | 分支待推送 |
-| ISF | sharemgnt-single | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ShareMgnt/chart/sharemgnt-single |  | 分支待推送 |
-| ISF | user-management | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/UserManagement/chart/user-management |  | 分支待推送 |
-| ISF | sharemgnt | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ShareMgnt/chart/sharemgnt |  | 分支待推送 |
-| ISF | authentication | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Authentication/chart/authentication |  | 分支待推送 |
-| ISF | policy-management | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/PolicyManagement/chart/policy-management |  | 分支待推送 |
-| ISF | audit-log | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Auditlog/chart/audit-log |  | 分支待推送 |
-| ISF | eacp | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ShareServer/chart/eacp |  | 分支待推送 |
-| ISF | isfwebthrift | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ISFWeb/chart/isfwebthrift |  | 分支待推送 |
-| ISF | isfweb | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ISFWeb/chart/isfweb |  | 分支待推送 |
-| ISF | authorization | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Authorization/chart/authorization |  | 分支待推送 |
-| ISF | ingress-informationsecurityfabric | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Ingress_Proton_IdentifyAndAuthentication/ingress-informationsecurityfabric |  | 分支待推送 |
-| ISF | oauth2-ui | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Authentication/oauth2-ui/chart/oauth2-ui |  | 分支待推送 |
+| ISF | hydra | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/hydra/chart/hydra |  | 分支已推送 |
+| ISF | sharemgnt-single | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ShareMgnt/chart/sharemgnt-single |  | 分支已推送 |
+| ISF | user-management | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/UserManagement/chart/user-management |  | 分支已推送 |
+| ISF | sharemgnt | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ShareMgnt/chart/sharemgnt |  | 分支已推送 |
+| ISF | authentication | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Authentication/chart/authentication |  | 分支已推送 |
+| ISF | policy-management | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/PolicyManagement/chart/policy-management |  | 分支已推送 |
+| ISF | audit-log | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Auditlog/chart/audit-log |  | 分支已推送 |
+| ISF | eacp | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ShareServer/chart/eacp |  | 分支已推送 |
+| ISF | isfwebthrift | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ISFWeb/chart/isfwebthrift |  | 分支已推送 |
+| ISF | isfweb | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/ISFWeb/chart/isfweb |  | 分支已推送 |
+| ISF | authorization | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Authorization/chart/authorization |  | 分支已推送 |
+| ISF | ingress-informationsecurityfabric | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Ingress_Proton_IdentifyAndAuthentication/ingress-informationsecurityfabric |  | 分支已推送 |
+| ISF | oauth2-ui | https://github.com/kweaver-ai/isf/tree/feat/support-umbrella-chart/Authentication/oauth2-ui/chart/oauth2-ui |  | 分支已推送 |
 | AgentOperator | agent-operator-integration | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/execution-factory/operator-integration/helm/agent-operator-integration |  | 分支已推送 |
 | AgentOperator | operator-web | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/execution-factory/operator-web |  | 分支已推送 |
 | AgentOperator | agent-retrieval | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/context-loader/agent-retrieval/helm/agent-retrieval |  | 分支已推送 |
@@ -28,8 +28,8 @@
 | flow automation | flow-web | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/dataflow/dia-flow-web/charts/flow-web |  | 分支已推送 |
 | flow automation | dataflow | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/dataflow/charts/dataflow |  | 分支已推送 |
 | flow automation | coderunner | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/dataflow/charts/coderunner |  | 分支已推送 |
-| DataAgent | agent-backend | https://github.com/kweaver-ai/decision-agent/tree/feat/support-umbrella-chart/agent-backend/deploy/helm/agent-backend |  | 分支待推送 |
-| DataAgent | agent-web | https://github.com/kweaver-ai/decision-agent/tree/feat/support-umbrella-chart/agent-web/charts/agent-web |  | 分支待推送 |
+| DataAgent | agent-backend | https://github.com/kweaver-ai/decision-agent/tree/feat/support-umbrella-chart/agent-backend/deploy/helm/agent-backend |  | 分支已推送 |
+| DataAgent | agent-web | https://github.com/kweaver-ai/decision-agent/tree/feat/support-umbrella-chart/agent-web/charts/agent-web |  | 分支已推送 |
 | Ontology | bkn-backend | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/bkn/bkn-backend/helm/bkn-backend |  | 原  ontology-manager；分支已推送 |
 | Ontology | ontology-query | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/bkn/ontology-query/helm/ontology-query |  | 分支已推送 |
 | Ontology | vega-backend | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/vega/vega-backend/helm/vega-backend |  | 分支已推送 |
@@ -40,14 +40,14 @@
 | Ontology | mdl-data-model | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/vega/mdl-data-model/helm/mdl-data-model |  | 分支已推送 |
 | Ontology | mdl-uniquery | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/vega/mdl-uniquery/helm/mdl-uniquery |  | 分支已推送 |
 | Ontology | mdl-data-model-job | https://github.com/kweaver-ai/adp/tree/feat/support-umbrella-chart/vega/mdl-data-model-job/helm/mdl-data-model-job |  | 分支已推送 |
-| Sandbox | sandbox | https://github.com/kweaver-ai/sandbox/tree/feat/support-umbrella-chart/deploy/helm/sandbox |  | 分支待推送 |
-| Studio | deploy-web | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/deploy-web/charts/deploy-web |  | 分支待推送 |
-| Studio | studio-web | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/studio-web/charts/studio-web |  | 分支待推送 |
-| Studio | business-system-frontend | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/frontend/applications/business-system/charts/business-system |  | 分支待推送 |
-| Studio | business-system-service | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/business-system-backend/helm/business-system-service |  | 分支待推送 |
-| Studio | mf-model-manager-nginx | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/frontend/applications/model-manager/charts/model-manager |  | 分支待推送 |
-| Studio | mf-model-manager | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/mf-model-manager/charts |  | 分支待推送 |
-| Studio | mf-model-api | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/mf-model-api/charts |  | 分支待推送 |
+| Sandbox | sandbox | https://github.com/kweaver-ai/sandbox/tree/feat/support-umbrella-chart/deploy/helm/sandbox |  | 分支已推送 |
+| Studio | deploy-web | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/deploy-web/charts/deploy-web |  | 分支已推送 |
+| Studio | studio-web | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/studio-web/charts/studio-web |  | 分支已推送 |
+| Studio | business-system-frontend | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/frontend/applications/business-system/charts/business-system |  | 分支已推送 |
+| Studio | business-system-service | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/business-system-backend/helm/business-system-service |  | 分支已推送 |
+| Studio | mf-model-manager-nginx | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/frontend/applications/model-manager/charts/model-manager |  | 分支已推送 |
+| Studio | mf-model-manager | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/mf-model-manager/charts |  | 分支已推送 |
+| Studio | mf-model-api | https://github.com/kweaver-ai/studio/tree/feat/support-umbrella-chart/mf-model-api/charts |  | 分支已推送 |
 
 这份文档不是按“执行步骤”来写，而是按“问题类别”来归纳这次 `kweaver-core` umbrella vendor chart 改造中实际做过的修改，方便其他团队参考类似场景下应该改哪里、为什么要这样改。
 

@@ -135,6 +135,17 @@ kweaver auth login https://your-kweaver-instance.com
 > kweaver auth login https://your-kweaver-instance.com -k
 > ```
 
+### Headless login (SSH, CI, containers — no browser)
+
+The **npm** `kweaver` CLI can complete OAuth without a local graphical browser:
+
+1. On a machine **with** a browser, run `kweaver auth login https://your-instance`. After success, copy the one-line command from the callback page, or run `kweaver auth export` / `kweaver auth export --json`.
+2. On the **headless** host, run that command — it uses `--client-id`, `--client-secret`, and `--refresh-token` to exchange tokens and save credentials under `~/.kweaver/` as usual.
+
+You can also run `kweaver auth login <url> --client-id … --client-secret … --refresh-token …` directly on the headless machine if you already have those values.
+
+Full details: [kweaver-sdk — Headless / Server Authentication](https://github.com/kweaver-ai/kweaver-sdk/blob/main/packages/typescript/README.md#headless--server-authentication) (TypeScript package README). The Python `kweaver` CLI still uses interactive browser login; reuse the same `~/.kweaver/` directory copied from a machine where the Node CLI finished login, or set `KWEAVER_BASE_URL` / `KWEAVER_TOKEN` (see [kweaver-sdk Authentication](https://github.com/kweaver-ai/kweaver-sdk#authentication)).
+
 ### CLI
 
 ```bash

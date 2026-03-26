@@ -134,6 +134,17 @@ kweaver auth login https://your-kweaver-instance.com
 > kweaver auth login https://your-kweaver-instance.com -k
 > ```
 
+### 无浏览器环境登录（SSH、CI、容器等）
+
+**npm 版** `kweaver` CLI 可在没有本地图形浏览器的环境完成 OAuth 登录：
+
+1. 在**有浏览器**的机器上执行 `kweaver auth login https://你的实例`；登录成功后，从回调页复制一行命令，或执行 `kweaver auth export` / `kweaver auth export --json`。
+2. 在**无头（headless）**机器上执行该命令，通过 `--client-id`、`--client-secret`、`--refresh-token` 换取令牌并写入 `~/.kweaver/`。
+
+若已持有上述参数，也可在无头机器上直接执行：`kweaver auth login <url> --client-id … --client-secret … --refresh-token …`。
+
+完整说明见 [kweaver-sdk — Headless / Server Authentication](https://github.com/kweaver-ai/kweaver-sdk/blob/main/packages/typescript/README.md#headless--server-authentication)（TypeScript 包 README）。Python 版 `kweaver` CLI 仍为交互式浏览器登录；可将 Node CLI 已完成登录的机器上的 `~/.kweaver/` 目录拷贝过来使用，或配置 `KWEAVER_BASE_URL` / `KWEAVER_TOKEN` 等环境变量（见 [kweaver-sdk 认证说明](https://github.com/kweaver-ai/kweaver-sdk#authentication)）。
+
 ### CLI
 
 ```bash

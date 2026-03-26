@@ -151,15 +151,39 @@ Full details: [kweaver-sdk — Headless / Server Authentication](https://github.
 ```bash
 kweaver auth login https://your-kweaver.com     # authenticate (-k for self-signed certs)
 kweaver bkn list                                 # browse knowledge networks
+kweaver bkn search <kn-id> "query"              # semantic search over a BKN
+kweaver bkn build <kn-id> --wait                # rebuild index and wait for completion
 kweaver bkn object-type list <kn-id>            # inspect object types
 kweaver bkn action-type execute <kn-id> <at-id> # execute an action
 kweaver agent list                               # list Decision Agents
 kweaver agent chat <agent-id> -m "Hello"        # chat with an agent
-kweaver context-loader kn-search "query"        # semantic search
+kweaver ds import-csv <ds-id> --files "*.csv"   # import CSV files into a datasource
+kweaver context-loader kn-search "query"        # semantic search via Context Loader
 kweaver call /api/...                            # raw API call
 ```
 
 ### TypeScript & Python SDK
+
+**Simple API (recommended):**
+
+```typescript
+import kweaver from "@kweaver-ai/kweaver-sdk/kweaver";
+kweaver.configure({ config: true, bknId: "your-bkn-id", agentId: "your-agent-id" });
+
+const results = await kweaver.search("What risks exist in the supply chain?");
+const reply   = await kweaver.chat("Summarise the top 3 risks");
+await kweaver.weaver({ wait: true });   // rebuild BKN index
+```
+
+```python
+import kweaver
+kweaver.configure(config=True, bkn_id="your-bkn-id", agent_id="your-agent-id")
+
+results = kweaver.search("What risks exist in the supply chain?")
+reply   = kweaver.chat("Summarise the top 3 risks")
+```
+
+**Full client API (advanced):**
 
 ```typescript
 import { KWeaverClient } from "@kweaver-ai/kweaver-sdk";

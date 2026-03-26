@@ -150,15 +150,39 @@ kweaver auth login https://your-kweaver-instance.com
 ```bash
 kweaver auth login https://your-kweaver.com     # 登录认证（自签名证书加 -k）
 kweaver bkn list                                 # 浏览知识网络
+kweaver bkn search <kn-id> "关键词"              # 知识网络语义搜索
+kweaver bkn build <kn-id> --wait                # 重建索引并等待完成
 kweaver bkn object-type list <kn-id>            # 查看对象类型
 kweaver bkn action-type execute <kn-id> <at-id> # 执行 Action
 kweaver agent list                               # 列出 Decision Agent
 kweaver agent chat <agent-id> -m "你好"          # 与 Agent 对话
-kweaver context-loader kn-search "关键词"        # 语义搜索
+kweaver ds import-csv <ds-id> --files "*.csv"   # 将 CSV 文件导入数据源
+kweaver context-loader kn-search "关键词"        # 通过 Context Loader 语义搜索
 kweaver call /api/...                            # 原始 API 调用
 ```
 
 ### TypeScript & Python SDK
+
+**简洁 API（推荐）：**
+
+```typescript
+import kweaver from "@kweaver-ai/kweaver-sdk/kweaver";
+kweaver.configure({ config: true, bknId: "your-bkn-id", agentId: "your-agent-id" });
+
+const results = await kweaver.search("供应链有哪些风险？");
+const reply   = await kweaver.chat("总结前三大风险");
+await kweaver.weaver({ wait: true });   // 重建 BKN 索引
+```
+
+```python
+import kweaver
+kweaver.configure(config=True, bkn_id="your-bkn-id", agent_id="your-agent-id")
+
+results = kweaver.search("供应链有哪些风险？")
+reply   = kweaver.chat("总结前三大风险")
+```
+
+**底层客户端（高级用法）：**
 
 ```typescript
 import { KWeaverClient } from "@kweaver-ai/kweaver-sdk";

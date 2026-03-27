@@ -16,14 +16,14 @@ cd kweaver/deploy
 # 2. Edit the config file (optional; skip to use defaults)
 # vim conf/config.yaml
 
-# 3. Install KWeaver Core (includes ISF by default)
+# 3. Install KWeaver Core (includes ISF by default; automatically installs missing K8s and data services)
 bash ./deploy.sh kweaver-core install
 
 # 3'. Pre-download charts into deploy/.tmp/charts, then install from that directory explicitly
 # bash ./deploy.sh kweaver-core download
 # bash ./deploy.sh kweaver-core install --charts_dir=./.tmp/charts
 
-# 3'. Install KWeaver DIP (automatically installs missing dependencies)
+# 3'. Install KWeaver DIP (automatically installs missing K8s, data services, and app dependencies)
 # bash ./deploy.sh kweaver-dip install
 ```
 
@@ -94,10 +94,10 @@ The deployment scripts need access to the following domains:
 ```bash
 # Recommended install paths
 ./deploy.sh kweaver-core install
-# Install KWeaver Core; ISF is installed by default
+# Install KWeaver Core; ISF is installed by default, and missing K8s/data services are installed automatically
 
 ./deploy.sh kweaver-core install --enable-isf=false
-# Install KWeaver Core without ISF
+# Install KWeaver Core without ISF; missing K8s/data services are still installed automatically
 
 ./deploy.sh kweaver-dip install
 # Install KWeaver DIP; if K8s, data services, ISF, or KWeaver Core are missing, they will be installed automatically
@@ -130,7 +130,7 @@ The deployment scripts need access to the following domains:
 # Download/update ISF charts into a specific local directory
 
 ./deploy.sh isf install --charts_dir=./.tmp/charts
-# Install ISF from pre-downloaded local charts
+# Install ISF from pre-downloaded local charts; missing K8s/data services are installed automatically
 
 ./deploy.sh core install
 # Same as above; `core` is an alias of `kweaver-core`

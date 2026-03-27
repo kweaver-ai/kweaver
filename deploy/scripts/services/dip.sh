@@ -7,6 +7,7 @@ declare -a DIP_PRERELEASES=(
 
 declare -a DIP_RELEASES=(
     "anyfabric-frontend"
+    "dip-frontend"
     "auth-service"
     "basic-search"
     "configuration-center"
@@ -170,66 +171,6 @@ _dip_ensure_kweaver_core() {
     fi
 }
 
-# Detect whether K8s is already running and accessible
-_dip_k8s_is_running() {
-    if ! command -v kubectl >/dev/null 2>&1; then
-        return 1
-    fi
-    kubectl get nodes >/dev/null 2>&1
-}
-
-# Ensure K8s is up; install it if not present
-_dip_ensure_k8s() {
-    if _dip_k8s_is_running; then
-        log_info "Kubernetes cluster detected, skipping K8s installation."
-        return 0
-    fi
-
-    log_info "No running Kubernetes cluster detected. Installing K8s first..."
-    detect_package_manager
-    install_containerd
-    install_kubernetes
-    install_helm
-
-    check_prerequisites
-    init_k8s_master
-    allow_master_scheduling
-    install_cni
-    wait_for_dns
-
-    if [[ "${AUTO_INSTALL_LOCALPV}" == "true" ]]; then
-        if [[ -z "$(kubectl get storageclass --no-headers 2>/dev/null)" ]]; then
-            install_localpv
-        fi
-    fi
-
-    if [[ "${AUTO_INSTALL_INGRESS_NGINX}" == "true" ]]; then
-        install_ingress_nginx
-    fi
-
-    log_info "K8s installation completed."
-}
-
-# Ensure data services are installed for DIP runtime dependencies.
-# This keeps `kweaver-dip install` behavior aligned with infra/full flows.
-_dip_ensure_data_services() {
-    log_info "Ensuring data services for KWeaver DIP (MariaDB/Redis/Kafka/Zookeeper/OpenSearch)..."
-
-    install_mariadb
-    install_redis
-    install_kafka
-    install_zookeeper
-    # install_mongodb  # MongoDB disabled
-    if [[ "${AUTO_INSTALL_INGRESS_NGINX}" == "true" ]]; then
-        install_ingress_nginx
-    fi
-    install_opensearch
-
-    if [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
-        generate_config_yaml
-    fi
-}
-
 # Resolve the local charts directory for install-time local chart usage.
 # Only an explicit --charts_dir opt-in enables local chart installs.
 _dip_resolve_charts_dir() {
@@ -282,11 +223,10 @@ install_dip() {
         log_info "Using local DIP charts from: ${charts_dir}"
     fi
 
-    # Ensure K8s is running (install if absent)
-    _dip_ensure_k8s
-
-    # Ensure data services are ready before installing core and DIP services
-    _dip_ensure_data_services
+    if ! ensure_platform_prerequisites; then
+        log_error "Failed to ensure platform prerequisites for KWeaver DIP"
+        return 1
+    fi
 
     # Ensure kweaver-core dependencies are installed
     if ! _dip_ensure_kweaver_core; then

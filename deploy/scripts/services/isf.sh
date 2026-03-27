@@ -135,6 +135,11 @@ install_isf() {
     log_info "  Version: ${HELM_CHART_VERSION}"
     log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 
+    if ! ensure_platform_prerequisites; then
+        log_error "Failed to ensure platform prerequisites for ISF"
+        return 1
+    fi
+
     # Get namespace from config.yaml
     local namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
     namespace="${namespace:-kweaver-ai}"

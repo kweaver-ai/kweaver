@@ -16,14 +16,14 @@ cd kweaver/deploy
 # 2. 编辑配置文件（可选，使用默认配置可跳过）
 # vim conf/config.yaml
 
-# 3. 安装 KWeaver Core（默认包含 ISF）
+# 3. 安装 KWeaver Core（默认包含 ISF；缺失的 K8s 和数据服务会自动安装）
 bash ./deploy.sh kweaver-core install
 
 # 3'. 先预下载 chart 到 deploy/.tmp/charts，再显式从该目录安装
 # bash ./deploy.sh kweaver-core download
 # bash ./deploy.sh kweaver-core install --charts_dir=./.tmp/charts
 
-# 3'. 安装 KWeaver DIP（会自动补齐依赖）
+# 3'. 安装 KWeaver DIP（会自动补齐 K8s、数据服务和应用依赖）
 bash ./deploy.sh kweaver-dip install
 ```
 
@@ -94,10 +94,10 @@ dnf install containerd.io
 ```bash
 # 推荐安装方式
 ./deploy.sh kweaver-core install
-# 安装 KWeaver Core，默认会安装 ISF
+# 安装 KWeaver Core，默认会安装 ISF；缺失的 K8s 和数据服务会自动安装
 
 ./deploy.sh kweaver-core install --enable-isf=false
-# 安装 KWeaver Core，但不安装 ISF
+# 安装 KWeaver Core，但不安装 ISF；缺失的 K8s 和数据服务仍会自动安装
 
 ./deploy.sh kweaver-dip install
 # 安装 KWeaver DIP；如果 K8s、数据服务、ISF 或 KWeaver Core 缺失，会自动补齐依赖
@@ -130,7 +130,7 @@ dnf install containerd.io
 # 预下载/更新 ISF chart 到指定本地目录
 
 ./deploy.sh isf install --charts_dir=./.tmp/charts
-# 从预下载的本地 chart 安装 ISF
+# 从预下载的本地 chart 安装 ISF；缺失的 K8s 和数据服务会自动安装
 
 ./deploy.sh core install
 # 同上，core 是 kweaver-core 的别名

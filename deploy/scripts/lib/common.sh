@@ -581,6 +581,108 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+k8s_is_running() {
+    if ! command -v kubectl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if kubectl get nodes >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [[ -f /root/.kube/config ]]; then
+        export KUBECONFIG=/root/.kube/config
+        if kubectl get nodes >/dev/null 2>&1; then
+            return 0
+        fi
+    fi
+
+    if [[ -f /etc/kubernetes/admin.conf ]]; then
+        mkdir -p /root/.kube
+        cp -f /etc/kubernetes/admin.conf /root/.kube/config
+        chown root:root /root/.kube/config 2>/dev/null || true
+        export KUBECONFIG=/root/.kube/config
+        if kubectl get nodes >/dev/null 2>&1; then
+            log_info "Recovered kubeconfig from /etc/kubernetes/admin.conf"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+ensure_k8s() {
+    if [[ "${KWEAVER_K8S_ENSURED:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    if k8s_is_running; then
+        log_info "Kubernetes cluster detected, skipping K8s installation."
+        export KWEAVER_K8S_ENSURED="true"
+        return 0
+    fi
+
+    log_info "No running Kubernetes cluster detected. Installing K8s first..."
+    check_root
+    detect_package_manager || return 1
+    install_containerd || return 1
+    install_kubernetes || return 1
+    install_helm || return 1
+
+    check_prerequisites || return 1
+    init_k8s_master || return 1
+    allow_master_scheduling || return 1
+    install_cni || return 1
+    wait_for_dns || return 1
+
+    if [[ "${AUTO_INSTALL_LOCALPV}" == "true" ]]; then
+        if [[ -z "$(kubectl get storageclass --no-headers 2>/dev/null)" ]]; then
+            install_localpv || return 1
+        fi
+    fi
+
+    if [[ "${AUTO_INSTALL_INGRESS_NGINX}" == "true" ]]; then
+        install_ingress_nginx || return 1
+    fi
+
+    export KWEAVER_K8S_ENSURED="true"
+    log_info "K8s installation completed."
+}
+
+ensure_data_services() {
+    if [[ "${KWEAVER_DATA_SERVICES_ENSURED:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    log_info "Ensuring platform data services (MariaDB/Redis/Kafka/Zookeeper/OpenSearch)..."
+
+    install_mariadb || return 1
+    install_redis || return 1
+    install_kafka || return 1
+    install_zookeeper || return 1
+    if [[ "${AUTO_INSTALL_INGRESS_NGINX}" == "true" ]]; then
+        install_ingress_nginx || return 1
+    fi
+    install_opensearch || return 1
+
+    if [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
+        generate_config_yaml || return 1
+    fi
+
+    export KWEAVER_DATA_SERVICES_ENSURED="true"
+}
+
+ensure_platform_prerequisites() {
+    if [[ "${KWEAVER_PLATFORM_PREREQUISITES_DONE:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    ensure_k8s || return 1
+    ensure_data_services || return 1
+
+    export KWEAVER_PLATFORM_PREREQUISITES_DONE="true"
+}
+
 get_access_address_field() {
     local field="$1"
     local cfg="${CONFIG_YAML_PATH}"

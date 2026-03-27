@@ -301,6 +301,11 @@ _install_core_release_repo() {
 install_core() {
     log_info "Installing KWeaver Core services via Helm..."
 
+    if ! ensure_platform_prerequisites; then
+        log_error "Failed to ensure platform prerequisites for KWeaver Core"
+        return 1
+    fi
+
     local namespace
     namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
     namespace="${namespace:-${CORE_NAMESPACE}}"

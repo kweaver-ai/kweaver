@@ -786,7 +786,8 @@ main() {
                 
                 install_isf
                 install_studio
-                install_ontology
+                install_bkn
+                install_vega
                 install_agentoperator
                 install_decisionagent
                 install_flowautomation
@@ -807,7 +808,8 @@ main() {
                 uninstall_flowautomation || true
                 uninstall_decisionagent || true
                 uninstall_agentoperator || true
-                uninstall_ontology || true
+                uninstall_bkn || true
+                uninstall_vega || true
                 uninstall_studio || true
                 uninstall_isf || true
                 

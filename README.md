@@ -53,7 +53,7 @@ chmod +x deploy.sh
 ./deploy.sh full init     # Infrastructure + KWeaver application services
 # Layered deployment
 ./deploy.sh infra init    # Only infrastructure: K8s + data services
-./deploy.sh kweaver init  # Only application services: ISF/Studio/Ontology etc.
+./deploy.sh kweaver init  # Only application services: ISF/Studio/BKN/Vega etc.
 # Help
 ./deploy.sh --help
 ```
@@ -317,7 +317,7 @@ The following ablation experiments identify the contribution of each KWeaver Cor
 
 **Retrieval Depth** — Increasing retrieval limit from 10 to 20 raised accuracy from 96.67% to 100%, with only +6.48s latency. Context Loader's semantic reranking and compression enable KWeaver Core to effectively handle the increased context without "Lost in the Middle" effects.
 
-**Schema Preloading** — With Context Loader preloading the BKN ontology schema:
+**Schema Preloading** — With Context Loader preloading the BKN schema:
 
 | Configuration | Accuracy | Avg Steps | Avg Token |
 | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 
 # KWeaver Core releases list
-# Merged from: studio, ontology, agentoperator, dataagent, decisionagent, flowautomation, sandboxruntime
+# Merged from: studio, bkn, vega, agentoperator, dataagent, decisionagent, flowautomation, sandboxruntime
 # Note: ISF releases are managed separately by isf.sh
 declare -a KWEAVER_CORE_RELEASES=(
     # studio
@@ -11,10 +11,11 @@ declare -a KWEAVER_CORE_RELEASES=(
     "mf-model-manager-nginx"
     "mf-model-manager"
     "mf-model-api"
-    # ontology
-    "vega-backend"
+    # bkn
     "bkn-backend"
     "ontology-query"
+    # vega
+    "vega-backend"
     "vega-web"
     "data-connection"
     "vega-gateway"
@@ -56,7 +57,8 @@ CORE_LOCAL_CHARTS_DIR="${CORE_LOCAL_CHARTS_DIR:-}"
 # Core SQL module directories to initialize before installing Core releases.
 declare -a CORE_SQL_MODULES=(
     "studio"
-    "ontology"
+    "bkn"
+    "vega"
     "agentoperator"
     "dataagent"
     "decisionagent"

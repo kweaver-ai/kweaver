@@ -38,6 +38,9 @@ declare -a KWEAVER_CORE_RELEASES=(
     "sandbox"
     # ossgateway
     "oss-gateway-backend"
+    # trace ai
+    "otelcol-contrib"
+    "agent-observability"
 )
 
 # Default kweaver-core namespace

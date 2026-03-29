@@ -31,7 +31,7 @@ The KWeaver project includes KWeaver Core and KWeaver DIP.
 ## 🎬 Demo Video
 
 <div align="center">
-<a href="https://www.bilibili.com/video/BV1gVwLz2EPq/?share_source=copy_web&vd_source=38b75aee569678b3399e663488ce07b5" target="_blank">
+<a href="https://www.bilibili.com/video/BV1nGXVBTEmo/?vd_source=4cdad687b2ac18a0b25e434f1fafe2f7" target="_blank">
 <img src="./docs/demo-cover.png" alt="KWeaver Demo Video" width="75%"/>
 </a>
 

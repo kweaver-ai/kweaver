@@ -35,6 +35,7 @@ declare -a KWEAVER_CORE_RELEASES=(
     "flow-web"
     "dataflow"
     "coderunner"
+    "doc-convert"
     # sandboxruntime
     "sandbox"
     # ossgateway

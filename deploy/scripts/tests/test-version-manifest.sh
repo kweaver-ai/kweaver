@@ -9,6 +9,7 @@ source "${DEPLOY_DIR}/scripts/lib/common.sh"
 source "${DEPLOY_DIR}/scripts/services/isf.sh"
 source "${DEPLOY_DIR}/scripts/services/core.sh"
 source "${DEPLOY_DIR}/scripts/services/dip.sh"
+source "${DEPLOY_DIR}/scripts/services/k8s.sh"
 
 assert_eq() {
     local actual="$1"
@@ -215,6 +216,30 @@ test_download_dip_auto_resolves_embedded_manifests() {
     rm -rf "${tmp_dir}"
 }
 
+test_reset_k8s_removes_default_user_config() {
+    (
+        local tmp_dir
+        tmp_dir="$(mktemp -d)"
+        export HOME="${tmp_dir}/home"
+        mkdir -p "${HOME}/.kweaver-ai"
+        local config_file="${HOME}/.kweaver-ai/config.yaml"
+        printf 'namespace: test\n' > "${config_file}"
+
+        check_root() { :; }
+        systemctl() { :; }
+        kubeadm() { :; }
+        crictl() { :; }
+        reset_k8s <<< "Y"
+
+        local actual="present"
+        if [[ ! -f "${config_file}" ]]; then
+            actual="removed"
+        fi
+        assert_eq "${actual}" "removed" "k8s reset should remove default user config file"
+        rm -rf "${tmp_dir}"
+    )
+}
+
 test_manifest_release_lookup
 test_manifest_dependency_lookup
 test_core_manifest_release_names
@@ -227,5 +252,6 @@ test_init_core_databases_uses_existing_versioned_modules
 test_init_dip_database_skips_when_sql_missing
 test_download_core_uses_manifest_versions
 test_download_dip_auto_resolves_embedded_manifests
+test_reset_k8s_removes_default_user_config
 
 echo "PASS"

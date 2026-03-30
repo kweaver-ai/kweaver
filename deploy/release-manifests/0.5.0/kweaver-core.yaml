@@ -90,6 +90,9 @@ releases:
   coderunner:
     chart: coderunner
     version: 0.5.0
+  doc-convert:
+    chart: doc-convert
+    version: 0.5.0
   sandbox:
     chart: sandbox
     version: 0.3.0

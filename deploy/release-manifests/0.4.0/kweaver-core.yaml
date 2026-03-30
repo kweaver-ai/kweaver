@@ -33,14 +33,38 @@ releases:
   mf-model-api:
     chart: mf-model-api
     version: 0.3.0
-  bkn-backend:
-    chart: bkn-backend
+  agent-operator-integration:
+    chart: agent-operator-integration
     version: 0.4.0
+  operator-web:
+    chart: operator-web
+    version: 0.4.0
+  agent-retrieval:
+    chart: agent-retrieval
+    version: 0.4.0
+  data-retrieval:
+    chart: data-retrieval
+    version: 0.3.2
+  agent-backend:
+    chart: agent-backend
+    version: 0.4.1
+  agent-web:
+    chart: agent-web
+    version: 0.4.2
+  flow-web:
+    chart: flow-web
+    version: 0.3.2
+  dataflow:
+    chart: dataflow
+    version: 0.4.0
+  coderunner:
+    chart: coderunner
+    version: 0.3.0
+  ontology-manager:
+    chart: ontology-manager
+    version: 0.3.2
   ontology-query:
     chart: ontology-query
-    version: 0.4.0
-  vega-backend:
-    chart: vega-backend
     version: 0.4.0
   vega-web:
     chart: vega-web
@@ -63,33 +87,6 @@ releases:
   mdl-data-model-job:
     chart: mdl-data-model-job
     version: 0.4.0
-  agent-operator-integration:
-    chart: agent-operator-integration
-    version: 0.4.0
-  operator-web:
-    chart: operator-web
-    version: 0.4.0
-  agent-retrieval:
-    chart: agent-retrieval
-    version: 0.4.0
-  data-retrieval:
-    chart: data-retrieval
-    version: 0.3.2
-  agent-backend:
-    chart: agent-backend
-    version: 0.5.1
-  agent-web:
-    chart: agent-web
-    version: 0.5.0
-  flow-web:
-    chart: flow-web
-    version: 0.5.0
-  dataflow:
-    chart: dataflow
-    version: 0.4.0
-  coderunner:
-    chart: coderunner
-    version: 0.5.0
   sandbox:
     chart: sandbox
     version: 0.3.0

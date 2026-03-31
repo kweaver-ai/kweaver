@@ -43,7 +43,7 @@ jobs:
             SANITIZED_BRANCH="$(echo "${REF_NAME}" \
               | tr '[:upper:]' '[:lower:]' \
               | sed -E 's#[^0-9a-zA-Z.-]+#-#g; s#-+#-#g; s#^[.-]+##; s#[.-]+$##')"
-            VERSION="${BASE_VERSION}-${SANITIZED_BRANCH}.${SHORT_SHA}"
+            VERSION="${BASE_VERSION}-${SANITIZED_BRANCH}.sha${SHORT_SHA}"
           fi
 
           echo "Base version: ${BASE_VERSION}"

@@ -86,8 +86,14 @@ func TestStreamDiff(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	lastSeq := 0
-	out := make(chan []byte, 100)
+	runDiff := func(oldJSON, newJSON []byte) (chan []byte, error) {
+		lastSeq := 0
+		out := make(chan []byte, 100)
+
+		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+
+		return out, err
+	}
 
 	t.Run("same JSON produces no changes", func(t *testing.T) {
 		t.Parallel()
@@ -95,7 +101,7 @@ func TestStreamDiff(t *testing.T) {
 		oldJSON := []byte(`{"name":"test","value":123}`)
 		newJSON := []byte(`{"name":"test","value":123}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.Empty(t, out)
 	})
@@ -103,11 +109,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("different objects produce changes", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
 		oldJSON := []byte(`{"name":"test","value":123}`)
 		newJSON := []byte(`{"name":"test","value":456}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 	})
@@ -115,12 +120,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("string append produces append action", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"text":"hello"}`)
 		newJSON := []byte(`{"text":"hello world"}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 	})
@@ -128,34 +131,30 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("invalid old JSON returns error", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
 		oldJSON := []byte(`{invalid json}`)
 		newJSON := []byte(`{"name":"test"}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		_, err := runDiff(oldJSON, newJSON)
 		assert.Error(t, err)
 	})
 
 	t.Run("invalid new JSON returns error", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
 		oldJSON := []byte(`{"name":"test"}`)
 		newJSON := []byte(`{invalid json}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		_, err := runDiff(oldJSON, newJSON)
 		assert.Error(t, err)
 	})
 
 	t.Run("new field added produces upsert", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"name":"test"}`)
 		newJSON := []byte(`{"name":"test","value":123}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -166,12 +165,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("field removed produces remove", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"name":"test","value":123}`)
 		newJSON := []byte(`{"name":"test"}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -182,12 +179,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("array element added produces append", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"items":[1,2]}`)
 		newJSON := []byte(`{"items":[1,2,3]}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -198,12 +193,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("array element removed produces remove", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"items":[1,2,3]}`)
 		newJSON := []byte(`{"items":[1,2]}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -214,12 +207,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("array element changed produces upsert", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"items":[1,2,3]}`)
 		newJSON := []byte(`{"items":[1,5,3]}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -230,12 +221,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("nested object diff", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"user":{"name":"test","age":30}}`)
 		newJSON := []byte(`{"user":{"name":"test","age":31}}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 	})
@@ -243,12 +232,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("nested array diff", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"matrix":[[1,2],[3,4]]}`)
 		newJSON := []byte(`{"matrix":[[1,2],[3,5]]}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 	})
@@ -256,12 +243,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("type change produces upsert", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"value":123}`)
 		newJSON := []byte(`{"value":"123"}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -272,12 +257,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("array element type change produces upsert", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"items":[1,2,3]}`)
 		newJSON := []byte(`{"items":[1,"two",3]}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -288,12 +271,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("string replacement produces upsert", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"text":"hello"}`)
 		newJSON := []byte(`{"text":"goodbye"}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 
@@ -304,12 +285,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("empty objects", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{}`)
 		newJSON := []byte(`{}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.Empty(t, out)
 	})
@@ -317,12 +296,10 @@ func TestStreamDiff(t *testing.T) {
 	t.Run("empty arrays", func(t *testing.T) {
 		t.Parallel()
 
-		lastSeq = 0
-		out = make(chan []byte, 100)
 		oldJSON := []byte(`{"items":[]}`)
 		newJSON := []byte(`{"items":[]}`)
 
-		err := StreamDiff(ctx, &lastSeq, oldJSON, newJSON, out, 0)
+		out, err := runDiff(oldJSON, newJSON)
 		assert.NoError(t, err)
 		assert.Empty(t, out)
 	})

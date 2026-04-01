@@ -14,6 +14,7 @@ const (
 	scalarDocsPath    = "/swagger/index.html"
 	scalarDocJSONPath = "/swagger/doc.json"
 	scalarDocYAMLPath = "/swagger/doc.yaml"
+	scalarFaviconPath = "/swagger/favicon.png"
 	scalarCDNURL      = "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.34.6"
 )
 
@@ -44,6 +45,9 @@ func (s *httpServer) registerSwaggerRoutes(engine *gin.Engine) {
 	engine.GET(scalarDocYAMLPath, func(c *gin.Context) {
 		c.Data(http.StatusOK, "application/yaml; charset=utf-8", apidocs.AgentFactoryYAML)
 	})
+	engine.GET(scalarFaviconPath, func(c *gin.Context) {
+		c.Data(http.StatusOK, "image/png", apidocs.AgentFactoryFaviconPNG)
+	})
 }
 
 func renderScalarPage(specURL string) string {
@@ -52,7 +56,8 @@ func renderScalarPage(specURL string) string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agent Factory API Reference</title>
+  <title>Decision Agent API Reference</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
   <style>
     body {
       margin: 0;

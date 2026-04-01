@@ -11,4 +11,7 @@ var (
 
 	//go:embed agent-factory.html
 	AgentFactoryHTML []byte
+
+	//go:embed favicon.png
+	AgentFactoryFaviconPNG []byte
 )

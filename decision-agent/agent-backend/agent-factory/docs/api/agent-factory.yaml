@@ -9431,7 +9431,7 @@ paths:
               schema:
                 type: string
 security:
-    - ApiKeyAuth: null
+    - ApiKeyAuth: []
 servers:
     - description: 'host: DIP服务器IP, port: 默认端口443'
       url: https://{host}:{port}/

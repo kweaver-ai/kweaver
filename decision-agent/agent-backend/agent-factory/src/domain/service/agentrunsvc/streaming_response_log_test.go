@@ -58,8 +58,6 @@ func setupStreamingLoggerDebugEnv(t *testing.T, isDebug bool, logRootDir string)
 }
 
 func TestNewStreamingResponseLogger_NonDebugMode(t *testing.T) {
-	t.Parallel()
-
 	setupStreamingLoggerDebugEnv(t, false, "")
 
 	logger, err := NewStreamingResponseLogger("conv-123", ExecutorResponse)
@@ -69,8 +67,6 @@ func TestNewStreamingResponseLogger_NonDebugMode(t *testing.T) {
 }
 
 func TestNewStreamingResponseLogger_DebugMode_CreateSuccess(t *testing.T) {
-	t.Parallel()
-
 	logRoot := t.TempDir()
 	setupStreamingLoggerDebugEnv(t, true, logRoot)
 
@@ -92,8 +88,6 @@ func TestNewStreamingResponseLogger_DebugMode_CreateSuccess(t *testing.T) {
 }
 
 func TestNewStreamingResponseLogger_DebugMode_MkdirAllError(t *testing.T) {
-	t.Parallel()
-
 	baseDir := t.TempDir()
 	notDir := filepath.Join(baseDir, "root-file")
 	require.NoError(t, os.WriteFile(notDir, []byte("x"), 0o644))

@@ -13094,7 +13094,7 @@
   },
   "security": [
     {
-      "ApiKeyAuth": null
+      "ApiKeyAuth": []
     }
   ],
   "servers": [

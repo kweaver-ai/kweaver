@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -39,6 +40,8 @@ func TestRegisterSwaggerRoutes_ScalarDocsEnabled(t *testing.T) {
 	assert.Equal(t, http.StatusOK, indexResp.Code)
 	assert.Contains(t, indexResp.Body.String(), "@scalar/api-reference")
 	assert.Contains(t, indexResp.Body.String(), scalarDocJSONPath)
+	assert.Contains(t, indexResp.Body.String(), `rel="icon"`)
+	assert.Contains(t, indexResp.Body.String(), "favicon.png")
 
 	jsonReq := httptest.NewRequest(http.MethodGet, scalarDocJSONPath, nil)
 	jsonReq.Header.Set("X-Forwarded-Proto", "https")
@@ -50,11 +53,32 @@ func TestRegisterSwaggerRoutes_ScalarDocsEnabled(t *testing.T) {
 	assert.Contains(t, jsonResp.Body.String(), "\"openapi\"")
 	assert.Contains(t, jsonResp.Body.String(), "https://docs.example.com/")
 
+	var doc map[string]any
+
+	assert.NoError(t, json.Unmarshal(jsonResp.Body.Bytes(), &doc))
+
+	security, ok := doc["security"].([]any)
+	if assert.True(t, ok) && assert.Len(t, security, 1) {
+		requirement, ok := security[0].(map[string]any)
+		if assert.True(t, ok) {
+			scopes, ok := requirement["ApiKeyAuth"].([]any)
+			assert.True(t, ok)
+			assert.Empty(t, scopes)
+		}
+	}
+
 	yamlReq := httptest.NewRequest(http.MethodGet, scalarDocYAMLPath, nil)
 	yamlResp := httptest.NewRecorder()
 	engine.ServeHTTP(yamlResp, yamlReq)
 	assert.Equal(t, http.StatusOK, yamlResp.Code)
 	assert.Contains(t, yamlResp.Body.String(), "openapi: 3.0.2")
+
+	faviconReq := httptest.NewRequest(http.MethodGet, scalarFaviconPath, nil)
+	faviconResp := httptest.NewRecorder()
+	engine.ServeHTTP(faviconResp, faviconReq)
+	assert.Equal(t, http.StatusOK, faviconResp.Code)
+	assert.Equal(t, "image/png", faviconResp.Header().Get("Content-Type"))
+	assert.NotEmpty(t, faviconResp.Body.Bytes())
 }
 
 func TestRegisterSwaggerRoutes_Disabled(t *testing.T) {

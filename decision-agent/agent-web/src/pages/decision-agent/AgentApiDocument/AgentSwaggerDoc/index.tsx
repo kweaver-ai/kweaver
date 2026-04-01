@@ -37,19 +37,13 @@ export type AdSwaggerDocPros = {
 };
 
 const AdSwaggerDoc = (props: AdSwaggerDocPros) => {
-  const { title, id, description, method, url, apiDocData, apiBasePath } = props;
+  const { title, id, description, method, url, apiDocData } = props;
   const filterRef = useRef<FilterEnum>(FilterEnum.User);
 
   const [apiData, setApiData] = useState<any>({});
 
   useEffect(() => {
-    const newData = _.cloneDeep(apiDocData);
-    const newApiBasePath = apiBasePath.replace('{app_key}', id);
-
-    const value = newData.paths[apiBasePath];
-    delete newData.paths[apiBasePath];
-    newData.paths[newApiBasePath] = value;
-    setApiData(newData);
+    setApiData(_.cloneDeep(apiDocData));
   }, [apiDocData]);
 
   return (

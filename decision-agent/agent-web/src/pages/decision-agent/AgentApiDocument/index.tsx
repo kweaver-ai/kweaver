@@ -42,9 +42,6 @@ const AgentApiDocument = () => {
         if (paramItem.name === 'as-client-type') {
           paramItem.description = intl.get('dataAgent.apiDocument.asAuth');
         }
-        if (paramItem.name === 'app_key') {
-          paramItem.example = agent_id;
-        }
       });
       setApiDocData(res);
     }
@@ -64,7 +61,7 @@ const AgentApiDocument = () => {
       const apiPath = keys(apiDocData.paths)[0];
       const httpBaseUrl = getHttpBaseUrl();
 
-      return `${httpBaseUrl}${apiPath.replace('{app_key}', agent_id!)}`;
+      return `${httpBaseUrl}${apiPath}`;
     }
     return '';
   }, [apiDocData]);

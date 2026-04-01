@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/app/{app_key}/api/chat/completion": {
+        "/v1/api/chat/completion": {
             "post": {
                 "security": [
                     {
@@ -44,13 +44,6 @@ const docTemplate = `{
                 ],
                 "summary": "APIChat",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "app_key",
-                        "name": "app_key",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "请求体",
                         "name": "request",

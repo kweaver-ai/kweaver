@@ -8087,6 +8087,59 @@
   },
   "openapi": "3.0.2",
   "paths": {
+    "/api/agent-factory/v1/api/chat/completion": {
+      "post": {
+        "description": "APIChat",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "description": "请求体",
+          "x-originalParamName": "request"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "失败"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "失败"
+          }
+        },
+        "summary": "APIChat",
+        "tags": [
+          "对话",
+          "对话-internal"
+        ]
+      }
+    },
     "/api/agent-factory/v1/app/{app_key}/api/chat/completion": {
       "parameters": [
         {

@@ -28,29 +28,18 @@ import (
 // @Tags         对话,对话-internal
 // @Accept       json
 // @Produce      json
-// @Param        app_key  path      string  true  "app_key"
 // @Param        request  body      object  true  "请求体"
 // @Success      200  {object}  object  "成功"
 // @Failure      400  {object}  object  "失败"
 // @Failure      500  {object}  object  "失败"
 // @Security     BearerAuth
-// @Router       /v1/app/{app_key}/api/chat/completion [post]
+// @Router       /v1/api/chat/completion [post]
 func (h *agentHTTPHandler) APIChat(c *gin.Context) {
 	reqStartTime := cutil.GetCurrentMSTimestamp()
-	// 1. app_key
 	agentAPPKey := c.Param("app_key")
-	if agentAPPKey == "" {
-		httpErr := capierr.New400Err(c, "[APIChat] app key is empty")
-		otellog.LogError(c, "[APIChat] app key is empty", httpErr)
-		h.logger.Errorf("[APIChat] app key is empty")
-		rest.ReplyError(c, httpErr)
-
-		return
-	}
 
 	// 2. 获取请求参数
 	var req agentreq.ChatReq = agentreq.ChatReq{
-		AgentAPPKey:     agentAPPKey,
 		AgentVersion:    "latest",
 		ExecutorVersion: "v2",
 	}
@@ -97,6 +86,10 @@ func (h *agentHTTPHandler) APIChat(c *gin.Context) {
 	req.CallType = constant.APIChat
 	if req.AgentKey != "" {
 		req.AgentID = req.AgentKey
+		if agentAPPKey == "" {
+			agentAPPKey = req.AgentKey
+		}
+		req.AgentAPPKey = agentAPPKey
 	} else {
 		httpErr := capierr.New400Err(c, "[APIChat] agent_key is required")
 

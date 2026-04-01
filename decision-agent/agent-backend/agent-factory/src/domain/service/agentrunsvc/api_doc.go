@@ -48,7 +48,7 @@ func (agentSvc *agentSvc) GetAPIDoc(ctx context.Context, req *agentreq.GetAPIDoc
 	}
 
 	// 3. 取这个接口的配置
-	pathItem := apiDoc.Paths.Value("/api/agent-app/v1/app/{app_key}/api/chat/completion")
+	pathItem := apiDoc.Paths.Value("/api/agent-factory/v1/api/chat/completion")
 	pathItem.Post.Summary = agentInfo.DataAgent.Name
 
 	profile := agentInfo.DataAgent.GetProfileStr()

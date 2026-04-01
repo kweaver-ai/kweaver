@@ -304,8 +304,7 @@ export default class ParameterRow extends Component {
     const paramValue = paramName === 'Authorization' && this.props.filter === FilterEnum.User ? '*'.repeat(101) : value;
     const paramDescription = param.get('description');
 
-    const JsonSchemaFormDisabled =
-      !isExecute || paramName === 'app_key' || (paramName === 'Authorization' && this.props.filter === FilterEnum.User);
+    const JsonSchemaFormDisabled = !isExecute || (paramName === 'Authorization' && this.props.filter === FilterEnum.User);
 
     return (
       <tr data-param-name={paramName} data-param-in={param.get('in')}>

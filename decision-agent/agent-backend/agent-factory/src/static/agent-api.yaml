@@ -4,18 +4,12 @@ info:
   description: ""
   version: 1.0.0
 paths:
-  /api/agent-app/v1/app/{app_key}/api/chat/completion:
+  /api/agent-factory/v1/api/chat/completion:
     post:
       summary: 对话
       tags:
         - 对话
       parameters:
-        - in: path
-          name: app_key
-          schema:
-            type: string
-          required: true
-          description: agent app key(通用agent传入 agent id)
         - in: header
           name: Authorization
           schema:

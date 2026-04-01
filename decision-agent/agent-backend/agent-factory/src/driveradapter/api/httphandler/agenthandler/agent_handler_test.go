@@ -89,6 +89,7 @@ func TestAgentHandler_RegRouters(t *testing.T) {
 	assert.True(t, hasAgentRoute(pubRoutes, http.MethodPost, "/v1/app/:app_key/chat/completion"))
 	assert.True(t, hasAgentRoute(pubRoutes, http.MethodPost, "/v1/app/:app_key/debug/completion"))
 	assert.True(t, hasAgentRoute(pubRoutes, http.MethodPost, "/v1/app/:app_key/api/chat/completion"))
+	assert.True(t, hasAgentRoute(pubRoutes, http.MethodPost, "/v1/api/chat/completion"))
 	assert.True(t, hasAgentRoute(pubRoutes, http.MethodPost, "/v1/app/:app_key/api/doc"))
 
 	priRouter := gin.New()
@@ -267,12 +268,35 @@ func TestAgentHandler_APIChat_EarlyAndNonStreamBranches(t *testing.T) {
 		mockAgent.EXPECT().Chat(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, req *agentreq.ChatReq) (chan []byte, error) {
 			assert.Equal(t, constant.APIChat, req.CallType)
 			assert.Equal(t, "k1", req.AgentID)
+			assert.Equal(t, "app-1", req.AgentAPPKey)
 
 			return jsonChannel(`{"message":"ok"}`), nil
 		})
 
 		c, recorder := newAgentCtx(http.MethodPost, "/", `{"agent_key":"k1","stream":false}`)
 		c.Params = gin.Params{{Key: "app_key", Value: "app-1"}}
+		setAgentVisitor(c, "u1", "Bearer tk", rest.VisitorType_App)
+		h.APIChat(c)
+		assert.Equal(t, http.StatusOK, recorder.Code)
+	})
+
+	t.Run("non stream success without path app_key uses agent_key as app key", func(t *testing.T) {
+		t.Parallel()
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockAgent := iportdrivermock.NewMockIAgent(ctrl)
+		h := &agentHTTPHandler{agentSvc: mockAgent, logger: agentTestLogger{}}
+
+		mockAgent.EXPECT().Chat(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, req *agentreq.ChatReq) (chan []byte, error) {
+			assert.Equal(t, constant.APIChat, req.CallType)
+			assert.Equal(t, "k1", req.AgentID)
+			assert.Equal(t, "k1", req.AgentAPPKey)
+
+			return jsonChannel(`{"message":"ok"}`), nil
+		})
+
+		c, recorder := newAgentCtx(http.MethodPost, "/", `{"agent_key":"k1","stream":false}`)
 		setAgentVisitor(c, "u1", "Bearer tk", rest.VisitorType_App)
 		h.APIChat(c)
 		assert.Equal(t, http.StatusOK, recorder.Code)

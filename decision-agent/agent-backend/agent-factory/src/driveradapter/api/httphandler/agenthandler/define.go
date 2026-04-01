@@ -29,6 +29,7 @@ func (h *agentHTTPHandler) RegPubRouter(router *gin.RouterGroup) {
 	permissionRouter.POST("/app/:app_key/chat/completion", h.Chat)
 	permissionRouter.POST("/app/:app_key/debug/completion", h.Debug)
 	permissionRouter.POST("/app/:app_key/api/chat/completion", h.APIChat)
+	permissionRouter.POST("/api/chat/completion", h.APIChat)
 	permissionRouter.POST("/app/:app_key/api/doc", h.GetAPIDoc)
 	// permissionRouter.POST("/conversation/session/init", h.ConversationSessionInit)
 }

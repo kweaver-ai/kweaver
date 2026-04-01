@@ -112,7 +112,7 @@ func TestAgentSvc_GetAPIDoc_CustomFieldsAndProfile(t *testing.T) {
 	apiDoc, ok := result.(*openapi3.T)
 	require.True(t, ok)
 
-	pathItem := apiDoc.Paths.Value("/api/agent-app/v1/app/{app_key}/api/chat/completion")
+	pathItem := apiDoc.Paths.Value("/api/agent-factory/v1/api/chat/completion")
 	require.NotNil(t, pathItem)
 	require.NotNil(t, pathItem.Post)
 
@@ -181,7 +181,7 @@ func TestAgentSvc_GetAPIDoc_RemoveEmptyCustomQuerys(t *testing.T) {
 	apiDoc, ok := result.(*openapi3.T)
 	require.True(t, ok)
 
-	pathItem := apiDoc.Paths.Value("/api/agent-app/v1/app/{app_key}/api/chat/completion")
+	pathItem := apiDoc.Paths.Value("/api/agent-factory/v1/api/chat/completion")
 	require.NotNil(t, pathItem)
 	assert.Equal(t, "Agent-No-Custom", pathItem.Post.Summary)
 	assert.Equal(t, "", pathItem.Post.Description)

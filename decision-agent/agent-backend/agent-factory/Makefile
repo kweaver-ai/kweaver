@@ -99,17 +99,18 @@ serviceUtAndCoverage:
 gen-swag:
 	$(SWAG_CMD) init -g main.go -o docs --parseDependency
 
-# 查看 Swagger 文档（需要先启动服务）
+gen-api-docs: gen-swag
+	$(OPENAPI_DOCS_CMD) generate
+
+# 查看文档（需要先启动服务）
 view-swag:
-	@echo "Scalar: http://localhost:30777/swagger/index.html"
+	@echo "Scalar: http://localhost:30777/scalar"
+	@open http://localhost:30777/scalar
 
 # 清理并重新生成 Swagger
 clean-swag:
 	rm -f docs/docs.go docs/swagger.json docs/swagger.yaml
 	$(MAKE) gen-swag
-
-gen-api-docs: gen-swag
-	$(OPENAPI_DOCS_CMD) generate
 
 compare-api-docs: gen-swag
 	$(OPENAPI_DOCS_CMD) compare

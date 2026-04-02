@@ -8,11 +8,11 @@ info:
     如有任何疑问，可到开发者社区提问：https://developers.aishu.cn
 servers:
   - url: https://{host}:{port}/
-    description: "host: DIP服务器IP, port: 默认端口443"
+    description: "host: 服务器IP, port: 默认端口443"
     variables:
       host:
         default: host
-        description: DIP服务器IP
+        description: 服务器IP
       port:
         default: "443"
         description: https默认端口443

@@ -51,11 +51,32 @@ func TestRegisterSwaggerRoutes_ScalarDocsEnabled(t *testing.T) {
 	engine.ServeHTTP(jsonResp, jsonReq)
 	assert.Equal(t, http.StatusOK, jsonResp.Code)
 	assert.Contains(t, jsonResp.Body.String(), "\"openapi\"")
-	assert.Contains(t, jsonResp.Body.String(), "https://docs.example.com/")
 
 	var doc map[string]any
 
 	assert.NoError(t, json.Unmarshal(jsonResp.Body.Bytes(), &doc))
+
+	servers, ok := doc["servers"].([]any)
+	if assert.True(t, ok) && assert.Len(t, servers, 1) {
+		serverItem, ok := servers[0].(map[string]any)
+		if assert.True(t, ok) {
+			assert.Equal(t, "https://{host}:{port}/", serverItem["url"])
+			assert.Equal(t, "Current service endpoint (editable)", serverItem["description"])
+
+			variables, ok := serverItem["variables"].(map[string]any)
+			if assert.True(t, ok) {
+				hostVar, ok := variables["host"].(map[string]any)
+				if assert.True(t, ok) {
+					assert.Equal(t, "docs.example.com", hostVar["default"])
+				}
+
+				portVar, ok := variables["port"].(map[string]any)
+				if assert.True(t, ok) {
+					assert.Equal(t, "443", portVar["default"])
+				}
+			}
+		}
+	}
 
 	security, ok := doc["security"].([]any)
 	if assert.True(t, ok) && assert.Len(t, security, 1) {
@@ -133,4 +154,31 @@ func TestCurrentRequestBaseURL_UsesForwardedHeaders(t *testing.T) {
 	ctx.Request = req
 
 	assert.Equal(t, "https://api.example.com/", currentRequestBaseURL(ctx))
+}
+
+func TestCurrentRequestHostPort_UsesForwardedHeadersAndDefaultPorts(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("forwarded host without port falls back to https default", func(t *testing.T) {
+		ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+		req := httptest.NewRequest(http.MethodGet, "http://internal/swagger/doc.json", nil)
+		req.Header.Set("X-Forwarded-Proto", "https")
+		req.Header.Set("X-Forwarded-Host", "docs.example.com")
+		ctx.Request = req
+
+		host, port := currentRequestHostPort(ctx, currentRequestScheme(ctx))
+		assert.Equal(t, "docs.example.com", host)
+		assert.Equal(t, "443", port)
+	})
+
+	t.Run("request host with explicit port is preserved", func(t *testing.T) {
+		ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+		req := httptest.NewRequest(http.MethodGet, "http://internal/swagger/doc.json", nil)
+		req.Host = "localhost:13020"
+		ctx.Request = req
+
+		host, port := currentRequestHostPort(ctx, currentRequestScheme(ctx))
+		assert.Equal(t, "localhost", host)
+		assert.Equal(t, "13020", port)
+	})
 }

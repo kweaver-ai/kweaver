@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"net"
 	"net/http"
 	"strings"
 
@@ -74,12 +75,7 @@ func renderScalarPage(specURL string) string {
 }
 
 func renderOpenAPIDocJSON(c *gin.Context) []byte {
-	docJSON, err := sjson.SetBytes(apidocs.AgentFactoryJSON, "servers", []map[string]string{
-		{
-			"url":         currentRequestBaseURL(c),
-			"description": "Current service endpoint",
-		},
-	})
+	docJSON, err := sjson.SetBytes(apidocs.AgentFactoryJSON, "servers", runtimeServers(c))
 	if err != nil {
 		return apidocs.AgentFactoryJSON
 	}
@@ -87,7 +83,41 @@ func renderOpenAPIDocJSON(c *gin.Context) []byte {
 	return docJSON
 }
 
+// runtimeServers 为运行时文档构造可编辑的 server 模板，并用当前请求作为默认值。
+func runtimeServers(c *gin.Context) []map[string]any {
+	scheme := currentRequestScheme(c)
+	host, port := currentRequestHostPort(c, scheme)
+
+	return []map[string]any{
+		{
+			"url":         scheme + "://{host}:{port}/",
+			"description": "Current service endpoint (editable)",
+			"variables": map[string]any{
+				"host": map[string]any{
+					"default":     host,
+					"description": "Host or IP",
+				},
+				"port": map[string]any{
+					"default":     port,
+					"description": "Port",
+				},
+			},
+		},
+	}
+}
+
 func currentRequestBaseURL(c *gin.Context) string {
+	scheme := currentRequestScheme(c)
+	host := firstHeaderValue(c.GetHeader("X-Forwarded-Host"))
+	if host == "" {
+		host = c.Request.Host
+	}
+
+	return scheme + "://" + host + "/"
+}
+
+// currentRequestScheme 提取当前请求实际对外暴露的协议。
+func currentRequestScheme(c *gin.Context) string {
 	scheme := firstHeaderValue(c.GetHeader("X-Forwarded-Proto"))
 	if scheme == "" {
 		scheme = firstHeaderValue(c.GetHeader("X-Forwarded-Scheme"))
@@ -101,12 +131,48 @@ func currentRequestBaseURL(c *gin.Context) string {
 		}
 	}
 
-	host := firstHeaderValue(c.GetHeader("X-Forwarded-Host"))
-	if host == "" {
-		host = c.Request.Host
+	return scheme
+}
+
+// currentRequestHostPort 提取当前请求对外主机名和端口，并在缺失端口时补默认值。
+func currentRequestHostPort(c *gin.Context, scheme string) (string, string) {
+	hostHeader := firstHeaderValue(c.GetHeader("X-Forwarded-Host"))
+	if hostHeader == "" {
+		hostHeader = c.Request.Host
 	}
 
-	return scheme + "://" + host + "/"
+	return splitHostPort(hostHeader, scheme)
+}
+
+// splitHostPort 解析 host:port，并在端口缺失时补协议默认端口。
+func splitHostPort(hostport string, scheme string) (string, string) {
+	defaultPort := defaultPortForScheme(scheme)
+	if hostport == "" {
+		return "localhost", defaultPort
+	}
+
+	if strings.HasPrefix(hostport, "[") {
+		if host, port, err := net.SplitHostPort(hostport); err == nil {
+			return host, port
+		}
+	}
+
+	if strings.Count(hostport, ":") == 1 {
+		if host, port, err := net.SplitHostPort(hostport); err == nil {
+			return host, port
+		}
+	}
+
+	return hostport, defaultPort
+}
+
+// defaultPortForScheme 返回协议对应的常见默认端口。
+func defaultPortForScheme(scheme string) string {
+	if strings.EqualFold(scheme, "https") {
+		return "443"
+	}
+
+	return "80"
 }
 
 func firstHeaderValue(value string) string {

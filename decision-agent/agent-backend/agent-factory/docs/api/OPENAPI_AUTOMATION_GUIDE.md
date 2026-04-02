@@ -11,38 +11,38 @@
 
 这套方案最终保留了两层文档：
 
-1. `swaggo/swag` 生成的 Swagger 2.0 中间产物。
+1. `swaggo/swag` 生成的 Swagger 2.0（旧版 API 规范格式）中间产物。
 2. 通过 `kin-openapi` 后处理得到的最终 OpenAPI 3.0.2 产物，以及对应的 Scalar 页面。
 
 ## 2. 当前产物概览
 
 ### 2.1 中间产物
 
-- [docs/swagger.json](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/swagger.json)
-- [docs/swagger.yaml](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/swagger.yaml)
-- [docs/docs.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/docs.go)
+- [docs/swagger.json](../swagger.json)
+- [docs/swagger.yaml](../swagger.yaml)
+- [docs/docs.go](../docs.go)
 
-这三份文件由 `swag init` 直接生成，属于 Swagger 2.0 时代的原始输出，不建议手工编辑。
+这三份文件由 `swag init` 直接生成，属于 Swagger 2.0（旧版 API 规范格式）的原始输出，不建议手工编辑。
 
 ### 2.2 最终产物
 
-- [docs/api/agent-factory.json](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/agent-factory.json)
-- [docs/api/agent-factory.yaml](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/agent-factory.yaml)
-- [docs/api/agent-factory.html](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/agent-factory.html)
+- [docs/api/agent-factory.json](./agent-factory.json)
+- [docs/api/agent-factory.yaml](./agent-factory.yaml)
+- [docs/api/agent-factory.html](./agent-factory.html)
 
 这三份文件是最终对外的 OpenAPI 3.0.2 规范和静态文档页面。
 
 ### 2.3 基线文档
 
-- [docs/api/baseline/agent-factory.json](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/baseline/agent-factory.json)
-- [docs/api/baseline/agent-factory.yaml](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/baseline/agent-factory.yaml)
-- [docs/api/baseline/agent-factory.html](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/baseline/agent-factory.html)
+- [docs/api/baseline/agent-factory.json](./baseline/agent-factory.json)
+- [docs/api/baseline/agent-factory.yaml](./baseline/agent-factory.yaml)
+- [docs/api/baseline/agent-factory.html](./baseline/agent-factory.html)
 
 这三份文件保存当前接受的比较基线，主要用于比较和兜底。它最初来自历史手写文档，后续会在明确的接口变更后同步更新。
 
 ### 2.4 对比报告
 
-- [test_out/openapi_compare_report.md](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/test_out/openapi_compare_report.md)
+- [test_out/openapi_compare_report.md](../../test_out/openapi_compare_report.md)
 
 这份报告会比较“当前自动生成的最终结果”和“当前接受的比较基线”的差异，覆盖：
 
@@ -60,34 +60,63 @@
 
 ### 3.1 生成命令入口
 
-- [cmd/openapi-docs/main.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/cmd/openapi-docs/main.go)
+- [cmd/openapi-docs/main.go](../../cmd/openapi-docs/main.go)
+- [cmd/openapi-docs/README.simple.md](../../cmd/openapi-docs/README.simple.md)
+- [cmd/openapi-docs/README.md](../../cmd/openapi-docs/README.md)
 
 职责：
 
-1. 提供 `generate` / `compare` / `validate` 三个子命令。
-2. 串起 Swagger 2.0 到 OpenAPI 3.0.2 的转换。
-3. 输出最终 JSON / YAML / HTML。
+1. `main.go` 负责子命令分发，只做入口路由。
+2. `generate.go` / `compare.go` / `validate.go` 分别承载生成、对比、校验三条流程。
+3. `common.go` 和 `constants.go` 提供共享工具函数和默认路径配置。
+4. 这一层的职责是“接参数、调核心库、写产物”，真正的文档加工逻辑已经下沉到 `internal/openapidoc`。
 
 ### 3.2 生成逻辑核心
 
-- [internal/openapidoc/generator.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/internal/openapidoc/generator.go)
-- [internal/openapidoc/generator_test.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/internal/openapidoc/generator_test.go)
+- [internal/openapidoc/build.go](../../internal/openapidoc/build.go)
+- [internal/openapidoc/README.simple.md](../../internal/openapidoc/README.simple.md)
+- [internal/openapidoc/README.md](../../internal/openapidoc/README.md)
+- [internal/openapidoc/convert.go](../../internal/openapidoc/convert.go)
+- [internal/openapidoc/merge.go](../../internal/openapidoc/merge.go)
+- [internal/openapidoc/normalize.go](../../internal/openapidoc/normalize.go)
+- [internal/openapidoc/document.go](../../internal/openapidoc/document.go)
+- [internal/openapidoc/render.go](../../internal/openapidoc/render.go)
+- [internal/openapidoc/compare.go](../../internal/openapidoc/compare.go)
+- [internal/openapidoc/operations.go](../../internal/openapidoc/operations.go)
+- [internal/openapidoc/sanitize.go](../../internal/openapidoc/sanitize.go)
 
 职责：
 
-1. 读取 Swagger 2.0 文档。
-2. 转成 OpenAPI 3.0.2。
-3. 将路径统一改写为 `/api/agent-factory/...`。
-4. 合并 overlay。
-5. 合并基线缺失字段。
-6. 归一化安全定义。
-7. 校验最终文档。
-8. 生成 Scalar 静态 HTML。
-9. 生成 compare 报告。
+1. `build.go` 里的 `BuildArtifactsFromFiles` 是当前真正的核心入口，负责把整条流水线编排起来。
+2. `convert.go` 负责 Swagger 2.0（旧版 API 规范格式） -> OpenAPI 3.0.2 转换，以及路径统一改写为 `/api/agent-factory/...`。
+3. `merge.go` 负责 overlay 覆盖合并，以及 baseline 缺失字段兜底。
+4. `normalize.go` 负责路径参数、operationId、安全定义等归一化和最终校验前整理。
+5. `document.go` 负责文档对象与 JSON / YAML / 文件之间的转换。
+6. `render.go` 负责生成静态 Scalar HTML。
+7. `compare.go` 和 `operations.go` 负责 compare report 与路径/接口统计。
+8. `sanitize.go` 负责清洗历史 swagger/openapi 中的非标准字段形态。
+
+### 3.2.1 测试文件拆分
+
+现在测试也已经按模块拆分，不再集中在单个大测试文件中，常见入口包括：
+
+- [internal/openapidoc/convert_test.go](../../internal/openapidoc/convert_test.go)
+- [internal/openapidoc/merge_test.go](../../internal/openapidoc/merge_test.go)
+- [internal/openapidoc/compare_test.go](../../internal/openapidoc/compare_test.go)
+- [internal/openapidoc/normalize_path_test.go](../../internal/openapidoc/normalize_path_test.go)
+- [internal/openapidoc/security_test.go](../../internal/openapidoc/security_test.go)
+- [internal/openapidoc/render_test.go](../../internal/openapidoc/render_test.go)
+- [internal/openapidoc/sanitize_test.go](../../internal/openapidoc/sanitize_test.go)
+- [internal/openapidoc/validate_test.go](../../internal/openapidoc/validate_test.go)
+
+对应原则是：
+
+1. 每个测试文件尽量只覆盖一个主题模块。
+2. 查问题时可以先按“功能模块”定位测试，而不是从一个超大测试文件里往下翻。
 
 ### 3.3 运行时文档路由
 
-- [src/infra/server/httpserver/router_swagger.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/src/infra/server/httpserver/router_swagger.go)
+- [src/infra/server/httpserver/router_swagger.go](../../src/infra/server/httpserver/router_swagger.go)
 
 职责：
 
@@ -98,7 +127,7 @@
 
 ### 3.4 最终文档嵌入
 
-- [docs/api/embed.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/embed.go)
+- [docs/api/embed.go](./embed.go)
 
 职责：
 
@@ -107,7 +136,7 @@
 
 ### 3.5 全局文档元信息
 
-- [main.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/main.go)
+- [main.go](../../main.go)
 
 职责：
 
@@ -122,10 +151,10 @@
 
 例如：
 
-- 真实 handler 注释：  
-  [src/driveradapter/api/httphandler/agenthandler/chat.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/src/driveradapter/api/httphandler/agenthandler/chat.go)  
-  [src/driveradapter/api/httphandler/conversationhandler/list.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/src/driveradapter/api/httphandler/conversationhandler/list.go)  
-  [src/driveradapter/api/httphandler/agentconfighandler/create.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/src/driveradapter/api/httphandler/agentconfighandler/create.go)
+- 真实 handler 注释：
+  [src/driveradapter/api/httphandler/agenthandler/chat.go](../../src/driveradapter/api/httphandler/agenthandler/chat.go)
+  [src/driveradapter/api/httphandler/conversationhandler/list.go](../../src/driveradapter/api/httphandler/conversationhandler/list.go)
+  [src/driveradapter/api/httphandler/agentconfighandler/create.go](../../src/driveradapter/api/httphandler/agentconfighandler/create.go)
 
 说明：
 
@@ -139,12 +168,12 @@
 
 1. 在真实 handler 方法里编写 `swaggo` 注释。
 2. 运行 `make gen-swag`。
-3. `swag` 生成 Swagger 2.0 的 `docs/swagger.json` / `docs/swagger.yaml`。
+3. `swag` 生成 Swagger 2.0（旧版 API 规范格式）的 `docs/swagger.json` / `docs/swagger.yaml`。
 4. 运行 `go run ./cmd/openapi-docs generate` 或 `make gen-api-docs`。
-5. 生成器读取 Swagger 2.0 文档。
+5. 生成器读取 Swagger 2.0（旧版 API 规范格式）文档。
 6. 用 `kin-openapi/openapi2conv` 转成 OpenAPI 3。
 7. 统一把路径前缀改写为 `/api/agent-factory/...`。
-8. 合并 [docs/api/overlay.yaml](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/overlay.yaml)。
+8. 合并 [docs/api/overlay.yaml](./overlay.yaml)。
 9. 使用基线文档做 compare 和缺失字段兜底。
 10. 归一化安全定义与 operation metadata。
 11. 输出最终 `agent-factory.json` / `agent-factory.yaml` / `agent-factory.html`。
@@ -152,7 +181,7 @@
 
 ## 5. 常用命令
 
-### 5.1 只生成 Swagger 2.0 中间产物
+### 5.1 只生成 Swagger 2.0（旧版 API 规范格式）中间产物
 
 ```bash
 make gen-swag
@@ -266,7 +295,7 @@ sed -n '1,220p' test_out/openapi_compare_report.md
 
 Overlay 文件位置：
 
-- [docs/api/overlay.yaml](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/overlay.yaml)
+- [docs/api/overlay.yaml](./overlay.yaml)
 
 ## 7. 当前文档策略
 
@@ -312,7 +341,7 @@ Overlay 文件位置：
 
 ### 8.1 运行时页面
 
-运行时页面由 [router_swagger.go](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/src/infra/server/httpserver/router_swagger.go) 提供。
+运行时页面由 [router_swagger.go](../../src/infra/server/httpserver/router_swagger.go) 提供。
 
 特点：
 
@@ -322,7 +351,7 @@ Overlay 文件位置：
 
 ### 8.2 静态页面
 
-静态页面由 [docs/api/agent-factory.html](/Users/Zhuanz/Work/as/kweaver-ws/decision-agent/agent-backend/agent-factory/docs/api/agent-factory.html) 提供。
+静态页面由 [docs/api/agent-factory.html](./agent-factory.html) 提供。
 
 特点：
 

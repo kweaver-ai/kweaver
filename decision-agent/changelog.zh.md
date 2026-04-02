@@ -1,4 +1,15 @@
 # 版本 changelog 说明
+## 0.5.2
+
+### 重构与清理
+
+- 简化 `agent-factory` 的 API Chat 路由：改从请求体获取 `agent_key`，路由更新为 `/api/agent-factory/v1/api/chat/completion`，同步更新 Swagger 文档及 `agent-web` API 文档组件
+- 为 `agent-factory` 新增基于 handler 代码注释的 OpenAPI 3 文档自动生成能力，提供 Scalar 文档服务（`/scalar`）、运行时动态 server URL 回填及嵌入式静态产物（JSON、YAML、HTML、favicon）
+
+### 测试
+
+- 为 API Chat 处理器和 API 文档恢复对话流程补充单元测试
+
 ## 0.5.1
 
 ### Bug 修复

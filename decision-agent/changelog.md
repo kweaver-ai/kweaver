@@ -1,4 +1,15 @@
 # Changelog
+## 0.5.2
+
+### Refactoring & Cleanup
+
+- Simplify API chat route in `agent-factory`: get `agent_key` from request body instead of URL path, update route to `/api/agent-factory/v1/api/chat/completion`, and sync Swagger docs and `agent-web` API document components
+- Add automated OpenAPI 3 doc generation from handler code annotations in `agent-factory`, with Scalar-based runtime doc server (`/scalar`), dynamic server URL rewriting, and embedded static assets (JSON, YAML, HTML, favicon)
+
+### Testing
+
+- Add unit tests for API chat handler and API doc resume-chat flow
+
 ## 0.5.1
 
 ### Bug Fixes

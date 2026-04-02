@@ -26,7 +26,6 @@ env/
 .idea/
 *.swp
 *.swo
-.claude
 *~
 
 # Testing
@@ -60,7 +59,3 @@ Thumbs.db
 *.swp
 sandbox_web/node_modules/
 sandbox_web/dist/
-/kw-studio/node_modules
-/kw-studio/coverage
-/kw-studio/build
-/kw-studio/report

@@ -66,7 +66,6 @@ jobs:
           sed -i "s/^version: .*/version: ${VERSION}/" trace-ai/otelcol-contribute-chart/charts/otelcol-contrib/Chart.yaml
           sed -i "s/^appVersion: .*/appVersion: \"${VERSION}\"/" trace-ai/otelcol-contribute-chart/charts/otelcol-contrib/Chart.yaml
           sed -i "s/^  tag: .*/  tag: \"${VERSION}\"/" trace-ai/otelcol-contribute-chart/charts/otelcol-contrib/values.yaml
-          sed -i "s/^  tag: .*/  tag: \"${VERSION}\"/" trace-ai/otelcol-contribute-chart/charts/otelcol-contrib/values_for_opensource.yaml
 
 
         env:

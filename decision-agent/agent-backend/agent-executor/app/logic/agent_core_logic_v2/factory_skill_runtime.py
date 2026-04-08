@@ -261,68 +261,44 @@ async def read_skill_file(
 async def execute_skill_script(
     service: AgentFactoryService,
     skill_id: str,
-    script_path: str,
+    entry_shell: str,
     request_headers: Optional[dict] = None,
 ) -> Dict[str, Any]:
     """Phase 3: Execute a script inside the execution factory sandbox.
 
-    Validates the path, checks ownership, calls
-    POST /skills/{skill_id}/scripts/execute, and returns a unified result dict.
+    Passes entry_shell directly to POST /skills/{skill_id}/execute.
+    The LLM obtains the entry_shell value from SKILL.md, so no path-to-command
+    conversion is needed here.  Security is enforced by the factory sandbox.
 
     Args:
         service: Configured AgentFactoryService instance
         skill_id: Execution-factory skill identifier
-        script_path: Relative script path (must be under scripts/)
+        entry_shell: Shell command from SKILL.md, e.g. 'python scripts/analyze.py'
         request_headers: Per-request auth headers (see load_skill for rationale).
 
     Returns:
         Unified response dict with stdout, stderr, exit_code, duration_ms,
         artifacts, source='factory'
     """
-    # Step 1: Path format validation
-    is_valid, error = _validate_script_path(script_path)
-    if not is_valid:
-        return _error_result_exec(skill_id, script_path, error)
+    if not entry_shell or not entry_shell.strip():
+        return _error_result_exec(skill_id, entry_shell, "entry_shell must not be empty")
 
-    normalized = _normalize_path(script_path.strip())
-
-    # Step 2: Ownership validation
-    try:
-        content_data = await service.get_skill_content(
-            skill_id, request_headers=request_headers
-        )
-    except Exception as exc:
-        err = (
-            f"builtin_skill_execute_script: failed to fetch file list for "
-            f"skill '{skill_id}': {exc}"
-        )
-        StandLogger.error(err)
-        return _error_result_exec(skill_id, script_path, err)
-
-    files = content_data.get("files", [])
-
-    is_allowed, ownership_error = _ownership_check(
-        normalized, files, allow_skill_md=False
-    )
-    if not is_allowed:
-        return _error_result_exec(skill_id, script_path, ownership_error)
-
-    # Step 3: Execute script in factory sandbox
     try:
         exec_data = await service.execute_skill_script(
-            skill_id, normalized, request_headers=request_headers
+            skill_id, entry_shell.strip(), request_headers=request_headers
         )
     except Exception as exc:
         err = (
             f"builtin_skill_execute_script: factory execution failed for "
-            f"'{script_path}' in skill '{skill_id}': {exc}"
+            f"skill '{skill_id}' (entry_shell={entry_shell!r}): {exc}"
         )
         StandLogger.error(err)
-        return _error_result_exec(skill_id, script_path, err)
+        return _error_result_exec(skill_id, entry_shell, err)
 
     result = {
         "skill_id": skill_id,
-        "script_path": script_path,
+        "entry_shell": entry_shell,
+        "command": exec_data.get("command", ""),
         "stdout": exec_data.get("stdout", ""),
         "stderr": exec_data.get("stderr", ""),
         "exit_code": exec_data.get("exit_code", -1),
@@ -366,12 +342,12 @@ def _error_result_read(
 
 
 def _error_result_exec(
-    skill_id: str, script_path: str, message: str
+    skill_id: str, entry_shell: str, message: str
 ) -> Dict[str, Any]:
     """Build a unified error response for execute_skill_script failures."""
     result = {
         "skill_id": skill_id,
-        "script_path": script_path,
+        "entry_shell": entry_shell,
         "stdout": "",
         "stderr": message,
         "exit_code": -1,

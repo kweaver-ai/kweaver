@@ -14,27 +14,28 @@ from .trace import span_set_attrs
 
 # Skill usage rules injected into every explore prompt so that the model
 # knows how to use the three built-in skill contract tools.
+# 注意：这些规则需要作为 Dolphin 注释格式（以 # 开头）或在块内部
 _SKILL_USAGE_RULES = """
-## Built-in Skill Capabilities
-
-You have access to three built-in tools for working with skills:
-
-1. `builtin_skill_load(skill_id)` — **Always call this first** when you have a skill_id.
-   Returns the full SKILL.md content plus lists of available scripts and reference files.
-
-2. `builtin_skill_read_file(skill_id, file_path)` — **Optional.** Read a specific file
-   inside the skill package. Only call this after you have obtained a file path from
-   builtin_skill_load or from SKILL.md. One file per call; cannot batch.
-
-3. `builtin_skill_execute_script(skill_id, script_path)` — **Optional.** Execute a script
-   from the skill package. Only call this after reading SKILL.md and deciding that script
-   execution is needed. Not all skills require script execution.
-
-**Usage rules:**
-- If you have a skill_id, always start with `builtin_skill_load(skill_id)`.
-- After reading SKILL.md, decide independently whether to call read_file, execute_script,
-  both, or neither.
-- `builtin_skill_read_file` and `builtin_skill_execute_script` are both optional steps.
+# == Built-in Skill Capabilities ==
+# You have access to three built-in tools for working with skills:
+#
+# 1. builtin_skill_load(skill_id) — Always call this first when you have a skill_id.
+#    Returns the full SKILL.md content plus lists of available scripts and reference files.
+#
+# 2. builtin_skill_read_file(skill_id, file_path) — Optional. Read a specific file
+#    inside the skill package. Only call after you have obtained a file path from
+#    builtin_skill_load or from SKILL.md. One file per call; cannot batch.
+#
+# 3. builtin_skill_execute_script(skill_id, script_path) — Optional. Execute a script
+#    from the skill package. Only call after reading SKILL.md and deciding that script
+#    execution is needed. Not all skills require script execution.
+#
+# Usage rules:
+# - If you have a skill_id, always start with builtin_skill_load(skill_id).
+# - After reading SKILL.md, decide independently whether to call read_file, execute_script,
+#   both, or neither.
+# - builtin_skill_read_file and builtin_skill_execute_script are both optional steps.
+# ==========================================
 """
 
 

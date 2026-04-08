@@ -197,8 +197,11 @@ class FactorySkillReadTool(_BuiltinSkillTool):
 class FactorySkillExecuteTool(_BuiltinSkillTool):
     """Built-in Tool for builtin_skill_execute_script (Phase 3 — optional).
 
-    Calls POST /skills/{skill_id}/scripts/execute and returns structured
-    execution results (stdout, stderr, exit_code, duration_ms, artifacts).
+    Calls POST /skills/{skill_id}/execute and returns structured execution
+    results (stdout, stderr, exit_code, duration_ms, artifacts).
+
+    The LLM reads the entry_shell command from SKILL.md and passes it
+    directly — no path-to-command conversion is performed here.
     """
 
     def _tool_name(self) -> str:
@@ -215,9 +218,9 @@ class FactorySkillExecuteTool(_BuiltinSkillTool):
                 "description": props["skill_id"]["description"],
                 "required": True,
             },
-            "script_path": {
+            "entry_shell": {
                 "type": "string",
-                "description": props["script_path"]["description"],
+                "description": props["entry_shell"]["description"],
                 "required": True,
             },
         }
@@ -231,13 +234,11 @@ class FactorySkillExecuteTool(_BuiltinSkillTool):
     async def arun_stream(self, **kwargs) -> AsyncGenerator[Dict[str, Any], None]:
         tool_input = kwargs.get("tool_input", {})
         skill_id: str = kwargs.get("skill_id") or tool_input.get("skill_id", "")
-        script_path: str = kwargs.get("script_path") or tool_input.get(
-            "script_path", ""
-        )
+        entry_shell: str = kwargs.get("entry_shell") or tool_input.get("entry_shell", "")
         result = await _runtime_execute_skill_script(
             agent_factory_service,
             skill_id,
-            script_path,
+            entry_shell,
             request_headers=self._request_headers,
         )
         yield result

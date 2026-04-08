@@ -34,6 +34,26 @@ class AgentFactoryService:
     def set_headers(self, headers):
         self.headers = headers
 
+    # Hop-by-hop headers that must NOT be forwarded to downstream service calls.
+    # Forwarding Content-Length from the executor's incoming request body to a
+    # downstream POST request with a completely different (smaller) body causes
+    # FastAPI/uvicorn to fail to read the downstream request body, resulting in
+    # a 422 validation error before the handler is ever entered.
+    _HOP_BY_HOP_HEADERS = frozenset(
+        {
+            "content-length",
+            "transfer-encoding",
+            "connection",
+            "keep-alive",
+            "host",
+            "upgrade",
+            "proxy-authenticate",
+            "proxy-authorization",
+            "te",
+            "trailers",
+        }
+    )
+
     def _effective_headers(self, request_headers: dict) -> dict:
         """Return per-call headers when provided, falling back to the shared singleton headers.
 
@@ -42,8 +62,13 @@ class AgentFactoryService:
         identity (x-user-account-id, x-business-domain, etc.) without mutating the
         singleton's ``self.headers`` between an ``await`` suspension point and the
         next I/O call.
+
+        Hop-by-hop headers (Content-Length, Transfer-Encoding, Host, etc.) are
+        stripped from forwarded headers so that aiohttp can set the correct
+        values for each downstream request body independently.
         """
-        return request_headers if request_headers is not None else self.headers
+        source = request_headers if request_headers is not None else self.headers
+        return {k: v for k, v in source.items() if k.lower() not in self._HOP_BY_HOP_HEADERS}
 
     @circuit(
         failure_threshold=GetFailureThreshold(), recovery_timeout=GetRecoveryTimeout()
@@ -403,28 +428,31 @@ class AgentFactoryService:
     async def execute_skill_script(
         self,
         skill_id: str,
-        script_path: str,
+        entry_shell: str,
         extra: dict = None,
         request_headers: dict = None,
     ) -> dict:
-        """Call POST /skills/{skill_id}/scripts/execute.
+        """Call POST /skills/{skill_id}/execute (skill_api.yaml).
 
-        Runs a script inside the execution factory sandbox and returns
-        structured execution results.
+        Passes entry_shell (obtained by the LLM from SKILL.md) directly to
+        the factory API.  The API response uses 'execution_time' (ms); this
+        method normalises it to 'duration_ms' for the runtime layer.
 
         Args:
             skill_id: Execution-factory skill identifier
-            script_path: Relative path of the script (e.g. scripts/foo.py)
-            extra: Optional dict of extra parameters forwarded to the script
-            request_headers: Per-request headers that override self.headers for this
-                call (see get_skill_content for rationale).
+            entry_shell: Shell command from SKILL.md, e.g. 'python scripts/foo.py'
+            extra: Optional dict; honours 'timeout' key (int, seconds).
+            request_headers: Per-request headers that override self.headers.
 
         Returns:
             Response data dict containing stdout, stderr, exit_code,
-            duration_ms, artifacts
+            duration_ms (normalised from execution_time), and other fields.
         """
-        url = self._skill_api_base_url + f"/skills/{skill_id}/scripts/execute"
-        payload: dict = {"rel_path": script_path, "extra": extra or {}}
+        url = self._skill_api_base_url + f"/skills/{skill_id}/execute"
+        payload: dict = {"entry_shell": entry_shell}
+        if extra and isinstance(extra.get("timeout"), int):
+            payload["timeout"] = extra["timeout"]
+
         timeout = aiohttp.ClientTimeout(total=HTTP_REQUEST_TIMEOUT)
         async with aiohttp.ClientSession(
             headers=self._effective_headers(request_headers), timeout=timeout
@@ -439,7 +467,11 @@ class AgentFactoryService:
                     StandLogger.error(error_log, log_oper.SYSTEM_LOG)
                     raise CodeException(errors.ExternalServiceError(), err)
                 res = await response.json()
-                return res.get("data", {})
+                data = res.get("data", {})
+                # Normalise API field name -> contract field name expected by runtime
+                if "execution_time" in data and "duration_ms" not in data:
+                    data["duration_ms"] = data["execution_time"]
+                return data
 
 
 agent_factory_service = AgentFactoryService()

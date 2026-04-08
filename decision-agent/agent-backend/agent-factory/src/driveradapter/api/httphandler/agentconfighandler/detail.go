@@ -15,7 +15,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        agent_id path      string  true  "Agent ID"
-// @Success      200       {object}  agentconfigresp.DetailRes  "成功"
+// @Success      200       {object}  swagger.AgentConfigDetailRes  "成功"
 // @Failure      400      {object}  swagger.APIError  "请求参数错误"
 // @Failure      401      {object}  swagger.APIError  "未授权"
 // @Failure      403      {object}  swagger.APIError  "禁止访问"

@@ -61,6 +61,7 @@ func TestAgentConfig2AgentCallConfigWithNilSkill(t *testing.T) {
 	assert.Len(t, result.Skill.Tools, 0)
 	assert.Len(t, result.Skill.Agents, 0)
 	assert.Len(t, result.Skill.MCPs, 0)
+	assert.Len(t, result.Skill.Skills, 0)
 }
 
 func TestAgentConfig2AgentCallConfigDebug(t *testing.T) {
@@ -449,4 +450,5 @@ func TestAgentConfig2AgentCallConfigDebug_WithNilSkill(t *testing.T) {
 	assert.Len(t, result.Skill.Tools, 0)
 	assert.Len(t, result.Skill.Agents, 0)
 	assert.Len(t, result.Skill.MCPs, 0)
+	assert.Len(t, result.Skill.Skills, 0)
 }

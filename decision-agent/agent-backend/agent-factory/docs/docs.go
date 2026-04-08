@@ -1342,7 +1342,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/agentconfigreq.CreateReq"
+                            "$ref": "#/definitions/swagger.AgentConfigCreateReq"
                         }
                     }
                 ],
@@ -1350,7 +1350,7 @@ const docTemplate = `{
                     "201": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/agentconfigresp.DetailRes"
+                            "$ref": "#/definitions/swagger.AgentConfigCreateRes"
                         }
                     },
                     "400": {
@@ -2653,7 +2653,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功",
                         "schema": {
-                            "$ref": "#/definitions/agentconfigresp.DetailRes"
+                            "$ref": "#/definitions/swagger.AgentConfigDetailRes"
                         }
                     },
                     "400": {
@@ -2713,7 +2713,7 @@ const docTemplate = `{
                         "name": "request",
                         "in": "body",
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/swagger.AgentConfigUpdateReq"
                         }
                     }
                 ],
@@ -4260,85 +4260,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "agentconfigreq.CreateReq": {
-            "type": "object"
-        },
-        "agentconfigresp.DetailRes": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "description": "头像信息",
-                    "type": "string"
-                },
-                "avatar_type": {
-                    "description": "头像类型",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/cdaenum.AvatarType"
-                        }
-                    ]
-                },
-                "config": {
-                    "description": "agent配置",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/daconfvalobj.Config"
-                        }
-                    ]
-                },
-                "id": {
-                    "description": "agent id",
-                    "type": "string"
-                },
-                "is_built_in": {
-                    "description": "是否内置",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/cdaenum.BuiltIn"
-                        }
-                    ]
-                },
-                "is_published": {
-                    "description": "是否发布过",
-                    "type": "boolean"
-                },
-                "is_system_agent": {
-                    "description": "是否是系统agent",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/cenum.YesNoInt8"
-                        }
-                    ]
-                },
-                "key": {
-                    "description": "agent 标识",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "名字",
-                    "type": "string"
-                },
-                "product_key": {
-                    "description": "所属产品标识",
-                    "type": "string"
-                },
-                "product_name": {
-                    "description": "所属产品名称",
-                    "type": "string"
-                },
-                "profile": {
-                    "description": "描述",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "状态",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/cdaenum.Status"
-                        }
-                    ]
-                }
-            }
+        "agentconfigenum.ConfigTplVersionT": {
+            "type": "string",
+            "enum": [
+                "v1"
+            ],
+            "x-enum-varnames": [
+                "ConfigTplVersionV1"
+            ]
         },
         "agentreq.SelectedFile": {
             "type": "object",
@@ -4476,6 +4405,21 @@ const docTemplate = `{
                 "DolphinTplKeyRelatedQuestions"
             ]
         },
+        "cdaenum.HistoryStrategy": {
+            "type": "string",
+            "enum": [
+                "none",
+                "count",
+                "time_window",
+                "token"
+            ],
+            "x-enum-varnames": [
+                "HistoryStrategyNone",
+                "HistoryStrategyCount",
+                "HistoryStrategyTimeWindow",
+                "HistoryStrategyToken"
+            ]
+        },
         "cdaenum.InputFieldType": {
             "type": "string",
             "enum": [
@@ -4498,6 +4442,17 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "ModelTypeLlm",
                 "ModelTypeRlm"
+            ]
+        },
+        "cdaenum.OutputDefaultFormat": {
+            "type": "string",
+            "enum": [
+                "json",
+                "markdown"
+            ],
+            "x-enum-varnames": [
+                "OutputDefaultFormatJson",
+                "OutputDefaultFormatMarkdown"
             ]
         },
         "cdaenum.PublishToBe": {
@@ -4740,8 +4695,129 @@ const docTemplate = `{
                 }
             }
         },
-        "daconfvalobj.Config": {
-            "type": "object"
+        "daconfvalobj.BuiltInCanEditFields": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "头像",
+                    "type": "boolean"
+                },
+                "data_source.doc": {
+                    "description": "知识来源-文档",
+                    "type": "boolean"
+                },
+                "data_source.kg": {
+                    "description": "知识来源-业务知识网络",
+                    "type": "boolean"
+                },
+                "input_config": {
+                    "description": "输入配置",
+                    "type": "boolean"
+                },
+                "memory": {
+                    "description": "长期记忆配置",
+                    "type": "boolean"
+                },
+                "model": {
+                    "description": "KnowledgeSource     bool ` + "`" + `json:\"knowledge_source\"` + "`" + `      // 知识来源",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "名字",
+                    "type": "boolean"
+                },
+                "opening_remark_config": {
+                    "description": "开场白配置",
+                    "type": "boolean"
+                },
+                "preset_questions": {
+                    "description": "预设问题列表",
+                    "type": "boolean"
+                },
+                "profile": {
+                    "description": "描述",
+                    "type": "boolean"
+                },
+                "related_question": {
+                    "description": "相关问题配置",
+                    "type": "boolean"
+                },
+                "skills": {
+                    "description": "技能",
+                    "type": "boolean"
+                },
+                "skills.tools.tool_input": {
+                    "description": "skills.tools.tool_input",
+                    "type": "boolean"
+                },
+                "system_prompt": {
+                    "description": "角色指令，包括dolpin模式和非dolpin模式",
+                    "type": "boolean"
+                }
+            }
+        },
+        "daconfvalobj.ConfigMetadata": {
+            "type": "object",
+            "properties": {
+                "config_last_set_timestamp": {
+                    "description": "配置时间戳(nanoseconds)",
+                    "type": "integer"
+                },
+                "config_tpl_version": {
+                    "description": "配置版本",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/agentconfigenum.ConfigTplVersionT"
+                        }
+                    ]
+                }
+            }
+        },
+        "daconfvalobj.ConversationHistoryConfig": {
+            "type": "object",
+            "properties": {
+                "count_params": {
+                    "description": "count策略参数",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.CountParams"
+                        }
+                    ]
+                },
+                "strategy": {
+                    "description": "会话历史策略：none(无历史), count(按数量), time_window(按时间窗口-预留), token(按token-预留)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.HistoryStrategy"
+                        }
+                    ]
+                },
+                "time_window_params": {
+                    "description": "time_window策略参数（预留）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.TimeWindowParams"
+                        }
+                    ]
+                },
+                "token_limit_params": {
+                    "description": "token_limit策略参数（预留）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.TokenLimitParams"
+                        }
+                    ]
+                }
+            }
+        },
+        "daconfvalobj.CountParams": {
+            "type": "object",
+            "properties": {
+                "count_limit": {
+                    "description": "消息数量限制，默认10条，范围1-1000",
+                    "type": "integer"
+                }
+            }
         },
         "daconfvalobj.DolphinTpl": {
             "type": "object",
@@ -4927,6 +5003,100 @@ const docTemplate = `{
                 }
             }
         },
+        "daconfvalobj.LlmItem": {
+            "type": "object",
+            "required": [
+                "llm_config"
+            ],
+            "properties": {
+                "is_default": {
+                    "description": "是否默认（从选择的所有llm中选择一个为默认llm）",
+                    "type": "boolean"
+                },
+                "llm_config": {
+                    "description": "其他LLM属性",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.LlmConfig"
+                        }
+                    ]
+                }
+            }
+        },
+        "daconfvalobj.MemoryCfg": {
+            "type": "object",
+            "properties": {
+                "is_enabled": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "daconfvalobj.OpeningRemarkConfig": {
+            "type": "object",
+            "properties": {
+                "dynamic_opening_remark_prompt": {
+                    "description": "动态开场白提示语",
+                    "type": "string"
+                },
+                "fixed_opening_remark": {
+                    "description": "固定开场白",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "开场白类型（固定/动态）",
+                    "type": "string"
+                }
+            }
+        },
+        "daconfvalobj.Output": {
+            "type": "object",
+            "properties": {
+                "default_format": {
+                    "description": "默认输出格式",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.OutputDefaultFormat"
+                        }
+                    ]
+                },
+                "variables": {
+                    "description": "变量名",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.VariablesS"
+                        }
+                    ]
+                }
+            }
+        },
+        "daconfvalobj.PlanMode": {
+            "type": "object",
+            "properties": {
+                "is_enabled": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "daconfvalobj.PresetQuestion": {
+            "type": "object",
+            "properties": {
+                "question": {
+                    "description": "问题内容",
+                    "type": "string"
+                }
+            }
+        },
+        "daconfvalobj.RelatedQuestion": {
+            "type": "object",
+            "properties": {
+                "is_enabled": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
         "daconfvalobj.Rewrite": {
             "type": "object",
             "required": [
@@ -4945,6 +5115,47 @@ const docTemplate = `{
                             "$ref": "#/definitions/daconfvalobj.LlmConfig"
                         }
                     ]
+                }
+            }
+        },
+        "daconfvalobj.TimeWindowParams": {
+            "type": "object"
+        },
+        "daconfvalobj.TokenLimitParams": {
+            "type": "object"
+        },
+        "daconfvalobj.VariablesS": {
+            "type": "object",
+            "properties": {
+                "answer_var": {
+                    "description": "包含最终回答的变量名",
+                    "type": "string"
+                },
+                "doc_retrieval_var": {
+                    "description": "包含文档检索结果的变量名",
+                    "type": "string"
+                },
+                "graph_retrieval_var": {
+                    "description": "包含图谱检索结果的变量名",
+                    "type": "string"
+                },
+                "middle_output_vars": {
+                    "description": "中间输出变量数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "other_vars": {
+                    "description": "其他变量数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "related_questions_var": {
+                    "description": "包含相关问题的变量名",
+                    "type": "string"
                 }
             }
         },
@@ -5606,6 +5817,67 @@ const docTemplate = `{
                 "SessionManageActionRecoverLifetimeOrCreate"
             ]
         },
+        "skillenum.Datasource": {
+            "type": "string",
+            "enum": [
+                "inherit_main",
+                "self_configured"
+            ],
+            "x-enum-comments": {
+                "DatasourceInheritMain": "继承主 Agent 数据源",
+                "DatasourceSelfConfigured": "使用自身配置（默认逻辑）"
+            },
+            "x-enum-descriptions": [
+                "继承主 Agent 数据源",
+                "使用自身配置（默认逻辑）"
+            ],
+            "x-enum-varnames": [
+                "DatasourceInheritMain",
+                "DatasourceSelfConfigured"
+            ]
+        },
+        "skillenum.DatasourceSpecificInherit": {
+            "type": "string",
+            "enum": [
+                "docs_only",
+                "graph_only",
+                "all"
+            ],
+            "x-enum-comments": {
+                "DatasourceInheritAll": "all：继承所有类型数据源",
+                "DatasourceInheritDocs": "docs_only：仅继承文档数据源",
+                "DatasourceInheritGraph": "graph_only：仅继承图谱数据源"
+            },
+            "x-enum-descriptions": [
+                "docs_only：仅继承文档数据源",
+                "graph_only：仅继承图谱数据源",
+                "all：继承所有类型数据源"
+            ],
+            "x-enum-varnames": [
+                "DatasourceInheritDocs",
+                "DatasourceInheritGraph",
+                "DatasourceInheritAll"
+            ]
+        },
+        "skillenum.LLM": {
+            "type": "string",
+            "enum": [
+                "inherit_main",
+                "self_configured"
+            ],
+            "x-enum-comments": {
+                "LLMInheritMain": "继承主 Agent 大模型",
+                "LLMSelfConfiged": "使用自身配置（默认逻辑）"
+            },
+            "x-enum-descriptions": [
+                "继承主 Agent 大模型",
+                "使用自身配置（默认逻辑）"
+            ],
+            "x-enum-varnames": [
+                "LLMInheritMain",
+                "LLMSelfConfiged"
+            ]
+        },
         "skillvalobj.Category": {
             "type": "object",
             "properties": {
@@ -5620,6 +5892,25 @@ const docTemplate = `{
                 "name": {
                     "description": "类型名称",
                     "type": "string"
+                }
+            }
+        },
+        "skillvalobj.DataSourceConfig": {
+            "type": "object",
+            "properties": {
+                "specific_inherit": {
+                    "$ref": "#/definitions/skillenum.DatasourceSpecificInherit"
+                },
+                "type": {
+                    "$ref": "#/definitions/skillenum.Datasource"
+                }
+            }
+        },
+        "skillvalobj.LLMConfig": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/skillenum.LLM"
                 }
             }
         },
@@ -5641,49 +5932,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/skillvalobj.Strategy"
                         }
                     ]
-                }
-            }
-        },
-        "skillvalobj.SkillTool": {
-            "type": "object",
-            "required": [
-                "tool_box_id",
-                "tool_id"
-            ],
-            "properties": {
-                "intervention": {
-                    "description": "是否启用干预",
-                    "type": "boolean"
-                },
-                "intervention_confirmation_message": {
-                    "description": "人工干预确认消息",
-                    "type": "string"
-                },
-                "result_process_strategies": {
-                    "description": "结果处理策略",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/skillvalobj.ResultProcessStrategy"
-                    }
-                },
-                "tool_box_id": {
-                    "description": "工具箱ID",
-                    "type": "string"
-                },
-                "tool_id": {
-                    "description": "工具ID",
-                    "type": "string"
-                },
-                "tool_input": {
-                    "description": "工具输入",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "tool_timeout": {
-                    "description": "工具调用超时时间",
-                    "type": "integer"
                 }
             }
         },
@@ -5718,6 +5966,573 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "请求参数错误"
+                }
+            }
+        },
+        "swagger.AgentConfigConfig": {
+            "type": "object",
+            "properties": {
+                "built_in_can_edit_fields": {
+                    "description": "内置 agent 可编辑字段配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.BuiltInCanEditFields"
+                        }
+                    ]
+                },
+                "conversation_history_config": {
+                    "description": "会话历史配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.ConversationHistoryConfig"
+                        }
+                    ]
+                },
+                "data_source": {
+                    "description": "数据源",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/datasourcevalobj.RetrieverDataSource"
+                        }
+                    ]
+                },
+                "dolphin": {
+                    "description": "Dolphin 语句",
+                    "type": "string"
+                },
+                "input": {
+                    "description": "输入参数",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.Input"
+                        }
+                    ]
+                },
+                "is_data_flow_set_enabled": {
+                    "description": "是否启用数据流设置",
+                    "type": "integer"
+                },
+                "is_dolphin_mode": {
+                    "description": "是否是 dolphin 模式",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.DolphinMode"
+                        }
+                    ]
+                },
+                "llms": {
+                    "description": "LLM 配置",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/daconfvalobj.LlmItem"
+                    }
+                },
+                "memory": {
+                    "description": "长期记忆配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.MemoryCfg"
+                        }
+                    ]
+                },
+                "metadata": {
+                    "description": "配置元数据",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.ConfigMetadata"
+                        }
+                    ]
+                },
+                "opening_remark_config": {
+                    "description": "开场白配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.OpeningRemarkConfig"
+                        }
+                    ]
+                },
+                "output": {
+                    "description": "输出结果",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.Output"
+                        }
+                    ]
+                },
+                "plan_mode": {
+                    "description": "任务规划模式配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.PlanMode"
+                        }
+                    ]
+                },
+                "post_dolphin": {
+                    "description": "在用户自定义 dolphin 之后执行的内置 dolphin 语句",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/daconfvalobj.DolphinTpl"
+                    }
+                },
+                "pre_dolphin": {
+                    "description": "在用户自定义 dolphin 之前执行的内置 dolphin 语句",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/daconfvalobj.DolphinTpl"
+                    }
+                },
+                "preset_questions": {
+                    "description": "预设问题列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/daconfvalobj.PresetQuestion"
+                    }
+                },
+                "related_question": {
+                    "description": "相关问题配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/daconfvalobj.RelatedQuestion"
+                        }
+                    ]
+                },
+                "skills": {
+                    "description": "技能",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/swagger.AgentConfigSkills"
+                        }
+                    ]
+                },
+                "system_prompt": {
+                    "description": "系统提示词",
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.AgentConfigCreateReq": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "头像信息",
+                    "type": "string"
+                },
+                "avatar_type": {
+                    "description": "头像类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.AvatarType"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "agent 配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/swagger.AgentConfigConfig"
+                        }
+                    ]
+                },
+                "created_by": {
+                    "description": "创建人 uid（内部接口有效）",
+                    "type": "string"
+                },
+                "is_built_in": {
+                    "description": "是否内置（内部接口有效）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.BuiltIn"
+                        }
+                    ]
+                },
+                "is_system_agent": {
+                    "description": "是否是系统智能体",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cenum.YesNoInt8"
+                        }
+                    ]
+                },
+                "key": {
+                    "description": "agent 标识",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名字",
+                    "type": "string"
+                },
+                "product_key": {
+                    "description": "所属产品标识",
+                    "type": "string"
+                },
+                "profile": {
+                    "description": "简介",
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.AgentConfigCreateRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "agent id",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "agent版本",
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.AgentConfigDetailRes": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "头像信息",
+                    "type": "string"
+                },
+                "avatar_type": {
+                    "description": "头像类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.AvatarType"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "agent 配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/swagger.AgentConfigConfig"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "agent id",
+                    "type": "string"
+                },
+                "is_built_in": {
+                    "description": "是否内置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.BuiltIn"
+                        }
+                    ]
+                },
+                "is_published": {
+                    "description": "是否发布过",
+                    "type": "boolean"
+                },
+                "is_system_agent": {
+                    "description": "是否是系统智能体",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cenum.YesNoInt8"
+                        }
+                    ]
+                },
+                "key": {
+                    "description": "agent 标识",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名字",
+                    "type": "string"
+                },
+                "product_key": {
+                    "description": "所属产品标识",
+                    "type": "string"
+                },
+                "product_name": {
+                    "description": "所属产品名称",
+                    "type": "string"
+                },
+                "profile": {
+                    "description": "描述",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "状态",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.Status"
+                        }
+                    ]
+                }
+            }
+        },
+        "swagger.AgentConfigSkillAgent": {
+            "type": "object",
+            "properties": {
+                "agent_input": {
+                    "description": "技能输入",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/swagger.AgentConfigSkillAgentInput"
+                    }
+                },
+                "agent_key": {
+                    "description": "Agent Key",
+                    "type": "string"
+                },
+                "agent_timeout": {
+                    "description": "Agent 工具调用超时时间",
+                    "type": "integer"
+                },
+                "agent_version": {
+                    "description": "Agent 版本",
+                    "type": "string"
+                },
+                "current_is_exists_and_published": {
+                    "description": "当前是否存在并已发布",
+                    "type": "boolean"
+                },
+                "current_pms_check_status": {
+                    "description": "当前此技能的使用权限状态",
+                    "type": "string"
+                },
+                "data_source_config": {
+                    "description": "数据源配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/skillvalobj.DataSourceConfig"
+                        }
+                    ]
+                },
+                "intervention": {
+                    "description": "是否启用干预",
+                    "type": "boolean"
+                },
+                "intervention_confirmation_message": {
+                    "description": "人工干预确认消息",
+                    "type": "string"
+                },
+                "llm_config": {
+                    "description": "LLM 配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/skillvalobj.LLMConfig"
+                        }
+                    ]
+                }
+            }
+        },
+        "swagger.AgentConfigSkillAgentInput": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "description": "子字段",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/swagger.AgentConfigSkillAgentInputs"
+                        }
+                    ]
+                },
+                "enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "input_name": {
+                    "description": "输入名称",
+                    "type": "string"
+                },
+                "input_type": {
+                    "description": "输入类型",
+                    "type": "string"
+                },
+                "map_type": {
+                    "description": "值类型",
+                    "type": "string"
+                },
+                "map_value": {
+                    "description": "值"
+                }
+            }
+        },
+        "swagger.AgentConfigSkillAgentInputs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/swagger.AgentConfigSkillAgentInput"
+            }
+        },
+        "swagger.AgentConfigSkillMCP": {
+            "type": "object",
+            "properties": {
+                "mcp_server_id": {
+                    "description": "mcp server id",
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.AgentConfigSkillSkill": {
+            "type": "object",
+            "properties": {
+                "skill_id": {
+                    "description": "skill id",
+                    "type": "string"
+                }
+            }
+        },
+        "swagger.AgentConfigSkillTool": {
+            "type": "object",
+            "properties": {
+                "intervention": {
+                    "description": "是否启用人工干预",
+                    "type": "boolean"
+                },
+                "intervention_confirmation_message": {
+                    "description": "人工干预确认消息",
+                    "type": "string"
+                },
+                "result_process_strategies": {
+                    "description": "结果处理策略",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/skillvalobj.ResultProcessStrategy"
+                    }
+                },
+                "tool_box_id": {
+                    "description": "工具箱 ID",
+                    "type": "string"
+                },
+                "tool_id": {
+                    "description": "工具 ID",
+                    "type": "string"
+                },
+                "tool_input": {
+                    "description": "输入参数配置",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/swagger.AgentConfigSkillToolInput"
+                    }
+                },
+                "tool_timeout": {
+                    "description": "工具调用超时时间",
+                    "type": "integer"
+                }
+            }
+        },
+        "swagger.AgentConfigSkillToolInput": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "description": "子字段",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/swagger.AgentConfigSkillToolInputs"
+                        }
+                    ]
+                },
+                "enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "input_desc": {
+                    "description": "输入描述",
+                    "type": "string"
+                },
+                "input_name": {
+                    "description": "输入名称",
+                    "type": "string"
+                },
+                "input_type": {
+                    "description": "输入类型",
+                    "type": "string"
+                },
+                "map_type": {
+                    "description": "值类型",
+                    "type": "string"
+                },
+                "map_value": {
+                    "description": "值"
+                }
+            }
+        },
+        "swagger.AgentConfigSkillToolInputs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/swagger.AgentConfigSkillToolInput"
+            }
+        },
+        "swagger.AgentConfigSkills": {
+            "type": "object",
+            "properties": {
+                "agents": {
+                    "description": "Agent 技能",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/swagger.AgentConfigSkillAgent"
+                    }
+                },
+                "mcps": {
+                    "description": "MCP 技能",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/swagger.AgentConfigSkillMCP"
+                    }
+                },
+                "skills": {
+                    "description": "skill",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/swagger.AgentConfigSkillSkill"
+                    }
+                },
+                "tools": {
+                    "description": "工具技能",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/swagger.AgentConfigSkillTool"
+                    }
+                }
+            }
+        },
+        "swagger.AgentConfigUpdateReq": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "头像信息",
+                    "type": "string"
+                },
+                "avatar_type": {
+                    "description": "头像类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.AvatarType"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "agent 配置",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/swagger.AgentConfigConfig"
+                        }
+                    ]
+                },
+                "is_built_in": {
+                    "description": "是否内置（内部接口有效）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/cdaenum.BuiltIn"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "名字",
+                    "type": "string"
+                },
+                "product_key": {
+                    "description": "所属产品标识",
+                    "type": "string"
+                },
+                "profile": {
+                    "description": "描述",
+                    "type": "string"
+                },
+                "updated_by": {
+                    "description": "更新人 uid（内部接口有效）",
+                    "type": "string"
                 }
             }
         },

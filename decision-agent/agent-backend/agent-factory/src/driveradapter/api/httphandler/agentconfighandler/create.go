@@ -23,8 +23,8 @@ import (
 // @Tags         agent,agent-internal
 // @Accept       json
 // @Produce      json
-// @Param        request  body      agentconfigreq.CreateReq  true  "Agent 配置"
-// @Success      201      {object}  agentconfigresp.DetailRes  "成功"
+// @Param        request  body      swagger.AgentConfigCreateReq  true  "Agent 配置"
+// @Success      201      {object}  swagger.AgentConfigCreateRes  "成功"
 // @Failure      400      {object}  swagger.APIError   "请求参数错误"
 // @Failure      401      {object}  swagger.APIError   "未授权"
 // @Failure      403      {object}  swagger.APIError   "禁止访问"

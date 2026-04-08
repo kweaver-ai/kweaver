@@ -28,6 +28,7 @@ func AgentConfig2AgentCallConfig(ctx context.Context, agentConfig *daconfvalobj.
 			Tools:  []*skillvalobj.SkillTool{},
 			Agents: []*skillvalobj.SkillAgent{},
 			MCPs:   []*skillvalobj.SkillMCP{},
+			Skills: []*skillvalobj.SkillSkill{},
 		}
 	}
 
@@ -55,6 +56,7 @@ func AgentConfig2AgentCallConfigDebug(ctx context.Context, agentConfig *daconfva
 			Tools:  []*skillvalobj.SkillTool{},
 			Agents: []*skillvalobj.SkillAgent{},
 			MCPs:   []*skillvalobj.SkillMCP{},
+			Skills: []*skillvalobj.SkillSkill{},
 		}
 	}
 

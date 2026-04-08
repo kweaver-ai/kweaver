@@ -16,6 +16,8 @@ declare -a ISF_RELEASES=(
     oauth2-ui
 )
 
+ISF_LOCAL_CHARTS_DIR="${ISF_LOCAL_CHARTS_DIR:-}"
+
 # ISF databases list
 declare -a ISF_DATABASES=(
     "user_management"
@@ -68,6 +70,26 @@ parse_isf_args() {
                 HELM_CHART_REPO_NAME="$2"
                 shift 2
                 ;;
+            --charts_dir=*)
+                ISF_LOCAL_CHARTS_DIR="${1#*=}"
+                shift
+                ;;
+            --charts_dir)
+                ISF_LOCAL_CHARTS_DIR="$2"
+                shift 2
+                ;;
+            --config=*)
+                CONFIG_YAML_PATH="${1#*=}"
+                shift
+                ;;
+            --config)
+                CONFIG_YAML_PATH="$2"
+                shift 2
+                ;;
+            --force-refresh)
+                FORCE_REFRESH_CHARTS="true"
+                shift
+                ;;
             *)
                 log_error "Unknown argument: $1"
                 return 1
@@ -90,19 +112,38 @@ init_isf_database() {
     init_module_database "isf" "${sql_dir}"
 }
 
+_isf_resolve_charts_dir() {
+    if [[ -n "${ISF_LOCAL_CHARTS_DIR}" ]]; then
+        if [[ -d "${ISF_LOCAL_CHARTS_DIR}" ]]; then
+            echo "${ISF_LOCAL_CHARTS_DIR}"
+        fi
+    fi
+}
+
+_isf_download_charts_dir() {
+    if [[ -n "${ISF_LOCAL_CHARTS_DIR}" ]]; then
+        ensure_charts_dir "${ISF_LOCAL_CHARTS_DIR}"
+        return 0
+    fi
+
+    ensure_charts_dir "$(resolve_shared_charts_dir)"
+}
+
 # Install ISF services via Helm
 install_isf() {
     log_info "Installing ISF services via Helm..."
     log_info "  Version: ${HELM_CHART_VERSION}"
     log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 
-    # ISF services may require longer timeout for image pulls, DB init, and dependency waits
-    # Use ISF-specific timeout if set, otherwise default to 600s (10 min) for install, 900s (15 min) for command
     export HELM_INSTALL_TIMEOUT="${ISF_HELM_TIMEOUT:-${HELM_INSTALL_TIMEOUT:-600s}}"
     export HELM_COMMAND_TIMEOUT="${ISF_COMMAND_TIMEOUT:-${HELM_COMMAND_TIMEOUT:-900}}"
     log_info "  Using timeout: helm=${HELM_INSTALL_TIMEOUT}, command=${HELM_COMMAND_TIMEOUT}s"
 
-    # Validate and auto-repair missing credentials (e.g. empty Kafka SASL password)
+    if ! ensure_platform_prerequisites; then
+        log_error "Failed to ensure platform prerequisites for ISF"
+        return 1
+    fi
+
     validate_config_credentials
 
     # Get namespace from config.yaml
@@ -112,8 +153,17 @@ install_isf() {
     # Create namespace if not exists
     kubectl create namespace "${namespace}" 2>/dev/null || true
     
-    # Add Helm repo with retry
-    helm_repo_add_with_retry "${HELM_CHART_REPO_NAME}" "${HELM_CHART_REPO_URL}"
+    local charts_dir
+    charts_dir="$(_isf_resolve_charts_dir)"
+
+    local use_local=false
+    if [[ -n "${charts_dir}" && -d "${charts_dir}" ]]; then
+        use_local=true
+        log_info "Using local ISF charts from: ${charts_dir}"
+    else
+        log_info "No explicit local ISF charts directory provided, using Helm repo."
+        helm_repo_add_with_retry "${HELM_CHART_REPO_NAME:-kweaver}" "${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
+    fi
     
     # Initialize database first
     if ! init_isf_database; then
@@ -137,7 +187,12 @@ install_isf() {
     # Install each release
     local install_failed=0
     for release_name in "${ISF_RELEASES[@]}"; do
-        if ! install_isf_release "${release_name}" "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${HELM_CHART_VERSION}" "${temp_config}"; then
+        if [[ "${use_local}" == "true" ]]; then
+            if ! _install_isf_release_local "${release_name}" "${charts_dir}" "${namespace}" "${temp_config}"; then
+                install_failed=1
+                break
+            fi
+        elif ! install_isf_release "${release_name}" "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${HELM_CHART_VERSION}" "${temp_config}"; then
             install_failed=1
             break
         fi
@@ -158,6 +213,36 @@ install_isf() {
     log_info "ISF services installation completed"
 }
 
+_install_isf_release_local() {
+    local release_name="$1"
+    local charts_dir="$2"
+    local namespace="$3"
+    local values_file="$4"
+
+    local chart_tgz
+    chart_tgz="$(find_cached_chart_tgz "${charts_dir}" "${release_name}")"
+    if [[ -z "${chart_tgz}" ]]; then
+        log_error "✗ Local chart not found for ${release_name} in ${charts_dir}"
+        return 1
+    fi
+
+    local target_version
+    target_version="$(get_local_chart_version "${chart_tgz}")"
+    if [[ -z "${target_version}" ]]; then
+        target_version="$(get_chart_version_from_filename "${chart_tgz}" "${release_name}")"
+    fi
+
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${release_name}" "${target_version}"; then
+        return 0
+    fi
+
+    log_info "Installing ${release_name} from local chart: $(basename "${chart_tgz}")..."
+    helm upgrade --install "${release_name}" "${chart_tgz}" \
+        --namespace "${namespace}" \
+        -f "${values_file}" \
+        --devel --wait --timeout=600s
+}
+
 # Install a single ISF release
 install_isf_release() {
     local release_name="$1"
@@ -169,6 +254,15 @@ install_isf_release() {
     
     # Build Helm chart reference
     local chart_ref="${helm_repo_name}/${chart_name}"
+
+    local target_version="${release_version}"
+    if [[ -z "${target_version}" ]]; then
+        target_version=$(get_repo_chart_latest_version "${helm_repo_name}" "${chart_name}")
+    fi
+
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${chart_name}" "${target_version}"; then
+        return 0
+    fi
     
     # Build Helm command args (without "upgrade --install" which helm_install_with_retry prepends)
     local -a helm_args=(
@@ -186,6 +280,24 @@ install_isf_release() {
     helm_args+=("--devel" "--wait")
     
     helm_install_with_retry "${release_name}" "${helm_args[@]}"
+}
+
+download_isf() {
+    log_info "Downloading ISF charts..."
+    ensure_helm_available
+
+    HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
+    HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
+
+    local charts_dir
+    charts_dir="$(_isf_download_charts_dir)"
+
+    helm_repo_add_with_retry "${HELM_CHART_REPO_NAME}" "${HELM_CHART_REPO_URL}"
+
+    local release_name
+    for release_name in "${ISF_RELEASES[@]}"; do
+        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${release_name}" "${HELM_CHART_VERSION}" "${FORCE_REFRESH_CHARTS:-false}"
+    done
 }
 
 # Uninstall ISF services

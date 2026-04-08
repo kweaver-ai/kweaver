@@ -9,14 +9,6 @@ One-click deployment of the KWeaver AI platform to a single-node Kubernetes clus
 ## 🚀 Quick Start
 
 ```bash
-# Option 1: Quick install from release package (recommended)
-# Installs latest release automatically
-curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh
-
-# Install specific version
-curl -fsSL https://raw.githubusercontent.com/kweaver-ai/kweaver/main/install.sh | sh -s -- --version v1.0.0
-
-# Option 2: Clone the repository
 # 1. Clone the repository
 git clone https://github.com/kweaver-ai/kweaver.git
 cd kweaver/deploy
@@ -24,32 +16,26 @@ cd kweaver/deploy
 # 2. Edit the config file (optional; skip to use defaults)
 # vim conf/config.yaml
 
-# 3. Deploy all components (installs the latest version by default)
-# Note: deploy.sh requires root privileges
-sudo bash ./deploy.sh full init
-```
+# 3. Install KWeaver Core (includes ISF by default; automatically installs missing K8s and data services)
+bash ./deploy.sh kweaver-core install
 
-For first-time installation, especially on cloud VMs or slower networks, the full deployment process may take a while. In some environments it can take more than an hour to complete.
+# 3'. Pre-download charts into deploy/.tmp/charts, then install from that directory explicitly
+# bash ./deploy.sh kweaver-core download
+# bash ./deploy.sh kweaver-core install --charts_dir=./.tmp/charts
+
+# 3'. Install KWeaver DIP (automatically installs missing K8s, data services, and app dependencies)
+# bash ./deploy.sh kweaver-dip install
+```
 
 After deployment, open `https://<node-ip>/studio`. Username: `admin`, initial password: `eisoo.com`.
 
 ## 📋 Prerequisites
 
-### Permissions
-
-**`./deploy.sh` requires root privileges** to install system packages, configure Kubernetes, and manage cluster resources. Run with `sudo` or as root:
-
-```bash
-sudo bash ./deploy.sh full init
-# or
-sudo bash ./deploy.sh kweaver init
-```
-
 ### System requirements
 
 | Item | Minimum | Recommended |
 | --- | --- | --- |
-| OS | CentOS 7/8+, RHEL 8 | CentOS 7 |
+| OS | Ubuntu 20.04+, CentOS 8+, RHEL 8+ | Ubuntu 22.04 LTS |
 | CPU | 16 cores | 24 cores |
 | Memory | 48 GB | 64 GB |
 | Disk | 200 GB | 500 GB |
@@ -66,7 +52,8 @@ swapoff -a && sed -i '/ swap / s/^/#/' /etc/fstab
 # 3. Disable SELinux (optional; the script may handle this)
 setenforce 0
 
-# 4. Manually install container-selinux
+# 4. Manually install containerd.io
+dnf install containerd.io
 ```
 
 ### Network requirements
@@ -104,39 +91,100 @@ The deployment scripts need access to the following domains:
 
 ### Deployment commands
 
-**Note:** All `deploy.sh` commands require root privileges. Use `sudo` or run as root.
-
 ```bash
-# Full one-click deployment (recommended)
-sudo bash ./deploy.sh full init     # Infrastructure + KWeaver application services
+# Recommended install paths
+./deploy.sh kweaver-core install
+# Install KWeaver Core; ISF is installed by default, and missing K8s/data services are installed automatically
 
-# Layered deployment
-sudo bash ./deploy.sh infra init    # Infrastructure only: K8s + data services
-sudo bash ./deploy.sh kweaver init  # Application services only: ISF/Studio/Ontology, etc.
+./deploy.sh kweaver-core install --enable-isf=false
+# Install KWeaver Core without ISF; missing K8s/data services are still installed automatically
 
-# Deploy a single infrastructure component
-sudo bash ./deploy.sh k8s init         # Kubernetes cluster
-sudo bash ./deploy.sh mariadb init     # MariaDB
-sudo bash ./deploy.sh mongodb init     # MongoDB
-sudo bash ./deploy.sh redis init       # Redis
-sudo bash ./deploy.sh kafka init       # Kafka
-sudo bash ./deploy.sh opensearch init  # OpenSearch
+./deploy.sh kweaver-dip install
+# Install KWeaver DIP; if K8s, data services, ISF, or KWeaver Core are missing, they will be installed automatically
 
-# Deploy a single application service
-sudo bash ./deploy.sh isf init         # ISF service
-sudo bash ./deploy.sh studio init      # Studio service
+./deploy.sh kweaver-core download
+# Download/update KWeaver Core charts into deploy/.tmp/charts; includes ISF charts by default
 
-# Specify Helm repo and version
-sudo bash ./deploy.sh kweaver init --helm_repo=https://kweaver-ai.github.io/helm-repo/ --version=0.1.0
+./deploy.sh kweaver-core download --charts_dir=/path/to/charts
+# Download/update KWeaver Core charts into a specific local directory
 
-# Multiple version types are supported
-sudo bash ./deploy.sh kweaver init --version=0.1.0              # Stable release
-sudo bash ./deploy.sh kweaver init --version=0.0.0-feature-xxx  # Branch/dev build
-sudo bash ./deploy.sh kweaver init                              # Latest
+./deploy.sh kweaver-core download --enable-isf=false
+# Download only KWeaver Core charts and skip ISF charts
 
-# Help (no root required)
-./deploy.sh --help
+./deploy.sh kweaver-core install --charts_dir=./.tmp/charts
+# Install KWeaver Core from pre-downloaded local charts
+
+./deploy.sh kweaver-dip download
+# Download/update DIP + Core + ISF charts into deploy/.tmp/charts
+
+./deploy.sh kweaver-dip download --charts_dir=/path/to/charts
+# Download/update DIP + Core + ISF charts into a specific local directory
+
+./deploy.sh kweaver-dip install --charts_dir=./.tmp/charts
+# Install KWeaver DIP from pre-downloaded local charts
+
+./deploy.sh isf download --force-refresh
+# Force re-download ISF charts into deploy/.tmp/charts
+
+./deploy.sh isf download --charts_dir=/path/to/charts
+# Download/update ISF charts into a specific local directory
+
+./deploy.sh isf install --charts_dir=./.tmp/charts
+# Install ISF from pre-downloaded local charts; missing K8s/data services are installed automatically
+
+./deploy.sh core install
+# Same as above; `core` is an alias of `kweaver-core`
+
+./deploy.sh dip install
+# Same as above; `dip` is an alias of `kweaver-dip`
+
+# KWeaver Core examples
+./deploy.sh kweaver-core install --config=/root/.kweaver-ai/config.yaml
+# Use a specific config file
+
+./deploy.sh kweaver-core install --helm_repo=https://acr.aishu.cn/chartrepo/public --version=0.4.0
+# Install a specific version from a specific Helm repo
+
+./deploy.sh kweaver-core download --helm_repo=https://acr.aishu.cn/chartrepo/public --version=0.4.0
+# Pre-download a specific chart version from a specific Helm repo
+
+# Optional commands
+./deploy.sh isf install
+./deploy.sh config generate
+./deploy.sh k8s install
+./deploy.sh storage install
+./deploy.sh mariadb install
+./deploy.sh redis install
+./deploy.sh kafka install
+./deploy.sh zookeeper install
+./deploy.sh opensearch install
+./deploy.sh ingress-nginx install
+
+# Status and uninstall
+./deploy.sh isf status
+./deploy.sh kweaver-core status
+./deploy.sh kweaver-dip status
+./deploy.sh kweaver uninstall
+./deploy.sh kweaver-core uninstall
+./deploy.sh isf uninstall
+./deploy.sh kweaver-dip uninstall
+./deploy.sh k8s reset
+
+# Help
+./deploy.sh
 ```
+
+### Chart pre-download and cache
+
+- The shared chart cache directory defaults to `deploy/.tmp/charts`
+- If `download` cannot find `helm`, it installs `helm` first
+- `download` uses incremental refresh by default instead of re-downloading everything
+- If `--version` is set, the script only checks whether that exact chart version is already cached
+- If `--version` is not set, the script compares the repo latest chart version with the newest cached local version and only downloads when the repo is newer
+- `kweaver-core download` includes ISF charts by default; use `--enable-isf=false` to skip them
+- `kweaver-dip download` automatically downloads the full DIP + KWeaver Core + ISF dependency chart set
+- `download` is the only path that creates or updates the default shared cache in `deploy/.tmp/charts`
+- `install` does not auto-use `deploy/.tmp/charts`; pass `--charts_dir=<dir>` when you want to install from pre-downloaded local `.tgz` files
 
 ### Verify deployment
 
@@ -145,7 +193,7 @@ sudo bash ./deploy.sh kweaver init                              # Latest
 kubectl get nodes
 kubectl get pods -A
 
-# Service status (no root required)
+# Service status
 ./deploy.sh kweaver status
 ```
 
@@ -160,12 +208,6 @@ namespace: kweaver          # Namespace
 image:
   registry: swr.cn-east-3.myhuaweicloud.com/kweaver-ai  # Image registry
 
-accessAddress:
-  host: <public-ip-or-domain>  # Required on cloud VMs
-  port: 443
-  scheme: https
-  path: /
-
 depServices:
   rds:
     source_type: internal   # internal=embedded MariaDB, external=external DB
@@ -174,10 +216,6 @@ depServices:
     password: ''            # Auto-generated
 ```
 
-If you deploy on a cloud VM, you must set `accessAddress.host` in `conf/config.yaml` to the public IP or public domain used for external access. Using an internal address may cause access failures after installation.
-
-**Important:** For cloud VM deployments, you must also open ports **80** and **443** in your cloud provider's security group/firewall settings to allow external access. The ingress-nginx controller listens on these ports to serve the KWeaver platform.
-
 ### Use an external database
 
 If you use an external database:
@@ -185,39 +223,6 @@ If you use an external database:
 1. Change `source_type` to `external`
 2. Configure external DB connection settings
 3. Manually run the SQL initialization scripts under `scripts/sql/`
-
-### Scenario-based auto configuration
-
-The `auto_cofig` directory provides scripts to quickly set up a demo scenario (e.g. supply chain) after deployment. The workflow revolves around a central config file `config.env`:
-
-1. **`setup_tem_db.sh`** reads database credentials from `conf/config.yaml`, creates the demo database in MariaDB, imports sample data (`dump-tem.sql`), and **writes back** the connection info (`DS_HOST`, `DS_USERNAME`, `DS_PASSWORD`) into `config.env`.
-2. **`auto_config.sh`** reads `config.env` for authentication and data source settings, then creates data sources, imports knowledge networks, agents, data flows, etc.
-
-**Prerequisites:**
-
-1. Log in to the system console (`https://<node-ip>/deploy`, default: `admin/eisoo.com`)
-2. Create a test user in **Information Security Management → Unified Identity Authentication → Accounts → Users**
-3. Add the test user to roles: Data Administrator, AI Administrator, Application Administrator in **Roles & Access Policies → Role Management**
-4. Log in to Studio (`https://<node-ip>/studio`) with the test user (default password: `123456`) and change the password when prompted
-
-**Usage:**
-
-```bash
-cd deploy/auto_cofig
-
-# Step 1: Prepare demo database (auto-fills config.env with DB credentials)
-chmod +x setup_tem_db.sh auto_config.sh
-./setup_tem_db.sh
-
-# Step 2: Import scenario configuration
-./auto_config.sh agent.json 供应链业务知识网络.json dataflow.json
-
-# Step 3: Import toolboxes
-./auto_config.sh --step 7 contextloader工具集_020.adp
-./auto_config.sh --step 7 基础结构化数据分析工具箱2.adp
-```
-
-For detailed usage instructions, see `auto_cofig/README.md`.
 
 ## 📁 Project Structure
 
@@ -228,11 +233,6 @@ deploy/
 │   ├── config.yaml              # Deployment config
 │   ├── kube-flannel.yml         # Flannel network config
 │   └── local-path-storage.yaml  # Local storage config
-├── auto_cofig/                  # Scenario-based auto configuration
-│   ├── auto_config.sh           # Auto configuration script
-│   ├── config.env               # Configuration template
-│   ├── README.md                 # Usage instructions
-│   └── *.json, *.adp            # Example scenario files
 └── scripts/
     ├── lib/
     │   └── common.sh            # Common utilities
@@ -249,19 +249,17 @@ deploy/
 
 ## 🗑️ Uninstall
 
-**Note:** Uninstall commands also require root privileges.
-
 ```bash
 # Full uninstall
-sudo bash ./deploy.sh full reset         # Uninstall everything (apps + infrastructure)
+./deploy.sh full reset         # Uninstall everything (apps + infrastructure)
 
 # Layered uninstall
-sudo bash ./deploy.sh kweaver uninstall  # Uninstall application services only
-sudo bash ./deploy.sh infra reset        # Uninstall infrastructure only
+./deploy.sh kweaver uninstall  # Uninstall application services only
+./deploy.sh infra reset        # Uninstall infrastructure only
 
 # Uninstall a single component
-sudo bash ./deploy.sh mariadb uninstall
-sudo bash ./deploy.sh k8s reset
+./deploy.sh mariadb uninstall
+./deploy.sh k8s reset
 ```
 
 ## 🔍 Troubleshooting
@@ -286,75 +284,6 @@ curl -I https://swr.cn-east-3.myhuaweicloud.com
 cat /etc/containerd/config.toml
 ```
 
-### Helm install timeout (context deadline exceeded)
-
-If you see errors like `UPGRADE FAILED: context deadline exceeded` when installing services (especially ISF services like `sharemgnt-single`), the default timeout may be too short for slow networks or large images.
-
-**Solution:** Increase timeout via environment variables before running deploy:
-
-```bash
-# For ISF services (default: 600s helm, 900s command)
-export ISF_HELM_TIMEOUT=900s
-export ISF_COMMAND_TIMEOUT=1200
-sudo bash ./deploy.sh isf init
-
-# For all services (global override)
-export HELM_INSTALL_TIMEOUT=600s
-export HELM_COMMAND_TIMEOUT=900
-sudo bash ./deploy.sh kweaver init
-
-# For Kafka (already has longer default: 1800s)
-export KAFKA_HELM_TIMEOUT=2400s
-sudo bash ./deploy.sh kafka init
-```
-
-**Diagnosis:**
-```bash
-# Check Pod status and events
-kubectl get pods -n <namespace> | grep <service-name>
-kubectl describe pod -n <namespace> <pod-name>
-kubectl get events -n <namespace> --sort-by='.lastTimestamp' | tail -20
-```
-
-### Pod CrashLoopBackOff
-
-If a Pod is in `CrashLoopBackOff` state (restarting repeatedly), the container is crashing after startup. Common causes include:
-
-1. **Configuration errors** (missing/invalid config values)
-2. **Database connection failures** (database not ready or wrong credentials)
-3. **Missing dependencies** (other services not available)
-4. **Resource limits** (memory/CPU constraints)
-5. **Application errors** (check application logs)
-
-**Diagnosis:**
-```bash
-# 1. Check Pod status and describe (shows events and container status)
-kubectl get pod <pod-name> -n <namespace> -o wide
-kubectl describe pod <pod-name> -n <namespace>
-
-# 2. Check current container logs
-kubectl logs <pod-name> -n <namespace> --tail=100
-
-# 3. Check previous container logs (from crashed container)
-kubectl logs <pod-name> -n <namespace> --previous --tail=100
-
-# 4. Check recent events in namespace
-kubectl get events -n <namespace> --sort-by='.lastTimestamp' | tail -30
-
-# 5. Verify dependencies are ready (e.g., database)
-kubectl get pods -n <namespace> | grep -E 'mariadb|mongodb|mysql'
-kubectl get svc -n <namespace> | grep -E 'mariadb|mongodb|mysql'
-
-# 6. Check Helm release status
-helm status <release-name> -n <namespace>
-```
-
-**Common fixes:**
-- **Database not ready**: Wait for database pods to be `Running` before installing dependent services
-- **Wrong database credentials**: Check `config.yaml` database connection settings
-- **Missing environment variables**: Verify Helm values and config.yaml
-- **Resource constraints**: Check `kubectl describe pod` for `OOMKilled` or resource limit errors
-
 ### Kubernetes apt source 404 (Ubuntu/Debian)
 
 If `apt update` fails with a 404 for the legacy `packages.cloud.google.com` repository:
@@ -372,8 +301,6 @@ sudo apt-mark unhold kubeadm kubelet kubectl || true
 sudo apt remove -y kubeadm kubelet kubectl
 sudo rm -f /etc/apt/sources.list.d/kubernetes.list
 sudo rm -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-
-# Create keyrings directory
 sudo mkdir -p /etc/apt/keyrings
 
 # Add new pkgs.k8s.io source (v1.28 to match KWeaver's requirement)
@@ -389,59 +316,12 @@ sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
-### Cannot access from external network
-
-If you cannot access `https://<node-ip>/studio` from external networks after deployment:
-
-1. **Check security group/firewall settings** in your cloud provider console:
-   - Open port **80** (HTTP) and **443** (HTTPS) for inbound traffic
-   - Protocol: TCP
-   - Source: `0.0.0.0/0` (or your specific IP range)
-   - Action: Allow
-
-2. **Verify service is running**:
-   ```bash
-   kubectl get pods -n kweaver
-   kubectl get ingress -n kweaver
-   ```
-
-3. **Check if ports are listening**:
-   ```bash
-   sudo ss -tlnp | grep -E ':80 |:443 '
-   ```
-
-4. **Test local access**:
-   ```bash
-   curl -I http://localhost/studio
-   ```
-
-If local access works but external access fails, it's likely a security group/firewall configuration issue.
-
 ### View component logs
 
 ```bash
 kubectl logs -n <namespace> <pod-name>
 ```
 
-### Helm uninstall hook failure
-
-If a service installation or upgrade fails because a `post-delete` hook job is stuck or exits with an error, you can bypass the hook and clean up the leftover resources manually:
-
-```bash
-# Bypass the failing post-delete hook
-helm uninstall <release-name> -n <namespace> --no-hooks
-
-# Check for leftover job/pod resources
-kubectl get job,pod -n <namespace> | grep <release-name>
-
-# Remove leftovers if they still exist
-kubectl delete job -n <namespace> <release-name>-post-delete-job --ignore-not-found
-kubectl delete pod -n <namespace> -l job-name=<release-name>-post-delete-job --ignore-not-found
-```
-
-After cleanup, retry the installation.
-
 ## 📄 License
 
 [Apache License 2.0](../LICENSE.txt)
-

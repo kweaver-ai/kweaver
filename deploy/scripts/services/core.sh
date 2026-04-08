@@ -1,0 +1,404 @@
+
+# KWeaver Core releases list
+# Merged from: studio, bkn, vega, agentoperator, dataagent, decisionagent, flowautomation, sandboxruntime
+# Note: ISF releases are managed separately by isf.sh
+declare -a KWEAVER_CORE_RELEASES=(
+    # studio
+    "deploy-web"
+    "studio-web"
+    "business-system-frontend"
+    "business-system-service"
+    "mf-model-manager-nginx"
+    "mf-model-manager"
+    "mf-model-api"
+    # bkn
+    "bkn-backend"
+    "ontology-query"
+    # vega
+    "vega-backend"
+    "vega-web"
+    "data-connection"
+    "vega-gateway"
+    "vega-gateway-pro"
+    "mdl-data-model"
+    "mdl-uniquery"
+    "mdl-data-model-job"
+    # agentoperator
+    "agent-operator-integration"
+    "operator-web"
+    "agent-retrieval"
+    "data-retrieval"
+    # dataagent
+    "agent-backend"
+    "agent-web"
+    # flowautomation
+    "flow-web"
+    "dataflow"
+    "coderunner"
+    "doc-convert"
+    # sandboxruntime
+    "sandbox"
+    # ossgateway
+    "oss-gateway-backend"
+    # trace ai
+    "otelcol-contrib"
+    "agent-observability"
+)
+
+# Default kweaver-core namespace
+CORE_NAMESPACE="${CORE_NAMESPACE:-kweaver-ai}"
+
+# release name -> chart name mapping (when chart name differs from release name)
+declare -A CORE_CHART_NAME_MAP=(
+)
+
+# Default local charts directory
+CORE_LOCAL_CHARTS_DIR="${CORE_LOCAL_CHARTS_DIR:-}"
+
+# Core SQL module directories to initialize before installing Core releases.
+declare -a CORE_SQL_MODULES=(
+    "studio"
+    "bkn"
+    "vega"
+    "agentoperator"
+    "dataagent"
+    "decisionagent"
+    "flowautomation"
+    "sandbox"
+)
+
+# Parse kweaver-core command arguments
+parse_core_args() {
+    local action="$1"
+    shift
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --version=*)
+                HELM_CHART_VERSION="${1#*=}"
+                shift
+                ;;
+            --version)
+                HELM_CHART_VERSION="$2"
+                shift 2
+                ;;
+            --helm_repo=*)
+                HELM_CHART_REPO_URL="${1#*=}"
+                shift
+                ;;
+            --helm_repo)
+                HELM_CHART_REPO_URL="$2"
+                shift 2
+                ;;
+            --helm_repo_name=*)
+                HELM_CHART_REPO_NAME="${1#*=}"
+                shift
+                ;;
+            --helm_repo_name)
+                HELM_CHART_REPO_NAME="$2"
+                shift 2
+                ;;
+            --charts_dir=*)
+                CORE_LOCAL_CHARTS_DIR="${1#*=}"
+                shift
+                ;;
+            --charts_dir)
+                CORE_LOCAL_CHARTS_DIR="$2"
+                shift 2
+                ;;
+            --force-refresh)
+                FORCE_REFRESH_CHARTS="true"
+                shift
+                ;;
+            --namespace=*)
+                CORE_NAMESPACE="${1#*=}"
+                shift
+                ;;
+            --namespace)
+                CORE_NAMESPACE="$2"
+                shift 2
+                ;;
+            --config=*)
+                CONFIG_YAML_PATH="${1#*=}"
+                shift
+                ;;
+            --config)
+                CONFIG_YAML_PATH="$2"
+                shift 2
+                ;;
+            --enable-isf=*)
+                ENABLE_ISF="${1#*=}"
+                shift
+                ;;
+            --enable-isf)
+                ENABLE_ISF="$2"
+                shift 2
+                ;;
+            *)
+                log_error "Unknown argument: $1"
+                return 1
+                ;;
+        esac
+    done
+}
+
+# Resolve local charts directory for kweaver-core
+_core_resolve_charts_dir() {
+    if [[ -n "${CORE_LOCAL_CHARTS_DIR}" ]]; then
+        if [[ -d "${CORE_LOCAL_CHARTS_DIR}" ]]; then
+            echo "${CORE_LOCAL_CHARTS_DIR}"
+        fi
+    fi
+}
+
+_core_download_charts_dir() {
+    if [[ -n "${CORE_LOCAL_CHARTS_DIR}" ]]; then
+        ensure_charts_dir "${CORE_LOCAL_CHARTS_DIR}"
+        return 0
+    fi
+
+    ensure_charts_dir "$(resolve_shared_charts_dir)"
+}
+
+init_core_databases() {
+    if ! is_rds_internal; then
+        warn_external_rds_sql_required "KWeaver Core" "${SCRIPT_DIR}/scripts/sql"
+        log_warn "Skipping automatic KWeaver Core database initialization (external RDS)"
+        return 0
+    fi
+
+    local module_name
+    local sql_dir
+    for module_name in "${CORE_SQL_MODULES[@]}"; do
+        sql_dir="${SCRIPT_DIR}/scripts/sql/${module_name}"
+        if [[ ! -d "${sql_dir}" ]]; then
+            log_warn "Skipping ${module_name} database initialization: SQL directory not found (${sql_dir})"
+            continue
+        fi
+
+        if ! init_module_database "${module_name}" "${sql_dir}"; then
+            log_error "Failed to initialize database for module: ${module_name}"
+            return 1
+        fi
+    done
+}
+
+download_core() {
+    log_info "Downloading KWeaver Core charts..."
+    ensure_helm_available
+
+    HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
+    HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
+
+    local charts_dir
+    charts_dir="$(_core_download_charts_dir)"
+
+    helm_repo_add_with_retry "${HELM_CHART_REPO_NAME}" "${HELM_CHART_REPO_URL}"
+
+    if [[ "${ENABLE_ISF}" != "false" ]]; then
+        local original_isf_charts_dir="${ISF_LOCAL_CHARTS_DIR:-}"
+        ISF_LOCAL_CHARTS_DIR="${charts_dir}"
+        download_isf
+        ISF_LOCAL_CHARTS_DIR="${original_isf_charts_dir}"
+    fi
+
+    local release_name
+    for release_name in "${KWEAVER_CORE_RELEASES[@]}"; do
+        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${release_name}" "${HELM_CHART_VERSION}" "${FORCE_REFRESH_CHARTS:-false}"
+    done
+}
+
+# Find local chart tgz for a given release name
+_core_find_local_chart() {
+    local charts_dir="$1"
+    local release_name="$2"
+    find_cached_chart_tgz "${charts_dir}" "${release_name}"
+}
+
+# Install a single kweaver-core release from a local .tgz
+_install_core_release_local() {
+    local release_name="$1"
+    local charts_dir="$2"
+    local namespace="$3"
+
+    local chart_tgz
+    chart_tgz="$(_core_find_local_chart "${charts_dir}" "${release_name}")"
+
+    if [[ -z "${chart_tgz}" ]]; then
+        log_error "✗ Local chart not found for ${release_name} in ${charts_dir}"
+        return 1
+    fi
+
+    local target_version
+    target_version=$(get_local_chart_version "${chart_tgz}")
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${release_name}" "${target_version}"; then
+        return 0
+    fi
+
+    log_info "Installing ${release_name} from local chart: $(basename "${chart_tgz}")..."
+
+    if helm upgrade --install "${release_name}" "${chart_tgz}" \
+            --namespace "${namespace}" \
+            -f "${CONFIG_YAML_PATH}" \
+            --wait --timeout=600s; then
+        log_info "✓ ${release_name} installed successfully"
+    else
+        log_error "✗ Failed to install ${release_name}"
+        return 1
+    fi
+}
+
+# Install a single kweaver-core release from a Helm repository
+_install_core_release_repo() {
+    local release_name="$1"
+    local namespace="$2"
+    local helm_repo_name="$3"
+    local release_version="$4"
+
+    # Resolve actual chart name (may differ from release name)
+    local chart_name="${release_name}"
+    if [[ -n "${CORE_CHART_NAME_MAP[${release_name}]+_}" ]]; then
+        chart_name="${CORE_CHART_NAME_MAP[${release_name}]}"
+    fi
+
+    local chart_ref="${helm_repo_name}/${chart_name}"
+
+    local target_version="${release_version}"
+    if [[ -z "${target_version}" ]]; then
+        target_version=$(get_repo_chart_latest_version "${helm_repo_name}" "${chart_name}")
+    fi
+
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${chart_name}" "${target_version}"; then
+        return 0
+    fi
+
+    # Clean up any pending state before installing
+    local current_status
+    current_status=$(helm status "${release_name}" -n "${namespace}" -o json 2>/dev/null | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
+    if [[ -n "${current_status}" && "${current_status}" != "deployed" && "${current_status}" != "failed" ]]; then
+        log_info "Cleaning up ${release_name} (status: ${current_status})..."
+        helm uninstall "${release_name}" -n "${namespace}" 2>/dev/null || true
+    fi
+
+    local -a helm_args=(
+        "${release_name}"
+        "${chart_ref}"
+        "--namespace" "${namespace}"
+        "-f" "${CONFIG_YAML_PATH}"
+    )
+
+    if [[ -n "${release_version}" ]]; then
+        helm_args+=("--version" "${release_version}")
+    fi
+
+    helm_args+=("--devel")
+
+    helm_install_with_retry "${release_name}" "${helm_args[@]}"
+}
+
+# Install KWeaver Core services via Helm
+install_core() {
+    log_info "Installing KWeaver Core services via Helm..."
+
+    if ! ensure_platform_prerequisites; then
+        log_error "Failed to ensure platform prerequisites for KWeaver Core"
+        return 1
+    fi
+
+    local namespace
+    namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
+    namespace="${namespace:-${CORE_NAMESPACE}}"
+
+    kubectl create namespace "${namespace}" 2>/dev/null || true
+
+    local charts_dir
+    charts_dir="$(_core_resolve_charts_dir)"
+
+    local use_local=false
+    if [[ -n "${charts_dir}" && -d "${charts_dir}" ]]; then
+        use_local=true
+        log_info "Using local Core charts from: ${charts_dir}"
+    else
+        log_info "No explicit local Core charts directory provided, using Helm repo."
+        log_info "  Version:   ${HELM_CHART_VERSION}"
+        log_info "  Helm Repo: ${HELM_CHART_REPO_NAME:-kweaver} -> ${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
+        HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
+        HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
+        helm_repo_add_with_retry "${HELM_CHART_REPO_NAME}" "${HELM_CHART_REPO_URL}"
+    fi
+
+    validate_config_credentials
+
+    log_info "Target namespace: ${namespace}"
+
+    # Check if ISF should be enabled (default: install ISF)
+    if [[ "${ENABLE_ISF}" == "false" ]]; then
+        log_info "ISF installation disabled via --enable-isf=false"
+    else
+        log_info "Installing ISF services (default, use --enable-isf=false to skip)"
+        local original_isf_charts_dir="${ISF_LOCAL_CHARTS_DIR:-}"
+        if [[ "${use_local}" == "true" ]]; then
+            ISF_LOCAL_CHARTS_DIR="${charts_dir}"
+        fi
+        if ! install_isf; then
+            ISF_LOCAL_CHARTS_DIR="${original_isf_charts_dir}"
+            log_error "Failed to install ISF services"
+            return 1
+        fi
+        ISF_LOCAL_CHARTS_DIR="${original_isf_charts_dir}"
+    fi
+
+    if ! init_core_databases; then
+        log_error "Failed to initialize KWeaver Core databases"
+        return 1
+    fi
+
+    for release_name in "${KWEAVER_CORE_RELEASES[@]}"; do
+        if [[ "${use_local}" == "true" ]]; then
+            _install_core_release_local "${release_name}" "${charts_dir}" "${namespace}"
+        else
+            _install_core_release_repo "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${HELM_CHART_VERSION}"
+        fi
+    done
+
+    log_info "KWeaver Core services installation completed."
+}
+
+# Uninstall KWeaver Core services
+uninstall_core() {
+    log_info "Uninstalling KWeaver Core services..."
+
+    local namespace
+    namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
+    namespace="${namespace:-${CORE_NAMESPACE}}"
+
+    for ((i=${#KWEAVER_CORE_RELEASES[@]}-1; i>=0; i--)); do
+        local release_name="${KWEAVER_CORE_RELEASES[$i]}"
+        helm_uninstall_safe "${release_name}" "${namespace}"
+    done
+
+    log_info "KWeaver Core services uninstallation completed."
+}
+
+# Show KWeaver Core services status
+show_core_status() {
+    log_info "KWeaver Core services status:"
+
+    local namespace
+    namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
+    namespace="${namespace:-${CORE_NAMESPACE}}"
+
+    log_info "Namespace: ${namespace}"
+    log_info ""
+
+    for release_name in "${KWEAVER_CORE_RELEASES[@]}"; do
+        if helm status "${release_name}" -n "${namespace}" >/dev/null 2>&1; then
+            local status
+            status=$(helm status "${release_name}" -n "${namespace}" -o json 2>/dev/null \
+                | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
+            log_info "  ✓ ${release_name}: ${status}"
+        else
+            log_info "  ✗ ${release_name}: not installed"
+        fi
+    done
+}

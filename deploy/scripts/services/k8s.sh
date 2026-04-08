@@ -260,7 +260,7 @@ install_cni() {
     
     # Install Flannel CNI (ensure network CIDR matches POD_CIDR)
     # Note: Image addresses are already configured in the YAML file
-    read_or_fetch "${FLANNEL_MANIFEST_PATH}" "${FLANNEL_MANIFEST_URL}" | \
+    cat "${FLANNEL_MANIFEST_PATH}" | \
         sed "s|10.244.0.0/16|${POD_CIDR}|g" | \
         kubectl apply -f -
     
@@ -941,7 +941,7 @@ reset_k8s() {
     
     # Confirmation prompt
     echo ""
-    echo "WARNING: This will reset Kubernetes and clean up all related data."
+    echo "WARNING: This will completely reset Kubernetes and clean up all certificates, containers, and configurations."
     echo "This action cannot be undone."
     read -p "Type 'Y' or 'y' to confirm: " -r confirm
     
@@ -953,7 +953,10 @@ reset_k8s() {
     systemctl stop kubelet 2>/dev/null || true
     kubeadm reset -f 2>/dev/null || true
     
-    # CNI
+    rm -rf /var/lib/kubelet/pki/* 2>/dev/null || true
+    
+    crictl rm --all 2>/dev/null || true
+    
     rm -rf /etc/cni/net.d 2>/dev/null || true
     rm -rf /var/lib/cni 2>/dev/null || true
     rm -rf /run/flannel 2>/dev/null || true

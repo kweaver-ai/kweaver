@@ -82,6 +82,7 @@ extract_config_access_address_fields() {
 
 # Local Helm charts directory
 LOCAL_CHARTS_DIR="${LOCAL_CHARTS_DIR:-${SCRIPT_DIR}/charts}"
+SHARED_CHARTS_DIR="${SHARED_CHARTS_DIR:-${SCRIPT_DIR}/.tmp/charts}"
 
 # Default namespace for infrastructure components (MariaDB/Redis/Kafka/OpenSearch, etc.)
 RESOURCE_NAMESPACE="${RESOURCE_NAMESPACE:-resource}"
@@ -287,6 +288,252 @@ is_helm_installed() {
     helm list -n "${ns}" --short | grep -q "^${release}$"
 }
 
+# Get currently installed chart version for a release.
+# Args: <release_name> <namespace> [chart_name]
+get_installed_chart_version() {
+    local release_name="$1"
+    local namespace="$2"
+    local chart_name="${3:-}"
+
+    local installed_chart
+    installed_chart=$(helm list -n "${namespace}" --filter "^${release_name}$" -o json 2>/dev/null \
+        | grep -o '"chart":"[^"]*"' | head -1 | sed -e 's/^"chart":"//' -e 's/"$//')
+
+    if [[ -z "${installed_chart}" ]]; then
+        return 0
+    fi
+
+    if [[ -n "${chart_name}" && "${installed_chart}" == "${chart_name}-"* ]]; then
+        echo "${installed_chart#${chart_name}-}"
+        return 0
+    fi
+
+    # Fallback format: chart string is usually <chartName>-<version>
+    echo "${installed_chart##*-}"
+}
+
+# Get latest chart version from Helm repo metadata.
+# Args: <repo_name> <chart_name>
+get_repo_chart_latest_version() {
+    local repo_name="$1"
+    local chart_name="$2"
+    helm search repo "${repo_name}/${chart_name}" --devel -l 2>/dev/null | awk 'NR==2 {print $2}'
+}
+
+# Resolve the shared local cache directory for downloaded application charts.
+resolve_shared_charts_dir() {
+    echo "${SHARED_CHARTS_DIR}"
+}
+
+# Remove the default shared chart cache before an install that does not use an
+# explicit local charts directory.
+# Args: [explicit_charts_dir]
+clear_shared_charts_cache_for_install() {
+    local explicit_charts_dir="${1:-}"
+    if [[ -n "${explicit_charts_dir}" ]]; then
+        return 0
+    fi
+
+    local shared_dir
+    shared_dir="$(resolve_shared_charts_dir)"
+    if [[ -d "${shared_dir}" ]]; then
+        rm -rf "${shared_dir}"
+    fi
+}
+
+# Ensure a chart directory exists and print its absolute path.
+# Args: <charts_dir>
+ensure_charts_dir() {
+    local charts_dir="$1"
+    mkdir -p "${charts_dir}"
+    (
+        cd "${charts_dir}" >/dev/null 2>&1
+        pwd
+    )
+}
+
+# List cached chart tarballs whose filenames share the requested chart prefix.
+# Args: <charts_dir> <chart_name>
+list_cached_chart_candidates() {
+    local charts_dir="$1"
+    local chart_name="$2"
+    find "${charts_dir}" -maxdepth 1 -name "${chart_name}-*.tgz" 2>/dev/null | sort -V
+}
+
+# Read the embedded chart name from a local .tgz package.
+# Args: <chart_tgz_path>
+get_local_chart_name() {
+    local chart_tgz="$1"
+    helm show chart "${chart_tgz}" 2>/dev/null | awk '/^name:[[:space:]]/ {sub(/^name:[[:space:]]*/, "", $0); print; exit}'
+}
+
+# Find the newest cached chart tarball for a chart name.
+# Args: <charts_dir> <chart_name>
+find_cached_chart_tgz() {
+    local charts_dir="$1"
+    local chart_name="$2"
+    local chart_tgz
+    local resolved_chart_name
+    local latest_match=""
+
+    while IFS= read -r chart_tgz; do
+        [[ -n "${chart_tgz}" ]] || continue
+        resolved_chart_name="$(get_local_chart_name "${chart_tgz}")"
+        if [[ "${resolved_chart_name}" == "${chart_name}" ]]; then
+            latest_match="${chart_tgz}"
+        fi
+    done < <(list_cached_chart_candidates "${charts_dir}" "${chart_name}")
+
+    echo "${latest_match}"
+}
+
+# Extract chart version from a chart tarball filename.
+# Args: <chart_tgz_path> <chart_name>
+get_chart_version_from_filename() {
+    local chart_tgz="$1"
+    local chart_name="$2"
+    local filename
+    filename="$(basename "${chart_tgz}")"
+    filename="${filename%.tgz}"
+    filename="${filename#${chart_name}-}"
+    echo "${filename}"
+}
+
+# Get the latest cached chart version from a directory.
+# Args: <charts_dir> <chart_name>
+get_cached_chart_latest_version() {
+    local charts_dir="$1"
+    local chart_name="$2"
+    local chart_tgz
+    chart_tgz="$(find_cached_chart_tgz "${charts_dir}" "${chart_name}")"
+    if [[ -z "${chart_tgz}" ]]; then
+        return 0
+    fi
+
+    local chart_version
+    chart_version="$(get_local_chart_version "${chart_tgz}")"
+    if [[ -n "${chart_version}" ]]; then
+        echo "${chart_version}"
+        return 0
+    fi
+
+    get_chart_version_from_filename "${chart_tgz}" "${chart_name}"
+}
+
+# Compare semantic-like versions using sort -V.
+# Return 0 when the first version is newer than the second.
+# Args: <lhs_version> <rhs_version>
+version_gt() {
+    local lhs="$1"
+    local rhs="$2"
+
+    if [[ -z "${lhs}" ]]; then
+        return 1
+    fi
+    if [[ -z "${rhs}" ]]; then
+        return 0
+    fi
+    [[ "$(printf '%s\n%s\n' "${lhs}" "${rhs}" | sort -V | tail -1)" == "${lhs}" && "${lhs}" != "${rhs}" ]]
+}
+
+# Download a chart to the local cache if needed.
+# Args: <charts_dir> <repo_name> <chart_name> [chart_version] [force_refresh]
+download_chart_to_cache() {
+    local charts_dir="$1"
+    local repo_name="$2"
+    local chart_name="$3"
+    local requested_version="${4:-}"
+    local force_refresh="${5:-false}"
+
+    charts_dir="$(ensure_charts_dir "${charts_dir}")"
+
+    local target_version="${requested_version}"
+    if [[ -z "${target_version}" ]]; then
+        target_version="$(get_repo_chart_latest_version "${repo_name}" "${chart_name}")"
+        if [[ -z "${target_version}" ]]; then
+            log_error "Failed to resolve latest chart version for ${repo_name}/${chart_name}"
+            return 1
+        fi
+    fi
+
+    local cached_version
+    cached_version="$(get_cached_chart_latest_version "${charts_dir}" "${chart_name}")"
+
+    if [[ "${force_refresh}" != "true" ]]; then
+        if [[ -n "${requested_version}" ]]; then
+            if [[ "${cached_version}" == "${requested_version}" ]] || [[ -n "$(find "${charts_dir}" -maxdepth 1 -name "${chart_name}-${requested_version}.tgz" -print -quit 2>/dev/null)" ]]; then
+                log_info "Skip download ${chart_name}: cached version ${requested_version} already exists."
+                return 0
+            fi
+        elif [[ -n "${cached_version}" ]] && ! version_gt "${target_version}" "${cached_version}"; then
+            log_info "Skip download ${chart_name}: cached version ${cached_version} is current."
+            return 0
+        fi
+    fi
+
+    log_info "Downloading ${repo_name}/${chart_name} ${target_version} to ${charts_dir}..."
+    helm pull "${repo_name}/${chart_name}" \
+        --version "${target_version}" \
+        --devel \
+        --destination "${charts_dir}"
+}
+
+# Ensure a Helm repo is registered and refreshed.
+# Args: <repo_name> <repo_url>
+ensure_helm_repo() {
+    local repo_name="$1"
+    local repo_url="$2"
+    helm repo add --force-update "${repo_name}" "${repo_url}" || true
+    helm repo update "${repo_name}" || true
+}
+
+# Ensure helm is available before running chart download logic.
+ensure_helm_available() {
+    if type -P helm >/dev/null 2>&1; then
+        return 0
+    fi
+
+    log_info "Helm not found; installing it before continuing..."
+    install_helm
+}
+
+# Get chart version from local .tgz package.
+# Args: <chart_tgz_path>
+get_local_chart_version() {
+    local chart_tgz="$1"
+    helm show chart "${chart_tgz}" 2>/dev/null | awk '$1=="version:" {print $2; exit}'
+}
+
+# Decide whether upgrade can be skipped when installed chart version equals target version.
+# Return 0 => skip upgrade, Return 1 => continue upgrade.
+# Args: <release_name> <namespace> <chart_name> <target_version>
+should_skip_upgrade_same_chart_version() {
+    local release_name="$1"
+    local namespace="$2"
+    local chart_name="$3"
+    local target_version="$4"
+
+    if [[ -z "${target_version}" ]]; then
+        return 1
+    fi
+
+    local current_status
+    current_status=$(helm status "${release_name}" -n "${namespace}" -o json 2>/dev/null \
+        | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4)
+    if [[ "${current_status}" != "deployed" ]]; then
+        return 1
+    fi
+
+    local installed_version
+    installed_version=$(get_installed_chart_version "${release_name}" "${namespace}" "${chart_name}")
+    if [[ -n "${installed_version}" && "${installed_version}" == "${target_version}" ]]; then
+        log_info "Skip ${release_name}: installed chart version ${installed_version} equals target ${target_version}."
+        return 0
+    fi
+
+    return 1
+}
+
 # Get existing password from config.yaml if it exists
 get_existing_password() {
     local key="$1"
@@ -351,7 +598,7 @@ K8S_RPM_REPO_GPGKEY="${K8S_RPM_REPO_GPGKEY:-https://mirrors.aliyun.com/kubernete
 # Flannel CNI Image Repository Configuration
 FLANNEL_IMAGE_REPO="${FLANNEL_IMAGE_REPO:-swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/}"
 FLANNEL_MANIFEST_PATH="${FLANNEL_MANIFEST_PATH:-${CONF_DIR}/kube-flannel.yml}"
-FLANNEL_MANIFEST_URL="${FLANNEL_MANIFEST_URL:-https://raw.githubusercontent.com/flannel-io/flannel/v0.25.5/Documentation/kube-flannel.yml}"
+FLANNEL_MANIFEST_URL="${FLANNEL_MANIFEST_URL:-https://gitee.com/mirrors/flannel/raw/main/Documentation/kube-flannel.yml}"
 
 
 # Helm Configuration
@@ -363,7 +610,7 @@ HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubuserconten
 HELM_VERSION="${HELM_VERSION:-v3.19.0}"
 HELM_TARBALL_BASEURL="${HELM_TARBALL_BASEURL:-https://repo.huaweicloud.com/helm/${HELM_VERSION}/}"
 
-# Global Helm Chart Configuration (for Studio, Ontology, and other modules)
+# Global Helm Chart Configuration (for Studio, BKN, and other modules)
 HELM_CHART_VERSION="${HELM_CHART_VERSION:-}"
 HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
 HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
@@ -470,8 +717,8 @@ OPENSEARCH_IMAGE="${OPENSEARCH_IMAGE:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai
 OPENSEARCH_IMAGE_REPOSITORY="${OPENSEARCH_IMAGE_REPOSITORY:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai/opensearchproject/opensearch}"
 OPENSEARCH_IMAGE_TAG="${OPENSEARCH_IMAGE_TAG:-2.19.4}"
 OPENSEARCH_IMAGE_FALLBACK="${OPENSEARCH_IMAGE_FALLBACK:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai/opensearchproject/opensearch:2.19.4}"
-# OpenSearch chart uses busybox initContainers (fsgroup-volume/sysctl) by default; set a mirror to avoid Docker Hub pulls.
-OPENSEARCH_INIT_IMAGE="${OPENSEARCH_INIT_IMAGE:-${LOCALPV_HELPER_IMAGE}}"
+# OpenSearch chart uses busybox initContainers (fsgroup-volume/sysctl); use a dedicated SWR mirror by default.
+OPENSEARCH_INIT_IMAGE="${OPENSEARCH_INIT_IMAGE:-swr.cn-east-3.myhuaweicloud.com/kweaver-ai/busybox:1.36.1}"
 OPENSEARCH_JAVA_OPTS="${OPENSEARCH_JAVA_OPTS:--Xms512m -Xmx512m -XX:MaxDirectMemorySize=128m}"
 OPENSEARCH_MEMORY_REQUEST="${OPENSEARCH_MEMORY_REQUEST:-512Mi}"
 # NOTE: OpenSearch uses heap + direct memory + native overhead. 768Mi is too tight for -Xmx512m.
@@ -480,6 +727,7 @@ OPENSEARCH_MEMORY_LIMIT="${OPENSEARCH_MEMORY_LIMIT:-2048Mi}"
 OPENSEARCH_PROTOCOL="${OPENSEARCH_PROTOCOL:-http}" # http (default) or https (requires enabling security)
 OPENSEARCH_DISABLE_SECURITY="${OPENSEARCH_DISABLE_SECURITY:-}"
 OPENSEARCH_SINGLE_NODE="${OPENSEARCH_SINGLE_NODE:-true}"
+OPENSEARCH_HELM_ATOMIC="${OPENSEARCH_HELM_ATOMIC:-false}"
 OPENSEARCH_PERSISTENCE_ENABLED="${OPENSEARCH_PERSISTENCE_ENABLED:-true}"
 OPENSEARCH_STORAGE_CLASS="${OPENSEARCH_STORAGE_CLASS:-}"
 OPENSEARCH_STORAGE_SIZE="${OPENSEARCH_STORAGE_SIZE:-8Gi}"
@@ -575,6 +823,152 @@ log_warn() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+k8s_is_running() {
+    if ! command -v kubectl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if kubectl get nodes >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [[ -f /root/.kube/config ]]; then
+        export KUBECONFIG=/root/.kube/config
+        if kubectl get nodes >/dev/null 2>&1; then
+            return 0
+        fi
+    fi
+
+    if [[ -f /etc/kubernetes/admin.conf ]]; then
+        mkdir -p /root/.kube
+        cp -f /etc/kubernetes/admin.conf /root/.kube/config
+        chown root:root /root/.kube/config 2>/dev/null || true
+        export KUBECONFIG=/root/.kube/config
+        if kubectl get nodes >/dev/null 2>&1; then
+            log_info "Recovered kubeconfig from /etc/kubernetes/admin.conf"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+ensure_k8s() {
+    if [[ "${KWEAVER_K8S_ENSURED:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    if k8s_is_running; then
+        log_info "Kubernetes cluster detected, skipping K8s installation."
+        export KWEAVER_K8S_ENSURED="true"
+        return 0
+    fi
+
+    log_info "No running Kubernetes cluster detected. Installing K8s first..."
+    check_root
+    detect_package_manager || return 1
+    install_containerd || return 1
+    install_kubernetes || return 1
+    install_helm || return 1
+
+    check_prerequisites || return 1
+    init_k8s_master || return 1
+    allow_master_scheduling || return 1
+    install_cni || return 1
+    wait_for_dns || return 1
+
+    if [[ "${AUTO_INSTALL_LOCALPV}" == "true" ]]; then
+        if [[ -z "$(kubectl get storageclass --no-headers 2>/dev/null)" ]]; then
+            install_localpv || return 1
+        fi
+    fi
+
+    if [[ "${AUTO_INSTALL_INGRESS_NGINX}" == "true" ]]; then
+        install_ingress_nginx || return 1
+    fi
+
+    export KWEAVER_K8S_ENSURED="true"
+    log_info "K8s installation completed."
+}
+
+ensure_data_services() {
+    if [[ "${KWEAVER_DATA_SERVICES_ENSURED:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    log_info "Ensuring platform data services (MariaDB/Redis/Kafka/Zookeeper/OpenSearch)..."
+
+    install_mariadb || return 1
+    install_redis || return 1
+    install_kafka || return 1
+    install_zookeeper || return 1
+    if [[ "${AUTO_INSTALL_INGRESS_NGINX}" == "true" ]]; then
+        install_ingress_nginx || return 1
+    fi
+    install_opensearch || return 1
+
+    if [[ "${AUTO_GENERATE_CONFIG}" == "true" ]]; then
+        generate_config_yaml || return 1
+    fi
+
+    export KWEAVER_DATA_SERVICES_ENSURED="true"
+}
+
+ensure_platform_prerequisites() {
+    if [[ "${KWEAVER_PLATFORM_PREREQUISITES_DONE:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    ensure_k8s || return 1
+    ensure_data_services || return 1
+
+    export KWEAVER_PLATFORM_PREREQUISITES_DONE="true"
+}
+
+get_access_address_field() {
+    local field="$1"
+    local cfg="${CONFIG_YAML_PATH}"
+
+    if [[ ! -f "${cfg}" ]]; then
+        return 0
+    fi
+
+    awk -v key="${field}:" '
+        $1=="accessAddress:" {in_block=1; next}
+        in_block && $1==key {print $2; exit}
+        in_block && $0 ~ /^[^ ]/ {in_block=0}
+    ' "${cfg}" 2>/dev/null | sed -e 's/^"//; s/"$//' -e "s/^'//; s/'$//"
+}
+
+get_access_address_base_url() {
+    local host port path scheme
+    host="$(get_access_address_field "host")"
+    port="$(get_access_address_field "port")"
+    path="$(get_access_address_field "path")"
+    scheme="$(get_access_address_field "scheme")"
+
+    if [[ -z "${host}" ]]; then
+        return 0
+    fi
+
+    scheme="${scheme:-https}"
+    path="${path:-/}"
+    if [[ "${path}" != /* ]]; then
+        path="/${path}"
+    fi
+    if [[ "${path}" == "/" ]]; then
+        path=""
+    else
+        path="${path%/}"
+    fi
+
+    local url="${scheme}://${host}"
+    if [[ -n "${port}" ]]; then
+        url="${url}:${port}"
+    fi
+    echo "${url}${path}"
 }
 
 random_password() {

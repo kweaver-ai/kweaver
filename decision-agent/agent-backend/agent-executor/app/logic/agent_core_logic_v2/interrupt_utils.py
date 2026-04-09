@@ -153,6 +153,11 @@ def _check_and_prepare_evidence(
             try:
                 import asyncio
 
+                StandLogger.info_log(
+                    f"[_check_and_prepare_evidence] About to call evidence_prepare, "
+                    f"result keys: {list(result.keys()) if isinstance(result, dict) else type(result)}"
+                )
+
                 logger.info(
                     f"[_check_and_prepare_evidence] Processing tool={tool_name}, "
                     f"result keys: {list(result.keys()) if isinstance(result, dict) else type(result)}, "
@@ -180,6 +185,11 @@ def _check_and_prepare_evidence(
                     )
                 )
 
+                StandLogger.info_log(
+                    f"[_check_and_prepare_evidence] evidence_prepare returned, "
+                    f"evidences_count={len(prepare_result.get('evidences', []))}"
+                )
+
                 logger.info(
                     f"[_check_and_prepare_evidence] evidence_prepare returned: "
                     f"evidence_id={prepare_result.get('evidence_id')}, "
@@ -201,6 +211,9 @@ def _check_and_prepare_evidence(
                     )
 
             except Exception as e:
+                StandLogger.info_log(
+                    f"[_check_and_prepare_evidence] Exception: {e}"
+                )
                 logger.error(
                     f"[_check_and_prepare_evidence] Failed to process {tool_name}: {e}",
                     exc_info=True

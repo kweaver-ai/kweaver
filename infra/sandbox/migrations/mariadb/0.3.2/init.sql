@@ -1,7 +1,7 @@
 -- ================================================================
 -- Sandbox Control Plane Database Schema for MariaDB
--- Version: 0.3.0
--- Database: adp
+-- Version: 0.3.2
+-- Database: kweaver
 --
 -- 数据表命名规范:
 -- - 表名: t_{module}_{entity} (小写 + 下划线)
@@ -16,7 +16,7 @@
 -- - t_sandbox_runtime_node: 运行时节点注册表
 -- ================================================================
 
-USE adp;
+USE kweaver;
 
 -- ================================================================
 -- Table: t_sandbox_template

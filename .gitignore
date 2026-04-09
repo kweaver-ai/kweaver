@@ -67,3 +67,5 @@ sandbox_web/dist/
 
 go.work
 go.work.sum
+decision-agent/.conf
+decision-agent/.ktctl

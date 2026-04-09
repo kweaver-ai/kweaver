@@ -291,56 +291,73 @@ class EvidenceInjectProcessor:
 
 async def create_evidence_injection_stream(
     original_stream: AsyncGenerator[Dict[str, Any], None],
-    evidence_store_key: Optional[str],
+    evidence_store_key: Optional[str] = None,
     is_debug: bool = False,
 ) -> AsyncGenerator[Dict[str, Any], None]:
     """
     创建带证据注入的流式输出包装器。
 
-    如果 evidence_store_key 为空或证据不存在，
-    则直接透传原始流。
+    从流中的每个 item 获取 evidence_store_key，
+    如果存在证据则进行注入标注。
 
     Args:
         original_stream: 原始流式输出
-        evidence_store_key: EvidenceStore 中的证据 ID
+        evidence_store_key: 已废弃参数（保留兼容性）
         is_debug: 调试模式
 
     Yields:
         可能包含 _evidence 元数据的输出字典
     """
-    if not evidence_store_key:
-        async for item in original_stream:
-            yield item
-        return
-
     from app.logic.agent_core_logic_v2.evidence_store import (
         get_global_evidence_store,
     )
 
     store = get_global_evidence_store()
-    evidences = store.get(evidence_store_key)
+    current_processor = None
+    current_evidences = []
 
-    if not evidences:
-        logger.debug(
-            f"[EvidenceInject] No evidences found for key={evidence_store_key}"
-        )
-        async for item in original_stream:
+    async for item in original_stream:
+        # 从当前 item 中获取 evidence_store_key
+        item_evidence_key = item.get("evidence_store_key")
+
+        # 如果有新的 evidence_store_key，从 EvidenceStore 获取证据
+        if item_evidence_key and item_evidence_key != getattr(
+            create_evidence_injection_stream, "_last_key", None
+        ):
+            evidences = store.get(item_evidence_key)
+            if evidences:
+                logger.info(
+                    f"[EvidenceInject] Loaded {len(evidences)} evidences "
+                    f"for key={item_evidence_key}"
+                )
+                current_evidences = evidences
+                enable_alias = getattr(
+                    Config.features, "enable_alias_match", True
+                )
+                min_sent_len = getattr(
+                    Config.features, "min_sentence_length", 10
+                )
+                current_processor = EvidenceInjectProcessor(
+                    evidences=current_evidences,
+                    enable_alias_match=enable_alias,
+                    min_sentence_length=min_sent_len,
+                )
+            else:
+                logger.debug(
+                    f"[EvidenceInject] No evidences found for key={item_evidence_key}"
+                )
+                current_processor = None
+            create_evidence_injection_stream._last_key = item_evidence_key
+
+        # 如果有处理器，则处理注入；否则直接透传
+        if current_processor:
+            # 将单个 item 转换为异步流以供处理器使用
+            async def single_item_stream():
+                yield item
+
+            async for processed_item in current_processor.process(
+                single_item_stream()
+            ):
+                yield processed_item
+        else:
             yield item
-        return
-
-    logger.info(
-        f"[EvidenceInject] Processing with {len(evidences)} evidences, "
-        f"key={evidence_store_key}"
-    )
-
-    enable_alias = getattr(Config.features, "enable_alias_match", True)
-    min_sent_len = getattr(Config.features, "min_sentence_length", 10)
-
-    processor = EvidenceInjectProcessor(
-        evidences=evidences,
-        enable_alias_match=enable_alias,
-        min_sentence_length=min_sent_len,
-    )
-
-    async for item in processor.process(original_stream):
-        yield item

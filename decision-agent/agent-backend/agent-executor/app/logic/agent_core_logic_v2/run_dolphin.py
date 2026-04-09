@@ -353,11 +353,19 @@ async def run_dolphin(
     from .evidence_inject_processor import create_evidence_injection_stream
 
     is_evidence_injection_enabled = getattr(
-        Config.features, "enable_evidence_injection", False
+        Config.features, "enable_evidence_injection", True
+    )
+
+    o11y_logger().info(
+        f"[run_dolphin] Evidence injection check: "
+        f"enabled={is_evidence_injection_enabled}, "
+        f"Config.features.enable_evidence_injection={getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}, "
+        f"llm_extraction_timeout={getattr(Config.features, 'llm_extraction_timeout', 'NOT_SET')}, "
+        f"llm_extraction_model='{getattr(Config.features, 'llm_extraction_model', 'NOT_SET')}'"
     )
 
     if is_evidence_injection_enabled:
-        o11y_logger().info("[run_dolphin] Evidence injection enabled")
+        o11y_logger().info("[run_dolphin] Evidence injection enabled, using injection stream")
 
         original_stream = process_arun_loop(
             agent, is_debug, evidence_store_key=None
@@ -370,6 +378,7 @@ async def run_dolphin(
         ):
             yield output
     else:
+        o11y_logger().info("[run_dolphin] Evidence injection disabled, using normal stream")
         async for output in process_arun_loop(agent, is_debug):
             yield output
 

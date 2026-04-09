@@ -77,8 +77,17 @@ async def evidence_prepare(
     evidence_id = f"ev_{uuid.uuid4().hex[:12]}"
     config = config or {}
 
+    tool_name = context.get("tool_name", "unknown") if context else "unknown"
+
     StandLogger.info_log(
-        f"[evidence_prepare] 开始处理, evidence_id={evidence_id}"
+        f"[evidence_prepare] 开始处理, evidence_id={evidence_id}, "
+        f"tool_name={tool_name}, "
+        f"config={config}, "
+        f"tool_call_result keys={list(tool_call_result.keys()) if isinstance(tool_call_result, dict) else type(tool_call_result)}"
+    )
+    logger.info(
+        f"[evidence_prepare] tool_name={tool_name}, "
+        f"tool_call_result={json.dumps(tool_call_result, ensure_ascii=False, default=str)[:1000]}..."
     )
 
     evidences = []

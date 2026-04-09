@@ -63,14 +63,31 @@ def _check_and_prepare_evidence(
 
     from app.common.config import Config
 
-    if not getattr(Config.features, "enable_evidence_injection", False):
+    # 日志: 检查证据注入功能是否启用
+    is_enabled = getattr(Config.features, "enable_evidence_injection", False)
+    logger.info(
+        f"[_check_and_prepare_evidence] Evidence injection enabled: {is_enabled}, "
+        f"Config.features.enable_evidence_injection = {getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}"
+    )
+
+    if not is_enabled:
         return evidence_store_key
 
     context = item.get("context", {})
+    logger.info(
+        f"[_check_and_prepare_evidence] Context keys: {list(context.keys()) if context else 'None'}, "
+        f"has _tool_call_results: {'_tool_call_results' in context}"
+    )
+
     if not context:
         return evidence_store_key
 
     tool_call_results = context.get("_tool_call_results", {})
+    logger.info(
+        f"[_check_and_prepare_evidence] Tool call results: {list(tool_call_results.keys()) if tool_call_results else 'None'}, "
+        f"type: {type(tool_call_results)}, is_dict: {isinstance(tool_call_results, dict)}"
+    )
+
     if not tool_call_results or not isinstance(tool_call_results, dict):
         return evidence_store_key
 
@@ -97,6 +114,13 @@ def _check_and_prepare_evidence(
             try:
                 import asyncio
 
+                logger.info(
+                    f"[_check_and_prepare_evidence] Processing tool={tool_name}, "
+                    f"result keys: {list(result.keys()) if isinstance(result, dict) else type(result)}, "
+                    f"config: llm_extraction_timeout={getattr(Config.features, 'llm_extraction_timeout', 30)}, "
+                    f"llm_extraction_model='{getattr(Config.features, 'llm_extraction_model', '')}'"
+                )
+
                 loop = asyncio.get_event_loop()
                 prepare_result = loop.run_until_complete(
                     evidence_prepare(
@@ -117,17 +141,30 @@ def _check_and_prepare_evidence(
                     )
                 )
 
+                logger.info(
+                    f"[_check_and_prepare_evidence] evidence_prepare returned: "
+                    f"evidence_id={prepare_result.get('evidence_id')}, "
+                    f"evidences_count={len(prepare_result.get('evidences', []))}, "
+                    f"summary={prepare_result.get('summary')}"
+                )
+
                 evidences = prepare_result.get("evidences", [])
                 if evidences:
                     current_evidences.extend(evidences)
                     logger.info(
                         f"[_check_and_prepare_evidence] tool={tool_name}, "
-                        f"extracted={len(evidences)} evidences"
+                        f"extracted={len(evidences)} evidences, "
+                        f"total_evidences={len(current_evidences)}"
+                    )
+                else:
+                    logger.warning(
+                        f"[_check_and_prepare_evidence] tool={tool_name} returned no evidences"
                     )
 
             except Exception as e:
-                logger.warning(
-                    f"[_check_and_prepare_evidence] Failed to process {tool_name}: {e}"
+                logger.error(
+                    f"[_check_and_prepare_evidence] Failed to process {tool_name}: {e}",
+                    exc_info=True
                 )
 
         if current_evidences:

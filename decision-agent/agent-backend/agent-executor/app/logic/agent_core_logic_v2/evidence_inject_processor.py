@@ -12,6 +12,7 @@ from app.common.utils.sentence_boundary_detector import (
     SentenceBoundaryDetector,
 )
 from app.common.config import Config
+from app.common.stand_log import StandLogger
 
 logger = logging.getLogger(__name__)
 
@@ -312,6 +313,13 @@ async def create_evidence_injection_stream(
         get_global_evidence_store,
     )
 
+    StandLogger.info_log(
+        f"\n{'='*60}\n"
+        f"[create_evidence_injection_stream] START\n"
+        f"  Initial evidence_store_key: {evidence_store_key}\n"
+        f"{'='*60}\n"
+    )
+
     store = get_global_evidence_store()
     current_processor = None
     current_evidences = []
@@ -320,15 +328,19 @@ async def create_evidence_injection_stream(
         # 从当前 item 中获取 evidence_store_key
         item_evidence_key = item.get("evidence_store_key")
 
+        StandLogger.info_log(
+            f"[create_evidence_injection_stream] Processing item with evidence_store_key={item_evidence_key}"
+        )
+
         # 如果有新的 evidence_store_key，从 EvidenceStore 获取证据
         if item_evidence_key and item_evidence_key != getattr(
             create_evidence_injection_stream, "_last_key", None
         ):
             evidences = store.get(item_evidence_key)
             if evidences:
-                logger.info(
-                    f"[EvidenceInject] Loaded {len(evidences)} evidences "
-                    f"for key={item_evidence_key}"
+                StandLogger.info_log(
+                    f"[EvidenceInject] ✅ Loaded {len(evidences)} evidences for key={item_evidence_key}\n"
+                    f"  Evidences: {[e.get('object_type_name', e.get('local_id', '?')) for e in evidences[:5]]}{'...' if len(evidences) > 5 else ''}"
                 )
                 current_evidences = evidences
                 enable_alias = getattr(
@@ -343,14 +355,17 @@ async def create_evidence_injection_stream(
                     min_sentence_length=min_sent_len,
                 )
             else:
-                logger.debug(
-                    f"[EvidenceInject] No evidences found for key={item_evidence_key}"
+                StandLogger.info_log(
+                    f"[EvidenceInject] ❌ No evidences found for key={item_evidence_key}"
                 )
                 current_processor = None
             create_evidence_injection_stream._last_key = item_evidence_key
 
         # 如果有处理器，则处理注入；否则直接透传
         if current_processor:
+            StandLogger.info_log(
+                f"[EvidenceInject] 🔄 Processing with EvidenceInjectProcessor"
+            )
             # 将单个 item 转换为异步流以供处理器使用
             async def single_item_stream():
                 yield item
@@ -358,6 +373,10 @@ async def create_evidence_injection_stream(
             async for processed_item in current_processor.process(
                 single_item_stream()
             ):
+                if processed_item.get("_evidence"):
+                    StandLogger.info_log(
+                        f"[EvidenceInject] ✅ Injected evidence: {processed_item.get('_evidence')}"
+                    )
                 yield processed_item
         else:
             yield item

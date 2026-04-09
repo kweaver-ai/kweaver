@@ -356,12 +356,18 @@ async def run_dolphin(
         Config.features, "enable_evidence_injection", True
     )
 
-    logger.info(
-        f"[run_dolphin] Evidence injection check: "
-        f"enabled={is_evidence_injection_enabled}, "
-        f"Config.features.enable_evidence_injection={getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}, "
-        f"llm_extraction_timeout={getattr(Config.features, 'llm_extraction_timeout', 'NOT_SET')}, "
-        f"llm_extraction_model='{getattr(Config.features, 'llm_extraction_model', 'NOT_SET')}'"
+    # StandLogger: 证据注入检查
+    StandLogger.info_log(
+        f"\n{'='*60}\n"
+        f"[run_dolphin] Evidence Injection Status\n"
+        f"{'='*60}\n"
+        f"  Enabled: {is_evidence_injection_enabled}\n"
+        f"  Config.features.enable_evidence_injection: {getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}\n"
+        f"  LLM extraction timeout: {getattr(Config.features, 'llm_extraction_timeout', 'NOT_SET')}s\n"
+        f"  LLM extraction model: '{getattr(Config.features, 'llm_extraction_model', 'NOT_SET')}'\n"
+        f"  Evidence store max size: {getattr(Config.features, 'evidence_store_max_size', 'NOT_SET')}\n"
+        f"  Evidence store TTL: {getattr(Config.features, 'evidence_store_ttl_seconds', 'NOT_SET')}s\n"
+        f"{'='*60}\n"
     )
 
     if is_evidence_injection_enabled:

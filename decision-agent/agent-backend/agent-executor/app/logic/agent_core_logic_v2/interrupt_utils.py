@@ -6,6 +6,8 @@ from typing import Dict, Any, AsyncGenerator, Optional
 
 from dolphin.sdk.agent.dolphin_agent import DolphinAgent
 
+from app.common.stand_log import StandLogger
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,37 +60,42 @@ def _check_and_prepare_evidence(
     Returns:
         evidence_store_key (新建或原有)
     """
-    if not isinstance(item, dict):
-        return evidence_store_key
-
     from app.common.config import Config
 
-    # 日志: 检查证据注入功能是否启用
+    # StandLogger: 检查证据注入功能是否启用
     is_enabled = getattr(Config.features, "enable_evidence_injection", False)
-    logger.info(
-        f"[_check_and_prepare_evidence] Evidence injection enabled: {is_enabled}, "
-        f"Config.features.enable_evidence_injection = {getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}"
+    StandLogger.info_log(
+        f"\n{'='*60}\n"
+        f"[_check_and_prepare_evidence] START\n"
+        f"  Evidence injection enabled: {is_enabled}\n"
+        f"  Config.features.enable_evidence_injection = {getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}\n"
     )
 
+    if not isinstance(item, dict):
+        StandLogger.info_log("[_check_and_prepare_evidence] END: item is not dict\n" + "="*60)
+        return evidence_store_key
+
     if not is_enabled:
+        StandLogger.info_log("[_check_and_prepare_evidence] END: evidence injection disabled\n" + "="*60)
         return evidence_store_key
 
     context = item.get("context", {})
-    logger.info(
-        f"[_check_and_prepare_evidence] Context keys: {list(context.keys()) if context else 'None'}, "
-        f"has _tool_call_results: {'_tool_call_results' in context}"
+    StandLogger.info_log(
+        f"  Context keys: {list(context.keys()) if context else 'None'}\n"
+        f"  Has _tool_call_results: {'_tool_call_results' in context}\n"
     )
 
     if not context:
+        StandLogger.info_log("[_check_and_prepare_evidence] END: no context\n" + "="*60)
         return evidence_store_key
 
     tool_call_results = context.get("_tool_call_results", {})
-    logger.info(
-        f"[_check_and_prepare_evidence] Tool call results: {list(tool_call_results.keys()) if tool_call_results else 'None'}, "
-        f"type: {type(tool_call_results)}, is_dict: {isinstance(tool_call_results, dict)}"
+    StandLogger.info_log(
+        f"  Tool call results: {list(tool_call_results.keys()) if tool_call_results else 'None'}\n"
     )
 
     if not tool_call_results or not isinstance(tool_call_results, dict):
+        StandLogger.info_log("[_check_and_prepare_evidence] END: no valid tool results\n" + "="*60)
         return evidence_store_key
 
     try:

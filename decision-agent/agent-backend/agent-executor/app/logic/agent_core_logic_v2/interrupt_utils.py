@@ -79,22 +79,39 @@ def _check_and_prepare_evidence(
         StandLogger.info_log("[_check_and_prepare_evidence] END: evidence injection disabled\n" + "="*60)
         return evidence_store_key
 
-    context = item.get("context", {})
+    # 从 _progress 数组中提取工具结果
+    progress_array = item.get("_progress", [])
     StandLogger.info_log(
-        f"  Context keys: {list(context.keys()) if context else 'None'}\n"
-        f"  Has _tool_call_results: {'_tool_call_results' in context}\n"
+        f"  Progress entries: {len(progress_array)}\n"
+        f"  Has _progress: {bool(progress_array)}\n"
     )
 
-    if not context:
-        StandLogger.info_log("[_check_and_prepare_evidence] END: no context\n" + "="*60)
+    if not progress_array:
+        StandLogger.info_log("[_check_and_prepare_evidence] END: no progress entries\n" + "="*60)
         return evidence_store_key
 
-    tool_call_results = context.get("_tool_call_results", {})
+    # 提取所有 stage="skill" 的工具调用结果
+    tool_call_results = {}
+    for progress_item in progress_array:
+        if progress_item.get("stage") != "skill":
+            continue
+
+        skill_info = progress_item.get("skill_info", {})
+        tool_name = skill_info.get("name", "")
+        answer = progress_item.get("answer")
+
+        if not tool_name or answer is None:
+            continue
+
+        # 如果同一个工具被调用多次，使用最后一次的结果
+        # 或者可以改为存储为列表
+        tool_call_results[tool_name] = answer
+
     StandLogger.info_log(
-        f"  Tool call results: {list(tool_call_results.keys()) if tool_call_results else 'None'}\n"
+        f"  Tool call results extracted: {list(tool_call_results.keys()) if tool_call_results else 'None'}\n"
     )
 
-    if not tool_call_results or not isinstance(tool_call_results, dict):
+    if not tool_call_results:
         StandLogger.info_log("[_check_and_prepare_evidence] END: no valid tool results\n" + "="*60)
         return evidence_store_key
 

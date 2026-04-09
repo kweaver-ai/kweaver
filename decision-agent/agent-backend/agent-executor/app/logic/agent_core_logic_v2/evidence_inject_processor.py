@@ -328,10 +328,6 @@ async def create_evidence_injection_stream(
         # 从当前 item 中获取 evidence_store_key
         item_evidence_key = item.get("evidence_store_key")
 
-        StandLogger.info_log(
-            f"[create_evidence_injection_stream] Processing item with evidence_store_key={item_evidence_key}"
-        )
-
         # 如果有新的 evidence_store_key，从 EvidenceStore 获取证据
         if item_evidence_key and item_evidence_key != getattr(
             create_evidence_injection_stream, "_last_key", None
@@ -361,8 +357,24 @@ async def create_evidence_injection_stream(
                 current_processor = None
             create_evidence_injection_stream._last_key = item_evidence_key
 
-        # 如果有处理器，则处理注入；否则直接透传
-        if current_processor:
+        # 检查是否应该处理此项目
+        answer = item.get("answer", "")
+        should_process = (
+            current_processor and
+            isinstance(answer, str) and
+            len(answer) > 50  # 只处理有实际文本内容的项目
+        )
+
+        StandLogger.info_log(
+            f"[create_evidence_injection_stream] item: "
+            f"evidence_store_key={item_evidence_key}, "
+            f"answer_type={type(answer).__name__}, "
+            f"answer_len={len(answer) if isinstance(answer, str) else 'N/A'}, "
+            f"should_process={should_process}"
+        )
+
+        # 如果有处理器且应该处理，则进行注入；否则直接透传
+        if should_process:
             StandLogger.info_log(
                 f"[EvidenceInject] 🔄 Processing with EvidenceInjectProcessor"
             )

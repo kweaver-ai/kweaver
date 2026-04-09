@@ -150,6 +150,10 @@ def _check_and_prepare_evidence(
                 )
                 continue
 
+            StandLogger.info_log(
+                f"[_check_and_prepare_evidence] === BEFORE TRY BLOCK ==="
+            )
+
             try:
                 import asyncio
 

@@ -167,7 +167,7 @@ async def _check_and_prepare_evidence(
             result_str = json.dumps(result, ensure_ascii=False, default=str)
 
             # 只存储非空且有意义的结果（过滤掉空字符串或过短的结果）
-            if len(result_str) > 10:
+            if len(result_str) > 5:
                 tool_results_for_storage.append({
                     "tool_name": tool_name,
                     "result": result_str,

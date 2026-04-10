@@ -369,8 +369,8 @@ async def create_evidence_injection_stream(
             f"_loaded_key={_loaded_key}"
         )
 
-        # 如果有新的 evidence_store_key（或者还没有加载过），从 EvidenceStore 获取原始工具结果
-        if item_evidence_key and (item_evidence_key != _loaded_key):
+        # 如果有新的 evidence_store_key（或者还没有加载过，或者当前没有工具结果），从 EvidenceStore 获取原始工具结果
+        if item_evidence_key and (item_evidence_key != _loaded_key or not current_tool_results):
             raw_results_key = f"{item_evidence_key}_raw"
             StandLogger.info_log(
                 f"[EvidenceInject] Attempting to load tool results: "
@@ -399,7 +399,8 @@ async def create_evidence_injection_stream(
         elif item_evidence_key:
             StandLogger.info_log(
                 f"[EvidenceInject] Skipping load: item_evidence_key={item_evidence_key}, "
-                f"_loaded_key={_loaded_key}, keys are equal"
+                f"_loaded_key={_loaded_key}, keys are equal, "
+                f"has_tool_results={len(current_tool_results) > 0}"
             )
 
         # 提取 LLM 生成的文本

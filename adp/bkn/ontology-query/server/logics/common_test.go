@@ -46,9 +46,9 @@ func Test_BuildViewSort(t *testing.T) {
 			So(len(result), ShouldEqual, 3) // _score desc + 2个主键 asc
 			So(result[0].Field, ShouldEqual, interfaces.SORT_FIELD_SCORE)
 			So(result[0].Direction, ShouldEqual, interfaces.DESC_DIRECTION)
-			So(result[1].Field, ShouldEqual, "id_field")
+			So(result[1].Field, ShouldEqual, "id")
 			So(result[1].Direction, ShouldEqual, interfaces.ASC_DIRECTION)
-			So(result[2].Field, ShouldEqual, "name_field")
+			So(result[2].Field, ShouldEqual, "name")
 			So(result[2].Direction, ShouldEqual, interfaces.ASC_DIRECTION)
 		})
 

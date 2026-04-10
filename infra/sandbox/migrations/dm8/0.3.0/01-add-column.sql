@@ -15,11 +15,6 @@ BEGIN
             ADD f_python_package_index_url VARCHAR(512 CHAR) NOT NULL
             DEFAULT ''https://pypi.org/simple/''
         ';
-
-        EXECUTE IMMEDIATE '
-            COMMENT ON COLUMN t_sandbox_session.f_python_package_index_url
-            IS ''Python软件包仓库地址''
-        ';
     END IF;
 END;
 /

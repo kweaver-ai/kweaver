@@ -147,7 +147,36 @@ func (agentSvc *agentSvc) handleProgress(ctx context.Context, req *agentreq.Chat
 			agentSvc.logger.Infof("[handleProgress] Processing progress with _evidence: id=%s, stage=%s, count=%d", pg.ID, pg.Stage, len(pg.Evidence))
 		}
 
+		// 检查是否已处理过此 progress ID
+		shouldSkip := false
 		if _, exist := set[pg.ID]; exist {
+			// 如果已存在，检查是否需要用带 _evidence 的版本替换
+			if v, ok := progressMap.Load(aMsgID); ok {
+				existingList := v.([]*agentrespvo.Progress)
+				// 查找已存在的 progress
+				for i, existing := range existingList {
+					if existing.ID == pg.ID {
+						// 如果新版本有 _evidence 而旧版本没有，替换
+						if (pg.Evidence != nil && len(pg.Evidence) > 0) &&
+							(existing.Evidence == nil || len(existing.Evidence) == 0) {
+							// 替换已存在的 progress
+							existingList[i] = pg
+							progressMap.Store(aMsgID, existingList)
+							agentSvc.logger.Infof("[handleProgress] Replaced progress with _evidence version: id=%s", pg.ID)
+							shouldSkip = true
+						} else {
+							// 保持原样，跳过
+							shouldSkip = true
+						}
+						break
+					}
+				}
+			} else {
+				shouldSkip = true
+			}
+		}
+
+		if shouldSkip {
 			continue
 		}
 

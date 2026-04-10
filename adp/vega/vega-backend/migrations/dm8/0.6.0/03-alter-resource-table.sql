@@ -6,21 +6,8 @@
 -- ==========================================
 -- 迁移脚本：修改 t_resource 表的索引结构
 -- ==========================================
--- 说明：
--- 1. 删除原有的 idx_t_resource_catalog_name 唯一索引
--- 2. 添加新的 idx_t_resource_catalog_source_identifier 唯一索引
 
 SET SCHEMA adp;
-
--- 删除原有的 idx_t_resource_catalog_name 唯一索引
-DROP INDEX IF EXISTS t_resource.idx_t_resource_catalog_name;
-
--- 添加新的 idx_t_resource_catalog_source_identifier 唯一索引
-CREATE UNIQUE INDEX IF NOT EXISTS idx_t_resource_catalog_source_identifier ON t_resource(f_catalog_id, f_source_identifier);
-
-
-ALTER TABLE t_discover_task ADD COLUMN IF NOT EXISTS f_scheduled_id VARCHAR(40 CHAR) DEFAULT NULL;
-ALTER TABLE t_discover_task ADD COLUMN IF NOT EXISTS f_strategies VARCHAR(100 CHAR) DEFAULT NULL;
 
 -- ==========================================
 -- 9. t_scheduled_discover_task 定时发现任务表

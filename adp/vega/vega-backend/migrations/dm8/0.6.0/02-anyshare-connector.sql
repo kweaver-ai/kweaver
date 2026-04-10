@@ -3,7 +3,7 @@
 -- Licensed under the Apache License, Version 2.0.
 -- See the LICENSE file in the project root for details.
 
-SET SCHEMA adp;
+SET SCHEMA kweaver;
 
 -- AnyShare fileset connector (local)
 INSERT INTO t_connector_type (f_type, f_name, f_description, f_mode, f_category, f_field_config, f_enabled)

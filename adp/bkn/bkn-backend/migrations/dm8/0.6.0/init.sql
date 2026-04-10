@@ -3,7 +3,7 @@
 -- Licensed under the Apache License, Version 2.0.
 -- See the LICENSE file in the project root for details.
 
-SET SCHEMA adp;
+SET SCHEMA kweaver;
 
 
 -- 业务知识网络

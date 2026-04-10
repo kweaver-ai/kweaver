@@ -10,7 +10,7 @@
 -- 1. 删除原有的 uk_catalog_name 唯一索引
 -- 2. 添加新的 uk_catalog_source_identifier 唯一索引
 
-USE adp;
+USE kweaver;
 
 -- 删除原有的 uk_catalog_name 唯一索引
 ALTER TABLE t_resource DROP INDEX uk_catalog_name;

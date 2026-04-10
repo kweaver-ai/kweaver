@@ -365,72 +365,118 @@ async def create_evidence_injection_stream(
     store = get_global_evidence_store()
     current_tool_results = []  # 存储当前的工具结果
     _loaded_key = None  # 记录已加载的 key
+    last_llm_item = None  # 缓存最后一个包含 LLM stage 的 item
+    last_llm_item_tool_results = []  # 缓存对应的工具结果
+    last_llm_item_loaded_key = None  # 缓存对应的 loaded_key
 
-    # 使用预读取模式实现流结束检测
-    # 这样我们可以在最后一个 item 上进行标注，而不阻塞流式输出
-    cached_item = None
-    try:
-        # 预读取第一个 item
-        cached_item = await original_stream.__anext__()
-    except StopAsyncIteration:
-        # 流为空，直接返回
-        StandLogger.info_log("[create_evidence_injection_stream] Stream is empty")
-        return
+    if not annotate_only_final:
+        # 如果不是仅标注最终答案，使用原有的流式处理逻辑
+        async for item in original_stream:
+            item_evidence_key = item.get("evidence_store_key")
 
-    while True:
-        # 尝试预读取下一个 item
-        next_item = None
-        try:
-            next_item = await original_stream.__anext__()
-        except StopAsyncIteration:
-            # 流结束，当前 cached_item 是最后一个 item
-            StandLogger.info_log(
-                "[create_evidence_injection_stream] Stream ending, "
-                "processing final item with LLM annotation"
-            )
+            # 更新工具结果
+            if item_evidence_key and (item_evidence_key != _loaded_key or not current_tool_results):
+                raw_results_key = f"{item_evidence_key}_raw"
+                tool_results = store.get(raw_results_key)
+                if tool_results:
+                    current_tool_results = tool_results
+                    _loaded_key = item_evidence_key
 
-            # 对最后一个 item 进行完整处理（包括 LLM 标注）
+            # 处理 item
             async for result in _process_single_item(
-                cached_item,
+                item,
                 store,
                 current_tool_results,
                 _loaded_key,
-                is_final_answer=True,  # 标记为最终答案
-                annotate_only_final=annotate_only_final,
+                is_final_answer=False,
+                annotate_only_final=False,
             ):
                 yield result
-
-            # 更新状态
-            processed_item = result
-            current_tool_results = processed_item.get("_cached_tool_results", current_tool_results)
-            _loaded_key = processed_item.get("_cached_loaded_key", _loaded_key)
-
-            break
-
-        # 还有更多 item，当前 cached_item 不是最后一个
+    else:
+        # 仅标注最终答案：缓存最后一个包含 LLM stage 的 item
         StandLogger.info_log(
-            "[create_evidence_injection_stream] More items ahead, "
-            "processing current item without LLM annotation"
+            "[create_evidence_injection_stream] annotate_only_final=True, "
+            "caching last LLM item for annotation"
         )
 
-        # 对中间 item 进行快速处理（跳过 LLM 标注）
-        async for result in _process_single_item(
-            cached_item,
-            store,
-            current_tool_results,
-            _loaded_key,
-            is_final_answer=False,  # 不是最终答案
-            annotate_only_final=annotate_only_final,
-        ):
-            yield result
+        async for item in original_stream:
+            item_evidence_key = item.get("evidence_store_key")
 
-        # 更新状态
-        processed_item = result
-        current_tool_results = processed_item.get("_cached_tool_results", current_tool_results)
-        _loaded_key = processed_item.get("_cached_loaded_key", _loaded_key)
+            # 更新工具结果
+            if item_evidence_key and (item_evidence_key != _loaded_key or not current_tool_results):
+                raw_results_key = f"{item_evidence_key}_raw"
+                tool_results = store.get(raw_results_key)
+                if tool_results:
+                    current_tool_results = tool_results
+                    _loaded_key = item_evidence_key
 
-        # 移动到下一个 item
-        cached_item = next_item
+            # 检查当前 item 是否包含 LLM stage
+            has_llm_stage = _check_has_llm_stage(item)
+
+            if has_llm_stage:
+                # 缓存这个包含 LLM stage 的 item
+                last_llm_item = item
+                last_llm_item_tool_results = current_tool_results
+                last_llm_item_loaded_key = _loaded_key
+                StandLogger.info_log(
+                    f"[create_evidence_injection_stream] Cached LLM item, "
+                    f"tool_results_count={len(current_tool_results)}"
+                )
+            else:
+                # 没有 LLM stage，直接发送
+                StandLogger.info_log(
+                    "[create_evidence_injection_stream] No LLM stage in item, "
+                    "passing through"
+                )
+
+            # 直接发送当前 item（不进行标注）
+            yield item
+
+        # 流结束后，对缓存的 LLM item 进行标注
+        if last_llm_item is not None:
+            StandLogger.info_log(
+                "[create_evidence_injection_stream] Stream ended, "
+                "annotating cached LLM item"
+            )
+
+            # 对缓存的 LLM item 进行标注
+            annotated = False
+            async for result in _process_single_item(
+                last_llm_item,
+                store,
+                last_llm_item_tool_results,
+                last_llm_item_loaded_key,
+                is_final_answer=True,
+                annotate_only_final=True,
+            ):
+                if not annotated:
+                    yield result
+                    annotated = True
+        else:
+            StandLogger.info_log(
+                "[create_evidence_injection_stream] Stream ended, "
+                "no LLM item found to annotate"
+            )
+
+
+def _check_has_llm_stage(item: Dict[str, Any]) -> bool:
+    """检查 item 是否包含 LLM stage"""
+    answer = item.get("answer", {})
+    if isinstance(answer, dict):
+        progress_array = answer.get("_progress", [])
+        if isinstance(progress_array, list):
+            for p in progress_array:
+                if p.get("stage") == "llm":
+                    return True
+
+    # 同时检查顶层的 _progress
+    progress_array = item.get("_progress", [])
+    if isinstance(progress_array, list):
+        for p in progress_array:
+            if p.get("stage") == "llm":
+                return True
+
+    return False
 
 
 async def _process_single_item(

@@ -6,6 +6,7 @@
 -- ==========================================
 -- 迁移脚本：将 bkn 相关表从 adp 库迁移至 kweaver 库
 -- ==========================================
+USE kweaver;
 
 RENAME TABLE adp.t_knowledge_network TO kweaver.t_knowledge_network;
 RENAME TABLE adp.t_object_type TO kweaver.t_object_type;

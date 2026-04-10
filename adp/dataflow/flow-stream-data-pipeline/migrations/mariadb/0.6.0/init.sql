@@ -1,16 +1,5 @@
 USE kweaver;
 
--- 内部应用
-CREATE TABLE IF NOT EXISTS t_internal_app (
-  f_app_id varchar(40) NOT NULL COMMENT 'app_id',
-  f_app_name varchar(40) NOT NULL COMMENT 'app名称',
-  f_app_secret varchar(40) NOT NULL COMMENT 'app_secret',
-  f_create_time bigint(20) NOT NULL DEFAULT 0 COMMENT '创建时间',
-  PRIMARY KEY (f_app_id),
-  UNIQUE KEY uk_app_name (f_app_name)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '内部应用';
-
-
 CREATE TABLE IF NOT EXISTS t_stream_data_pipeline (
   f_pipeline_id varchar(40) NOT NULL DEFAULT '' COMMENT '管道 id',
   f_pipeline_name varchar(40) NOT NULL DEFAULT '' COMMENT '管道名称',

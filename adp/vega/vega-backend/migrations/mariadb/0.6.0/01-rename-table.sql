@@ -6,6 +6,7 @@
 -- ==========================================
 -- 迁移脚本：将 vega 相关表从 adp 库迁移至 kweaver 库
 -- ==========================================
+USE kweaver;
 
 RENAME TABLE adp.t_catalog TO kweaver.t_catalog;
 RENAME TABLE adp.t_catalog_discover_policy TO kweaver.t_catalog_discover_policy;

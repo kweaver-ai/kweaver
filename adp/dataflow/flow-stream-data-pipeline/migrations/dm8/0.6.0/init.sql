@@ -1,14 +1,5 @@
 SET SCHEMA kweaver;
 
-CREATE TABLE IF NOT EXISTS t_internal_app (
-  f_app_id VARCHAR(40 CHAR) NOT NULL,
-  f_app_name VARCHAR(40 CHAR) NOT NULL,
-  f_app_secret VARCHAR(40 CHAR) NOT NULL,
-  f_create_time BIGINT NOT NULL DEFAULT 0,
-  CLUSTER PRIMARY KEY (f_app_id)
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS t_internal_app_uk_app_name ON t_internal_app(f_app_name);
 
 CREATE TABLE IF NOT EXISTS t_stream_data_pipeline (
   f_pipeline_id VARCHAR(40 CHAR) NOT NULL DEFAULT '',

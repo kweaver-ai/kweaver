@@ -464,27 +464,32 @@ async def create_evidence_injection_stream(
                     StandLogger.info_log(
                         f"[EvidenceInject] ✅ LLM annotated {len(evidence_meta)} evidences"
                     )
+                else:
+                    StandLogger.info_log(
+                        f"[EvidenceInject] ℹ️ LLM found no evidence in text"
+                    )
 
-                    # 将 _evidence 添加到当前 item 的 _progress 数组中的最新条目
-                    if "_progress" in item and isinstance(item["_progress"], list):
-                        if item["_progress"]:
-                            latest_progress = item["_progress"][-1]
+                # 无论是否提取到证据，都添加 _evidence 字段（空字典作为占位）
+                # 只对 LLM stage 的 progress 条目添加
+                if "_progress" in item and isinstance(item["_progress"], list):
+                    if item["_progress"]:
+                        latest_progress = item["_progress"][-1]
+                        # 只对 LLM stage 添加 _evidence
+                        if latest_progress.get("stage") == "llm":
                             latest_progress["_evidence"] = evidence_meta
                             StandLogger.info_log(
-                                f"[EvidenceInject] ✅ Injected evidence into _progress: "
+                                f"[EvidenceInject] ✅ Injected _evidence into _progress: "
                                 f"stage={latest_progress.get('stage')}, "
-                                f"evidence_count={len(evidence_meta)}"
+                                f"evidence_count={len(evidence_meta)}, "
+                                f"is_placeholder={len(evidence_meta) == 0}"
                             )
 
                             # 验证注入是否成功
                             StandLogger.info_log(
                                 f"[EvidenceInject] Verification: "
-                                f"item['_progress'][-1] has _evidence: {'_evidence' in item['_progress'][-1]}"
+                                f"item['_progress'][-1] has _evidence: {'_evidence' in item['_progress'][-1]}, "
+                                f"keys={list(item['_progress'][-1].keys()) if item['_progress'] else 'N/A'}"
                             )
-                else:
-                    StandLogger.info_log(
-                        f"[EvidenceInject] ℹ️ LLM found no evidence in text"
-                    )
 
             except Exception as e:
                 StandLogger.info_log(

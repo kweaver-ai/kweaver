@@ -1652,3 +1652,15 @@ func Test_EvaluateDataAgainstCondition(t *testing.T) {
 		})
 	})
 }
+
+func TestCondCfgToFilterMap(t *testing.T) {
+	Convey("nil cond returns nil map", t, func() {
+		So(CondCfgToFilterMap(nil), ShouldBeNil)
+	})
+	Convey("serializes simple cond", t, func() {
+		c := &cond.CondCfg{Name: "f1", Operation: "==", ValueOptCfg: cond.ValueOptCfg{ValueFrom: "const", Value: "v"}}
+		m := CondCfgToFilterMap(c)
+		So(m, ShouldNotBeNil)
+		So(m["field"], ShouldEqual, "f1")
+	})
+}

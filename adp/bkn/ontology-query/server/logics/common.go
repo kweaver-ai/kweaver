@@ -1296,3 +1296,19 @@ func toFloat64(value any) float64 {
 	}
 	return 0
 }
+
+// CondCfgToFilterMap serializes a condition tree for vega resource filter_condition JSON.
+func CondCfgToFilterMap(c *cond.CondCfg) map[string]any {
+	if c == nil {
+		return nil
+	}
+	raw, err := json.Marshal(c)
+	if err != nil {
+		return nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil
+	}
+	return m
+}

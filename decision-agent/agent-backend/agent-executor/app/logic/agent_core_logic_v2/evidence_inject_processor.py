@@ -427,15 +427,25 @@ async def create_evidence_injection_stream(
             _, evidence_meta = current_processor._annotate_text(actual_text)
 
             if evidence_meta:
-                # 将 _evidence 元数据添加到 answer 字典中
+                # 将 _evidence 添加到当前 item 的 _progress 数组中的最新条目
+                # 这样它会出现在 middle_answer.progress 的相应条目中
+                if "_progress" in item and isinstance(item["_progress"], list):
+                    # 找到最新的 progress 条目（应该是当前的 LLM stage）
+                    if item["_progress"]:
+                        latest_progress = item["_progress"][-1]
+                        # 将 _evidence 添加到 progress 条目中
+                        latest_progress["_evidence"] = evidence_meta
+                        StandLogger.info_log(
+                            f"[EvidenceInject] ✅ Injected evidence into _progress: stage={latest_progress.get('stage')}, "
+                            f"evidence_count={len(evidence_meta)}"
+                        )
+
+                # 同时也将 _evidence 添加到 answer 字典中（用于其他用途）
                 if isinstance(answer, dict):
                     answer["_evidence"] = evidence_meta
-                else:
-                    # 如果 answer 不是字典，创建新结构
-                    item["answer"] = {"answer": answer, "_evidence": evidence_meta}
 
                 StandLogger.info_log(
-                    f"[EvidenceInject] ✅ Injected evidence: {evidence_meta}"
+                    f"[EvidenceInject] ✅ Evidence meta: {evidence_meta}"
                 )
             else:
                 StandLogger.info_log(

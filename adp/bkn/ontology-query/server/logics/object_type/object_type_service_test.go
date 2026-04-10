@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"testing"
 
-	"go.uber.org/mock/gomock"
 	"github.com/kweaver-ai/kweaver-go-lib/rest"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.uber.org/mock/gomock"
 
 	"ontology-query/common"
 	cond "ontology-query/common/condition"
@@ -199,6 +199,58 @@ func Test_objectTypeService_GetObjectsByObjectTypeID(t *testing.T) {
 			result, err := service.GetObjectsByObjectTypeID(ctx, query)
 			So(err, ShouldBeNil)
 			So(result.SearchFromIndex, ShouldBeTrue)
+			So(len(result.Datas), ShouldEqual, 1)
+		})
+
+		Convey("成功 - resource 数据源且 IndexAvailable 时仍走 vega 而非索引", func() {
+			objectType := interfaces.ObjectType{
+				ObjectTypeWithKeyField: interfaces.ObjectTypeWithKeyField{
+					OTID: objectTypeID,
+					DataProperties: []cond.DataProperty{
+						{
+							Name: "prop1",
+							MappedField: cond.Field{
+								Name: "field1",
+							},
+						},
+					},
+					PrimaryKeys: []string{"id"},
+					DisplayKey:  "prop1",
+					DataSource: &interfaces.ResourceInfo{
+						Type: interfaces.DATA_SOURCE_TYPE_RESOURCE,
+						ID:   "res1",
+					},
+				},
+				Status: &interfaces.ObjectTypeStatus{
+					IndexAvailable: true,
+					Index:          "should_not_query",
+				},
+			}
+
+			query := &interfaces.ObjectQueryBaseOnObjectType{
+				KNID:         knID,
+				Branch:       branch,
+				ObjectTypeID: objectTypeID,
+				PageQuery: interfaces.PageQuery{
+					Limit:     10,
+					NeedTotal: false,
+				},
+			}
+
+			service.vba = &vegaStubForOTQuery{
+				resp: &interfaces.DatasetQueryResponse{
+					TotalCount: 1,
+					Entries: []map[string]any{
+						{"field1": "v1"},
+					},
+				},
+			}
+
+			omAccess.EXPECT().GetObjectType(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(objectType, true, nil)
+
+			result, err := service.GetObjectsByObjectTypeID(ctx, query)
+			So(err, ShouldBeNil)
+			So(result.SearchFromIndex, ShouldBeFalse)
 			So(len(result.Datas), ShouldEqual, 1)
 		})
 
@@ -1707,4 +1759,17 @@ func Test_generateExecRequest(t *testing.T) {
 			So(nested["param"], ShouldEqual, "nested_value")
 		})
 	})
+}
+
+// vegaStubForOTQuery implements interfaces.VegaBackendAccess for tests.
+type vegaStubForOTQuery struct {
+	resp *interfaces.DatasetQueryResponse
+	err  error
+}
+
+func (v *vegaStubForOTQuery) QueryResourceData(ctx context.Context, resourceID string, params *interfaces.ResourceDataQueryParams) (*interfaces.DatasetQueryResponse, error) {
+	if v.err != nil {
+		return nil, v.err
+	}
+	return v.resp, nil
 }

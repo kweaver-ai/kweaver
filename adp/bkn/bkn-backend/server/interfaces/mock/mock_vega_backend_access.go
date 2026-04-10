@@ -142,7 +142,7 @@ func (mr *MockVegaBackendAccessMockRecorder) GetResourceByID(ctx, id interface{}
 }
 
 // QueryDatasetData mocks base method.
-func (m *MockVegaBackendAccess) QueryDatasetData(ctx context.Context, datasetID string, params *interfaces.DatasetQueryParams) (*interfaces.DatasetQueryResponse, error) {
+func (m *MockVegaBackendAccess) QueryDatasetData(ctx context.Context, datasetID string, params *interfaces.ResourceDataQueryParams) (*interfaces.DatasetQueryResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueryDatasetData", ctx, datasetID, params)
 	ret0, _ := ret[0].(*interfaces.DatasetQueryResponse)
@@ -154,6 +154,21 @@ func (m *MockVegaBackendAccess) QueryDatasetData(ctx context.Context, datasetID 
 func (mr *MockVegaBackendAccessMockRecorder) QueryDatasetData(ctx, datasetID, params interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryDatasetData", reflect.TypeOf((*MockVegaBackendAccess)(nil).QueryDatasetData), ctx, datasetID, params)
+}
+
+// QueryResourceData mocks base method.
+func (m *MockVegaBackendAccess) QueryResourceData(ctx context.Context, resourceID string, params *interfaces.ResourceDataQueryParams) (*interfaces.DatasetQueryResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryResourceData", ctx, resourceID, params)
+	ret0, _ := ret[0].(*interfaces.DatasetQueryResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryResourceData indicates an expected call of QueryResourceData.
+func (mr *MockVegaBackendAccessMockRecorder) QueryResourceData(ctx, resourceID, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryResourceData", reflect.TypeOf((*MockVegaBackendAccess)(nil).QueryResourceData), ctx, resourceID, params)
 }
 
 // WriteDatasetDocuments mocks base method.

@@ -552,10 +552,32 @@ async def create_evidence_injection_stream(
                 # 只对 LLM stage 的 progress 条目添加
                 # _progress 在 answer 字典中
                 answer_dict = item.get("answer")
+                StandLogger.info_log(
+                    f"[EvidenceInject] Checking injection: "
+                    f"answer_type={type(answer_dict).__name__}, "
+                    f"answer_is_dict={isinstance(answer_dict, dict)}"
+                )
+
+                if isinstance(answer_dict, dict):
+                    StandLogger.info_log(
+                        f"[EvidenceInject] answer keys={list(answer_dict.keys())}, "
+                        f"has_progress={'_progress' in answer_dict}"
+                    )
+
                 if isinstance(answer_dict, dict) and "_progress" in answer_dict:
                     progress_array = answer_dict["_progress"]
+                    StandLogger.info_log(
+                        f"[EvidenceInject] progress_type={type(progress_array).__name__}, "
+                        f"is_list={isinstance(progress_array, list)}, "
+                        f"progress_len={len(progress_array) if isinstance(progress_array, list) else 'N/A'}"
+                    )
+
                     if isinstance(progress_array, list) and progress_array:
                         latest_progress = progress_array[-1]
+                        StandLogger.info_log(
+                            f"[EvidenceInject] latest_progress stage={latest_progress.get('stage')}, "
+                            f"is_llm={latest_progress.get('stage') == 'llm'}"
+                        )
                         # 只对 LLM stage 添加 _evidence
                         if latest_progress.get("stage") == "llm":
                             latest_progress["_evidence"] = evidence_meta
@@ -572,6 +594,18 @@ async def create_evidence_injection_stream(
                                 f"item['answer']['_progress'][-1] has _evidence: {'_evidence' in latest_progress}, "
                                 f"keys={list(latest_progress.keys())}"
                             )
+                        else:
+                            StandLogger.info_log(
+                                f"[EvidenceInject] ⚠️ Latest progress is not LLM stage: {latest_progress.get('stage')}"
+                            )
+                    else:
+                        StandLogger.info_log(
+                            f"[EvidenceInject] ⚠️ Progress array is empty or not a list"
+                        )
+                else:
+                    StandLogger.info_log(
+                        f"[EvidenceInject] ⚠️ answer is not a dict or missing _progress"
+                    )
 
             except Exception as e:
                 StandLogger.info_log(

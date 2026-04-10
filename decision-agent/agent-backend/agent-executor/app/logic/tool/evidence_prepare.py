@@ -368,7 +368,8 @@ def _fallback_extraction(tool_call_result: Dict[str, Any]) -> List[Dict[str, Any
     """
     规则提取回退策略。
 
-    当 LLM 提取失败时，从工具结果的 nodes 字段中直接提取实体信息。
+    当 LLM 提取失败时，从工具结果中直接提取实体信息。
+    支持多种数据格式：nodes 数组、name 字段、list 字段等。
 
     Args:
         tool_call_result: 工具调用结果
@@ -385,6 +386,11 @@ def _fallback_extraction(tool_call_result: Dict[str, Any]) -> List[Dict[str, Any
         StandLogger.info_log("[_fallback_extraction] 工具结果不是字典，返回空")
         return evidences
 
+    StandLogger.info_log(
+        f"[_fallback_extraction] 工具结果 keys: {list(tool_call_result.keys())[:10]}"
+    )
+
+    # 1. 从 nodes 数组提取（原有逻辑）
     nodes = tool_call_result.get("nodes")
     if nodes and isinstance(nodes, list):
         StandLogger.info_log(f"[_fallback_extraction] 找到 {len(nodes)} 个 nodes")
@@ -412,6 +418,70 @@ def _fallback_extraction(tool_call_result: Dict[str, Any]) -> List[Dict[str, Any
             })
     else:
         StandLogger.info_log("[_fallback_extraction] 未找到 nodes 字段")
+
+        # 2. 从 name 字段提取（用于 agent 等实体）
+        name = tool_call_result.get("name")
+        if name and isinstance(name, str):
+            StandLogger.info_log(
+                f"[_fallback_extraction] 从 name 字段提取: {name}"
+            )
+            evidences.append({
+                "object_type_name": name,
+                "aliases": [],
+                "object_type_id": "ot_agent",
+                "score": 0.9,
+                "_source": "fallback_name_field",
+            })
+
+        # 3. 从 list 字段提取（某些工具返回列表）
+        data_list = tool_call_result.get("list")
+        if data_list and isinstance(data_list, list):
+            StandLogger.info_log(
+                f"[_fallback_extraction] 找到 list 字段，包含 {len(data_list)} 项"
+            )
+            for idx, item in enumerate(data_list[:20]):  # 限制最多处理 20 项
+                if not isinstance(item, dict):
+                    continue
+
+                item_name = item.get("name") or item.get("object_type_name", "")
+                if not item_name:
+                    continue
+
+                StandLogger.info_log(
+                    f"[_fallback_extraction] 从 list[{idx}] 提取: {item_name}"
+                )
+                evidences.append({
+                    "object_type_name": str(item_name),
+                    "aliases": [],
+                    "object_type_id": str(item.get("object_type_id", "")),
+                    "score": 0.75,
+                    "_source": "fallback_list",
+                })
+
+        # 4. 从 data 字段提取（某些工具使用 data 包装）
+        data = tool_call_result.get("data")
+        if isinstance(data, list):
+            StandLogger.info_log(
+                f"[_fallback_extraction] 找到 data 数组，包含 {len(data)} 项"
+            )
+            for idx, item in enumerate(data[:20]):
+                if not isinstance(item, dict):
+                    continue
+
+                item_name = item.get("name") or item.get("object_type_name", "")
+                if not item_name:
+                    continue
+
+                StandLogger.info_log(
+                    f"[_fallback_extraction] 从 data[{idx}] 提取: {item_name}"
+                )
+                evidences.append({
+                    "object_type_name": str(item_name),
+                    "aliases": [],
+                    "object_type_id": str(item.get("object_type_id", "")),
+                    "score": 0.75,
+                    "_source": "fallback_data",
+                })
 
     answer_data = tool_call_result.get("answer")
     if isinstance(answer_data, dict):

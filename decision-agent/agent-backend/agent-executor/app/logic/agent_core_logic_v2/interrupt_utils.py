@@ -92,6 +92,20 @@ async def _check_and_prepare_evidence(
 
     # 提取所有 stage="skill" 的工具调用结果
     tool_call_results = {}
+
+    StandLogger.info_log("  Scanning progress entries for skill stages:")
+    for idx, progress_item in enumerate(progress_array):
+        stage = progress_item.get("stage", "unknown")
+        StandLogger.info_log(f"    [{idx}] stage={stage}")
+        if stage == "skill":
+            skill_info = progress_item.get("skill_info", {})
+            tool_name = skill_info.get("name", "")
+            answer = progress_item.get("answer")
+            StandLogger.info_log(
+                f"      skill_info={skill_info}, tool_name={tool_name}, "
+                f"answer_type={type(answer).__name__ if answer is not None else 'None'}"
+            )
+
     for progress_item in progress_array:
         if progress_item.get("stage") != "skill":
             continue
@@ -100,12 +114,22 @@ async def _check_and_prepare_evidence(
         tool_name = skill_info.get("name", "")
         answer = progress_item.get("answer")
 
+        StandLogger.info_log(
+            f"  Processing skill: tool_name={tool_name}, "
+            f"has_answer={answer is not None}, "
+            f"valid_tool_name={bool(tool_name)}"
+        )
+
         if not tool_name or answer is None:
+            StandLogger.info_log(
+                f"    SKIP: tool_name='{tool_name}', answer={answer}"
+            )
             continue
 
         # 如果同一个工具被调用多次，使用最后一次的结果
         # 或者可以改为存储为列表
         tool_call_results[tool_name] = answer
+        StandLogger.info_log(f"    ✓ Added tool_call_results[{tool_name}]")
 
     StandLogger.info_log(
         f"  Tool call results extracted: {list(tool_call_results.keys()) if tool_call_results else 'None'}\n"

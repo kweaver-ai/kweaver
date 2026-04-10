@@ -397,17 +397,30 @@ async def create_evidence_injection_stream(
         actual_text = None
 
         # answer 通常是字典，需要从中提取实际文本
+        # 但有时 answer["answer"] 可能也是字典（如包含其他元数据）
         if isinstance(answer, dict):
-            actual_text = answer.get("answer", "")
+            candidate = answer.get("answer", "")
+            if isinstance(candidate, str):
+                actual_text = candidate
+            elif isinstance(candidate, dict):
+                # 如果 answer["answer"] 还是字典，尝试从 _progress 获取
+                progress_array = item.get("_progress", [])
+                if progress_array:
+                    # 找最新的 LLM stage
+                    for p in reversed(progress_array):
+                        if p.get("stage") == "llm":
+                            p_answer = p.get("answer")
+                            if isinstance(p_answer, str):
+                                actual_text = p_answer
+                                break
         elif isinstance(answer, str):
             actual_text = answer
 
+        # 如果还没找到文本，使用空字符串
+        if not isinstance(actual_text, str):
+            actual_text = ""
+
         text_len = len(actual_text) if isinstance(actual_text, str) else 0
-        should_process = (
-            current_processor and
-            isinstance(actual_text, str) and
-            text_len > 20  # 只处理有实际文本内容的项目
-        )
 
         StandLogger.info_log(
             f"[create_evidence_injection_stream] item: "
@@ -415,7 +428,33 @@ async def create_evidence_injection_stream(
             f"answer_type={type(answer).__name__}, "
             f"actual_text_type={type(actual_text).__name__}, "
             f"text_len={text_len}, "
-            f"should_process={should_process}"
+            f"should_process will be calculated"
+        )
+
+        if actual_text and len(actual_text) > 0:
+            StandLogger.info_log(
+                f"  actual_text preview: {actual_text[:100]}..."
+            )
+        StandLogger.info_log(
+            f"[create_evidence_injection_stream] item: "
+            f"evidence_store_key={item_evidence_key}, "
+            f"answer_type={type(answer).__name__}, "
+            f"actual_text_type={type(actual_text).__name__}, "
+            f"text_len={text_len}, "
+            f"has_processor={current_processor is not None}"
+        )
+
+        should_process = (
+            current_processor and
+            isinstance(actual_text, str) and
+            text_len > 20  # 只处理有实际文本内容的项目
+        )
+
+        StandLogger.info_log(
+            f"[create_evidence_injection_stream] should_process={should_process}, "
+            f"reasons: processor={current_processor is not None}, "
+            f"is_str={isinstance(actual_text, str)}, "
+            f"len_gt_20={text_len > 20 if text_len else False}"
         )
 
         # 如果有处理器且应该处理，则进行注入；否则直接透传

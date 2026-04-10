@@ -180,23 +180,44 @@ async def llm_annotate_evidence(
 def _format_tool_results(tool_results: List[Dict[str, Any]]) -> str:
     """格式化工具结果为可读文本"""
     parts = []
+    StandLogger.info_log(
+        f"[_format_tool_results] START: tool_results_count={len(tool_results)}"
+    )
     for idx, tr in enumerate(tool_results):
         tool_name = tr.get("tool_name", "unknown")
         result = tr.get("result", "{}")
         result_type = tr.get("result_type", "unknown")
 
+        StandLogger.info_log(
+            f"[_format_tool_results] tool {idx + 1}: "
+            f"tool_name={tool_name}, "
+            f"result_type={result_type}, "
+            f"result_length={len(result)}, "
+            f"result_preview={result[:200] if result else 'EMPTY'}..."
+        )
+
         # 尝试解析 JSON 格式化显示
         try:
             result_obj = json.loads(result)
             formatted = json.dumps(result_obj, ensure_ascii=False, indent=2)
-        except:
+            StandLogger.info_log(
+                f"[_format_tool_results] Parsed JSON successfully, formatted_length={len(formatted)}"
+            )
+        except Exception as e:
             formatted = result
+            StandLogger.info_log(
+                f"[_format_tool_results] JSON parse failed: {e}, using raw result"
+            )
 
         parts.append(
             f"### 工具 {idx + 1}: {tool_name} (类型: {result_type})\n"
             f"```\n{formatted[:3000]}\n```\n"
         )
-    return "\n".join(parts)
+    result = "\n".join(parts)
+    StandLogger.info_log(
+        f"[_format_tool_results] END: total_length={len(result)}"
+    )
+    return result
 
 
 def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:

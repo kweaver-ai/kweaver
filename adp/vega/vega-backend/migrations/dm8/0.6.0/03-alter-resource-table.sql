@@ -7,7 +7,7 @@
 -- 迁移脚本：修改 t_resource 表的索引结构
 -- ==========================================
 
-SET SCHEMA adp;
+SET SCHEMA kweaver;
 
 -- ==========================================
 -- 9. t_scheduled_discover_task 定时发现任务表
@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS t_scheduled_discover_task (
 
     -- 任务状态
     f_enabled                 TINYINT NOT NULL DEFAULT 0,
+    f_strategies              VARCHAR(100 CHAR) NOT NULL DEFAULT '',
+
     f_last_run                BIGINT NOT NULL DEFAULT 0,
     f_next_run                BIGINT NOT NULL DEFAULT 0,
 

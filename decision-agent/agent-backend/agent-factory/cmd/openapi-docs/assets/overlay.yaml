@@ -81,6 +81,32 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: HTTP Bearer token, formatted as `Bearer ACCESS_TOKEN`
+  schemas:
+    daenum.WritePublishToWhere:
+      type: string
+      enum:
+        - square
+    releasereq.UpdatePublishInfoReq:
+      properties:
+        category_ids:
+          description: |
+            - 非必填；为空时清空分类关联
+            - 之前页面上分类是required，不过之前接口是非required。这里先和之前的接口保持一致。
+        publish_to_where:
+          description: |-
+            - 发布到的目标
+              - square: 发布到广场
+            - 非必填；为空时不发布到任何目标
+          items:
+            $ref: '#/components/schemas/daenum.WritePublishToWhere'
+        pms_control:
+          description: |-
+            - 权限控制信息
+            - 非必填；为空时表示所有用户可见可用
+        publish_to_bes:
+          description: |-
+            - 同时发布为其他类型
+            - 非必填；为空时表示不额外发布为其他类型
 paths:
   /api/agent-factory/v3/agent-market/agent/{agent_id}/version/{version}:
     get:
@@ -90,6 +116,17 @@ paths:
       security: []
     put:
       security: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              example1:
+                value:
+                  category_ids:
+                    - 01JRYRKP0M8VYHQSX4FXR5CKG2
+                  description: 发布描述
+            schema:
+              $ref: "#/components/schemas/releasereq.UpdatePublishInfoReq"
   /api/agent-factory/v3/agent/{agent_id}/release-history:
     get:
       security: []
@@ -117,6 +154,17 @@ paths:
   /api/agent-factory/v3/agent/{agent_id}/publish:
     post:
       security: []
+      requestBody:
+        content:
+          application/json:
+            examples:
+              example1:
+                value:
+                  category_ids:
+                    - 01JRYRKP0M8VYHQSX4FXR5CKG2
+                  description: 发布描述
+            schema:
+              $ref: "#/components/schemas/releasereq.UpdatePublishInfoReq"
   /api/agent-factory/v3/published/agent:
     post:
       security: []

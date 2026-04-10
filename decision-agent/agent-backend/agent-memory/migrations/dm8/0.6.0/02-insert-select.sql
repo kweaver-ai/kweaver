@@ -3,9 +3,6 @@ SET SCHEMA kweaver;
 -- 注意：确保源表存在且有数据
 -- 使用 WHERE NOT EXISTS 判重逻辑，避免插入重复记录（基于主键 f_id 判断）
 
--- 可选：如果目标表可能已有数据，先清空（根据实际情况选择是否启用）
--- DELETE FROM adp."t_data_agent_memory_history";
-
 INSERT INTO kweaver."t_data_agent_memory_history" (
   "f_id",
   "f_memory_id",
@@ -34,8 +31,7 @@ SELECT
   s."f_update_by",
   s."f_is_deleted"
 FROM adp."t_data_agent_memory_history" s
-WHERE s."f_is_deleted" = 0  -- 可选：只插入未删除的记录
-  AND NOT EXISTS (
+WHERE NOT EXISTS (
     SELECT 1
     FROM kweaver."t_data_agent_memory_history" t
     WHERE t."f_id" = s."f_id"

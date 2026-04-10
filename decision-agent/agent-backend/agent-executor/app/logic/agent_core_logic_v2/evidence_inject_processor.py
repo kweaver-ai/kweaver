@@ -357,29 +357,35 @@ async def create_evidence_injection_stream(
 
     store = get_global_evidence_store()
     current_tool_results = []  # 存储当前的工具结果
+    _loaded_key = None  # 记录已加载的 key
 
     async for item in original_stream:
         # 从当前 item 中获取 evidence_store_key
         item_evidence_key = item.get("evidence_store_key")
 
-        # 如果有新的 evidence_store_key，从 EvidenceStore 获取原始工具结果
-        if item_evidence_key and item_evidence_key != getattr(
-            create_evidence_injection_stream, "_last_key", None
-        ):
+        StandLogger.info_log(
+            f"[create_evidence_injection_stream] Processing item: "
+            f"item_evidence_key={item_evidence_key}, "
+            f"_loaded_key={_loaded_key}"
+        )
+
+        # 如果有新的 evidence_store_key（或者还没有加载过），从 EvidenceStore 获取原始工具结果
+        if item_evidence_key and (item_evidence_key != _loaded_key):
             raw_results_key = f"{item_evidence_key}_raw"
             tool_results = store.get(raw_results_key)
             if tool_results:
                 StandLogger.info_log(
                     f"[EvidenceInject] ✅ Loaded {len(tool_results)} raw tool results for key={raw_results_key}\n"
-                    f"  Tools: {[tr.get('tool_name', '?') for tr in tool_results[:5]]}"
+                    f"  Tools: {[tr.get('tool_name', '?') for tr in tool_results[:5]]}{'...' if len(tool_results) > 5 else ''}"
                 )
                 current_tool_results = tool_results
+                _loaded_key = item_evidence_key
             else:
                 StandLogger.info_log(
                     f"[EvidenceInject] ℹ️ No raw tool results found for key={raw_results_key}"
                 )
                 current_tool_results = []
-            create_evidence_injection_stream._last_key = item_evidence_key
+                _loaded_key = item_evidence_key
 
         # 提取 LLM 生成的文本
         answer = item.get("answer", {})

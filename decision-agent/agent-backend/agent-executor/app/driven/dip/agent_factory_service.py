@@ -296,14 +296,11 @@ class AgentFactoryService:
                 StandLogger.info(
                     f"get_skill_content complete response for skill '{skill_id}': {res}"
                 )
-                data = res.get("data", {})
-                # Log the raw response for debugging
+                data = res.get("data") or res
                 StandLogger.info(
-                    f"get_skill_content raw response for skill '{skill_id}': "
-                    f"code={res.get('code')}, msg={res.get('msg')!r}, "
+                    f"get_skill_content extracted data for skill '{skill_id}': "
                     f"data keys={list(data.keys())}, "
-                    f"url_present={'url' in data}, url_value={data.get('url')!r}, "
-                    f"url_empty={data.get('url') == ''}, url_is_none={data.get('url') is None}"
+                    f"url_present={'url' in data}, url_value={data.get('url')!r}"
                 )
                 return data
 
@@ -346,13 +343,11 @@ class AgentFactoryService:
                 StandLogger.info(
                     f"read_skill_file_meta complete response for skill '{skill_id}', path '{rel_path}': {res}"
                 )
-                data = res.get("data", {})
-                # Log the raw response for debugging
+                data = res.get("data") or res
                 StandLogger.info(
-                    f"read_skill_file_meta raw response for skill '{skill_id}', path '{rel_path}': "
-                    f"code={res.get('code')}, msg={res.get('msg')!r}, "
+                    f"read_skill_file_meta extracted data for skill '{skill_id}', path '{rel_path}': "
                     f"data keys={list(data.keys())}, "
-                    f"url_value={data.get('url')!r}, url_present={'url' in data}"
+                    f"url_present={'url' in data}, url_value={data.get('url')!r}"
                 )
                 return data
 
@@ -499,11 +494,9 @@ class AgentFactoryService:
                 StandLogger.info(
                     f"execute_skill_script complete response for skill '{skill_id}': {res}"
                 )
-                data = res.get("data", {})
-                # Log the raw response for debugging
+                data = res.get("data") or res
                 StandLogger.info(
-                    f"execute_skill_script raw response for skill '{skill_id}': "
-                    f"code={res.get('code')}, msg={res.get('msg')!r}, "
+                    f"execute_skill_script extracted data for skill '{skill_id}': "
                     f"data keys={list(data.keys())}, "
                     f"exit_code={data.get('exit_code')}, "
                     f"execution_time={data.get('execution_time')}"

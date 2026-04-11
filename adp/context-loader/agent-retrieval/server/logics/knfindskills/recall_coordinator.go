@@ -29,18 +29,18 @@ func (rc *recallCoordinator) recallNetwork(
 	ctx context.Context,
 	req *interfaces.FindSkillsReq,
 	skillQueryCond *interfaces.KnCondition,
-) ([]interfaces.SkillMatch, error) {
+) ([]interfaces.SkillMatch, interfaces.EmptyResultHint, error) {
 	var err error
 	ctx, _ = o11y.StartInternalSpan(ctx)
 	defer o11y.EndSpan(ctx, err)
 
 	hasRelation, err := rc.skillsHaveAnyRelation(ctx, req.KnID)
 	if err != nil {
-		return nil, fmt.Errorf("check skills relation: %w", err)
+		return nil, interfaces.HintNone, fmt.Errorf("check skills relation: %w", err)
 	}
 	if hasRelation {
 		rc.logger.WithContext(ctx).Infof("[FindSkills] skills ObjectType has relations, network-level recall returns empty")
-		return nil, nil
+		return nil, interfaces.HintNetworkScopeTooWide, nil
 	}
 
 	oqReq := &interfaces.QueryObjectInstancesReq{
@@ -53,10 +53,10 @@ func (rc *recallCoordinator) recallNetwork(
 
 	resp, err := rc.ontologyQuery.QueryObjectInstances(ctx, oqReq)
 	if err != nil {
-		return nil, fmt.Errorf("QueryObjectInstances(skills): %w", err)
+		return nil, interfaces.HintNone, fmt.Errorf("QueryObjectInstances(skills): %w", err)
 	}
 
-	return extractSkillMatchesFromInstances(resp.Data, "network", 10), nil
+	return extractSkillMatchesFromInstances(resp.Data, "network", 10), interfaces.HintNone, nil
 }
 
 // recallObjectType handles Mode 2: object-type-level recall.
@@ -64,27 +64,31 @@ func (rc *recallCoordinator) recallObjectType(
 	ctx context.Context,
 	req *interfaces.FindSkillsReq,
 	skillQueryCond *interfaces.KnCondition,
-) ([]interfaces.SkillMatch, error) {
+) ([]interfaces.SkillMatch, interfaces.EmptyResultHint, error) {
 	var err error
 	ctx, _ = o11y.StartInternalSpan(ctx)
 	defer o11y.EndSpan(ctx, err)
 
+	if req.ObjectTypeID == rc.config.SkillsObjectTypeID {
+		return rc.recallSkillsDirect(ctx, req, skillQueryCond, "object_type", 50)
+	}
+
 	rt, err := rc.findRelationType(ctx, req.KnID, req.ObjectTypeID)
 	if err != nil {
-		return nil, err
+		return nil, interfaces.HintNone, err
 	}
 	if rt == nil {
 		rc.logger.WithContext(ctx).Warnf("[FindSkills] no RelationType between %s and skills, returning empty", req.ObjectTypeID)
-		return nil, nil
+		return nil, interfaces.HintObjectTypeNoBinding, nil
 	}
 
 	subReq := BuildSubgraphRequest(req.KnID, req.ObjectTypeID, rt, nil, skillQueryCond, req.TopK, rc.config.SkillsObjectTypeID)
 	resp, err := rc.ontologyQuery.QueryInstanceSubgraph(ctx, subReq)
 	if err != nil {
-		return nil, fmt.Errorf("QueryInstanceSubgraph(object_type): %w", err)
+		return nil, interfaces.HintNone, fmt.Errorf("QueryInstanceSubgraph(object_type): %w", err)
 	}
 
-	return extractSkillMatchesFromSubgraph(resp, rc.config.SkillsObjectTypeID, "object_type", 50), nil
+	return extractSkillMatchesFromSubgraph(resp, rc.config.SkillsObjectTypeID, "object_type", 50), interfaces.HintNone, nil
 }
 
 // recallInstance handles Mode 3: instance-level recall.
@@ -93,28 +97,78 @@ func (rc *recallCoordinator) recallInstance(
 	ctx context.Context,
 	req *interfaces.FindSkillsReq,
 	skillQueryCond *interfaces.KnCondition,
-) ([]interfaces.SkillMatch, error) {
+) ([]interfaces.SkillMatch, interfaces.EmptyResultHint, error) {
 	var err error
 	ctx, _ = o11y.StartInternalSpan(ctx)
 	defer o11y.EndSpan(ctx, err)
 
+	if req.ObjectTypeID == rc.config.SkillsObjectTypeID {
+		return rc.recallSkillsDirect(ctx, req, skillQueryCond, "object_selector", 100)
+	}
+
 	rt, err := rc.findRelationType(ctx, req.KnID, req.ObjectTypeID)
 	if err != nil {
-		return nil, err
+		return nil, interfaces.HintNone, err
 	}
 	if rt == nil {
 		rc.logger.WithContext(ctx).Warnf("[FindSkills] no RelationType between %s and skills, returning empty", req.ObjectTypeID)
-		return nil, nil
+		return nil, interfaces.HintObjectTypeNoBinding, nil
 	}
 
 	instCond := buildInstanceFilterCondition(req.InstanceIdentities)
 	subReq := BuildSubgraphRequest(req.KnID, req.ObjectTypeID, rt, instCond, skillQueryCond, req.TopK, rc.config.SkillsObjectTypeID)
 	resp, err := rc.ontologyQuery.QueryInstanceSubgraph(ctx, subReq)
 	if err != nil {
-		return nil, fmt.Errorf("QueryInstanceSubgraph(instance): %w", err)
+		return nil, interfaces.HintNone, fmt.Errorf("QueryInstanceSubgraph(instance): %w", err)
 	}
 
-	return extractSkillMatchesFromSubgraph(resp, rc.config.SkillsObjectTypeID, "object_selector", 100), nil
+	return extractSkillMatchesFromSubgraph(resp, rc.config.SkillsObjectTypeID, "object_selector", 100), interfaces.HintNone, nil
+}
+
+// recallSkillsDirect handles queries where object_type_id is the skills ObjectType itself.
+// Instead of searching for a RelationType (which would be self-referential), it directly
+// queries skill instances via QueryObjectInstances, optionally filtered by instance_identities.
+func (rc *recallCoordinator) recallSkillsDirect(
+	ctx context.Context,
+	req *interfaces.FindSkillsReq,
+	skillQueryCond *interfaces.KnCondition,
+	scope string,
+	priority int,
+) ([]interfaces.SkillMatch, interfaces.EmptyResultHint, error) {
+	cond := mergeConditions(
+		skillQueryCond,
+		buildInstanceFilterCondition(req.InstanceIdentities),
+	)
+
+	oqReq := &interfaces.QueryObjectInstancesReq{
+		KnID:       req.KnID,
+		OtID:       rc.config.SkillsObjectTypeID,
+		Cond:       cond,
+		Limit:      req.TopK,
+		Properties: []string{"skill_id", "name", "description"},
+	}
+
+	resp, err := rc.ontologyQuery.QueryObjectInstances(ctx, oqReq)
+	if err != nil {
+		return nil, interfaces.HintNone, fmt.Errorf("QueryObjectInstances(skills direct): %w", err)
+	}
+
+	return extractSkillMatchesFromInstances(resp.Data, scope, priority), interfaces.HintNone, nil
+}
+
+// mergeConditions combines two optional KnConditions with AND.
+// Returns nil if both are nil; returns the non-nil one if only one is set.
+func mergeConditions(a, b *interfaces.KnCondition) *interfaces.KnCondition {
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	return &interfaces.KnCondition{
+		Operation:     interfaces.KnOperationTypeAnd,
+		SubConditions: []*interfaces.KnCondition{a, b},
+	}
 }
 
 // skillsHaveAnyRelation checks if the skills ObjectType participates in any RelationType.

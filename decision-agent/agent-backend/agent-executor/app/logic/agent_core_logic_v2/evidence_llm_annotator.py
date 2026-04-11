@@ -260,6 +260,25 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
 
     text = result.strip()
 
+    # 移除 markdown 代码块标记（如果存在）
+    # LLM 可能返回: ```json {...} ``` 或 ``` {...} ```
+    if text.startswith("```"):
+        # 找到第一个换行符，代码块标记后通常跟一个换行
+        first_newline = text.find("\n")
+        if first_newline != -1:
+            # 从第一个换行符后开始查找
+            text = text[first_newline + 1:]
+
+        # 移除结尾的代码块标记
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+
+    StandLogger.info_log(
+        f"[_parse_llm_annotation] After removing markdown: "
+        f"length={len(text)}, preview={text[:200]}"
+    )
+
     # 查找 JSON 部分
     json_start = text.find("{")
     json_end = text.rfind("}")
@@ -271,8 +290,14 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
         )
         return {"evidences": []}
 
+    json_str = text[json_start : json_end + 1]
+
+    StandLogger.info_log(
+        f"[_parse_llm_annotation] Extracted JSON string (length={len(json_str)}): "
+        f"{json_str[:200]}..."
+    )
+
     try:
-        json_str = text[json_start : json_end + 1]
         data = json.loads(json_str)
 
         evidences = data.get("evidences", [])
@@ -325,9 +350,16 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
 
     except (json.JSONDecodeError, ValueError, TypeError) as e:
         StandLogger.info_log(
-            f"[_parse_llm_annotation] JSON 解析失败: {e}"
+            f"[_parse_llm_annotation] JSON 解析失败: {e}\n"
+            f"  json_str length: {len(json_str)}\n"
+            f"  json_str content: {json_str}\n"
+            f"  original text length: {len(text)}\n"
+            f"  original text: {text[:500]}"
         )
-        logger.warning(f"[_parse_llm_annotation] JSON 解析失败: {e}")
+        logger.warning(
+            f"[_parse_llm_annotation] JSON 解析失败: {e}, "
+            f"json_str={json_str[:200]}"
+        )
         return {"evidences": []}
 
 

@@ -241,20 +241,6 @@ async def run_dolphin(
         Config.evidence, "enable", True
     )
 
-    # StandLogger: 证据注入检查
-    StandLogger.info_log(
-        f"\n{'='*60}\n"
-        f"[run_dolphin] Evidence Injection Status\n"
-        f"{'='*60}\n"
-        f"  Enabled: {is_evidence_injection_enabled}\n"
-        f"  Config.evidence.enable: {getattr(Config.evidence, 'enable', 'NOT_SET')}\n"
-        f"  LLM annotation timeout: {getattr(Config.evidence, 'llm_annotation_timeout', 'NOT_SET')}s\n"
-        f"  LLM annotation model: '{getattr(Config.evidence, 'llm_annotation_model', 'NOT_SET')}'\n"
-        f"  Evidence store max size: {getattr(Config.evidence, 'store_max_size', 'NOT_SET')}\n"
-        f"  Evidence store TTL: {getattr(Config.evidence, 'store_ttl_seconds', 'NOT_SET')}s\n"
-        f"{'='*60}\n"
-    )
-
     if is_evidence_injection_enabled:
         logger.info("[run_dolphin] Evidence injection enabled, using injection stream")
 

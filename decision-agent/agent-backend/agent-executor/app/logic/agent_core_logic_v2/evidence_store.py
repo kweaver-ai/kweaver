@@ -10,8 +10,6 @@ import time
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
-from app.common.stand_log import StandLogger
-
 logger = logging.getLogger(__name__)
 
 
@@ -84,14 +82,6 @@ class EvidenceStore:
             self._cache[evidence_id] = _EvidenceEntry(evidences)
             self._stats["adds"] += 1
 
-            StandLogger.info_log(
-                f"[EvidenceStore.add] id={evidence_id}, "
-                f"evidences_count={len(evidences)}, "
-                f"action='update' if is_update else 'add', "
-                f"cache_size={len(self._cache)}/{self._max_size}"
-                + (f", evicted={evicted[0]}" if evicted else "")
-            )
-
             logger.debug(
                 f"[EvidenceStore] add: id={evidence_id}, "
                 f"count={len(evidences)}, size={len(self._cache)}"
@@ -111,35 +101,23 @@ class EvidenceStore:
             证据列表，不存在或已过期返回 None
         """
         if not evidence_id:
-            StandLogger.info_log("[EvidenceStore.get] evidence_id is empty")
             return None
 
         with self._lock:
             entry = self._cache.get(evidence_id)
             if entry is None:
                 self._stats["misses"] += 1
-                StandLogger.info_log(
-                    f"[EvidenceStore.get] id={evidence_id}, result=MISS"
-                )
                 return None
 
             if self._is_expired(entry):
                 del self._cache[evidence_id]
                 self._stats["expirations"] += 1
                 self._stats["misses"] += 1
-                StandLogger.info_log(
-                    f"[EvidenceStore.get] id={evidence_id}, result=EXPIRED"
-                )
                 logger.debug(f"[EvidenceStore] expired: id={evidence_id}")
                 return None
 
             self._cache.move_to_end(evidence_id)
             self._stats["hits"] += 1
-
-            StandLogger.info_log(
-                f"[EvidenceStore.get] id={evidence_id}, "
-                f"result=HIT, evidences_count={len(entry.evidences)}"
-            )
 
             return entry.evidences
 

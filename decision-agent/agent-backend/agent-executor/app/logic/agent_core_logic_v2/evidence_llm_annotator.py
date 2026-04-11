@@ -10,7 +10,6 @@ import logging
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from app.common.config import Config
-from app.common.stand_log import StandLogger
 
 logger = logging.getLogger(__name__)
 
@@ -117,20 +116,7 @@ async def llm_annotate_evidence(
     timeout = config.get("llm_annotation_timeout", 30)
     model = config.get("llm_annotation_model", "deepseek-v3.2")
 
-    StandLogger.info_log(
-        f"\n{'='*60}\n"
-        f"[llm_annotate_evidence] START\n"
-        f"  text_length: {len(text)}\n"
-        f"  tool_results_count: {len(tool_results)}\n"
-        f"  model: {model}\n"
-        f"  timeout: {timeout}s\n"
-        f"{'='*60}\n"
-    )
-
     if not text or not tool_results:
-        StandLogger.info_log(
-            f"[llm_annotate_evidence] END: no text or tool results"
-        )
         return {"evidences": []}
 
     # 格式化工具结果为可读文本
@@ -144,10 +130,6 @@ async def llm_annotate_evidence(
         text=text,
         text_len=len(text),
         text_with_index=text_with_index
-    )
-
-    StandLogger.info_log(
-        f"[llm_annotate_evidence] Calling LLM, prompt_length={len(prompt)}"
     )
 
     try:
@@ -167,90 +149,41 @@ async def llm_annotate_evidence(
 
         result_text = str(llm_result) if llm_result else ""
 
-        StandLogger.info_log(
-            f"[llm_annotate_evidence] LLM returned, length={len(result_text)}, "
-            f"preview: {result_text[:200]}..."
-        )
-
         parsed = _parse_llm_annotation(result_text, text)
-
-        StandLogger.info_log(
-            f"[llm_annotate_evidence] Parsed {len(parsed.get('evidences', []))} evidences"
-        )
-
-        for ev in parsed.get("evidences", []):
-            name = ev.get("object_type_name", "")
-            positions = ev.get("positions", [])
-            matched_texts = []
-            for start, end in positions:
-                if 0 <= start < end <= len(text):
-                    matched_texts.append(f'"{text[start:end]}"')
-            StandLogger.info_log(
-                f"  - {name}: positions={positions}, matched={matched_texts}"
-            )
-
-        StandLogger.info_log(
-            f"[llm_annotate_evidence] END\n"
-            f"{'='*60}\n"
-        )
 
         return parsed
 
     except ImportError:
-        StandLogger.info_log("[llm_annotate_evidence] model_api_service 不可用")
         logger.warning("[llm_annotate_evidence] model_api_service 不可用")
         return {"evidences": []}
     except asyncio.TimeoutError:
-        StandLogger.info_log(f"[llm_annotate_evidence] LLM 调用超时 (timeout={timeout}s)")
         logger.warning("[llm_annotate_evidence] LLM 调用超时")
         return {"evidences": []}
     except Exception as e:
-        StandLogger.info_log(f"[llm_annotate_evidence] LLM 调用失败: {e}")
-        logger.warning(f"[llm_annotate_evidence] LLM 调用失败: {e}", exc_info=True)
+        logger.warning("[llm_annotate_evidence] LLM 调用失败: {e}", exc_info=True)
         return {"evidences": []}
 
 
 def _format_tool_results(tool_results: List[Dict[str, Any]]) -> str:
     """格式化工具结果为可读文本"""
     parts = []
-    StandLogger.info_log(
-        f"[_format_tool_results] START: tool_results_count={len(tool_results)}"
-    )
     for idx, tr in enumerate(tool_results):
         tool_name = tr.get("tool_name", "unknown")
         result = tr.get("result", "{}")
         result_type = tr.get("result_type", "unknown")
 
-        StandLogger.info_log(
-            f"[_format_tool_results] tool {idx + 1}: "
-            f"tool_name={tool_name}, "
-            f"result_type={result_type}, "
-            f"result_length={len(result)}, "
-            f"result_preview={result[:200] if result else 'EMPTY'}..."
-        )
-
         # 尝试解析 JSON 格式化显示
         try:
             result_obj = json.loads(result)
             formatted = json.dumps(result_obj, ensure_ascii=False, indent=2)
-            StandLogger.info_log(
-                f"[_format_tool_results] Parsed JSON successfully, formatted_length={len(formatted)}"
-            )
         except Exception as e:
             formatted = result
-            StandLogger.info_log(
-                f"[_format_tool_results] JSON parse failed: {e}, using raw result"
-            )
 
         parts.append(
             f"### 工具 {idx + 1}: {tool_name} (类型: {result_type})\n"
             f"```\n{formatted[:3000]}\n```\n"
         )
-    result = "\n".join(parts)
-    StandLogger.info_log(
-        f"[_format_tool_results] END: total_length={len(result)}"
-    )
-    return result
+    return "\n".join(parts)
 
 
 def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
@@ -274,17 +207,12 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
             text = text[:-3]
         text = text.strip()
 
-    StandLogger.info_log(
-        f"[_parse_llm_annotation] After removing markdown: "
-        f"length={len(text)}, preview={text[:200]}"
-    )
-
     # 查找 JSON 部分
     json_start = text.find("{")
     json_end = text.rfind("}")
 
     if json_start == -1 or json_end == -1 or json_end <= json_start:
-        StandLogger.info_log(
+        logger.warning(
             f"[_parse_llm_annotation] 未找到有效的 JSON, "
             f"json_start={json_start}, json_end={json_end}"
         )
@@ -292,17 +220,12 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
 
     json_str = text[json_start : json_end + 1]
 
-    StandLogger.info_log(
-        f"[_parse_llm_annotation] Extracted JSON string (length={len(json_str)}): "
-        f"{json_str[:200]}..."
-    )
-
     try:
         data = json.loads(json_str)
 
         evidences = data.get("evidences", [])
         if not isinstance(evidences, list):
-            StandLogger.info_log(
+            logger.warning(
                 f"[_parse_llm_annotation] evidences 不是数组, type={type(evidences).__name__}"
             )
             return {"evidences": []}
@@ -331,7 +254,7 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
                         if 0 <= start < end <= len(original_text):
                             valid_positions.append([start, end])
                         else:
-                            StandLogger.info_log(
+                            logger.warning(
                                 f"[_parse_llm_annotation] Invalid position: "
                                 f"[{start}, {end}], text_len={len(original_text)}"
                             )
@@ -342,20 +265,9 @@ def _parse_llm_annotation(result: str, original_text: str) -> Dict[str, Any]:
                     "positions": valid_positions,
                 })
 
-        StandLogger.info_log(
-            f"[_parse_llm_annotation] Cleaned {len(cleaned_evidences)}/{len(evidences)} evidences"
-        )
-
         return {"evidences": cleaned_evidences}
 
     except (json.JSONDecodeError, ValueError, TypeError) as e:
-        StandLogger.info_log(
-            f"[_parse_llm_annotation] JSON 解析失败: {e}\n"
-            f"  json_str length: {len(json_str)}\n"
-            f"  json_str content: {json_str}\n"
-            f"  original text length: {len(text)}\n"
-            f"  original text: {text[:500]}"
-        )
         logger.warning(
             f"[_parse_llm_annotation] JSON 解析失败: {e}, "
             f"json_str={json_str[:200]}"

@@ -351,7 +351,7 @@ async def create_evidence_injection_stream(
 
     # 检查是否仅标注最终答案
     annotate_only_final = getattr(
-        Config.features, "annotate_only_final_answer", True
+        Config.evidence, "annotate_only_final_answer", True
     )
 
     StandLogger.info_log(
@@ -602,10 +602,10 @@ async def _process_single_item(
 
             annotation_config = {
                 "llm_annotation_timeout": getattr(
-                    Config.features, "llm_annotation_timeout", 30
+                    Config.evidence, "llm_annotation_timeout", 30
                 ),
                 "llm_annotation_model": getattr(
-                    Config.features, "llm_annotation_model", "deepseek-v3.2"
+                    Config.evidence, "llm_annotation_model", "deepseek-v3.2"
                 ),
             }
 

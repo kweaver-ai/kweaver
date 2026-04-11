@@ -259,10 +259,10 @@ def get_global_evidence_store() -> EvidenceStore:
                 from app.common.config import Config
 
                 max_size = getattr(
-                    Config.features, "evidence_store_max_size", 1000
+                    Config.evidence, "store_max_size", 1000
                 )
                 ttl = getattr(
-                    Config.features, "evidence_store_ttl_seconds", 3600
+                    Config.evidence, "store_ttl_seconds", 3600
                 )
                 _global_store = EvidenceStore(max_size=max_size, ttl_seconds=ttl)
                 logger.info(

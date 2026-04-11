@@ -63,12 +63,12 @@ async def _check_and_prepare_evidence(
     from app.common.config import Config
 
     # StandLogger: 检查证据注入功能是否启用
-    is_enabled = getattr(Config.features, "enable_evidence_injection", False)
+    is_enabled = getattr(Config.evidence, "enable", False)
     StandLogger.info_log(
         f"\n{'='*60}\n"
         f"[_check_and_prepare_evidence] START\n"
         f"  Evidence injection enabled: {is_enabled}\n"
-        f"  Config.features.enable_evidence_injection = {getattr(Config.features, 'enable_evidence_injection', 'NOT_SET')}\n"
+        f"  Config.evidence.enable = {getattr(Config.evidence, 'enable', 'NOT_SET')}\n"
     )
 
     if not isinstance(item, dict):

@@ -335,8 +335,8 @@ class TestGlobalEvidenceStore:
         with mock.patch(
             "app.common.config.Config"
         ) as mock_config:
-            mock_config.features.evidence_store_max_size = 100
-            mock_config.features.evidence_store_ttl_seconds = 3600
+            mock_config.evidence.store_max_size = 100
+            mock_config.evidence.store_ttl_seconds = 3600
 
             s1 = get_global_evidence_store()
             s2 = get_global_evidence_store()
@@ -356,8 +356,8 @@ class TestGlobalEvidenceStore:
         with mock.patch(
             "app.common.config.Config"
         ) as mock_config:
-            mock_config.features.evidence_store_max_size = 100
-            mock_config.features.evidence_store_ttl_seconds = 3600
+            mock_config.evidence.store_max_size = 100
+            mock_config.evidence.store_ttl_seconds = 3600
 
             store = get_global_evidence_store()
             store.add("test", [{}])

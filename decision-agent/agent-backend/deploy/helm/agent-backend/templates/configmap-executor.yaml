@@ -160,13 +160,16 @@ data:
       # 规则匹配配置
       enable_alias_match: {{ .Values.agentExecutor.enableAliasMatch }}
       min_sentence_length: {{ .Values.agentExecutor.minSentenceLength }}
+      # 规则匹配配置
+      enable_alias_match: {{ .Values.agentExecutor.enableAliasMatch }}
+      min_sentence_length: {{ .Values.agentExecutor.minSentenceLength }}
 
     # 11. o11y 相关
     o11y:
       log_enabled: {{ .Values.agentExecutor.telemetry.log.enabled }}
       trace_enabled: {{ .Values.otel.trace.enabled }}
 
-    # 11. 对话日志相关配置
+    # 12. 对话日志相关配置
     dialog_logging:
       enable_dialog_logging: false
       use_single_log_file: false

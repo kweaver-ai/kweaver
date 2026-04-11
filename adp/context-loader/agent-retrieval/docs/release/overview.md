@@ -59,6 +59,7 @@ docs/release/
 
 ### 本版变化与注意事项
 
+- `find_skills` 不是升级 Context Loader 后自动可用的能力；只有知识网络已完成 Skill 承接和绑定后，Skill recall 才能返回稳定结果。快速启用方式与前提说明见 `docs/release/tool-usage-guide.md` 的 `6.5 find_skills`
 - `find_skills` 属于候选资源发现工具，不替代 `kn_search` / `query_object_instance`
 - 若调用方尚未明确对象类或实例，建议先使用 `kn_schema_search` / `kn_search` 与 `query_*` 工具获取上下文，再调用 `find_skills`
 - `find_skills` 的 `skill_query` 仅用于当前业务边界内过滤和排序，不用于跨知识网络搜索

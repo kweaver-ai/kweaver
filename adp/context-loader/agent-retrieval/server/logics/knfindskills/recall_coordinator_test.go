@@ -8,8 +8,10 @@ package knfindskills
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/common"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/config"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/interfaces"
 )
@@ -47,9 +49,12 @@ func TestRecallNetwork_NoRelation_ReturnsSkills(t *testing.T) {
 	}
 
 	rc := newTestCoordinator(bkn, oq)
-	matches, err := rc.recallNetwork(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", TopK: 10}, nil)
+	matches, hint, err := rc.recallNetwork(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", TopK: 10}, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintNone {
+		t.Errorf("expected no hint, got %s", hint)
 	}
 	if len(matches) != 3 {
 		t.Errorf("expected 3 matches, got %d", len(matches))
@@ -77,9 +82,12 @@ func TestRecallNetwork_HasRelation_ReturnsEmpty(t *testing.T) {
 	oq := &testOntologyQuery{}
 
 	rc := newTestCoordinator(bkn, oq)
-	matches, err := rc.recallNetwork(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", TopK: 10}, nil)
+	matches, hint, err := rc.recallNetwork(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", TopK: 10}, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintNetworkScopeTooWide {
+		t.Errorf("expected HintNetworkScopeTooWide, got %s", hint)
 	}
 	if len(matches) != 0 {
 		t.Errorf("expected 0 matches when skills has relations, got %d", len(matches))
@@ -110,9 +118,12 @@ func TestRecallObjectType_RelationExists(t *testing.T) {
 	}
 
 	rc := newTestCoordinator(bkn, oq)
-	matches, err := rc.recallObjectType(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", ObjectTypeID: "contract", TopK: 10}, nil)
+	matches, hint, err := rc.recallObjectType(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", ObjectTypeID: "contract", TopK: 10}, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintNone {
+		t.Errorf("expected no hint, got %s", hint)
 	}
 	if len(matches) != 1 {
 		t.Fatalf("expected 1 match, got %d", len(matches))
@@ -137,9 +148,12 @@ func TestRecallObjectType_NoRelation_ReturnsEmpty(t *testing.T) {
 	oq := &testOntologyQuery{}
 
 	rc := newTestCoordinator(bkn, oq)
-	matches, err := rc.recallObjectType(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", ObjectTypeID: "contract", TopK: 10}, nil)
+	matches, hint, err := rc.recallObjectType(context.Background(), &interfaces.FindSkillsReq{KnID: "kn1", ObjectTypeID: "contract", TopK: 10}, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintObjectTypeNoBinding {
+		t.Errorf("expected HintObjectTypeNoBinding, got %s", hint)
 	}
 	if len(matches) != 0 {
 		t.Errorf("expected 0 matches, got %d", len(matches))
@@ -177,9 +191,12 @@ func TestRecallInstance_RelationExists_InstanceOnly(t *testing.T) {
 		InstanceIdentities: []map[string]interface{}{{"contract_id": "C-001"}},
 		TopK:               10,
 	}
-	matches, err := rc.recallInstance(context.Background(), req, nil)
+	matches, hint, err := rc.recallInstance(context.Background(), req, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintNone {
+		t.Errorf("expected no hint, got %s", hint)
 	}
 	if oq.subgraphCallCount != 1 {
 		t.Errorf("expected 1 subgraph call (instance-level only), got %d", oq.subgraphCallCount)
@@ -210,9 +227,12 @@ func TestRecallInstance_NoRelation_ReturnsEmpty(t *testing.T) {
 		InstanceIdentities: []map[string]interface{}{{"contract_id": "C-001"}},
 		TopK:               10,
 	}
-	matches, err := rc.recallInstance(context.Background(), req, nil)
+	matches, hint, err := rc.recallInstance(context.Background(), req, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintObjectTypeNoBinding {
+		t.Errorf("expected HintObjectTypeNoBinding, got %s", hint)
 	}
 	if len(matches) != 0 {
 		t.Errorf("expected 0 matches, got %d", len(matches))
@@ -243,7 +263,7 @@ func TestRecallInstance_SubgraphFailure_ReturnsError(t *testing.T) {
 		InstanceIdentities: []map[string]interface{}{{"id": "1"}},
 		TopK:               10,
 	}
-	_, err := rc.recallInstance(context.Background(), req, nil)
+	_, _, err := rc.recallInstance(context.Background(), req, nil)
 	if err == nil {
 		t.Fatal("expected error when subgraph call fails")
 	}
@@ -454,5 +474,99 @@ func TestExtractSubgraph_DuplicateSkillsAcrossEntries_AllCollected(t *testing.T)
 	matches := extractSkillMatchesFromSubgraph(resp, "skills", "test", 10)
 	if len(matches) != 2 {
 		t.Fatalf("expected 2 raw matches (dedup is Assemble's job), got %d", len(matches))
+	}
+}
+
+// ==================== Empty Result Message Tests ====================
+
+func TestResolveEmptyResultMessageKey_CoordinatorHintTakesPriority(t *testing.T) {
+	tests := []struct {
+		name          string
+		hint          interfaces.EmptyResultHint
+		mode          interfaces.RecallMode
+		hasSkillQuery bool
+		wantKey       string
+	}{
+		{"network_scope_too_wide", interfaces.HintNetworkScopeTooWide, interfaces.RecallModeNetwork, false, "find_skills.network_scope_too_wide"},
+		{"network_scope_too_wide_even_with_skill_query", interfaces.HintNetworkScopeTooWide, interfaces.RecallModeNetwork, true, "find_skills.network_scope_too_wide"},
+		{"object_type_no_binding", interfaces.HintObjectTypeNoBinding, interfaces.RecallModeObjectType, false, "find_skills.object_type_no_binding"},
+		{"object_type_no_binding_even_with_skill_query", interfaces.HintObjectTypeNoBinding, interfaces.RecallModeInstance, true, "find_skills.object_type_no_binding"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := resolveEmptyResultMessageKey(tt.hint, tt.mode, tt.hasSkillQuery)
+			if got != tt.wantKey {
+				t.Errorf("got %s, want %s", got, tt.wantKey)
+			}
+		})
+	}
+}
+
+func TestResolveEmptyResultMessageKey_SkillQueryOverridesMode(t *testing.T) {
+	modes := []interfaces.RecallMode{interfaces.RecallModeNetwork, interfaces.RecallModeObjectType, interfaces.RecallModeInstance}
+	for _, mode := range modes {
+		got := resolveEmptyResultMessageKey(interfaces.HintNone, mode, true)
+		if got != "find_skills.skill_query_no_match" {
+			t.Errorf("mode=%d: got %s, want find_skills.skill_query_no_match", mode, got)
+		}
+	}
+}
+
+func TestResolveEmptyResultMessageKey_FallbackByMode(t *testing.T) {
+	tests := []struct {
+		mode    interfaces.RecallMode
+		wantKey string
+	}{
+		{interfaces.RecallModeNetwork, "find_skills.network_no_skills"},
+		{interfaces.RecallModeObjectType, "find_skills.object_type_no_match"},
+		{interfaces.RecallModeInstance, "find_skills.instance_no_match"},
+	}
+	for _, tt := range tests {
+		got := resolveEmptyResultMessageKey(interfaces.HintNone, tt.mode, false)
+		if got != tt.wantKey {
+			t.Errorf("mode=%d: got %s, want %s", tt.mode, got, tt.wantKey)
+		}
+	}
+}
+
+func TestTranslateMessage_ZhCN(t *testing.T) {
+	ctx := common.SetLanguageByCtx(context.Background(), common.SimplifiedChinese)
+	msg := translateMessage(ctx, "find_skills.network_scope_too_wide")
+	if msg == "" || msg == "find_skills.network_scope_too_wide" {
+		t.Errorf("expected translated Chinese message, got %q", msg)
+	}
+	if !strings.Contains(msg, "网络级") {
+		t.Errorf("expected Chinese text containing '网络级', got %q", msg)
+	}
+}
+
+func TestTranslateMessage_EnUS(t *testing.T) {
+	ctx := common.SetLanguageByCtx(context.Background(), common.AmericanEnglish)
+	msg := translateMessage(ctx, "find_skills.network_scope_too_wide")
+	if msg == "" || msg == "find_skills.network_scope_too_wide" {
+		t.Errorf("expected translated English message, got %q", msg)
+	}
+	if !strings.Contains(msg, "network level") {
+		t.Errorf("expected English text containing 'network level', got %q", msg)
+	}
+}
+
+func TestTranslateMessage_AllKeys(t *testing.T) {
+	keys := []string{
+		"find_skills.network_scope_too_wide",
+		"find_skills.network_no_skills",
+		"find_skills.object_type_no_binding",
+		"find_skills.object_type_no_match",
+		"find_skills.instance_no_match",
+		"find_skills.skill_query_no_match",
+	}
+	for _, lang := range []common.Language{common.SimplifiedChinese, common.AmericanEnglish} {
+		ctx := common.SetLanguageByCtx(context.Background(), lang)
+		for _, key := range keys {
+			msg := translateMessage(ctx, key)
+			if msg == "" || msg == key {
+				t.Errorf("lang=%s key=%s: expected translated message, got %q", lang, key, msg)
+			}
+		}
 	}
 }

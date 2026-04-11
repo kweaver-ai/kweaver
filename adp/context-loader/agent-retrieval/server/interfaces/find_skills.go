@@ -27,7 +27,19 @@ type FindSkillsReq struct {
 // FindSkillsResp find_skills response
 type FindSkillsResp struct {
 	Entries []*SkillItem `json:"entries"`
+	Message string       `json:"message,omitempty"`
 }
+
+// EmptyResultHint indicates why the coordinator returned empty matches.
+// Only set when the empty result is due to a structural reason that the
+// coordinator uniquely knows about (e.g. relations exist, no binding).
+type EmptyResultHint string
+
+const (
+	HintNone                EmptyResultHint = ""
+	HintNetworkScopeTooWide EmptyResultHint = "find_skills.network_scope_too_wide"
+	HintObjectTypeNoBinding EmptyResultHint = "find_skills.object_type_no_binding"
+)
 
 // SkillItem candidate skill metadata
 type SkillItem struct {

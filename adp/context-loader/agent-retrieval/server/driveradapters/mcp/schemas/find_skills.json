@@ -56,6 +56,10 @@
             }
           }
         }
+      },
+      "message": {
+        "type": "string",
+        "description": "空结果说明信息，仅当 entries 为空时出现，说明原因和下一步建议"
       }
     }
   }

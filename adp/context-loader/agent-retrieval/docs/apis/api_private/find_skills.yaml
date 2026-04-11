@@ -122,10 +122,16 @@ paths:
                       - skill_id: skill_clause_extract
                         name: 关键条款提取
                         description: 提取合同中的关键条款和义务
-                empty_result:
+                empty_result_network_scope:
                   summary: 无匹配 Skill（网络级但 skills 有关联）
                   value:
                     entries: []
+                    message: "当前知识网络中的 Skill 不是全局生效，网络级范围未返回结果。请补充 object_type_id；如已定位到实例，再补充 instance_identities 后重试。"
+                empty_result_no_binding:
+                  summary: 无匹配 Skill（对象类未配置 Skill 绑定）
+                  value:
+                    entries: []
+                    message: "当前对象类未配置 Skill 绑定关系，无法在该范围内召回 Skill。请确认该对象类是否已绑定 Skill。"
         '400':
           description: 请求参数错误
           content:
@@ -214,6 +220,12 @@ components:
             无匹配时返回空数组。
           items:
             $ref: '#/components/schemas/SkillItem'
+        message:
+          type: string
+          description: |
+            空结果说明信息。仅当 entries 为空且接口返回 200 时出现。
+            用于向调用方（Agent）解释当前为什么没有结果，以及下一步建议。
+            entries 非空时不返回此字段。支持多语言（由请求 X-Language 头决定）。
 
     SkillItem:
       type: object

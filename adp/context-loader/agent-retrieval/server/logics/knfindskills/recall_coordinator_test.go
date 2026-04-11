@@ -160,6 +160,105 @@ func TestRecallObjectType_NoRelation_ReturnsEmpty(t *testing.T) {
 	}
 }
 
+func TestRecallObjectType_SkillsOTID_DirectQuery(t *testing.T) {
+	bkn := &testBknBackend{}
+	oq := &testOntologyQuery{
+		queryObjectInstancesFunc: func(_ context.Context, req *interfaces.QueryObjectInstancesReq) (*interfaces.QueryObjectInstancesResp, error) {
+			if req.OtID != "skills" {
+				t.Errorf("expected OtID=skills, got %s", req.OtID)
+			}
+			return &interfaces.QueryObjectInstancesResp{
+				Data: makeSkillInstances(2),
+			}, nil
+		},
+	}
+
+	rc := newTestCoordinator(bkn, oq)
+	matches, hint, err := rc.recallObjectType(context.Background(), &interfaces.FindSkillsReq{
+		KnID: "kn1", ObjectTypeID: "skills", TopK: 10,
+	}, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint == interfaces.HintObjectTypeNoBinding {
+		t.Errorf("object_type_id=skills should NOT return HintObjectTypeNoBinding")
+	}
+	if hint != interfaces.HintNone {
+		t.Errorf("expected HintNone, got %s", hint)
+	}
+	if len(matches) != 2 {
+		t.Errorf("expected 2 matches via direct query, got %d", len(matches))
+	}
+	for _, m := range matches {
+		if m.MatchedScope != "object_type" {
+			t.Errorf("expected scope=object_type, got %s", m.MatchedScope)
+		}
+		if m.Priority != 50 {
+			t.Errorf("expected priority=50, got %d", m.Priority)
+		}
+	}
+}
+
+func TestRecallObjectType_SkillsOTID_EmptyResult_NoBindingHint(t *testing.T) {
+	bkn := &testBknBackend{}
+	oq := &testOntologyQuery{
+		queryObjectInstancesFunc: func(_ context.Context, _ *interfaces.QueryObjectInstancesReq) (*interfaces.QueryObjectInstancesResp, error) {
+			return &interfaces.QueryObjectInstancesResp{Data: []any{}}, nil
+		},
+	}
+
+	rc := newTestCoordinator(bkn, oq)
+	matches, hint, err := rc.recallObjectType(context.Background(), &interfaces.FindSkillsReq{
+		KnID: "kn1", ObjectTypeID: "skills", TopK: 10,
+	}, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintNone {
+		t.Errorf("empty result with object_type_id=skills should return HintNone (not no_binding), got %s", hint)
+	}
+	if len(matches) != 0 {
+		t.Errorf("expected 0 matches, got %d", len(matches))
+	}
+}
+
+func TestRecallInstance_SkillsOTID_DirectQueryWithFilter(t *testing.T) {
+	bkn := &testBknBackend{}
+	oq := &testOntologyQuery{
+		queryObjectInstancesFunc: func(_ context.Context, req *interfaces.QueryObjectInstancesReq) (*interfaces.QueryObjectInstancesResp, error) {
+			if req.OtID != "skills" {
+				t.Errorf("expected OtID=skills, got %s", req.OtID)
+			}
+			if req.Cond == nil {
+				t.Errorf("expected instance filter condition, got nil")
+			}
+			return &interfaces.QueryObjectInstancesResp{
+				Data: makeSkillInstances(1),
+			}, nil
+		},
+	}
+
+	rc := newTestCoordinator(bkn, oq)
+	matches, hint, err := rc.recallInstance(context.Background(), &interfaces.FindSkillsReq{
+		KnID:               "kn1",
+		ObjectTypeID:       "skills",
+		InstanceIdentities: []map[string]interface{}{{"skill_id": "skill_0"}},
+		TopK:               10,
+	}, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if hint != interfaces.HintNone {
+		t.Errorf("expected HintNone, got %s", hint)
+	}
+	if len(matches) != 1 {
+		t.Errorf("expected 1 match, got %d", len(matches))
+	}
+	if len(matches) > 0 && matches[0].MatchedScope != "object_selector" {
+		t.Errorf("expected scope=object_selector, got %s", matches[0].MatchedScope)
+	}
+}
+
 func TestRecallInstance_RelationExists_InstanceOnly(t *testing.T) {
 	bkn := &testBknBackend{
 		searchRelationTypesFunc: func(_ context.Context, _ *interfaces.QueryConceptsReq) (*interfaces.RelationTypeConcepts, error) {

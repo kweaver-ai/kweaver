@@ -69,6 +69,10 @@ func (rc *recallCoordinator) recallObjectType(
 	ctx, _ = o11y.StartInternalSpan(ctx)
 	defer o11y.EndSpan(ctx, err)
 
+	if req.ObjectTypeID == rc.config.SkillsObjectTypeID {
+		return rc.recallSkillsDirect(ctx, req, skillQueryCond, "object_type", 50)
+	}
+
 	rt, err := rc.findRelationType(ctx, req.KnID, req.ObjectTypeID)
 	if err != nil {
 		return nil, interfaces.HintNone, err
@@ -98,6 +102,10 @@ func (rc *recallCoordinator) recallInstance(
 	ctx, _ = o11y.StartInternalSpan(ctx)
 	defer o11y.EndSpan(ctx, err)
 
+	if req.ObjectTypeID == rc.config.SkillsObjectTypeID {
+		return rc.recallSkillsDirect(ctx, req, skillQueryCond, "object_selector", 100)
+	}
+
 	rt, err := rc.findRelationType(ctx, req.KnID, req.ObjectTypeID)
 	if err != nil {
 		return nil, interfaces.HintNone, err
@@ -115,6 +123,52 @@ func (rc *recallCoordinator) recallInstance(
 	}
 
 	return extractSkillMatchesFromSubgraph(resp, rc.config.SkillsObjectTypeID, "object_selector", 100), interfaces.HintNone, nil
+}
+
+// recallSkillsDirect handles queries where object_type_id is the skills ObjectType itself.
+// Instead of searching for a RelationType (which would be self-referential), it directly
+// queries skill instances via QueryObjectInstances, optionally filtered by instance_identities.
+func (rc *recallCoordinator) recallSkillsDirect(
+	ctx context.Context,
+	req *interfaces.FindSkillsReq,
+	skillQueryCond *interfaces.KnCondition,
+	scope string,
+	priority int,
+) ([]interfaces.SkillMatch, interfaces.EmptyResultHint, error) {
+	cond := mergeConditions(
+		skillQueryCond,
+		buildInstanceFilterCondition(req.InstanceIdentities),
+	)
+
+	oqReq := &interfaces.QueryObjectInstancesReq{
+		KnID:       req.KnID,
+		OtID:       rc.config.SkillsObjectTypeID,
+		Cond:       cond,
+		Limit:      req.TopK,
+		Properties: []string{"skill_id", "name", "description"},
+	}
+
+	resp, err := rc.ontologyQuery.QueryObjectInstances(ctx, oqReq)
+	if err != nil {
+		return nil, interfaces.HintNone, fmt.Errorf("QueryObjectInstances(skills direct): %w", err)
+	}
+
+	return extractSkillMatchesFromInstances(resp.Data, scope, priority), interfaces.HintNone, nil
+}
+
+// mergeConditions combines two optional KnConditions with AND.
+// Returns nil if both are nil; returns the non-nil one if only one is set.
+func mergeConditions(a, b *interfaces.KnCondition) *interfaces.KnCondition {
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	return &interfaces.KnCondition{
+		Operation:     interfaces.KnOperationTypeAnd,
+		SubConditions: []*interfaces.KnCondition{a, b},
+	}
 }
 
 // skillsHaveAnyRelation checks if the skills ObjectType participates in any RelationType.

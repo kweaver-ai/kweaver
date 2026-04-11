@@ -244,6 +244,55 @@ func TestFindSkills_SkillQueryNoMatch(t *testing.T) {
 	}
 }
 
+func TestFindSkills_SkillsOTID_ReturnsResults(t *testing.T) {
+	bkn := &testBknBackend{}
+	oq := &testOntologyQuery{
+		queryObjectInstancesFunc: func(_ context.Context, req *interfaces.QueryObjectInstancesReq) (*interfaces.QueryObjectInstancesResp, error) {
+			return &interfaces.QueryObjectInstancesResp{Data: makeSkillInstances(3)}, nil
+		},
+	}
+	svc := NewFindSkillsServiceWith(&testLogger{}, newTestConfig(), oq, bkn)
+
+	resp, err := svc.FindSkills(zhCtx(), &interfaces.FindSkillsReq{
+		KnID: "kn1", ObjectTypeID: "skills", TopK: 10,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(resp.Entries) != 3 {
+		t.Fatalf("expected 3 entries with object_type_id=skills, got %d", len(resp.Entries))
+	}
+	if resp.Message != "" {
+		t.Errorf("expected no message when entries non-empty, got %q", resp.Message)
+	}
+}
+
+func TestFindSkills_SkillsOTID_EmptyResult_MessageIsNoMatch(t *testing.T) {
+	bkn := &testBknBackend{}
+	oq := &testOntologyQuery{
+		queryObjectInstancesFunc: func(_ context.Context, _ *interfaces.QueryObjectInstancesReq) (*interfaces.QueryObjectInstancesResp, error) {
+			return &interfaces.QueryObjectInstancesResp{Data: []any{}}, nil
+		},
+	}
+	svc := NewFindSkillsServiceWith(&testLogger{}, newTestConfig(), oq, bkn)
+
+	resp, err := svc.FindSkills(zhCtx(), &interfaces.FindSkillsReq{
+		KnID: "kn1", ObjectTypeID: "skills", TopK: 10,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(resp.Entries) != 0 {
+		t.Fatalf("expected 0 entries, got %d", len(resp.Entries))
+	}
+	if strings.Contains(resp.Message, "未配置") {
+		t.Errorf("object_type_id=skills empty result should NOT be no_binding message (未配置), got %q", resp.Message)
+	}
+	if !strings.Contains(resp.Message, "对象类范围") {
+		t.Errorf("expected object_type_no_match message (对象类范围), got %q", resp.Message)
+	}
+}
+
 func TestFindSkills_EmptyResult_EnglishMessage(t *testing.T) {
 	bkn := &testBknBackend{
 		searchRelationTypesFunc: func(_ context.Context, _ *interfaces.QueryConceptsReq) (*interfaces.RelationTypeConcepts, error) {

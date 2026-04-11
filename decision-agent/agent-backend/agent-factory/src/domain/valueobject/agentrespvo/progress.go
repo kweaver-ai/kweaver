@@ -27,8 +27,11 @@ type Progress struct {
 
 // Evidence 证据元数据，标注文本中引用工具结果的位置
 type Evidence struct {
-	ObjectTypeName string        `json:"object_type_name"`
-	Positions      [][]int       `json:"positions"`
+	ObjectTypeName string      `json:"object_type_name"`
+	Positions      [][]int     `json:"positions"`
+	ToolName       string      `json:"tool_name,omitempty"`
+	Result         interface{} `json:"result,omitempty"`
+	ResultType     string      `json:"result_type,omitempty"`
 }
 
 type TokenUsage struct {

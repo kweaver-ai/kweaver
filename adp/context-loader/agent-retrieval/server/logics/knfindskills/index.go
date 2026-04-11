@@ -10,14 +10,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	o11y "github.com/kweaver-ai/kweaver-go-lib/observability"
 
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/drivenadapters"
+	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/common"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/config"
 	infraErr "github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/errors"
+	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/localize"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/interfaces"
 )
 
@@ -119,13 +122,14 @@ func (s *findSkillsServiceImpl) FindSkills(ctx context.Context, req *interfaces.
 
 	// 4. Execute recall based on mode
 	var matches []interfaces.SkillMatch
+	var emptyHint interfaces.EmptyResultHint
 	switch mode {
 	case interfaces.RecallModeNetwork:
-		matches, err = s.coordinator.recallNetwork(recallCtx, req, skillQueryCond)
+		matches, emptyHint, err = s.coordinator.recallNetwork(recallCtx, req, skillQueryCond)
 	case interfaces.RecallModeObjectType:
-		matches, err = s.coordinator.recallObjectType(recallCtx, req, skillQueryCond)
+		matches, emptyHint, err = s.coordinator.recallObjectType(recallCtx, req, skillQueryCond)
 	case interfaces.RecallModeInstance:
-		matches, err = s.coordinator.recallInstance(recallCtx, req, skillQueryCond)
+		matches, emptyHint, err = s.coordinator.recallInstance(recallCtx, req, skillQueryCond)
 	default:
 		err = fmt.Errorf("unknown recall mode: %d", mode)
 	}
@@ -138,6 +142,38 @@ func (s *findSkillsServiceImpl) FindSkills(ctx context.Context, req *interfaces.
 	// 5. Assemble result
 	resp := Assemble(matches, req.TopK)
 
+	// 6. Generate empty-result message
+	if len(resp.Entries) == 0 {
+		msgKey := resolveEmptyResultMessageKey(emptyHint, mode, req.SkillQuery != "")
+		resp.Message = translateMessage(ctx, msgKey)
+	}
+
 	s.logger.WithContext(ctx).Infof("[FindSkills] returning %d skills for kn_id=%s", len(resp.Entries), req.KnID)
 	return resp, nil
+}
+
+func resolveEmptyResultMessageKey(hint interfaces.EmptyResultHint, mode interfaces.RecallMode, hasSkillQuery bool) string {
+	if hint != interfaces.HintNone {
+		return string(hint)
+	}
+	if hasSkillQuery {
+		return "find_skills.skill_query_no_match"
+	}
+	switch mode {
+	case interfaces.RecallModeNetwork:
+		return "find_skills.network_no_skills"
+	case interfaces.RecallModeObjectType:
+		return "find_skills.object_type_no_match"
+	case interfaces.RecallModeInstance:
+		return "find_skills.instance_no_match"
+	default:
+		return "find_skills.network_no_skills"
+	}
+}
+
+func translateMessage(ctx context.Context, msgKey string) string {
+	lang := common.GetLanguageFromCtx(ctx)
+	langKey := strings.ReplaceAll(lang, "-", "_")
+	tr := localize.NewI18nTranslator(langKey)
+	return tr.Trans(msgKey)
 }

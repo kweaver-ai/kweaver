@@ -13,10 +13,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/mitchellh/mapstructure"
-	_ "github.com/sijms/go-ora/v2"
 	"vega-backend/interfaces"
 	"vega-backend/logics/connectors"
+
+	"github.com/mitchellh/mapstructure"
+	_ "github.com/sijms/go-ora/v2"
 )
 
 type oracleConfig struct {
@@ -484,7 +485,7 @@ func (c *OracleConnector) fetchColumns(ctx context.Context, table *interfaces.Ta
 	}
 	defer rows.Close()
 
-	var columns []interfaces.ColumnMeta
+	var columns []interfaces.TableColumnMeta
 
 	for rows.Next() {
 		var name, dataType, isNullable, columnDefault, description, charset sql.NullString
@@ -505,7 +506,7 @@ func (c *OracleConnector) fetchColumns(ctx context.Context, table *interfaces.Ta
 			return err
 		}
 
-		col := interfaces.ColumnMeta{
+		col := interfaces.TableColumnMeta{
 			Name:            name.String,
 			Type:            MapType(dataType.String),
 			OrigType:        dataType.String,
@@ -545,7 +546,7 @@ func (c *OracleConnector) fetchIndexes(ctx context.Context, table *interfaces.Ta
 	}
 	defer rows.Close()
 
-	indexMap := make(map[string]*interfaces.IndexInfo)
+	indexMap := make(map[string]*interfaces.TableIndexMeta)
 
 	for rows.Next() {
 		var indexName, columnName, uniqueness sql.NullString
@@ -564,7 +565,7 @@ func (c *OracleConnector) fetchIndexes(ctx context.Context, table *interfaces.Ta
 		if idx, ok := indexMap[name]; ok {
 			idx.Columns = append(idx.Columns, columnName.String)
 		} else {
-			indexMap[name] = &interfaces.IndexInfo{
+			indexMap[name] = &interfaces.TableIndexMeta{
 				Name:    name,
 				Columns: []string{columnName.String},
 				Unique:  uniqueness.String == "UNIQUE",
@@ -573,7 +574,7 @@ func (c *OracleConnector) fetchIndexes(ctx context.Context, table *interfaces.Ta
 		}
 	}
 
-	var indexes []interfaces.IndexInfo
+	var indexes []interfaces.TableIndexMeta
 	for _, idx := range indexMap {
 		indexes = append(indexes, *idx)
 	}
@@ -604,7 +605,7 @@ func (c *OracleConnector) fetchForeignKeys(ctx context.Context, table *interface
 	}
 	defer rows.Close()
 
-	fkMap := make(map[string]*interfaces.ForeignKeyInfo)
+	fkMap := make(map[string]*interfaces.TableForeignKeyMeta)
 
 	for rows.Next() {
 		var constraintName, columnName, refTableName, refColumnName sql.NullString
@@ -623,7 +624,7 @@ func (c *OracleConnector) fetchForeignKeys(ctx context.Context, table *interface
 			fk.Columns = append(fk.Columns, columnName.String)
 			fk.RefColumns = append(fk.RefColumns, refColumnName.String)
 		} else {
-			fkMap[name] = &interfaces.ForeignKeyInfo{
+			fkMap[name] = &interfaces.TableForeignKeyMeta{
 				Name:       name,
 				Columns:    []string{columnName.String},
 				RefTable:   refTableName.String,
@@ -632,7 +633,7 @@ func (c *OracleConnector) fetchForeignKeys(ctx context.Context, table *interface
 		}
 	}
 
-	var fks []interfaces.ForeignKeyInfo
+	var fks []interfaces.TableForeignKeyMeta
 	for _, fk := range fkMap {
 		fks = append(fks, *fk)
 	}

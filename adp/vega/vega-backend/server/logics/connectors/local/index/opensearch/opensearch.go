@@ -423,7 +423,7 @@ func (c *OpenSearchConnector) fetchMappings(ctx context.Context, index *interfac
 		parseProperties("", idxData.Mappings.Properties, result)
 	}
 	// Parse mappings:这里是存储的字段元数据，包括type映射
-	fieldMap := make(map[string]interfaces.FieldMeta)
+	fieldMap := make(map[string]interfaces.IndexFieldMeta)
 	// 遍历：key 和 value 都拿到
 	for fieldName, value := range result {
 		// value: {"ignore_above":256,"type":"keyword"}
@@ -431,7 +431,7 @@ func (c *OpenSearchConnector) fetchMappings(ctx context.Context, index *interfac
 		if !ok {
 			return fmt.Errorf("failed to read fieldType: indexName:%s,%w", index.Name, err)
 		}
-		fieldMap[fieldName] = interfaces.FieldMeta{
+		fieldMap[fieldName] = interfaces.IndexFieldMeta{
 			Name:       fieldName,
 			Type:       MapType(fieldType),
 			OrigType:   fieldType,

@@ -367,3 +367,15 @@
   url: /api/agent-factory/v1/observability/agent/${agent_id}/conversation/${conversation_id}/session/${session_id}/run/${run_id}/detail
   method: POST
   headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
+
+# ==================== 工具箱市场相关 ====================
+- name: 查询市场工具列表
+  url: /api/agent-operator-integration/v1/tool-box/market/tools
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
+
+# ==================== 沙箱临时区相关 ====================
+- name: 上传文件到沙箱临时区
+  url: /api/v1/sessions/${session_id}/files/upload
+  method: POST
+  headers: '{"Content-Type": "multipart/form-data", "Accept": "application/json", "x-business-domain": "bd_public"}'

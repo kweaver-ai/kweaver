@@ -1,0 +1,484 @@
+feature: Agent Factory API
+story: 智能体场景测试
+switch: y
+cases:
+# ==================== 场景1：角色指令模式智能体 - 长期记忆 ====================
+# 测试目的：验证开启长期记忆后，多轮对话可记住历史信息
+- name: Setup_创建角色指令模式智能体_开启长期记忆
+  url: 创建Agent
+  body_params: |
+    {
+      "name": "{{ '长期记忆智能体_%s' | format(random_string(6, 8)) }}",
+      "profile": "这是一个测试长期记忆功能的智能体",
+      "key": "{{ 'memory-agent-%s' | format(random_string(6, 8)) }}",
+      "avatar_type": ${agent_avatar_type},
+      "avatar": "${agent_avatar}",
+      "product_key": "${agent_product_key}",
+      "config": {
+        "input": {"fields": [{"name": "query", "type": "string"}]},
+        "system_prompt": "你是一个具有长期记忆能力的助手。请记住用户告诉你的所有重要信息，并在后续对话中能够回忆和使用这些信息。",
+        "is_dolphin_mode": 0,
+        "llms": [{"is_default": true, "llm_config": {"id": "${llm_config_id}", "name": "${llm_config_name}", "model_type": "${llm_config_model_type}", "temperature": ${llm_config_temperature}, "top_p": ${llm_config_top_p}, "top_k": ${llm_config_top_k}, "frequency_penalty": ${llm_config_frequency_penalty}, "presence_penalty": ${llm_config_presence_penalty}, "max_tokens": ${llm_config_max_tokens}}}],
+        "output": {"default_format": "${agent_config_output_format}"},
+        "memory": {"is_enabled": true}
+      }
+    }
+  code_check: '201'
+  resp_values: |
+    {
+      "memory_agent_id": "$.id"
+    }
+  description: '创建角色指令模式智能体，开启长期记忆功能'
+
+- name: Setup_获取长期记忆智能体详情
+  url: 获取Agent详情
+  path_params: |
+    {
+      "agent_id": "${memory_agent_id}"
+    }
+  code_check: '200'
+  resp_values: |
+    {
+      "memory_agent_key": "$.key"
+    }
+  resp_check: |
+    {
+      "$.config.memory.is_enabled": true
+    }
+  prev_case: Setup_创建角色指令模式智能体_开启长期记忆
+  description: '获取长期记忆智能体详情，验证长期记忆配置已开启'
+
+# 第一轮对话：告诉智能体一些信息（调试接口返回SSE流，只验证请求成功）
+- name: Positive_长期记忆智能体_第一轮对话_设置信息
+  url: 调试Completion
+  path_params: |
+    {
+      "app_key": "${memory_agent_key}"
+    }
+  body_params: |
+    {
+      "query": "我叫张三，我最喜欢的颜色是蓝色，我的生日是6月15日。请记住这些信息。",
+      "agent_version": "v0",
+      "agent_id": "${memory_agent_id}"
+    }
+  code_check: '200'
+  resp_check: |
+    {
+      "$._parse_error": "non_json_body"
+    }
+  prev_case: Setup_获取长期记忆智能体详情
+  description: '长期记忆智能体第一轮对话：设置个人信息，验证流式响应正常返回'
+
+# 第二轮对话：验证智能体能够进行连续对话（验证请求成功）
+- name: Positive_长期记忆智能体_第二轮对话_验证记忆
+  url: 调试Completion
+  path_params: |
+    {
+      "app_key": "${memory_agent_key}"
+    }
+  body_params: |
+    {
+      "query": "你还记得我叫什么名字吗？我最喜欢的颜色是什么？我的生日是哪一天？",
+      "agent_version": "v0",
+      "agent_id": "${memory_agent_id}"
+    }
+  code_check: '200'
+  resp_check: |
+    {
+      "$._parse_error": "non_json_body"
+    }
+  prev_case: Positive_长期记忆智能体_第一轮对话_设置信息
+  description: '长期记忆智能体第二轮对话：验证流式响应正常返回'
+
+- name: Cleanup_删除长期记忆智能体
+  switch: n
+  url: 删除Agent
+  path_params: |
+    {
+      "agent_id": "${memory_agent_id}"
+    }
+  code_check: '204'
+  prev_case: Positive_长期记忆智能体_第二轮对话_验证记忆
+  description: '清理：删除长期记忆智能体'
+
+# ==================== 场景2：角色指令模式智能体 - 相关问题 ====================
+# 测试目的：验证开启相关问题后，问答后会生成相关问题
+- name: Setup_创建角色指令模式智能体_开启相关问题
+  url: 创建Agent
+  body_params: |
+    {
+      "name": "{{ '相关问题智能体_%s' | format(random_string(6, 8)) }}",
+      "profile": "这是一个测试相关问题功能的智能体",
+      "key": "{{ 'related-q-agent-%s' | format(random_string(6, 8)) }}",
+      "avatar_type": ${agent_avatar_type},
+      "avatar": "${agent_avatar}",
+      "product_key": "${agent_product_key}",
+      "config": {
+        "input": {"fields": [{"name": "query", "type": "string"}]},
+        "system_prompt": "你是一个知识渊博的助手，能够回答各类问题并提供相关的问题建议。",
+        "is_dolphin_mode": 0,
+        "llms": [{"is_default": true, "llm_config": {"id": "${llm_config_id}", "name": "${llm_config_name}", "model_type": "${llm_config_model_type}", "temperature": ${llm_config_temperature}, "top_p": ${llm_config_top_p}, "top_k": ${llm_config_top_k}, "frequency_penalty": ${llm_config_frequency_penalty}, "presence_penalty": ${llm_config_presence_penalty}, "max_tokens": ${llm_config_max_tokens}}}],
+        "output": {"default_format": "${agent_config_output_format}"},
+        "related_question": {"is_enabled": true}
+      }
+    }
+  code_check: '201'
+  resp_values: |
+    {
+      "related_q_agent_id": "$.id"
+    }
+  description: '创建角色指令模式智能体，开启相关问题功能'
+
+- name: Setup_获取相关问题智能体详情
+  url: 获取Agent详情
+  path_params: |
+    {
+      "agent_id": "${related_q_agent_id}"
+    }
+  code_check: '200'
+  resp_values: |
+    {
+      "related_q_agent_key": "$.key"
+    }
+  resp_check: |
+    {
+      "$.config.related_question.is_enabled": true
+    }
+  prev_case: Setup_创建角色指令模式智能体_开启相关问题
+  description: '获取相关问题智能体详情，验证相关问题配置已开启'
+
+- name: Positive_相关问题智能体_进行问答
+  url: 调试Completion
+  path_params: |
+    {
+      "app_key": "${related_q_agent_key}"
+    }
+  body_params: |
+    {
+      "query": "什么是人工智能？",
+      "agent_version": "v0",
+      "agent_id": "${related_q_agent_id}"
+    }
+  code_check: '200'
+  resp_check: |
+    {
+      "$._parse_error": "non_json_body"
+    }
+  prev_case: Setup_获取相关问题智能体详情
+  description: '相关问题智能体问答：验证流式响应正常返回'
+
+- name: Cleanup_删除相关问题智能体
+  switch: n
+  url: 删除Agent
+  path_params: |
+    {
+      "agent_id": "${related_q_agent_id}"
+    }
+  code_check: '204'
+  prev_case: Positive_相关问题智能体_进行问答
+  description: '清理：删除相关问题智能体'
+
+# ==================== 场景3：角色指令模式智能体 - 任务规划 ====================
+# 测试目的：验证开启任务规划后，智能体能对复杂任务进行规划
+- name: Setup_创建角色指令模式智能体_开启任务规划
+  url: 创建Agent
+  body_params: |
+    {
+      "name": "{{ '任务规划智能体_%s' | format(random_string(6, 8)) }}",
+      "profile": "这是一个测试任务规划功能的智能体",
+      "key": "{{ 'plan-agent-%s' | format(random_string(6, 8)) }}",
+      "avatar_type": ${agent_avatar_type},
+      "avatar": "${agent_avatar}",
+      "product_key": "${agent_product_key}",
+      "config": {
+        "input": {"fields": [{"name": "query", "type": "string"}]},
+        "system_prompt": "你是一个任务规划助手，能够将复杂任务分解为多个步骤并逐一完成。",
+        "is_dolphin_mode": 0,
+        "llms": [{"is_default": true, "llm_config": {"id": "${llm_config_id}", "name": "${llm_config_name}", "model_type": "${llm_config_model_type}", "temperature": ${llm_config_temperature}, "top_p": ${llm_config_top_p}, "top_k": ${llm_config_top_k}, "frequency_penalty": ${llm_config_frequency_penalty}, "presence_penalty": ${llm_config_presence_penalty}, "max_tokens": ${llm_config_max_tokens}}}],
+        "output": {"default_format": "${agent_config_output_format}"},
+        "plan_mode": {"is_enabled": true}
+      }
+    }
+  code_check: '201'
+  resp_values: |
+    {
+      "plan_agent_id": "$.id"
+    }
+  description: '创建角色指令模式智能体，开启任务规划功能'
+
+- name: Setup_获取任务规划智能体详情
+  url: 获取Agent详情
+  path_params: |
+    {
+      "agent_id": "${plan_agent_id}"
+    }
+  code_check: '200'
+  resp_values: |
+    {
+      "plan_agent_key": "$.key"
+    }
+  resp_check: |
+    {
+      "$.config.plan_mode.is_enabled": true
+    }
+  prev_case: Setup_创建角色指令模式智能体_开启任务规划
+  description: '获取任务规划智能体详情，验证任务规划配置已开启'
+
+- name: Positive_任务规划智能体_执行复杂任务
+  url: 调试Completion
+  path_params: |
+    {
+      "app_key": "${plan_agent_key}"
+    }
+  body_params: |
+    {
+      "query": "请帮我规划如何学习Python编程，包括从基础到进阶的完整学习路径。",
+      "agent_version": "v0",
+      "agent_id": "${plan_agent_id}"
+    }
+  code_check: '200'
+  resp_check: |
+    {
+      "$._parse_error": "non_json_body"
+    }
+  prev_case: Setup_获取任务规划智能体详情
+  description: '任务规划智能体：验证流式响应正常返回，返回规划结果'
+
+- name: Cleanup_删除任务规划智能体
+  switch: n
+  url: 删除Agent
+  path_params: |
+    {
+      "agent_id": "${plan_agent_id}"
+    }
+  code_check: '204'
+  prev_case: Positive_任务规划智能体_执行复杂任务
+  description: '清理：删除任务规划智能体'
+
+# ==================== 场景4：Dolphin模式智能体 - 内置沙箱工具 ====================
+# 测试目的：验证dolphin模式智能体对接沙箱及临时区功能
+# Step 1: 查询市场工具列表获取内置沙箱工具信息
+- name: Setup_查询市场工具列表获取内置沙箱工具
+  url: 查询市场工具列表
+  query_params: |
+    {
+      "page": 1,
+      "page_size": 10,
+      "tool_name": "Execute_Code_Sync",
+      "status": "enabled"
+    }
+  code_check: '200'
+  resp_values: |
+    {
+      "internal_tool_box_id": "$.data[0].box_id",
+      "internal_tool_id": "$.data[0].tools[0].tool_id"
+    }
+  description: '查询市场工具列表获取内置沙箱工具信息'
+
+# Step 2: 创建Dolphin模式智能体，配置内置沙箱工具和临时区
+- name: Setup_创建Dolphin模式智能体_配置内置沙箱工具
+  url: 创建Agent
+  body_params: |
+    {
+      "name": "{{ '沙箱智能体_%s' | format(random_string(6, 8)) }}",
+      "profile": "这是一个对接沙箱功能的Dolphin模式智能体",
+      "key": "{{ 'sandbox-agent-%s' | format(random_string(6, 8)) }}",
+      "avatar_type": ${agent_avatar_type},
+      "avatar": "${agent_avatar}",
+      "product_key": "${agent_product_key}",
+      "config": {
+        "input": {
+          "fields": [
+            {"name": "query", "type": "string"},
+            {"name": "tmp_files", "type": "file"}
+          ],
+          "is_temp_zone_enabled": 1,
+          "temp_zone_config": {
+            "tmp_file_use_type": "upload",
+            "single_file_size_limit": 100,
+            "single_file_size_limit_unit": "MB",
+            "support_data_type": ["file"],
+            "allowed_file_categories": ["document", "pdf", "text"]
+          }
+        },
+        "is_dolphin_mode": 1,
+        "dolphin": "/explore/(tools=[Execute_Code_Sync], model=\"v3\")\n请根据用户的问题进行分析和处理。\n\n用户问题：$query\n\n如果用户上传了文件，请先读取文件内容进行分析。\n现在请开始处理： -> result",
+        "llms": [{"is_default": true, "llm_config": {"id": "${llm_config_id}", "name": "${llm_config_name}", "model_type": "${llm_config_model_type}", "temperature": ${llm_config_temperature}, "top_p": ${llm_config_top_p}, "top_k": ${llm_config_top_k}, "frequency_penalty": ${llm_config_frequency_penalty}, "presence_penalty": ${llm_config_presence_penalty}, "max_tokens": ${llm_config_max_tokens}}}],
+        "output": {
+          "default_format": "${agent_config_output_format}",
+          "variables": {
+            "answer_var": "result"
+          }
+        },
+        "skills": {
+          "tools": [
+            {
+              "tool_box_id": "${internal_tool_box_id}",
+              "tool_id": "${internal_tool_id}",
+              "tool_timeout": 300,
+              "tool_input": [
+                  {
+                      "input_name": "session_id",
+                      "input_type": "string",
+                      "input_desc": "Sandbox session ID",
+                      "map_type": "fixedValue",
+                      "map_value": "sess-agent-default",
+                      "enable": true
+                  },
+                  {
+                      "input_name": "poll_interval",
+                      "input_type": "number",
+                      "input_desc": "Polling interval in seconds",
+                      "map_type": "auto",
+                      "map_value": "",
+                      "enable": false
+                  },
+                  {
+                      "input_name": "sync_timeout",
+                      "input_type": "integer",
+                      "input_desc": "Maximum wait time in seconds",
+                      "map_type": "auto",
+                      "map_value": "",
+                      "enable": false
+                  },
+                  {
+                      "input_name": "language",
+                      "input_type": "string",
+                      "input_desc": "编程语言",
+                      "map_type": "auto",
+                      "map_value": "",
+                      "enable": true
+                  },
+                  {
+                      "input_name": "timeout",
+                      "input_type": "integer",
+                      "input_desc": "执行超时（秒）",
+                      "map_type": "auto",
+                      "map_value": "",
+                      "enable": false
+                  },
+                  {
+                      "input_name": "code",
+                      "input_type": "string",
+                      "input_desc": "要执行的代码（必须符合 AWS Lambda handler 格式）",
+                      "map_type": "auto",
+                      "map_value": "",
+                      "enable": true
+                  },
+                  {
+                      "input_name": "event",
+                      "input_type": "object",
+                      "input_desc": "事件数据",
+                      "map_type": "auto",
+                      "map_value": "",
+                      "enable": false
+                  }
+              ],
+              "intervention": false,
+              "intervention_confirmation_message": "",
+              "result_process_strategies": null
+            }
+          ]
+        }
+      }
+    }
+  code_check: '201'
+  resp_values: |
+    {
+      "sandbox_agent_id": "$.id"
+    }
+  prev_case: Setup_查询市场工具列表获取内置沙箱工具
+  description: '创建Dolphin模式智能体，配置内置沙箱工具和临时区'
+
+- name: Setup_获取沙箱智能体详情
+  url: 获取Agent详情
+  path_params: |
+    {
+      "agent_id": "${sandbox_agent_id}"
+    }
+  code_check: '200'
+  resp_values: |
+    {
+      "sandbox_agent_key": "$.key"
+    }
+  resp_check: |
+    {
+      "$.config.is_dolphin_mode": 1
+    }
+  prev_case: Setup_创建Dolphin模式智能体_配置内置沙箱工具
+  description: '获取沙箱智能体详情，验证dolphin模式已配置'
+
+# 普通问答测试（不使用文件）
+- name: Positive_沙箱智能体_普通问答
+  url: 调试Completion
+  path_params: |
+    {
+      "app_key": "${sandbox_agent_key}"
+    }
+  body_params: |
+    {
+      "query": "请帮我计算1到100的和",
+      "agent_version": "v0",
+      "agent_id": "${sandbox_agent_id}"
+    }
+  code_check: '200'
+  resp_check: |
+    {
+      "$._parse_error": "non_json_body"
+    }
+  prev_case: Setup_获取沙箱智能体详情
+  description: '沙箱智能体普通问答：验证流式响应正常返回'
+
+# 上传文件到临时区（沙箱会话session_id为sess-agent-default）
+- name: Setup_上传文件到沙箱临时区
+  url: 上传文件到沙箱临时区
+  path_params: |
+    {
+      "session_id": "sess-agent-default"
+    }
+  query_params: |
+    {
+      "path": "test_upload.txt"
+    }
+  file_params: '{"file": "testcase/agent-backend/data/test_upload.txt"}'
+  multipart: true
+  code_check: '200'
+  resp_values: |
+    {
+      "uploaded_file_path": "$.file_path"
+    }
+  prev_case: Positive_沙箱智能体_普通问答
+  description: '上传测试文件到沙箱临时区，session_id使用sess-agent-default'
+
+# 针对上传文件进行问答
+- name: Positive_沙箱智能体_文件问答
+  url: 调试Completion
+  path_params: |
+    {
+      "app_key": "${sandbox_agent_key}"
+    }
+  body_params: |
+    {
+      "query": "请读取上传的文件内容，并告诉我文件里写了什么？",
+      "agent_version": "v0",
+      "agent_id": "${sandbox_agent_id}",
+      "temp_files": [{"name": "${uploaded_file_path}", "id": "${uploaded_file_path}"}]
+    }
+  code_check: '200'
+  resp_check: |
+    {
+      "$._parse_error": "non_json_body"
+    }
+  prev_case: Setup_上传文件到沙箱临时区
+  description: '沙箱智能体文件问答：验证流式响应正常返回，能读取上传文件'
+
+- name: Cleanup_删除沙箱智能体
+  switch: n
+  url: 删除Agent
+  path_params: |
+    {
+      "agent_id": "${sandbox_agent_id}"
+    }
+  code_check: '204'
+  prev_case: Positive_沙箱智能体_文件问答
+  description: '清理：删除沙箱智能体'

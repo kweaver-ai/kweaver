@@ -277,20 +277,33 @@ confirm_access_address_before_install() {
     fi
 
     echo ""
-    log_info "Will use accessAddress: ${url}"
-    read -r -p "Confirm this address? [Y/n]: " confirm_answer
-    confirm_answer="${confirm_answer:-Y}"
+    echo "============================================"
+    echo "  KWeaver Access Address Configuration"
+    echo "============================================"
+    echo "  Current detected values:"
+    echo "    Host     : ${host}"
+    echo "    Port     : ${port}"
+    echo "    Path     : ${path}"
+    echo "    Protocol : ${scheme}  (http or https)"
+    echo "    URL      : ${url}"
+    echo "============================================"
+    echo ""
+    echo "Press Enter to keep the default, or type a new value."
+    echo ""
 
-    if [[ ! "${confirm_answer}" =~ ^[Yy]$ ]]; then
-        read -r -p "Enter host [${host}]: " input_host
-        read -r -p "Enter port [${port}]: " input_port
-        read -r -p "Enter path [${path}]: " input_path
-        read -r -p "Enter scheme [${scheme}]: " input_scheme
+    if [[ -t 0 ]]; then
+        local input_host input_port input_path input_scheme
+        read -r -p "  Host     [${host}]: " input_host
+        read -r -p "  Port     [${port}]: " input_port
+        read -r -p "  Path     [${path}]: " input_path
+        read -r -p "  Protocol [${scheme}]: " input_scheme
 
         host="${input_host:-${host}}"
         port="${input_port:-${port}}"
         path="${input_path:-${path}}"
         scheme="${input_scheme:-${scheme}}"
+    else
+        log_info "Non-interactive mode detected, using defaults."
     fi
 
     # For first-time initialization, generate full config first.

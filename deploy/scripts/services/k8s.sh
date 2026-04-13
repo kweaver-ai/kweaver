@@ -114,15 +114,10 @@ init_k8s_master() {
     configure_system
     
     # Resolve API server advertise address
-    # Priority: env var > accessAddress.host from config.yaml > auto-detect
+    # This must be a real IP bound to a local network interface (not a domain
+    # or NAT public IP), because kubeadm binds the API server to it.
     if [[ -z "${API_SERVER_ADVERTISE_ADDRESS}" ]]; then
-        local config_host
-        config_host="$(get_access_address_field "host" 2>/dev/null || true)"
-        if [[ -n "${config_host}" && "${config_host}" != "10.x.x.x" ]]; then
-            API_SERVER_ADVERTISE_ADDRESS="${config_host}"
-        else
-            API_SERVER_ADVERTISE_ADDRESS=$(hostname -I | awk '{print $1}')
-        fi
+        API_SERVER_ADVERTISE_ADDRESS=$(hostname -I | awk '{print $1}')
     fi
     
     log_info "API Server advertise address: ${API_SERVER_ADVERTISE_ADDRESS}"

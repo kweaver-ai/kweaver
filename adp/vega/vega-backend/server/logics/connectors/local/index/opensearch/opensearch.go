@@ -423,7 +423,7 @@ func (c *OpenSearchConnector) fetchMappings(ctx context.Context, index *interfac
 		parseProperties("", idxData.Mappings.Properties, result)
 	}
 	// Parse mappings:这里是存储的字段元数据，包括type映射
-	fieldMap := make(map[string]interfaces.FieldMeta)
+	fieldMap := make(map[string]interfaces.IndexFieldMeta)
 	// 遍历：key 和 value 都拿到
 	for fieldName, value := range result {
 		// value: {"ignore_above":256,"type":"keyword"}
@@ -431,7 +431,7 @@ func (c *OpenSearchConnector) fetchMappings(ctx context.Context, index *interfac
 		if !ok {
 			return fmt.Errorf("failed to read fieldType: indexName:%s,%w", index.Name, err)
 		}
-		fieldMap[fieldName] = interfaces.FieldMeta{
+		fieldMap[fieldName] = interfaces.IndexFieldMeta{
 			Name:       fieldName,
 			Type:       MapType(fieldType),
 			OrigType:   fieldType,
@@ -701,9 +701,9 @@ func (c *OpenSearchConnector) ExecuteQuery(ctx context.Context, indexName string
 	if params != nil && len(params.Sort) > 0 {
 		sort := make([]map[string]any, 0, len(params.Sort))
 		for _, s := range params.Sort {
-			fieldName, _ := c.getKeywordSuffix(s.Field, resource.SchemaDefinition)
+			keyword, _ := c.getKeywordSuffix(s.Field, resource.SchemaDefinition)
 			sort = append(sort, map[string]any{
-				fieldName: map[string]any{
+				s.Field + keyword: map[string]any{
 					"order": s.Direction,
 				},
 			})

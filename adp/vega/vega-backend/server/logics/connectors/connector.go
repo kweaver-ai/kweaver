@@ -70,9 +70,12 @@ type FilesetConnector interface {
 	Connector
 	// ListFilesets lists file and folder objects for discovery (typically one level per parent).
 	ListFilesets(ctx context.Context) ([]*interfaces.FilesetMeta, error)
-	// GetObjectDownloadInfo returns vendor-specific download instructions (e.g. presigned URL + headers).
+	// SearchFiles searches files based on query parameters.
 	// docID is the source object id (e.g. AnyShare gns id).
-	GetObjectDownloadInfo(ctx context.Context, resourceName, docID string) (map[string]any, error)
+	// keyword is the search keyword for fuzzy search.
+	// rows is the number of results to return.
+	// start is the starting index for pagination.
+	SearchFiles(ctx context.Context, docID, keyword string, rows, start int) ([]map[string]any, int64, error)
 }
 
 // TopicConnector defines the interface for message queue connectors.
@@ -98,6 +101,7 @@ type IndexConnector interface {
 	// ExecuteQuery executes a query on the index
 	ExecuteQuery(ctx context.Context, indexName string, resource *interfaces.Resource, params *interfaces.ResourceDataQueryParams) (*interfaces.QueryResult, error)
 	ExecuteQueryWithDsl(ctx context.Context, resourceName string, dsl string) (*interfaces.QueryResult, error)
+	ExecuteRawQuery(ctx context.Context, index string, query map[string]any) (*interfaces.SQLQueryResponse, error)
 	// for dataset
 	Create(ctx context.Context, name string, schemaDefinition []*interfaces.Property) error
 	Update(ctx context.Context, name string, schemaDefinition []*interfaces.Property) error
@@ -116,4 +120,9 @@ type IndexConnector interface {
 // Implementations: rest, graphql, etc.
 type APIConnector interface {
 	Connector
+}
+
+// MariaDBSQLExecutor defines the interface for executing raw SQL on MariaDB
+type MariaDBSQLExecutor interface {
+	ExecuteRawSQL(ctx context.Context, sql string) (*interfaces.SQLQueryResponse, error)
 }

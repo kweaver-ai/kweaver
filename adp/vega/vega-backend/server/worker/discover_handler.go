@@ -160,15 +160,18 @@ func (dh *discoverHandler) discoverCatalog(ctx context.Context, catalog *interfa
 	// index类型的会到这里，例如open search
 	case interfaces.ConnectorCategoryIndex:
 		return dh.discoverIndexResources(ctx, catalog, connector)
-	case interfaces.ConnectorCategoryFile, interfaces.ConnectorCategoryFileset:
-		return dh.discoverFileResources(ctx, catalog, connector)
+	// fileset类型的会到这里，例如anyshare
+	case interfaces.ConnectorCategoryFileset:
+		return dh.discoverFilesetResources(ctx, catalog, connector)
 	default:
 		return nil, fmt.Errorf("unsupported connector category for discover: %s", category)
 	}
 }
 
-// discoverFileResources discovers file resources from a file connector.
-func (dh *discoverHandler) discoverFileResources(ctx context.Context, catalog *interfaces.Catalog, connector connectors.Connector) (*interfaces.DiscoverResult, error) {
+// discoverFilesetResources discovers fileset resources from a fileset connector.
+func (dh *discoverHandler) discoverFilesetResources(ctx context.Context, catalog *interfaces.Catalog,
+	connector connectors.Connector) (*interfaces.DiscoverResult, error) {
+
 	filesetConnector, ok := connector.(connectors.FilesetConnector)
 	if !ok {
 		return nil, fmt.Errorf("connector does not support fileset discover")
@@ -282,10 +285,10 @@ func (dh *discoverHandler) createFilesetResource(ctx context.Context, catalog *i
 }
 
 func cloneMetadata(m map[string]any) map[string]any {
-	if m == nil {
-		return nil
-	}
 	out := make(map[string]any, len(m))
+	if m == nil {
+		return out
+	}
 	for k, v := range m {
 		out[k] = v
 	}
@@ -296,17 +299,26 @@ func (dh *discoverHandler) enrichFilesetMetadata(ctx context.Context, items []fi
 	for _, item := range items {
 		fs := item.meta
 		resource := item.resource
+
 		sourceMetadata := cloneMetadata(resource.SourceMetadata)
-		if sourceMetadata == nil {
-			sourceMetadata = make(map[string]any)
-		}
 		if fs.SourceMetadata != nil {
 			for k, v := range fs.SourceMetadata {
 				sourceMetadata[k] = v
 			}
 		}
 		resource.SourceMetadata = sourceMetadata
-		resource.SchemaDefinition = nil
+		resource.SchemaDefinition = []*interfaces.Property{}
+		for _, col := range fs.Columns {
+			resource.SchemaDefinition = append(resource.SchemaDefinition, &interfaces.Property{
+				Name:         col.Name,
+				Type:         col.Type,
+				OrigType:     col.OrigType,
+				DisplayName:  col.Name,
+				OriginalName: col.Name,
+				Description:  "",
+			})
+		}
+
 		if err := dh.rs.UpdateResource(ctx, resource); err != nil {
 			logger.Errorf("Failed to update fileset resource %s: %v", resource.ID, err)
 			return err

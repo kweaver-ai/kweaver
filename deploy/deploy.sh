@@ -51,7 +51,8 @@ usage() {
     echo "  kweaver-core download         Download/update KWeaver Core charts into deploy/.tmp/charts"
     echo "  kweaver-core uninstall        Uninstall KWeaver Core services"
     echo "  kweaver-core status           Show KWeaver Core services status"
-    echo "                                Use --enable-isf=false to skip ISF installation"
+    echo "                                Use --set auth.enabled=false to skip ISF installation"
+    echo "                                Use --set to pass custom values to all charts"
     echo "  isf install                   Install ISF services; auto-installs K8s/data services if missing"
     echo "  isf download                  Download/update ISF charts into deploy/.tmp/charts"
     echo "  isf uninstall                 Uninstall ISF services"
@@ -96,6 +97,7 @@ usage() {
     echo "  $0 kweaver-dip install --charts_dir=/path/to/charts  # Install DIP from a local charts directory"
     echo "  $0 kweaver-dip uninstall      # Uninstall KWeaver DIP services"
     echo "  $0 kweaver-dip status         # Show KWeaver DIP services status"
+    echo "  $0 kweaver-dip install --confirm-missing-openclaw-paths  # Continue even if configured dipStudio OpenClaw paths do not exist"
     echo "  $0 config generate            # Generate/update ~/.kweaver-ai/config.yaml"
     echo "  $0 all install                # Full initialization with all components"
     echo ""
@@ -104,11 +106,21 @@ usage() {
     echo "                                (default: ~/.kweaver-ai/config.yaml or \$CONFIG_YAML_PATH env var)"
     echo "  --charts_dir=<path>           Use a specific local chart directory for download/install"
     echo "                                install only uses local charts when this option is explicitly set"
+    echo "  --version_file=<path>         Use an aggregate release manifest to resolve exact chart versions"
+    echo "                                (default auto path: deploy/release-manifests/<version>/<product>.yaml)"
+    echo "  --confirm-missing-openclaw-paths"
+    echo "                                Continue DIP install when dipStudio OpenClaw host paths are configured"
+    echo "                                but missing on disk. Only applies to the dip-studio chart."
+    echo "  --set <key>=<value>           Pass custom values to helm charts (can be used multiple times)"
+    echo "                                Example: --set auth.enabled=false --set image.tag=latest"
     echo ""
-    echo "  $0 kweaver-core install --enable-isf=false  # Install KWeaver Core without ISF; auto-installs K8s/data services if absent"
-    echo "  $0 kweaver-core download --enable-isf=false # Download Core charts only, skip ISF charts"
+    echo "  $0 kweaver-core install --set auth.enabled=false  # Install KWeaver Core without ISF"
+    echo "  $0 kweaver-core install --set auth.enabled=false --set businessDomain.enabled=false  # Disable multiple features"
+    echo "  $0 kweaver-core install --set image.registry=my-registry.com --set image.tag=v1.0.0  # Custom image settings"
     echo "  $0 kweaver-core download --charts_dir=/path/to/charts # Download Core charts into a specific local directory"
     echo "  $0 kweaver-core install --charts_dir=/path/to/charts  # Install Core from a local charts directory"
+    echo "  $0 kweaver-core download --version=0.4.0  # Auto-uses ./release-manifests/0.4.0/kweaver-core.yaml when present"
+    echo "  $0 kweaver-core download --version=0.4.0 --version_file=./release-manifests/0.4.0/kweaver-core.yaml"
     echo "  $0 kweaver-core install --config=/root/.kweaver-ai/config.yaml --helm_repo_name=kweaver"
     echo "  $0 isf download --charts_dir=/path/to/charts         # Download ISF charts into a specific local directory"
     echo "  $0 isf install --charts_dir=/path/to/charts          # Install ISF from a local charts directory; auto-installs K8s/data services if absent"
@@ -224,7 +236,7 @@ confirm_access_address_before_install() {
 
     local host port path scheme
     host="${raw_host:-$(_detect_node_ip)}"
-    port="${raw_port:-443}"
+    port="${raw_port:-${INGRESS_NGINX_HTTPS_PORT:-443}}"
     path="${raw_path:-/}"
     scheme="${raw_scheme:-https}"
 
@@ -524,6 +536,7 @@ main() {
                 uninstall_core
                 ;;
             status)
+                parse_core_args "status" "$@"
                 show_core_status
                 ;;
             *)
@@ -554,6 +567,7 @@ main() {
                 uninstall_dip
                 ;;
             status)
+                parse_dip_args "status" "$@"
                 show_dip_status
                 ;;
             *)
@@ -581,6 +595,7 @@ main() {
                 uninstall_isf
                 ;;
             status)
+                parse_isf_args "status" "$@"
                 show_isf_status
                 ;;
             *)

@@ -35,17 +35,12 @@ dnf install containerd.io
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
 
-# 2. （可选）指定 API Server 广播地址
-# 默认取 `hostname -I` 的第一个 IP（通常是内网地址）。
-# 公网 / 云服务器部署时，需设置为公网 IP 以便外部客户端访问：
-export API_SERVER_ADVERTISE_ADDRESS=<你的公网IP>
-
-# 3. （可选）自定义访问端口
+# 2. （可选）自定义访问端口
 # 默认情况下，ingress-nginx 使用 80/443 端口。如需使用其他端口（例如 8080/8443）：
 export INGRESS_NGINX_HTTP_PORT=8080
 export INGRESS_NGINX_HTTPS_PORT=8443
 
-# 4. 安装 KWeaver Core
+# 3. 安装 KWeaver Core
 bash ./deploy.sh kweaver-core install
 ```
 

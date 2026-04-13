@@ -114,20 +114,14 @@ init_k8s_master() {
     configure_system
     
     # Resolve API server advertise address
+    # Priority: env var > accessAddress.host from config.yaml > auto-detect
     if [[ -z "${API_SERVER_ADVERTISE_ADDRESS}" ]]; then
-        local detected_ip
-        detected_ip=$(hostname -I | awk '{print $1}')
-        if [[ -t 0 ]]; then
-            echo ""
-            log_info "Detected host IP: ${detected_ip}"
-            read -r -p "[INPUT] Enter API server advertise address (press Enter to use ${detected_ip}): " user_ip
-            if [[ -n "${user_ip}" ]]; then
-                API_SERVER_ADVERTISE_ADDRESS="${user_ip}"
-            else
-                API_SERVER_ADVERTISE_ADDRESS="${detected_ip}"
-            fi
+        local config_host
+        config_host="$(get_access_address_field "host" 2>/dev/null || true)"
+        if [[ -n "${config_host}" && "${config_host}" != "10.x.x.x" ]]; then
+            API_SERVER_ADVERTISE_ADDRESS="${config_host}"
         else
-            API_SERVER_ADVERTISE_ADDRESS="${detected_ip}"
+            API_SERVER_ADVERTISE_ADDRESS=$(hostname -I | awk '{print $1}')
         fi
     fi
     

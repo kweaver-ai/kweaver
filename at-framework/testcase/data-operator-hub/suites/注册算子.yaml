@@ -1,0 +1,104 @@
+feature: 算子注册与管理接口测试
+story: 注册算子
+switch: y
+cases:
+# 正向测试
+- name: Positive_注册算子_默认不直接发布
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Test Operator\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{\"/test\":{\"get\":{\"summary\":\"Test endpoint\",\"responses\":{\"200\":{\"description\":\"Success\"}}}}}}",
+      "operator_metadata_type": "openapi"
+    }
+  code_check: '200'
+  description: 注册算子，默认不直接发布，状态为unpublish
+
+- name: Positive_注册算子_单个算子直接发布
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Direct Publish Op\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{\"/direct\":{\"get\":{\"summary\":\"Direct publish test\",\"responses\":{\"200\":{\"description\":\"Success\"}}}}}}",
+      "operator_metadata_type": "openapi",
+      "direct_publish": true
+    }
+  code_check: '200'
+  description: 注册算子，单个算子直接发布
+
+- name: Positive_注册算子_同步模式数据源算子
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Data Source Op\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{\"/data\":{\"get\":{\"summary\":\"Data source test\",\"responses\":{\"200\":{\"description\":\"Success\"}}}}}}",
+      "operator_metadata_type": "openapi",
+      "operator_info": {
+        "execution_mode": "sync",
+        "is_data_source": true
+      }
+    }
+  code_check: '200'
+  description: 注册算子，同步模式数据源算子
+
+- name: Positive_注册算子_带扩展信息
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Operator with Extend\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{\"/extend\":{\"get\":{\"summary\":\"Extend info test\",\"responses\":{\"200\":{\"description\":\"Success\"}}}}}}",
+      "operator_metadata_type": "openapi",
+      "extend_info": {"custom_key": "custom_value"}
+    }
+  code_check: '200'
+  description: 注册算子，带扩展信息
+
+# 负向测试
+- name: Negative_注册算子_多个算子直接发布
+  url: 注册算子
+  body_params: |
+    {
+      "data": "[{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Op1\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{}},{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Op2\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{}}]",
+      "operator_metadata_type": "openapi",
+      "direct_publish": true
+    }
+  code_check: '400'
+  description: 注册算子，多个算子不允许直接发布
+
+- name: Negative_注册算子_异步模式数据源算子
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"Invalid Data Source\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"http://localhost:8080\"}],\"paths\":{\"/test\":{\"get\":{\"responses\":{\"200\":{\"description\":\"Success\"}}}}}}",
+      "operator_metadata_type": "openapi",
+      "operator_info": {
+        "execution_mode": "async",
+        "is_data_source": true
+      }
+    }
+  code_check: '400'
+  description: 注册算子，异步模式不能是数据源算子
+
+- name: Negative_注册算子_缺少必填参数data
+  url: 注册算子
+  body_params: |
+    {
+      "operator_metadata_type": "openapi"
+    }
+  code_check: '400'
+  description: 注册算子，缺少必填参数data
+
+- name: Negative_注册算子_缺少必填参数metadata_type
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\"}"
+    }
+  code_check: '400'
+  description: 注册算子，缺少必填参数operator_metadata_type
+
+- name: Negative_注册算子_无效的metadata_type
+  url: 注册算子
+  body_params: |
+    {
+      "data": "{\"openapi\":\"3.0.3\"}",
+      "operator_metadata_type": "invalid_type"
+    }
+  code_check: '400'
+  description: 注册算子，无效的metadata_type

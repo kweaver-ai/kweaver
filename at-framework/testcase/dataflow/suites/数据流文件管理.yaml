@@ -1,0 +1,63 @@
+feature: data-flow文件管理接口测试
+story: 数据流文件管理
+switch: y
+cases:
+# 完整数据流文件处理流程
+- name: Positive_新增数据流_请求成功
+  url: 新增数据流
+  body_params: |
+    {
+      "steps": [
+        {"id": "0", "operator": "@trigger/dataflow-doc"},
+        {"id": "1", "operator": "@contentpipeline/doc_format_convert", "parameters": {"docid": "{% raw %}{{__0.id}}{% endraw %}"}},
+        {"id": "1001", "operator": "@contentpipeline/full_text", "parameters": {"docid": "{% raw %}{{__1.docid}}{% endraw %}"}}
+      ],
+      "trigger_config": {
+        "operator": "@trigger/manual",
+        "dataSource": {"operator": "@anyshare-data/list-files", "parameters": {}}
+      },
+      "title": "{{ 'upload_%s' | format(random_string(4, 8)) }}",
+      "version": "v0.0.0"
+    }
+  code_check: '201'
+  resp_values: '{"dag_id": "$.id"}'
+  description: 步骤1 - 新增数据流
+
+- name: Positive_运行数据流触发文件处理_请求成功
+  url: 运行数据流触发文件处理
+  prev_case: Positive_新增数据流_请求成功
+  path_params: '{"dag_id": "${dag_id}"}'
+  file_params: '{"file": "testcase/dataflow/data/test.pdf"}'
+  multipart: true
+  code_check: '200'
+  resp_values: '{"dag_instance_id": "$.dag_instance_id"}'
+  description: 步骤2 - 运行数据流并上传文件
+
+- name: Positive_查看数据流详情_请求成功
+  url: 获取数据流详情
+  prev_case: Positive_新增数据流_请求成功
+  path_params: '{"dag_id": "${dag_id}"}'
+  code_check: '200'
+  description: 步骤3 - 查看数据流详情
+
+- name: Positive_获取文件列表_请求成功
+  url: 获取文件列表
+  prev_case: Positive_运行数据流触发文件处理_请求成功
+  query_params: '{"dag_instance_id": "${dag_instance_id}"}'
+  code_check: '200'
+  resp_values: '{"file_id": "$.files[0].file_id"}'
+  description: 步骤4 - 获取文件列表
+
+- name: Positive_获取单个文件信息_请求成功
+  url: 获取单个文件信息
+  prev_case: Positive_获取文件列表_请求成功
+  path_params: '{"file_id": "${file_id}"}'
+  code_check: '200'
+  description: 步骤5 - 获取单个文件信息
+
+- name: Positive_获取文件下载链接_请求成功
+  url: 获取文件下载链接
+  prev_case: Positive_获取文件列表_请求成功
+  path_params: '{"file_id": "${file_id}"}'
+  code_check: '200'
+  description: 步骤6 - 获取文件下载链接

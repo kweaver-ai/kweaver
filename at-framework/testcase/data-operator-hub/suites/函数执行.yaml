@@ -1,0 +1,94 @@
+feature: 函数相关接口测试
+story: 函数执行
+switch: y
+cases:
+# 正向测试
+- name: Positive_执行函数_基础函数执行成功
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    return {\"result\": \"hello world\"}",
+      "event": {}
+    }
+  code_check: '200'
+  description: 函数块执行，传参正确，执行成功
+
+- name: Positive_执行函数_字典合并操作
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    dict1 = {\"a\": 1}\n    dict2 = {\"b\": 2}\n    return {**dict1, **dict2}",
+      "event": {}
+    }
+  code_check: '200'
+  description: 函数块执行，字典合并操作
+
+- name: Positive_执行函数_列表处理
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    data = [1, 2, 3, 4, 5]\n    return {\"sum\": sum(data), \"max\": max(data), \"min\": min(data)}",
+      "event": {}
+    }
+  code_check: '200'
+  description: 函数块执行，处理列表数据
+
+- name: Positive_执行函数_字符串处理
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    text = \"hello world\"\n    return {\"upper\": text.upper(), \"lower\": text.lower(), \"length\": len(text)}",
+      "event": {}
+    }
+  code_check: '200'
+  description: 函数块执行，字符串处理操作
+
+- name: Positive_执行函数_event为空
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    return {\"result\": \"success\"}",
+      "event": {}
+    }
+  code_check: '200'
+  description: 函数块执行，event为空字典
+
+- name: Positive_执行函数_使用event参数
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    name = event.get(\"name\", \"default\")\n    return {\"greeting\": f\"Hello, {name}!\"}",
+      "event": {"name": "Test"}
+    }
+  code_check: '200'
+  description: 函数块执行，使用event参数
+
+# 负向测试
+- name: Negative_执行函数_code为空
+  url: 执行函数
+  body_params: |
+    {
+      "code": "",
+      "event": {}
+    }
+  code_check: '400'
+  description: 函数块执行，code为空
+
+- name: Negative_执行函数_缺少code参数
+  url: 执行函数
+  body_params: |
+    {
+      "event": {}
+    }
+  code_check: '400'
+  description: 函数块执行，缺少必填参数code
+
+- name: Positive_执行函数_code语法错误_返回200
+  url: 执行函数
+  body_params: |
+    {
+      "code": "def main(event):\n    return {",
+      "event": {}
+    }
+  code_check: '200'
+  description: 函数块执行，code语法错误时返回200，stderr包含错误信息

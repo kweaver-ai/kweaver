@@ -1,0 +1,95 @@
+feature: MCP服务管理接口测试
+story: MCP服务管理
+switch: y
+cases:
+# 正向测试 - MCP Server配置
+- name: Positive_添加MCP_Server配置
+  url: 添加MCP Server配置
+  body_params: |
+    {
+      "name": "{{ 'mcp_server_%s' | format(random_string(4, 6)) }}",
+      "description": "测试MCP Server描述",
+      "mode": "sse",
+      "url": "http://localhost:8080/api/v1/tools",
+      "headers": {"Content-Type": "application/json"},
+      "category": "data_analysis"
+    }
+  code_check: '200'
+  resp_values: '{"mcp_id": "$.mcp_id"}'
+  description: 添加MCP Server配置
+
+- name: Positive_获取MCP_Server列表
+  url: 获取MCP Server列表
+  query_params: '{"page": 1, "page_size": 10}'
+  code_check: '200'
+  description: 获取MCP Server列表
+
+- name: Positive_获取MCP_Server详情
+  url: 获取MCP Server详情
+  prev_case: Positive_添加MCP_Server配置
+  path_params: '{"mcp_id": "${mcp_id}"}'
+  code_check: '200'
+  description: 获取MCP Server详情
+
+- name: Positive_编辑MCP_Server配置
+  url: 编辑MCP Server配置
+  prev_case: Positive_添加MCP_Server配置
+  path_params: '{"mcp_id": "${mcp_id}"}'
+  body_params: |
+    {
+      "name": "{{ 'updated_mcp_%s' | format(random_string(4, 6)) }}",
+      "description": "更新后的MCP Server描述",
+      "mode": "sse"
+    }
+  code_check: '200'
+  description: 编辑MCP Server配置
+
+- name: Positive_获取已发布的MCP列表
+  url: 获取已发布的MCP列表
+  query_params: '{"page": 1, "page_size": 10}'
+  code_check: '200'
+  description: 获取已发布的MCP列表
+
+# 状态管理
+- name: Positive_MCP服务发布
+  url: MCP服务发布操作
+  prev_case: Positive_添加MCP_Server配置
+  path_params: '{"mcp_id": "${mcp_id}"}'
+  body_params: |
+    {
+      "status": "published"
+    }
+  code_check: '200'
+  description: 发布MCP服务
+
+- name: Positive_MCP服务下架
+  url: MCP服务发布操作
+  prev_case: Positive_MCP服务发布
+  path_params: '{"mcp_id": "${mcp_id}"}'
+  body_params: |
+    {
+      "status": "offline"
+    }
+  code_check: '200'
+  description: 下架MCP服务
+
+# 负向测试
+- name: Negative_添加MCP_Server_缺少name
+  url: 添加MCP Server配置
+  body_params: |
+    {
+      "description": "测试描述",
+      "mode": "sse"
+    }
+  code_check: '400'
+  description: 添加MCP Server，缺少name参数
+
+- name: Negative_添加MCP_Server_无效mode
+  url: 添加MCP Server配置
+  body_params: |
+    {
+      "name": "test_mcp",
+      "mode": "invalid_mode"
+    }
+  code_check: '400'
+  description: 添加MCP Server，无效的mode值

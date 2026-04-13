@@ -1,0 +1,94 @@
+feature: 工具注册与管理接口测试
+story: 更新工具箱
+switch: y
+cases:
+# 前置：创建工具箱
+- name: Setup_创建工具箱_用于更新测试
+  url: 创建工具箱
+  body_params: |
+    {
+      "box_name": "{{ 'toolbox_update_%s' | format(random_string(6, 8)) }}",
+      "box_desc": "初始描述",
+      "box_category": "data_process",
+      "metadata_type": "function"
+    }
+  code_check: '200'
+  resp_values: '{"box_id": "$.box_id"}'
+  description: 创建工具箱用于后续更新测试
+
+# 正向测试
+- name: Positive_更新工具箱_传参正确_更新成功
+  url: 更新工具箱
+  prev_case: Setup_创建工具箱_用于更新测试
+  path_params: '{"box_id": "${box_id}"}'
+  body_params: |
+    {
+      "box_name": "{{ 'updated_toolbox_%s' | format(random_string(4, 6)) }}",
+      "box_desc": "test toolbox update description",
+      "box_category": "data_process",
+      "metadata_type": "function"
+    }
+  code_check: '200'
+  description: 更新工具箱，传参正确，更新成功
+
+# 负向测试
+- name: Negative_更新工具箱_工具箱不存在
+  url: 更新工具箱
+  path_params: '{"box_id": "00000000-0000-0000-0000-000000000000"}'
+  body_params: |
+    {
+      "box_name": "test_toolbox_update",
+      "box_desc": "test toolbox update description",
+      "box_category": "data_process"
+    }
+  code_check: '400'
+  description: 更新工具箱，工具箱不存在
+
+- name: Negative_更新工具箱_名称包含特殊字符
+  url: 更新工具箱
+  prev_case: Setup_创建工具箱_用于更新测试
+  path_params: '{"box_id": "${box_id}"}'
+  body_params: |
+    {
+      "box_name": "invalid name",
+      "box_desc": "test toolbox update description",
+      "box_category": "data_process"
+    }
+  code_check: '400'
+  description: 更新工具箱，名称不合法
+
+- name: Negative_更新工具箱_描述超长
+  url: 更新工具箱
+  prev_case: Setup_创建工具箱_用于更新测试
+  path_params: '{"box_id": "${box_id}"}'
+  body_params: |
+    {
+      "box_name": "test_toolbox_update",
+      "box_desc": "invalid_desc: more then 255 characters, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "box_category": "data_process"
+    }
+  code_check: '400'
+  description: 更新工具箱，描述不合法
+
+# 状态更新测试
+- name: Positive_更新工具箱状态_发布
+  url: 更新工具箱状态
+  prev_case: Positive_更新工具箱_传参正确_更新成功
+  path_params: '{"box_id": "${box_id}"}'
+  body_params: |
+    {
+      "status": "published"
+    }
+  code_check: '200'
+  description: 发布工具箱
+
+- name: Positive_更新工具箱状态_下架
+  url: 更新工具箱状态
+  prev_case: Positive_更新工具箱状态_发布
+  path_params: '{"box_id": "${box_id}"}'
+  body_params: |
+    {
+      "status": "offline"
+    }
+  code_check: '200'
+  description: 下架工具箱

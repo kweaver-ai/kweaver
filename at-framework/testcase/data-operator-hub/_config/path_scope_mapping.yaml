@@ -1,0 +1,20 @@
+# 路径与scope映射
+subsystems:
+- id: tool
+  name: 工具管理
+  scope_tags:
+  - tool
+  smoke_tags:
+  - smoke_tool
+
+- id: operator
+  name: 算子管理
+  scope_tags:
+  - operator
+  smoke_tags:
+  - smoke_operator
+
+- id: mcp
+  name: MCP服务
+  scope_tags:
+  - mcp

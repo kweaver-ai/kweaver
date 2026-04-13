@@ -1,0 +1,83 @@
+feature: 工具注册与管理接口测试
+story: 获取工具箱列表
+switch: y
+cases:
+# 正向测试
+- name: Positive_获取工具箱列表_默认分页
+  url: 获取工具箱列表
+  query_params: '{}'
+  code_check: '200'
+  description: 获取工具箱列表，默认从第一页开始，每页10个
+
+- name: Positive_获取工具箱列表_指定分页参数
+  url: 获取工具箱列表
+  query_params: '{"page": 1, "page_size": 20}'
+  code_check: '200'
+  description: 获取工具箱列表，指定page和page_size
+
+- name: Positive_获取工具箱列表_获取所有
+  url: 获取工具箱列表
+  query_params: '{"all": "true"}'
+  code_check: '200'
+  description: 获取工具箱列表，all为true获取所有
+
+- name: Positive_获取工具箱列表_按名称排序
+  url: 获取工具箱列表
+  query_params: '{"page": 1, "page_size": 10, "sort_by": "name", "sort_order": "asc"}'
+  code_check: '200'
+  description: 获取工具箱列表，按名称正序排列
+
+- name: Positive_获取工具箱列表_按创建时间排序
+  url: 获取工具箱列表
+  query_params: '{"page": 1, "page_size": 10, "sort_by": "create_time", "sort_order": "desc"}'
+  code_check: '200'
+  description: 获取工具箱列表，按创建时间倒序
+
+- name: Positive_获取工具箱列表_按分类筛选
+  url: 获取工具箱列表
+  query_params: '{"category": "data_process"}'
+  code_check: '200'
+  description: 获取工具箱列表，根据类型筛选
+
+- name: Positive_获取工具箱列表_按状态筛选
+  url: 获取工具箱列表
+  query_params: '{"status": "unpublish"}'
+  code_check: '200'
+  description: 获取工具箱列表，根据状态筛选
+
+- name: Positive_获取工具箱列表_按名称搜索
+  url: 获取工具箱列表
+  query_params: '{"name": "test"}'
+  code_check: '200'
+  description: 获取工具箱列表，根据名称搜索
+
+# 负向测试
+- name: Negative_获取工具箱列表_page为负数
+  url: 获取工具箱列表
+  query_params: '{"page": -1}'
+  code_check: '400'
+  description: 获取工具箱列表，page小于0
+
+- name: Negative_获取工具箱列表_page_size超出范围
+  url: 获取工具箱列表
+  query_params: '{"page_size": 101}'
+  code_check: '400'
+  description: 获取工具箱列表，page_size大于100
+
+- name: Negative_获取工具箱列表_page_size为负数
+  url: 获取工具箱列表
+  query_params: '{"page_size": -1}'
+  code_check: '400'
+  description: 获取工具箱列表，page_size小于0
+
+- name: Negative_获取工具箱列表_无效的排序字段
+  url: 获取工具箱列表
+  query_params: '{"sort_by": "invalid_field", "sort_order": "desc"}'
+  code_check: '400'
+  description: 获取工具箱列表，排序字段不正确
+
+- name: Negative_获取工具箱列表_无效的排序顺序
+  url: 获取工具箱列表
+  query_params: '{"sort_by": "create_time", "sort_order": "invalid_order"}'
+  code_check: '400'
+  description: 获取工具箱列表，排序顺序不正确

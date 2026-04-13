@@ -1,20 +1,32 @@
-# 全局变量配置：dataflow 模块
+# 全局变量配置
+# 默认 accessor_id
+accessor_id: 00000000-0000-0000-0000-000000000000
 
-# ==================== 环境配置 ====================
-host: "${env:ADP_HOST}"
-token: "${env:ADP_TOKEN}"
-timestamp: "${timestamp}"
-
-# ==================== 数据流测试数据 ====================
-test_flow_name: "测试数据流_${timestamp}"
-test_flow_id: ""
-test_flow_description: "自动化测试创建的数据流"
-
-# ==================== 节点测试数据 ====================
-test_node_name: "测试节点_${timestamp}"
-test_node_id: ""
-test_node_type: "transform"
-
-# ==================== 执行测试数据 ====================
-test_execution_id: ""
-test_execution_status: ""
+# 组合算子模板 - outputs结构
+combo_outputs_template: |
+  [
+    {
+      "name": "str-end名称",
+      "description": {"text": "str-end说明", "type": "text"},
+      "type": "string",
+      "key": "str"
+    },
+    {
+      "name": "num-end名称",
+      "description": {"text": "num-end说明", "type": "text"},
+      "type": "number",
+      "key": "numend"
+    },
+    {
+      "name": "obj-end",
+      "description": {"text": "obj-end", "type": "text"},
+      "type": "object",
+      "key": "obj"
+    },
+    {
+      "name": "arrend",
+      "description": {"text": "arrend", "type": "text"},
+      "type": "array",
+      "key": "arr"
+    }
+  ]

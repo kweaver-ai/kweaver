@@ -1,0 +1,67 @@
+feature: 工具注册与管理接口测试
+story: 创建工具箱
+switch: y
+cases:
+# 正向测试 - function类型（更简单可靠）
+- name: Positive_创建工具箱_function类型_创建成功
+  url: 创建工具箱
+  body_params: |
+    {
+      "box_name": "{{ 'func_toolbox_%s' | format(random_string(6, 8)) }}",
+      "box_desc": "测试函数工具箱描述",
+      "box_category": "data_process",
+      "metadata_type": "function"
+    }
+  code_check: '200'
+  resp_values: '{"func_box_id": "$.box_id"}'
+  description: 创建工具箱，function类型，创建成功
+
+# 负向测试 - 参数校验
+- name: Negative_创建工具箱_缺少metadata_type_请求失败
+  url: 创建工具箱
+  body_params: |
+    {
+      "box_name": "test_toolbox"
+    }
+  code_check: '400'
+  description: 创建工具箱，缺少必填参数metadata_type
+
+- name: Negative_创建工具箱_无效的metadata_type_请求失败
+  url: 创建工具箱
+  body_params: |
+    {
+      "box_name": "test_toolbox",
+      "metadata_type": "invalid_type"
+    }
+  code_check: '400'
+  description: 创建工具箱，metadata_type值不正确
+
+- name: Negative_创建工具箱_名称包含特殊字符_请求失败
+  url: 创建工具箱
+  body_params: |
+    {
+      "box_name": "invalid name",
+      "metadata_type": "function"
+    }
+  code_check: '400'
+  description: 创建工具箱，名称包含空格等特殊字符
+
+- name: Negative_创建工具箱_function类型缺少box_name_请求失败
+  url: 创建工具箱
+  body_params: |
+    {
+      "box_desc": "测试描述",
+      "box_category": "data_process",
+      "metadata_type": "function"
+    }
+  code_check: '400'
+  description: 创建工具箱，function类型缺少box_name
+
+# 状态验证
+- name: Positive_创建工具箱_验证默认状态为未发布
+  url: 获取工具箱信息
+  prev_case: Positive_创建工具箱_function类型_创建成功
+  path_params: '{"box_id": "${func_box_id}"}'
+  code_check: '200'
+  resp_check: '{"$.status": "unpublish"}'
+  description: 验证新创建的工具箱状态为unpublish

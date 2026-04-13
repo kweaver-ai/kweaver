@@ -1,0 +1,9 @@
+# 全局变量定义
+- name: host
+  value: 192.168.112.12
+
+- name: port
+  value: "443"
+
+- name: protocol
+  value: https

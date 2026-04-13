@@ -1,0 +1,23 @@
+feature: 函数相关接口测试
+story: 获取代码模板
+switch: y
+cases:
+# 正向测试
+- name: Positive_获取代码模板_python
+  url: 获取代码模板
+  path_params: '{"template_type": "python"}'
+  code_check: '200'
+  description: 获取代码模板，template_type为python，获取成功
+
+# 负向测试
+- name: Negative_获取代码模板_无效类型
+  url: 获取代码模板
+  path_params: '{"template_type": "invalid_type"}'
+  code_check: '400'
+  description: 获取代码模板，template_type不存在
+
+- name: Negative_获取代码模板_类型为空
+  url: 获取代码模板
+  path_params: '{"template_type": ""}'
+  code_check: '404'
+  description: 获取代码模板，template_type为空

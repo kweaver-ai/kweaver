@@ -1,0 +1,164 @@
+feature: automation服务接口测试
+story: 创建组合算子
+switch: y
+cases:
+# 正向测试 - 使用正确的节点数据（从JSON文件读取）
+- name: Positive_创建组合算子_sync_nodes场景
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "{{ '组合算子_sync_nodes_%s' | format(random_string(6, 8)) }}",
+      "description": "sync_nodes节点组合创建",
+      "category": "other_category",
+      "status": "published",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "2", "operator": "@internal/json/set", "parameters": {"json": "{}", "fields": [{"key": "a", "type": "string", "value": "{% raw %}{{__0.fields.str}}{% endraw %}"}]}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__1.json}}{% endraw %}"}}
+      ],
+      "outputs": [{"description": {"type": "text"}, "type": "string", "key": "shuchu"}]
+    }
+  code_check: '201'
+  description: sync场景 - 使用sync_nodes节点组合创建算子
+
+- name: Positive_创建组合算子_combo_nodes场景
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "{{ '组合算子_combo_nodes_%s' | format(random_string(6, 8)) }}",
+      "description": "combo_nodes节点组合创建",
+      "category": "other_category",
+      "status": "published",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "1", "operator": "@internal/json/set", "parameters": {"fields": [{"key": "a", "type": "string", "value": "{% raw %}{{__0.fields.str}}{% endraw %}"}], "json": "{}"}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__1.json}}{% endraw %}"}}
+      ],
+      "outputs": [{"description": {"type": "text"}, "type": "string", "key": "shuchu"}]
+    }
+  code_check: '201'
+  description: combo场景 - 使用combo_nodes节点组合创建算子
+
+- name: Positive_创建组合算子_python_nodes场景
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "{{ '组合算子_python_nodes_%s' | format(random_string(6, 8)) }}",
+      "description": "python_nodes节点组合创建",
+      "category": "other_category",
+      "status": "published",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "1", "operator": "@internal/tool/py3", "parameters": {"input_params": [], "output_params": [{"id": "bj5yy", "key": "b", "type": "string"}], "code": "def main():\n    return \"hello word\""}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__1.b}}{% endraw %}"}}
+      ],
+      "outputs": [{"description": {"type": "text"}, "type": "string", "key": "shuchu"}]
+    }
+  code_check: '201'
+  description: python场景 - 使用python_nodes节点组合创建算子
+
+- name: Positive_创建组合算子_loop_nodes场景
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "{{ '组合算子_loop_nodes_%s' | format(random_string(6, 8)) }}",
+      "description": "loop_nodes节点组合创建",
+      "category": "other_category",
+      "status": "published",
+      "steps": [
+        {"id": "1", "operator": "@trigger/form", "parameters": {"fields": [{"key": "n", "name": "n", "type": "number", "required": true}]}},
+        {"id": "2", "operator": "@control/flow/loop", "parameters": {"mode": "limit", "limit": "{% raw %}{{__1.fields.n}}{% endraw %}", "outputs": [{"key": "numbers", "value": "{% raw %}{{__2.index}}{% endraw %}"}]}, "steps": []},
+        {"id": "100", "operator": "@internal/return", "parameters": {"numbers": "{% raw %}{{__2.outputs.numbers}}{% endraw %}"}}
+      ]
+    }
+  code_check: '201'
+  description: loop场景 - 使用loop_nodes节点组合创建算子
+
+# 负向测试 - 参数校验
+- name: Negative_创建组合算子_缺少必要参数title_请求失败
+  url: 创建组合算子
+  body_params: |
+    {
+      "description": "算子实现-测试数据",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "2", "operator": "@internal/json/set", "parameters": {"json": "{}", "fields": [{"key": "a", "type": "string", "value": "{% raw %}{{__0.fields.str}}{% endraw %}"}]}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__1.json}}{% endraw %}"}}
+      ],
+      "category": "data_split",
+      "status": "published"
+    }
+  code_check: '400'
+  resp_check: '{"$.code": "Public.BadRequest"}'
+  description: 缺少必要参数title
+
+- name: Negative_创建组合算子_title已存在_第一次创建
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "duplicate_test_title_fixed",
+      "description": "测试数据",
+      "category": "other_category",
+      "status": "published",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__0.fields.str}}{% endraw %}"}}
+      ],
+      "outputs": [{"description": {"type": "text"}, "type": "string", "key": "success"}]
+    }
+  code_check: '201'
+  description: 第一次创建（期望201，若已存在则跳过）
+
+- name: Negative_创建组合算子_title已存在_请求失败
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "duplicate_test_title_fixed",
+      "description": "测试数据",
+      "category": "other_category",
+      "status": "published",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__0.fields.str}}{% endraw %}"}}
+      ],
+      "outputs": [{"description": {"type": "text"}, "type": "string", "key": "success"}]
+    }
+  code_check: '409'
+  resp_check: '{"$.code": "Public.Conflict"}'
+  description: title已存在，应返回409冲突
+
+- name: Negative_创建组合算子_无效的category_请求失败
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "{{ '无效分类测试_%s' | format(random_string(6, 8)) }}",
+      "description": "测试无效分类",
+      "steps": [
+        {"id": "0", "operator": "@trigger/form", "parameters": {"fields": [{"type": "string", "key": "str", "description": {"type": "text"}}]}},
+        {"id": "2", "operator": "@internal/json/set", "parameters": {"json": "{}", "fields": [{"key": "a", "type": "string", "value": "{% raw %}{{__0.fields.str}}{% endraw %}"}]}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__1.json}}{% endraw %}"}}
+      ],
+      "category": "invalid_category",
+      "status": "published"
+    }
+  code_check: '400'
+  resp_check: '{"$.code": "Public.BadRequest"}'
+  description: 无效的category参数
+
+- name: Negative_创建组合算子_无效的steps结构_请求失败
+  url: 创建组合算子
+  body_params: |
+    {
+      "title": "{{ '无效步骤测试_%s' | format(random_string(6, 8)) }}",
+      "description": "测试无效步骤结构",
+      "steps": [
+        {"id": "0", "title": "", "parameters": {"fields": [{"key": "text", "name": "text", "required": true, "type": "string"}]}},
+        {"id": "2", "operator": "@internal/json/set", "parameters": {"json": "{}", "fields": [{"key": "a", "type": "string", "value": "{% raw %}{{__0.fields.str}}{% endraw %}"}]}},
+        {"id": "10", "operator": "@internal/return", "parameters": {"succ": "{% raw %}{{__1.json}}{% endraw %}"}}
+      ],
+      "category": "data_split",
+      "status": "published"
+    }
+  code_check: '400'
+  resp_check: '{"$.code": "Public.BadRequest"}'
+  description: 无效的steps结构（缺少operator字段）

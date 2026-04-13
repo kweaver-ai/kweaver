@@ -1,0 +1,221 @@
+# data-operator-hub API接口定义
+# 工具箱相关
+- name: 创建工具箱
+  url: /api/agent-operator-integration/v1/tool-box
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 更新工具箱
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取工具箱信息
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 删除工具箱
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}
+  method: DELETE
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取工具箱列表
+  url: /api/agent-operator-integration/v1/tool-box/list
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 更新工具箱状态
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/status
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取市场工具箱列表
+  url: /api/agent-operator-integration/v1/tool-box/market
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取市场工具箱信息
+  url: /api/agent-operator-integration/v1/tool-box/market/${box_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+# 工具相关
+- name: 创建工具
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tool
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 更新工具
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tool/${tool_id}
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取工具信息
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tool/${tool_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 批量删除工具
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tools/batch-delete
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取工具箱中的工具列表
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tools/list
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 更新工具状态
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tools/status
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取所有工具列表
+  url: /api/agent-operator-integration/v1/tool-box/market/tools
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 工具调试
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/tool/${tool_id}/debug
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 工具执行代理
+  url: /api/agent-operator-integration/v1/tool-box/${box_id}/proxy/${tool_id}
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取工具箱市场详情
+  url: /api/agent-operator-integration/v1/tool-box/market/${box_id}/${fields}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+# 算子相关
+- name: 注册算子
+  url: /api/agent-operator-integration/v1/operator/register
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取算子列表
+  url: /api/agent-operator-integration/v1/operator/info/list
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取算子信息
+  url: /api/agent-operator-integration/v1/operator/info/${operator_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 编辑算子
+  url: /api/agent-operator-integration/v1/operator/info
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取算子分类
+  url: /api/agent-operator-integration/v1/operator/category
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 删除算子
+  url: /api/agent-operator-integration/v1/operator/delete
+  method: DELETE
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 更新算子状态
+  url: /api/agent-operator-integration/v1/operator/status
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 算子调试
+  url: /api/agent-operator-integration/v1/operator/debug
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取算子市场列表
+  url: /api/agent-operator-integration/v1/operator/market
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取算子市场详情
+  url: /api/agent-operator-integration/v1/operator/market/${operator_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 算子转换成工具
+  url: /api/agent-operator-integration/v1/operator/convert/tool
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+# MCP相关
+- name: 解析SSE MCPServer
+  url: /api/agent-operator-integration/v1/mcp/parse/sse
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 添加MCP Server配置
+  url: /api/agent-operator-integration/v1/mcp
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 删除MCP Server配置
+  url: /api/agent-operator-integration/v1/mcp/${mcp_id}
+  method: DELETE
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取MCP Server列表
+  url: /api/agent-operator-integration/v1/mcp/list
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取MCP Server详情
+  url: /api/agent-operator-integration/v1/mcp/${mcp_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 编辑MCP Server配置
+  url: /api/agent-operator-integration/v1/mcp/${mcp_id}
+  method: PUT
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: MCP服务发布操作
+  url: /api/agent-operator-integration/v1/mcp/${mcp_id}/status
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: MCP工具调试
+  url: /api/agent-operator-integration/v1/mcp/${mcp_id}/tool/${name}/debug
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取已发布的MCP列表
+  url: /api/agent-operator-integration/v1/mcp/market/list
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 获取已发布的MCP详情
+  url: /api/agent-operator-integration/v1/mcp/market/${mcp_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+# 内置组件相关
+- name: 创建更新内置工具
+  url: /api/agent-operator-integration/v1/tool-box/intcomp
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 注册更新内置算子
+  url: /api/agent-operator-integration/v1/operator/intcomp
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+# 模板和函数相关
+- name: 获取代码模板
+  url: /api/agent-operator-integration/v1/template/${template_type}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'
+
+- name: 执行函数
+  url: /api/agent-operator-integration/v1/function/execute
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json"}'

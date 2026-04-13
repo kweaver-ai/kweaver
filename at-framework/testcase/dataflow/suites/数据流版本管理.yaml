@@ -1,0 +1,218 @@
+feature: automation服务接口测试
+story: 数据流版本管理
+switch: y
+cases:
+# 创建数据流用于版本管理测试
+- name: Positive_创建数据流_带版本号_请求成功
+  url: 新增数据流
+  body_params: |
+    {
+      "title": "{{ '版本管理测试_%s' | format(random_string(6, 8)) }}",
+      "version": "v0.0.0",
+      "steps": [
+        {"id": "0", "operator": "@trigger/dataflow-dept"},
+        {"id": "1", "operator": "@internal/text/join", "parameters": {"texts": ["a", "b"], "separator": ""}}
+      ],
+      "trigger_config": {
+        "operator": "@trigger/manual",
+        "dataSource": {
+          "operator": "@anyshare-data/dept-tree",
+          "parameters": {"accessorid": "${accessor_id}"}
+        }
+      }
+    }
+  code_check: '201'
+  resp_values: '{"dag_id": "$.id"}'
+  description: 创建测试用的数据流
+
+# 获取历史版本列表测试
+- name: Positive_获取历史版本列表_基本查询_请求成功
+  url: 获取历史版本列表
+  prev_case: Positive_创建数据流_带版本号_请求成功
+  path_params: '{"dag_id": "${dag_id}"}'
+  code_check: '200'
+  resp_values: '{"version_id": "$.[0].version_id"}'
+  description: 获取数据流的历史版本列表
+
+- name: Negative_获取历史版本列表_无效dag_id_请求失败
+  url: 获取历史版本列表
+  path_params: '{"dag_id": "invalid_dag_id_12345"}'
+  code_check: '200'
+  description: 使用无效的dag_id获取历史版本列表（API返回空列表或错误）
+
+# 获取下一个版本号测试
+- name: Positive_获取下一个版本号_基本查询_请求成功
+  url: 获取下一个版本号
+  prev_case: Positive_创建数据流_带版本号_请求成功
+  path_params: '{"dag_id": "${dag_id}"}'
+  code_check: '200'
+  resp_values: '{"next_version": "$.version"}'
+  description: 获取数据流的下一个版本号
+
+- name: Negative_获取下一个版本号_无效dag_id_请求失败
+  url: 获取下一个版本号
+  path_params: '{"dag_id": "invalid_dag_id_12345"}'
+  code_check: '200'
+  description: 使用无效的dag_id获取下一个版本号（API返回默认值或错误）
+
+# 创建数据流带版本号测试
+- name: Positive_创建数据流_带版本号和变更说明_请求成功
+  url: 新增数据流
+  body_params: |
+    {
+      "title": "{{ '版本创建测试_%s' | format(random_string(6, 8)) }}",
+      "version": "v1.0.0",
+      "change_log": "初始版本",
+      "steps": [
+        {"id": "0", "operator": "@trigger/dataflow-dept"},
+        {"id": "1", "operator": "@internal/text/join", "parameters": {"texts": ["a", "b"], "separator": ""}}
+      ],
+      "trigger_config": {
+        "operator": "@trigger/manual",
+        "dataSource": {
+          "operator": "@anyshare-data/dept-tree",
+          "parameters": {"accessorid": "${accessor_id}"}
+        }
+      }
+    }
+  code_check: '201'
+  description: 创建数据流时指定版本号和变更说明
+
+- name: Positive_创建数据流_带版本号不带变更说明_请求成功
+  url: 新增数据流
+  body_params: |
+    {
+      "title": "{{ '版本创建测试2_%s' | format(random_string(6, 8)) }}",
+      "version": "v1.0.0",
+      "steps": [
+        {"id": "0", "operator": "@trigger/dataflow-dept"},
+        {"id": "1", "operator": "@internal/text/join", "parameters": {"texts": ["a", "b"], "separator": ""}}
+      ],
+      "trigger_config": {
+        "operator": "@trigger/manual",
+        "dataSource": {
+          "operator": "@anyshare-data/dept-tree",
+          "parameters": {"accessorid": "${accessor_id}"}
+        }
+      }
+    }
+  code_check: '201'
+  description: 创建数据流时只指定版本号，不指定变更说明
+
+# 更新数据流带版本号测试
+- name: Positive_更新数据流_带版本号和变更说明_请求成功
+  url: 更新数据流
+  prev_case: Positive_创建数据流_带版本号_请求成功
+  path_params: '{"dag_id": "${dag_id}"}'
+  body_params: |
+    {
+      "title": "{{ '更新测试_%s' | format(random_string(6, 8)) }}",
+      "description": "更新后的描述",
+      "status": "normal",
+      "version": "v0.0.1",
+      "change_log": "测试更新版本",
+      "steps": [
+        {"id": "0", "operator": "@trigger/manual"},
+        {"id": "1", "operator": "@internal/time/now"},
+        {"id": "2", "operator": "@internal/json/template", "parameters": {"json": "{}", "template": "测试模板"}}
+      ]
+    }
+  code_check: '204'
+  description: 更新数据流时指定版本号和变更说明
+
+- name: Positive_更新数据流_带版本号不带变更说明_请求成功
+  url: 更新数据流
+  prev_case: Positive_创建数据流_带版本号_请求成功
+  path_params: '{"dag_id": "${dag_id}"}'
+  body_params: |
+    {
+      "title": "{{ '更新测试2_%s' | format(random_string(6, 8)) }}",
+      "description": "更新后的描述",
+      "status": "normal",
+      "version": "v0.0.2",
+      "steps": [
+        {"id": "0", "operator": "@trigger/manual"},
+        {"id": "1", "operator": "@internal/time/now"}
+      ]
+    }
+  code_check: '204'
+  description: 更新数据流时只指定版本号，不指定变更说明
+
+# 回退历史版本测试
+- name: Positive_回退历史版本_基本回退_请求成功
+  url: 回退历史版本
+  prev_case: Positive_获取历史版本列表_基本查询_请求成功
+  path_params: '{"dag_id": "${dag_id}", "version_id": "${version_id}"}'
+  code_check: '200'
+  description: 回退数据流到历史版本
+
+- name: Negative_回退历史版本_无效版本ID_请求失败
+  url: 回退历史版本
+  prev_case: Positive_创建数据流_带版本号_请求成功
+  path_params: '{"dag_id": "${dag_id}", "version_id": "invalid_version_id_12345"}'
+  code_check: '500'
+  description: 使用无效的版本ID回退
+
+- name: Negative_回退历史版本_无效dag_id_请求失败
+  url: 回退历史版本
+  path_params: '{"dag_id": "invalid_dag_id_12345", "version_id": "v1.0.0"}'
+  code_check: '500'
+  description: 使用无效的dag_id回退版本
+
+# 完整版本管理流程测试
+- name: Positive_完整版本管理流程_创建数据流_请求成功
+  url: 新增数据流
+  body_params: |
+    {
+      "title": "{{ '完整流程测试_%s' | format(random_string(6, 8)) }}",
+      "version": "v1.0.0",
+      "steps": [
+        {"id": "0", "operator": "@trigger/dataflow-dept"},
+        {"id": "1", "operator": "@internal/text/join", "parameters": {"texts": ["a", "b"], "separator": ""}}
+      ],
+      "trigger_config": {
+        "operator": "@trigger/manual",
+        "dataSource": {
+          "operator": "@anyshare-data/dept-tree",
+          "parameters": {"accessorid": "${accessor_id}"}
+        }
+      }
+    }
+  code_check: '201'
+  resp_values: '{"full_dag_id": "$.id"}'
+  description: 完整流程步骤1 - 创建数据流
+
+- name: Positive_完整版本管理流程_获取下一版本号_请求成功
+  url: 获取下一个版本号
+  prev_case: Positive_完整版本管理流程_创建数据流_请求成功
+  path_params: '{"dag_id": "${full_dag_id}"}'
+  code_check: '200'
+  resp_values: '{"full_next_version": "$.version"}'
+  description: 完整流程步骤2 - 获取下一个版本号
+
+- name: Positive_完整版本管理流程_更新数据流_请求成功
+  url: 更新数据流
+  prev_case: Positive_完整版本管理流程_创建数据流_请求成功
+  path_params: '{"dag_id": "${full_dag_id}"}'
+  body_params: |
+    {
+      "title": "{{ '完整流程更新_%s' | format(random_string(6, 8)) }}",
+      "description": "第一次更新",
+      "status": "normal",
+      "version": "v1.0.1",
+      "change_log": "第一次更新版本",
+      "steps": [
+        {"id": "0", "operator": "@trigger/manual"},
+        {"id": "1", "operator": "@internal/time/now"},
+        {"id": "2", "operator": "@internal/json/template", "parameters": {"json": "{}", "template": "测试"}}
+      ]
+    }
+  code_check: '204'
+  description: 完整流程步骤3 - 更新数据流生成新版本
+
+- name: Positive_完整版本管理流程_获取版本列表_请求成功
+  url: 获取历史版本列表
+  prev_case: Positive_完整版本管理流程_创建数据流_请求成功
+  path_params: '{"dag_id": "${full_dag_id}"}'
+  code_check: '200'
+  description: 完整流程步骤4 - 获取版本列表

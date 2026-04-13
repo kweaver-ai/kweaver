@@ -1,67 +1,59 @@
-# API 列表：dataflow 模块
-# 格式：name (接口名称) -> url, method, headers
-
-- name: 获取数据流列表
-  url: /api/dataflow/v1/flows
-  method: GET
-  headers: '{"Content-Type": "application/json"}'
-
-- name: 创建数据流
-  url: /api/dataflow/v1/flows
+# automation服务API接口定义
+# 组合算子相关
+- name: 创建组合算子
+  url: /api/automation/v1/operators
   method: POST
-  headers: '{"Content-Type": "application/json"}'
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
-- name: 获取数据流详情
-  url: /api/dataflow/v1/flows/${flow_id}
-  method: GET
-  headers: '{"Content-Type": "application/json"}'
+# 数据流相关
+- name: 新增数据流
+  url: /api/automation/v1/data-flow/flow
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
 - name: 更新数据流
-  url: /api/dataflow/v1/flows/${flow_id}
+  url: /api/automation/v1/data-flow/flow/${dag_id}
   method: PUT
-  headers: '{"Content-Type": "application/json"}'
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
-- name: 删除数据流
-  url: /api/dataflow/v1/flows/${flow_id}
-  method: DELETE
-  headers: '{"Content-Type": "application/json"}'
-
-- name: 执行数据流
-  url: /api/dataflow/v1/flows/${flow_id}/execute
-  method: POST
-  headers: '{"Content-Type": "application/json"}'
-
-- name: 获取执行历史
-  url: /api/dataflow/v1/flows/${flow_id}/executions
+- name: 获取数据流详情
+  url: /api/automation/v1/dag/${dag_id}
   method: GET
-  headers: '{"Content-Type": "application/json"}'
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
-- name: 获取执行详情
-  url: /api/dataflow/v1/executions/${execution_id}
+- name: 获取历史版本列表
+  url: /api/automation/v1/dags/${dag_id}/versions
   method: GET
-  headers: '{"Content-Type": "application/json"}'
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
-- name: 停止执行
-  url: /api/dataflow/v1/executions/${execution_id}/stop
-  method: POST
-  headers: '{"Content-Type": "application/json"}'
-
-- name: 获取节点列表
-  url: /api/dataflow/v1/nodes
+- name: 获取下一个版本号
+  url: /api/automation/v1/dags/${dag_id}/versions/next
   method: GET
-  headers: '{"Content-Type": "application/json"}'
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
-- name: 创建节点
-  url: /api/dataflow/v1/nodes
+- name: 回退历史版本
+  url: /api/automation/v1/dags/${dag_id}/versions/${version_id}/rollback
   method: POST
-  headers: '{"Content-Type": "application/json"}'
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
 
-- name: 更新节点
-  url: /api/dataflow/v1/nodes/${node_id}
-  method: PUT
-  headers: '{"Content-Type": "application/json"}'
+# dataflow-doc文件管理相关(v2)
+- name: 运行数据流触发文件处理
+  url: /api/automation/v2/dataflow-doc/trigger/${dag_id}
+  method: POST
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
+  multipart: true
 
-- name: 删除节点
-  url: /api/dataflow/v1/nodes/${node_id}
-  method: DELETE
-  headers: '{"Content-Type": "application/json"}'
+- name: 获取文件列表
+  url: /api/automation/v2/dataflow-doc/files
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
+
+- name: 获取单个文件信息
+  url: /api/automation/v2/dataflow-doc/files/${file_id}
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'
+
+- name: 获取文件下载链接
+  url: /api/automation/v2/dataflow-doc/files/${file_id}/download
+  method: GET
+  headers: '{"Content-Type": "application/json", "Accept": "application/json", "x-business-domain": "bd_public"}'

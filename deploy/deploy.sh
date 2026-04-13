@@ -222,18 +222,6 @@ confirm_access_address_before_install() {
     raw_path="$(_read_access_address_field "path")"
     raw_scheme="$(_read_access_address_field "scheme")"
 
-    local need_confirm="false"
-    if [[ "${config_missing_before}" == "true" ]]; then
-        need_confirm="true"
-    elif [[ -z "${raw_host}" && -z "${raw_port}" && -z "${raw_path}" && -z "${raw_scheme}" ]]; then
-        need_confirm="true"
-    fi
-
-    # 正常场景：配置文件存在且 accessAddress 已有内容时，不重复弹窗
-    if [[ "${need_confirm}" != "true" ]]; then
-        return 0
-    fi
-
     local host port path scheme
     host="${raw_host:-$(_detect_node_ip)}"
     port="${raw_port:-${INGRESS_NGINX_HTTPS_PORT:-443}}"

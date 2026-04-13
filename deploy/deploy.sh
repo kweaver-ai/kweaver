@@ -5,6 +5,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONF_DIR="${CONF_DIR:-${HOME}/.kweaver-ai}"
 CONFIG_YAML_PATH="${CONFIG_YAML_PATH:-${CONF_DIR}/config.yaml}"
 
+# Global flag: skip all interactive prompts and use defaults
+ASSUME_YES="${ASSUME_YES:-false}"
+
 # Fix paths to use script's conf directory, not user home
 FLANNEL_MANIFEST_PATH="${SCRIPT_DIR}/conf/kube-flannel.yml"
 LOCALPV_MANIFEST_PATH="${SCRIPT_DIR}/conf/local-path-storage.yaml"
@@ -108,6 +111,7 @@ usage() {
     echo "  $0 all install                # Full initialization with all components"
     echo ""
     echo "Global Options:"
+    echo "  -y, --yes                     Skip all interactive prompts and use defaults"
     echo "  --config=<path>               Specify config.yaml path (values file for helm installs)"
     echo "                                (default: ~/.kweaver-ai/config.yaml or \$CONFIG_YAML_PATH env var)"
     echo "  --charts_dir=<path>           Use a specific local chart directory for download/install"
@@ -297,11 +301,13 @@ confirm_access_address_before_install() {
     echo "    Protocol : ${scheme}  (http or https)"
     echo "    URL      : ${url}"
     echo "============================================"
-    echo ""
-    echo "Press Enter to keep the default, or type a new value."
-    echo ""
 
-    if [[ -t 0 ]]; then
+    if [[ "${ASSUME_YES}" == "true" ]]; then
+        log_info "Using defaults (-y)."
+    elif [[ -t 0 ]]; then
+        echo ""
+        echo "Press Enter to keep the default, or type a new value."
+        echo ""
         local input_host input_port input_path input_scheme
         read -r -p "  Host     [${host}]: " input_host
         read -r -p "  Port     [${port}]: " input_port
@@ -330,6 +336,14 @@ confirm_access_address_before_install() {
 
 # Main function
 main() {
+    # Parse global flags before module/action
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -y|--yes) ASSUME_YES="true"; shift ;;
+            *) break ;;
+        esac
+    done
+
     local module="${1:-}"
     local action="${2:-}"
     shift 2 2>/dev/null || true
@@ -379,6 +393,7 @@ main() {
                 --api_server_address)   API_SERVER_ADVERTISE_ADDRESS="$2"; shift 2 ;;
                 --access_address=*)     KWEAVER_ACCESS_ADDRESS="${1#*=}"; shift ;;
                 --access_address)       KWEAVER_ACCESS_ADDRESS="$2"; shift 2 ;;
+                -y|--yes)               ASSUME_YES="true"; shift ;;
                 *) shift ;;
             esac
         done

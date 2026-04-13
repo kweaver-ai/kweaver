@@ -507,6 +507,26 @@ install_core() {
     done
 
     log_info "KWeaver Core services installation completed."
+
+    local _host _port _scheme
+    _host="$(_read_access_address_field "host" 2>/dev/null || true)"
+    _port="$(_read_access_address_field "port" 2>/dev/null || true)"
+    _scheme="$(_read_access_address_field "scheme" 2>/dev/null || true)"
+    _host="${_host:-localhost}"
+    _port="${_port:-443}"
+    _scheme="${_scheme:-https}"
+
+    echo ""
+    echo "============================================"
+    echo "  Verify your installation:"
+    echo ""
+    if [[ "${_port}" == "443" || "${_port}" == "80" ]]; then
+        echo "    curl -k ${_scheme}://${_host}/api/v1/health"
+    else
+        echo "    curl -k ${_scheme}://${_host}:${_port}/api/v1/health"
+    fi
+    echo ""
+    echo "============================================"
 }
 
 # Uninstall KWeaver Core services

@@ -97,6 +97,10 @@ kweaver bkn list
 
 ## KWeaver SDK
 
+### 推荐优先安装 SDK
+
+安装完 KWeaver Core 后，建议首先安装 [kweaver-sdk](https://github.com/kweaver-ai/kweaver-sdk)。SDK 提供 `kweaver` CLI 和 AI Agent Skills，是与平台交互的主要方式。
+
 [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk) 通过 `kweaver` CLI 为 AI 智能体（Claude Code、GPT、自定义 Agent 等）提供对 KWeaver 知识网络与 Decision Agent 的访问能力，同时提供 Python 与 TypeScript SDK 用于编程集成。
 
 ### AI Agent Skills
@@ -124,7 +128,6 @@ npx skills add https://github.com/kweaver-ai/kweaver-sdk --skill create-bkn
 **使用任意 skill 前**，需先完成 KWeaver 实例认证：
 
 ```bash
-npm install -g @kweaver-ai/kweaver-sdk
 kweaver auth login https://your-kweaver-instance.com
 ```
 

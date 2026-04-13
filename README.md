@@ -96,6 +96,10 @@ kweaver bkn list
 
 ## KWeaver SDK
 
+### Install the SDK First
+
+After deploying KWeaver Core, we recommend installing [kweaver-sdk](https://github.com/kweaver-ai/kweaver-sdk) as your next step. The SDK provides the `kweaver` CLI and AI Agent Skills — the primary way to interact with the platform.
+
 [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk) gives AI agents (Claude Code, GPT, custom agents, etc.) access to KWeaver knowledge networks and Decision Agents via the `kweaver` CLI. It also provides Python and TypeScript SDKs for programmatic integration.
 
 ### AI Agent Skills
@@ -123,7 +127,6 @@ npx skills add https://github.com/kweaver-ai/kweaver-sdk --skill create-bkn
 **Before using any skill**, authenticate with your KWeaver instance:
 
 ```bash
-npm install -g @kweaver-ai/kweaver-sdk
 kweaver auth login https://your-kweaver-instance.com
 ```
 

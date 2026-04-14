@@ -60,5 +60,4 @@ npm install -g @kweaver-ai/kweaver-sdk
 
 ## Next steps
 
-- [Deploy](deploy.md)
-- [Verify installation](verify.md)
+- [Deploy](deploy.md) — install and post-install verification

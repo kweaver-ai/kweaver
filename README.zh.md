@@ -30,13 +30,7 @@ KWeaver Core 是面向企业决策智能体的治理优先（harness-first）基
 
 ## 🎬 演示视频
 
-<div align="center">
-<a href="https://www.bilibili.com/video/BV1nGXVBTEmo/?vd_source=4cdad687b2ac18a0b25e434f1fafe2f7" target="_blank">
-<img src="./help/demo-cover.png" alt="KWeaver 演示视频" width="75%"/>
-</a>
-
-点击图片在 Bilibili 观看 KWeaver 演示视频
-</div>
+[在 Bilibili 观看 KWeaver 演示](https://www.bilibili.com/video/BV1nGXVBTEmo/?vd_source=4cdad687b2ac18a0b25e434f1fafe2f7)。
 
 ## 🚀 快速开始
 

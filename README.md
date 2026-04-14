@@ -30,13 +30,7 @@ KWeaver Core is a harness-first foundation for enterprise decision agents. It tu
 
 ## 🎬 Demo Video
 
-<div align="center">
-<a href="https://www.bilibili.com/video/BV1nGXVBTEmo/?vd_source=4cdad687b2ac18a0b25e434f1fafe2f7" target="_blank">
-<img src="./help/demo-cover.png" alt="KWeaver Demo Video" width="75%"/>
-</a>
-
-Click the image to watch the KWeaver demo on Bilibili
-</div>
+[Watch the KWeaver demo on Bilibili](https://www.bilibili.com/video/BV1nGXVBTEmo/?vd_source=4cdad687b2ac18a0b25e434f1fafe2f7).
 
 ## 🚀 Quick Start
 

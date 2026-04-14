@@ -9,13 +9,13 @@
 """
 from __future__ import annotations
 
-import json
+import base64
 import random
 import string
 import time
 import uuid
-import base64
 from typing import Optional
+
 from faker import Faker
 from src.common.global_var import global_vars
 
@@ -28,32 +28,6 @@ def get_global(key: str, default: str = "") -> str:
     """
 
     return global_vars.get_var(key, default)
-
-
-def random_string(length=8, model=8):
-    """
-    生成指定长度的随机字符串
-
-    :param length: 字符串长度
-    :param model: 按位指定字符串类型，
-                  1=string.whitespace
-                  2=string.ascii_lowercase
-                  4=string.ascii_uppercase
-                  8=string.digits
-                  16=string.hexdigits
-                  32=string.octdigits
-                  64=string.punctuation
-    """
-    chars = ""
-    if model & 1: chars = chars + string.whitespace
-    if (model >> 1) & 1: chars = chars + string.ascii_lowercase
-    if (model >> 2) & 1: chars = chars + string.ascii_uppercase
-    if (model >> 3) & 1: chars = chars + string.digits
-    if (model >> 4) & 1: chars = chars + string.hexdigits
-    if (model >> 5) & 1: chars = chars + string.octdigits
-    if (model >> 6) & 1: chars = chars + string.punctuation + r"·！￥……（）【】、：；“‘《》，。？、"
-
-    return json.dumps(''.join(random.choices(chars, k=length)))
 
 
 def random_int(min_value: int = 0, max_value: int = 10 ** 9) -> int:

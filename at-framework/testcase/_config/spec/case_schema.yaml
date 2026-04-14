@@ -65,11 +65,11 @@ fields:
     required: false
     default: ""
     description: JSON 对象，jsonpath 键与期望值，如 {"$.code":0,"$.data.name":"x"}；值可为任意 JSON 类型（字符串、数字、布尔、null），与 jsonpath 提取结果比较
-  - name: resp_schema
-    type: string
-    required: false
-    default: ""
-    description: 响应样本 JSON 对象（非 JSON Schema），框架用 genson 生成 schema 后对响应做结构校验
+#  - name: resp_schema
+#    type: string
+#    required: false
+#    default: ""
+#    description: 响应样本 JSON 对象（非 JSON Schema），框架用 genson 生成 schema 后对响应做结构校验
   - name: tags
     type: list
     required: false
@@ -97,5 +97,5 @@ openapi_mapping:
   response:
     status: code_check
     headers: resp_headers_check
-    content_schema: resp_schema
+#    content_schema: resp_schema
     content_assertion: resp_check

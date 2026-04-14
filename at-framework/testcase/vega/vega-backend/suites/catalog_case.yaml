@@ -1,0 +1,16 @@
+feature: vega-backend
+story: catalog_manager
+switch: y
+tags:
+  - vega-backend
+  - smoke
+  - catalog
+
+cases:
+  - name: 创建Catalog_逻辑资源_请求成功
+    url: 创建目录
+    body_params: |
+        {
+            "name": "{{ '新增catalog_AutoCase-%s' | format(random_string(6, 8)) }}"
+        }
+    code_check: 201

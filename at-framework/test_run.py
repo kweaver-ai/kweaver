@@ -13,16 +13,16 @@ from json import JSONDecodeError
 
 import allure
 import jsonpath
-import pytest
 from jinja2 import Environment
 from jsonschema.validators import validate
 
 from common import at_env
-from common.func import replace_params, replace_placeholders, genson
+from common.func import replace_params, replace_placeholders, genson, _COMMON_HANZI
 from conftest import config, compute_case_list, BEARER_AUTH
 from request.http_client import HTTPClient
 
 resp_values = {}
+global _case_list_cache
 
 
 def _resolve_authorization(case_info):
@@ -52,7 +52,20 @@ def _resolve_authorization(case_info):
 
 
 def _jinja_random_string(length=8, model=8):
-    """与 etrino 用例中 `random_string(6, 8)` 一致，供 Jinja 渲染；不依赖 faker。"""
+    """
+    生成指定长度的随机字符串
+    :param length: 字符串长度
+    :param model: 按位指定字符串类型，
+                  1=string.whitespace
+                  2=string.ascii_lowercase
+                  4=string.ascii_uppercase
+                  8=string.digits
+                  16=string.hexdigits
+                  32=string.octdigits
+                  64=string.punctuation
+                  128=常见中文
+    """
+
     chars = ""
     if model & 1:
         chars += _str.whitespace
@@ -68,10 +81,10 @@ def _jinja_random_string(length=8, model=8):
         chars += _str.octdigits
     if (model >> 6) & 1:
         chars += _str.punctuation + r"·！￥……（）【】、：；“‘《》，。？、"
-    if not chars:
-        chars = _str.ascii_lowercase + _str.digits
+    if (model >> 7) & 1:
+        chars += _COMMON_HANZI
 
-    return json.dumps(''.join(random.choices(chars, k=max(1, int(length))))).strip('"')
+    return json.dumps(''.join(random.choices(chars, k=length))).strip('"')
 
 
 _jinja_env = Environment()
@@ -103,9 +116,9 @@ def test_case(feature, story, case_name, case_info):
     allure.dynamic.feature(feature)
     allure.dynamic.story(story)
 
-    if case_info["prev_case"]:
+    if case_info.get("prev_case", "") != '':
         with allure.step("执行前置用例执行"):
-            for x in compute_case_list():
+            for x in _case_list_cache:
                 if x["name"] == case_info["prev_case"]:
                     test_case(x["feature"], x["story"], x["name"], x)
                     # 若存在同名用例，仅执行第一个匹配项
@@ -120,71 +133,67 @@ def test_case(feature, story, case_name, case_info):
         case_info = _render_jinja_fields(case_info)
 
         # 替换path参数
-        if case_info["path_params"] != '':
-            case_path_params = json.loads(case_info["path_params"])
-            case_info = replace_params(case_info, **case_path_params)
+        case_path_params = json.loads(case_info.get("path_params", "{}"))
+        case_info = replace_params(case_info, **case_path_params)
 
         # 参数格式转换
-        case_headers = json.loads(case_info["headers"]) if case_info["headers"] != '' else {}
-        if case_info.get("header_params") and case_info["header_params"] != '':
-            try:
-                case_headers.update(json.loads(case_info["header_params"]))
-            except JSONDecodeError:
-                pass
-        case_headers["Authorization"] = _resolve_authorization(case_info)
-        case_query_params = json.loads(case_info["query_params"]) if case_info["query_params"] != '' else {}
-        case_body_params = json.loads(case_info["body_params"]) if case_info["body_params"] != '' else {}
-        try:
-            case_form_params = json.loads(case_info["form_params"]) if case_info["form_params"] != '' else {}
-        except JSONDecodeError:
-            # 忽略格式转换异常，适配fetch接口输入
-            case_form_params = None
-        case_cookie_params = json.loads(case_info["cookie_params"]) if case_info.get("cookie_params") and case_info["cookie_params"] != '' else None
+        case_header_params = {**case_info.get("headers", {}),
+                              **json.loads(case_info.get("header_params", "{}")),
+                              "Authorization": _resolve_authorization(case_info)}
+        case_cookie_params = json.loads(case_info.get("cookie_params", "{}"))
+        case_query_params = json.loads(case_info.get("query_params", "{}"))
+        case_body_params = json.loads(case_info.get("body_params", "{}"))
+        case_form_params = json.loads(case_info.get("form_params", "{}"))
+
+        url = case_info.get("url", "")
 
         allure.attach(
-            body="url: %s\nheaders: %s\nquery_params: %s\nbody_params: %s\nform_params: %s" % (
-                case_info["url"], case_headers, case_query_params, case_body_params, case_form_params),
+            body="url: %s\nheaders: %s\ncookies：%s\n"
+                 "query_params: %s\nbody_params: %s\nform_params: %s" % (
+                     url, case_header_params, case_cookie_params,
+                     case_query_params, case_body_params, case_form_params),
             name="请求参数"
         )
 
     with allure.step("发送请求"):
         _scheme, _host = at_env.resolve_request_target(config)
-        client = HTTPClient(url="%s://%s%s" % (_scheme, _host, case_info["url"]),
-                            method=case_info["method"], headers=case_headers)
+        client = HTTPClient(url="%s://%s%s" % (_scheme, _host, url),
+                            method=case_info.get("method", ""), headers=case_header_params)
         send_kw = dict(params=case_query_params, json=case_body_params, data=case_form_params)
         if case_cookie_params:
             send_kw["cookies"] = case_cookie_params
         client.send(**send_kw)
 
+        resp_code = client.resp_code()
+        resp_body = client.resp_body()
+
         allure.attach(
             body="url: %s\nhttp_code: %s\nresponse: %s" % (
-                client.url, client.resp_code(), json.dumps(client.resp_body(), ensure_ascii=False)),
+                client.url, resp_code, json.dumps(resp_body, ensure_ascii=False)),
             name="请求响应"
         )
 
     # 结果断言
-    if case_info["code_check"]:
-        assert str(client.resp_code()) == case_info["code_check"]
+    if "code_check" in case_info:
+        assert str(resp_code) == case_info["code_check"]
 
-    if case_info.get("resp_headers_check") and case_info["resp_headers_check"] != '':
-        try:
-            for k, v in json.loads(case_info["resp_headers_check"]).items():
-                assert client.resp.headers.get(k) == v, "resp header %s: expect %s, got %s" % (k, v, client.resp.headers.get(k))
-        except JSONDecodeError:
-            pass
+    if "resp_headers_check" in case_info:
+        for k, v in json.loads(case_info.get("resp_headers_check", "{}")).items():
+            assert client.resp.headers.get(k) == v
 
-    if case_info["resp_check"]:
-        for k, v in json.loads(case_info["resp_check"]).items():
-            assert jsonpath.jsonpath(client.resp_body(), k)[0] == v
+    if "resp_check" in case_info:
+        for k, v in json.loads(case_info.get("resp_check", "{}")).items():
+            assert jsonpath.jsonpath(resp_body, k)[0] == v
 
-    if case_info["resp_schema"]:
-        json_schema = genson(json.loads(case_info["resp_schema"]))
-        validate(instance=client.resp_body(), schema=json_schema)
+    if "resp_schema" in case_info:
+        if resp_code in case_info["resp_schema"]:
+            json_schema = genson(case_info["resp_schema"][resp_code])
+            validate(instance=resp_body, schema=json_schema)
 
     # 提取响应中的变量
-    if case_info["resp_values"]:
-        for k, v in json.loads(case_info["resp_values"]).items():
-            param = jsonpath.jsonpath(client.resp_body(), v)[0]
+    if "resp_values" in case_info:
+        for k, v in json.loads(case_info.get("resp_values", "{}")).items():
+            param = jsonpath.jsonpath(resp_body, v)[0]
             if isinstance(param, list) or isinstance(param, dict):
                 # 将对象存储为字符串,加载用例参数时再转换为JSON格式
                 resp_values[k] = json.dumps(param, ensure_ascii=False)

@@ -158,7 +158,7 @@ func ValidateActionType(ctx context.Context, actionType *interfaces.ActionType, 
 }
 
 // 校验行动条件的合法性
-func validateActionCondition(ctx context.Context, cfg *interfaces.CondCfg, objectTypeID string) error {
+func validateActionCondition(ctx context.Context, cfg *interfaces.ActionCondCfg, objectTypeID string) error {
 	if cfg == nil {
 		return nil
 	}

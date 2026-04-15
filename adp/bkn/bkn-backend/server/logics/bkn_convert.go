@@ -32,16 +32,16 @@ func ToADPNetWork(bknNetwork *bknsdk.BknNetwork) *interfaces.KN {
 func ToBKNNetWork(kn *interfaces.KN) *bknsdk.BknNetwork {
 	return &bknsdk.BknNetwork{
 		BknNetworkFrontmatter: bknsdk.BknNetworkFrontmatter{
-			Type:        interfaces.MODULE_TYPE_KN,
-			ID:          kn.KNID,
-			Name:        kn.KNName,
-			Tags:        kn.Tags,
-			Summary:     bknsdk.ExtractSummary(kn.Comment),
-			Description: kn.Comment,
+			Type: interfaces.MODULE_TYPE_KN,
+			ID:   kn.KNID,
+			Name: kn.KNName,
+			Tags: kn.Tags,
 
 			Branch:         kn.Branch,
 			BusinessDomain: kn.BusinessDomain,
 		},
+		Summary:      bknsdk.ExtractSummary(kn.Comment),
+		Description:  kn.Comment,
 		RawContent:   kn.BKNRawContent,
 		SkillContent: kn.SkillContent,
 	}
@@ -140,13 +140,13 @@ func ToADPObjectType(knID string, branch string, bknObj *bknsdk.BknObjectType) *
 func ToBKNObjectType(adpObj *interfaces.ObjectType) *bknsdk.BknObjectType {
 	bknObj := &bknsdk.BknObjectType{
 		BknObjectTypeFrontmatter: bknsdk.BknObjectTypeFrontmatter{
-			Type:        interfaces.MODULE_TYPE_OBJECT_TYPE,
-			ID:          adpObj.OTID,
-			Name:        adpObj.OTName,
-			Tags:        adpObj.Tags,
-			Summary:     bknsdk.ExtractSummary(adpObj.Comment),
-			Description: adpObj.Comment,
+			Type: interfaces.MODULE_TYPE_OBJECT_TYPE,
+			ID:   adpObj.OTID,
+			Name: adpObj.OTName,
+			Tags: adpObj.Tags,
 		},
+		Summary:        bknsdk.ExtractSummary(adpObj.Comment),
+		Description:    adpObj.Comment,
 		PrimaryKeys:    adpObj.PrimaryKeys,
 		DisplayKey:     adpObj.DisplayKey,
 		IncrementalKey: adpObj.IncrementalKey,
@@ -298,13 +298,13 @@ func ToADPRelationType(knID string, branch string, bknRel *bknsdk.BknRelationTyp
 func ToBKNRelationType(adpRel *interfaces.RelationType) *bknsdk.BknRelationType {
 	bknRel := &bknsdk.BknRelationType{
 		BknRelationTypeFrontmatter: bknsdk.BknRelationTypeFrontmatter{
-			Type:        interfaces.MODULE_TYPE_RELATION_TYPE,
-			ID:          adpRel.RTID,
-			Name:        adpRel.RTName,
-			Tags:        adpRel.Tags,
-			Summary:     bknsdk.ExtractSummary(adpRel.Comment),
-			Description: adpRel.Comment,
+			Type: interfaces.MODULE_TYPE_RELATION_TYPE,
+			ID:   adpRel.RTID,
+			Name: adpRel.RTName,
+			Tags: adpRel.Tags,
 		},
+		Summary:     bknsdk.ExtractSummary(adpRel.Comment),
+		Description: adpRel.Comment,
 		Endpoint: bknsdk.Endpoint{
 			Source: adpRel.SourceObjectTypeID,
 			Target: adpRel.TargetObjectTypeID,
@@ -346,7 +346,12 @@ func ToBKNRelationType(adpRel *interfaces.RelationType) *bknsdk.BknRelationType 
 				})
 			}
 			bknRel.MappingRules = indirectRules
-
+		case *interfaces.FilteredCrossJoinMapping:
+			filteredRules := &bknsdk.FilteredCrossJoinMapping{
+				SourceCondition: toBKNCondCfg(rules.SourceCondition),
+				TargetCondition: toBKNCondCfg(rules.TargetCondition),
+			}
+			bknRel.MappingRules = filteredRules
 		default:
 			logger.Errorf("Unknown mappingRules type: %T", rules)
 		}
@@ -382,7 +387,7 @@ func ToADPActionType(knID string, branch string, bknAction *bknsdk.BknActionType
 
 	// 转换 Condition
 	if bknAction.TriggerCondition != nil {
-		adpAction.Condition = toADPCondCfg(bknAction.TriggerCondition)
+		adpAction.Condition = toADPActionCondCfg(bknAction.TriggerCondition)
 	}
 
 	// 转换 ActionSource
@@ -425,14 +430,14 @@ func ToADPActionType(knID string, branch string, bknAction *bknsdk.BknActionType
 func ToBKNActionType(adpAction *interfaces.ActionType) *bknsdk.BknActionType {
 	bknAction := &bknsdk.BknActionType{
 		BknActionTypeFrontmatter: bknsdk.BknActionTypeFrontmatter{
-			Type:        interfaces.MODULE_TYPE_ACTION_TYPE,
-			ID:          adpAction.ATID,
-			Name:        adpAction.ATName,
-			Tags:        adpAction.Tags,
-			Summary:     bknsdk.ExtractSummary(adpAction.Comment),
-			Description: adpAction.Comment,
-			ActionType:  adpAction.ActionType,
+			Type:       interfaces.MODULE_TYPE_ACTION_TYPE,
+			ID:         adpAction.ATID,
+			Name:       adpAction.ATName,
+			Tags:       adpAction.Tags,
+			ActionType: adpAction.ActionType,
 		},
+		Summary:     bknsdk.ExtractSummary(adpAction.Comment),
+		Description: adpAction.Comment,
 		BoundObject: adpAction.ObjectTypeID,
 	}
 
@@ -444,7 +449,7 @@ func ToBKNActionType(adpAction *interfaces.ActionType) *bknsdk.BknActionType {
 	}
 	// 转换 Condition
 	if adpAction.Condition != nil {
-		bknAction.TriggerCondition = toBKNCondCfg(adpAction.Condition)
+		bknAction.TriggerCondition = toBKNActionCondCfg(adpAction.Condition)
 	}
 
 	// 转换 ActionSource
@@ -509,13 +514,13 @@ func ToADPRiskType(knID string, branch string, bknRisk *bknsdk.BknRiskType) *int
 func ToBKNRiskType(adpRisk *interfaces.RiskType) *bknsdk.BknRiskType {
 	bknRisk := &bknsdk.BknRiskType{
 		BknRiskTypeFrontmatter: bknsdk.BknRiskTypeFrontmatter{
-			Type:        interfaces.MODULE_TYPE_RISK_TYPE,
-			ID:          adpRisk.RTID,
-			Name:        adpRisk.RTName,
-			Tags:        adpRisk.Tags,
-			Summary:     bknsdk.ExtractSummary(adpRisk.Comment),
-			Description: adpRisk.Comment,
+			Type: interfaces.MODULE_TYPE_RISK_TYPE,
+			ID:   adpRisk.RTID,
+			Name: adpRisk.RTName,
+			Tags: adpRisk.Tags,
 		},
+		Summary:     bknsdk.ExtractSummary(adpRisk.Comment),
+		Description: adpRisk.Comment,
 	}
 
 	return bknRisk
@@ -542,13 +547,13 @@ func ToADPConceptGroup(knID string, branch string, bknCG *bknsdk.BknConceptGroup
 func ToBKNConceptGroup(adpCG *interfaces.ConceptGroup) *bknsdk.BknConceptGroup {
 	bknCG := &bknsdk.BknConceptGroup{
 		BknConceptGroupFrontmatter: bknsdk.BknConceptGroupFrontmatter{
-			Type:        interfaces.MODULE_TYPE_CONCEPT_GROUP,
-			ID:          adpCG.CGID,
-			Name:        adpCG.CGName,
-			Tags:        adpCG.Tags,
-			Summary:     bknsdk.ExtractSummary(adpCG.Comment),
-			Description: adpCG.Comment,
+			Type: interfaces.MODULE_TYPE_CONCEPT_GROUP,
+			ID:   adpCG.CGID,
+			Name: adpCG.CGName,
+			Tags: adpCG.Tags,
 		},
+		Summary:     bknsdk.ExtractSummary(adpCG.Comment),
+		Description: adpCG.Comment,
 		ObjectTypes: adpCG.ObjectTypeIDs,
 	}
 
@@ -556,30 +561,30 @@ func ToBKNConceptGroup(adpCG *interfaces.ConceptGroup) *bknsdk.BknConceptGroup {
 }
 
 // toADPCondCfg 将 BKN CondCfg 转换为 ADP CondCfg
-func toADPCondCfg(bknCond *bknsdk.CondCfg) *interfaces.CondCfg {
+func toADPActionCondCfg(bknCond *bknsdk.CondCfg) *interfaces.ActionCondCfg {
 	if bknCond == nil {
 		return nil
 	}
 
-	adpCond := &interfaces.CondCfg{
+	adpCond := &interfaces.ActionCondCfg{
 		ObjectTypeID: bknCond.ObjectTypeID,
 		Field:        bknCond.Field,
 		Operation:    bknCond.Operation,
-		ValueOptCfg: interfaces.ValueOptCfg{
+		ActionValueOptCfg: interfaces.ActionValueOptCfg{
 			ValueFrom: bknCond.ValueFrom,
 			Value:     bknCond.Value,
 		},
 	}
 
 	for _, subCond := range bknCond.SubConds {
-		adpCond.SubConds = append(adpCond.SubConds, toADPCondCfg(subCond))
+		adpCond.SubConds = append(adpCond.SubConds, toADPActionCondCfg(subCond))
 	}
 
 	return adpCond
 }
 
 // toBKNCondCfg 将 ADP CondCfg 转换为 BKN CondCfg
-func toBKNCondCfg(adpCond *interfaces.CondCfg) *bknsdk.CondCfg {
+func toBKNActionCondCfg(adpCond *interfaces.ActionCondCfg) *bknsdk.CondCfg {
 	if adpCond == nil {
 		return nil
 	}
@@ -593,7 +598,7 @@ func toBKNCondCfg(adpCond *interfaces.CondCfg) *bknsdk.CondCfg {
 	}
 
 	for _, subCond := range adpCond.SubConds {
-		bknCond.SubConds = append(bknCond.SubConds, toBKNCondCfg(subCond))
+		bknCond.SubConds = append(bknCond.SubConds, toBKNActionCondCfg(subCond))
 	}
 
 	return bknCond

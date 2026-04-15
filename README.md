@@ -189,7 +189,7 @@ Or use `/kweaver-core` slash commands (the skill takes over automatically):
 
 ### Headless / no-browser authentication (SSH, CI, containers)
 
-The **npm** `kweaver` CLI supports authenticating without a local browser. Two methods are available:
+The **npm** `kweaver` CLI supports authenticating without a local browser or without pasting callback URLs. Three methods are available:
 
 **Method 1 — `--no-browser` (recommended for interactive headless sessions)**
 
@@ -225,6 +225,19 @@ kweaver auth export --json       # JSON format (useful for CI secrets)
 kweaver auth login https://your-instance \
   --client-id <ID> --client-secret <SECRET> --refresh-token <TOKEN>
 ```
+
+**Method 3 — Playwright + username/password (fully non-interactive on the host, no callback paste)**
+
+When the machine can run Node and download a Chromium build (typical CI agents and Linux containers), you can complete the same OAuth2 authorization-code flow as the GUI login, but with Playwright driving a **headless** browser and filling the platform sign-in form:
+
+```bash
+npm install playwright && npx playwright install chromium   # once per environment
+kweaver auth login https://your-instance -u <username> -p <password> -k
+```
+
+`-u` / `-p` together select this path automatically (no need for `--playwright`). The CLI registers the OAuth client, opens the auth URL, submits credentials, and saves tokens under `~/.kweaver/` including a `refresh_token` when the IdP returns one — same auto-refresh behavior as a normal browser login.
+
+Use `--playwright` *without* `-u`/`-p` if you want Playwright to open a **visible** browser window and you sign in manually (useful when debugging or when the login UI is not the default account/password form).
 
 > With saved `~/.kweaver/` sessions, the CLI automatically exchanges `refresh_token` for a new access token when it expires — no extra flags needed. You can also set environment variables (`KWEAVER_BASE_URL`, `KWEAVER_TOKEN`) instead of persisting credentials to disk.
 

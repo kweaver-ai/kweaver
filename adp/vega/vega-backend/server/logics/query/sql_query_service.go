@@ -301,7 +301,11 @@ func (s *sqlQueryService) Execute(ctx context.Context, req *interfaces.SQLQueryR
 	result, err := s.executeSQLWithQueryType(ctx, dataSource, finalSQL, req.QueryType)
 	if err != nil {
 		return nil, err
+	}
 	// standard查询模式下，如果返回数据条数等于10000，则has_more设置为true
+	if len(result.Entries) >= 10000 {
+		result.Stats.HasMore = true
+	}
 	return result, nil
 }
 

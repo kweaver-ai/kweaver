@@ -190,7 +190,7 @@ kweaver auth login https://dip-poc.aishu.cn
 
 ### 无浏览器环境认证（SSH、CI、容器等）
 
-**npm 版** `kweaver` CLI 支持在没有本地浏览器的环境完成认证，提供两种方式：
+**npm 版** `kweaver` CLI 支持在没有本地图形浏览器、或不便粘贴回调 URL 的场景下完成认证，提供三种方式：
 
 **方式 1 — `--no-browser`（推荐，适合交互式无头会话）**
 
@@ -226,6 +226,19 @@ kweaver auth export --json       # JSON 格式（适合 CI 存入 secrets）
 kweaver auth login https://你的实例 \
   --client-id <ID> --client-secret <SECRET> --refresh-token <TOKEN>
 ```
+
+**方式 3 — Playwright + 用户名密码（本机全自动化，无需粘贴回调 URL）**
+
+在能运行 Node 并安装 Chromium 的环境（常见 CI Runner、Linux 容器）中，可用 Playwright 在**无头**浏览器里走完与 Web 登录相同的 OAuth2 授权码流程，并自动填写平台登录表单：
+
+```bash
+npm install playwright && npx playwright install chromium   # 每个环境执行一次即可
+kweaver auth login https://你的实例 -u <用户名> -p <密码> -k
+```
+
+同时提供 `-u` 与 `-p` 时会自动走 Playwright 无头登录（**不必**再加 `--playwright`）。CLI 会注册 OAuth 客户端、打开授权页、提交账号密码，并将令牌写入 `~/.kweaver/`；若 IdP 返回 `refresh_token`，后续换发 access token 的行为与普通浏览器登录一致。
+
+若只加 `--playwright` 而不带 `-u`/`-p`，则会打开**可见**浏览器窗口，由你手动完成登录（适合调试或登录页不是默认账号密码表单时）。
 
 > 已有 `~/.kweaver/` 保存的会话时，CLI 会在 access token 过期后自动使用 `refresh_token` 换取新令牌，无需额外操作。也可通过环境变量（`KWEAVER_BASE_URL`、`KWEAVER_TOKEN`）传入凭据，无需持久化到磁盘。
 

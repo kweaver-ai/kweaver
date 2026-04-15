@@ -248,7 +248,6 @@ func (lvs *logicViewService) executeCompositeViewByDSL(ctx context.Context, view
 	}
 
 	generator := lvdsl.NewlogicViewDSLGenerator(view.LogicDefinition)
-
 	dsl, httpErr := generator.BuildDSL(ctx, *params, view, viewIndicesMap)
 	if httpErr != nil {
 		span.SetStatus(codes.Error, "Convert to DSL failed")
@@ -257,19 +256,39 @@ func (lvs *logicViewService) executeCompositeViewByDSL(ctx context.Context, view
 
 	logger.Infof("executeCompositeViewByDSL DSL: [%s]", dsl)
 
-	req := interfaces.SQLQueryRequest{
-		Query:        dsl,
-		ResourceType: "opensearch",
-	}
+	if view.IsSingleSource {
+		var resourceType string
+		for _, ref := range view.RefResources {
+			catalog, err := lvs.cs.GetByID(ctx, ref.CatalogID, true)
+			if err != nil {
+				return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_Resource_InternalError).
+					WithErrorDetails(fmt.Sprintf("failed to get catalog: %v", err))
+			}
+			if catalog == nil {
+				return nil, 0, rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_Resource_CatalogNotFound).
+					WithErrorDetails(fmt.Sprintf("catalog %s not found", ref.CatalogID))
+			}
+			resourceType = catalog.ConnectorType
+			break
+		}
 
-	resp, err := lvs.qs.Execute(ctx, &req)
-	if err != nil {
-		span.SetStatus(codes.Error, "Execute query failed")
-		return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, rest.PublicError_InternalServerError).
-			WithErrorDetails(err.Error())
+		req := interfaces.SQLQueryRequest{
+			Query:        dsl,
+			ResourceType: resourceType,
+			QueryType:    params.QueryType,
+			StreamSize:   params.Limit,
+			QueryTimeout: int(params.Timeout),
+		}
+		res, err := lvs.qs.Execute(ctx, &req)
+		if err != nil {
+			return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, rest.PublicError_InternalServerError).
+				WithErrorDetails(err.Error())
+		}
+		return res.Entries, res.TotalCount, nil
+	} else {
+		return nil, 0, rest.NewHTTPError(ctx, http.StatusNotImplemented, rest.PublicError_NotImplemented).
+			WithErrorDetails("composite view execution is not implemented")
 	}
-
-	return resp.Entries, resp.TotalCount, nil
 }
 
 // 从视图获取索引列表, 返回 catalogName， viewIndicesMap（视图id到索引列表的映射）
@@ -299,10 +318,9 @@ func (lvs *logicViewService) getIndicesByView(view *interfaces.LogicView) (strin
 
 func (lvs *logicViewService) executeCompositeViewBySQL(ctx context.Context, view *interfaces.LogicView,
 	params *interfaces.ResourceDataQueryParams) ([]map[string]any, int64, error) {
-
 	// 理想状态：从生成器直接获取 SQL 构建器
-	generator := lvsql.NewlogicViewSQLGenerator(view)
-	builder, err := generator.NewQueryBuilder(ctx, view)
+	ldGenerator := lvsql.NewlogicDefinitionSQLGenerator(view)
+	builder, err := ldGenerator.NewQueryBuilder(ctx, view)
 	if err != nil {
 		return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, rest.PublicError_InternalServerError).
 			WithErrorDetails(fmt.Sprintf("failed to initialize query builder: %v", err))
@@ -318,9 +336,27 @@ func (lvs *logicViewService) executeCompositeViewBySQL(ctx context.Context, view
 	logger.Infof("executeCompositeViewBySQL Final SQL: [%s]", finalSql)
 
 	if view.IsSingleSource {
+		var resourceType string
+		for _, ref := range view.RefResources {
+			catalog, err := lvs.cs.GetByID(ctx, ref.CatalogID, true)
+			if err != nil {
+				return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_Resource_InternalError).
+					WithErrorDetails(fmt.Sprintf("failed to get catalog: %v", err))
+			}
+			if catalog == nil {
+				return nil, 0, rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_Resource_CatalogNotFound).
+					WithErrorDetails(fmt.Sprintf("catalog %s not found", ref.CatalogID))
+			}
+			resourceType = catalog.ConnectorType
+			break
+		}
+
 		req := interfaces.SQLQueryRequest{
 			Query:        finalSql,
-			ResourceType: "mariadb",
+			ResourceType: resourceType,
+			QueryType:    params.QueryType,
+			StreamSize:   params.Limit,
+			QueryTimeout: int(params.Timeout),
 		}
 		res, err := lvs.qs.Execute(ctx, &req)
 		if err != nil {

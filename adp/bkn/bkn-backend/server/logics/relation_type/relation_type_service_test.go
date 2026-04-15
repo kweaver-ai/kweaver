@@ -1647,7 +1647,7 @@ func Test_relationTypeService_SearchRelationTypes(t *testing.T) {
 					Operation: "and",
 					SubConds: []*cond.CondCfg{
 						{
-							Name:      "name",
+							Field:     "name",
 							Operation: cond.OperationEq,
 							ValueOptCfg: cond.ValueOptCfg{
 								ValueFrom: "const",

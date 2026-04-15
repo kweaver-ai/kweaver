@@ -2214,7 +2214,7 @@ func Test_objectTypeService_SearchObjectTypes(t *testing.T) {
 					Operation: "and",
 					SubConds: []*cond.CondCfg{
 						{
-							Name:      "name",
+							Field:     "name",
 							Operation: cond.OperationEq,
 							ValueOptCfg: cond.ValueOptCfg{
 								ValueFrom: "const",

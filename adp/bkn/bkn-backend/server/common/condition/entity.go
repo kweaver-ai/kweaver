@@ -148,7 +148,7 @@ type Filter struct {
 }
 
 type CondCfg struct {
-	Name        string     `json:"field,omitempty" mapstructure:"field"`
+	Field       string     `json:"field,omitempty" mapstructure:"field"`
 	Operation   string     `json:"operation,omitempty" mapstructure:"operation"`
 	SubConds    []*CondCfg `json:"sub_conditions,omitempty" mapstructure:"sub_conditions"`
 	ValueOptCfg `mapstructure:",squash"`

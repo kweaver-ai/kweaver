@@ -9,6 +9,7 @@ import (
 	bknsdk "github.com/kweaver-ai/bkn-specification/sdk/golang/bkn"
 	"github.com/kweaver-ai/kweaver-go-lib/logger"
 
+	cond "bkn-backend/common/condition"
 	"bkn-backend/interfaces"
 )
 
@@ -561,7 +562,29 @@ func ToBKNConceptGroup(adpCG *interfaces.ConceptGroup) *bknsdk.BknConceptGroup {
 }
 
 // toADPCondCfg 将 BKN CondCfg 转换为 ADP CondCfg
-func toADPActionCondCfg(bknCond *bknsdk.CondCfg) *interfaces.ActionCondCfg {
+func toADPCondCfg(bknCond *bknsdk.CondCfg) *cond.CondCfg {
+	if bknCond == nil {
+		return nil
+	}
+
+	adpCond := &cond.CondCfg{
+		Field:     bknCond.Field,
+		Operation: bknCond.Operation,
+		ValueOptCfg: cond.ValueOptCfg{
+			ValueFrom: bknCond.ValueFrom,
+			Value:     bknCond.Value,
+		},
+	}
+
+	for _, subCond := range bknCond.SubConds {
+		adpCond.SubConds = append(adpCond.SubConds, toADPCondCfg(subCond))
+	}
+
+	return adpCond
+}
+
+// toADPCondCfg 将 BKN CondCfg 转换为 ADP CondCfg
+func toADPActionCondCfg(bknCond *bknsdk.ActionCondCfg) *interfaces.ActionCondCfg {
 	if bknCond == nil {
 		return nil
 	}
@@ -570,7 +593,7 @@ func toADPActionCondCfg(bknCond *bknsdk.CondCfg) *interfaces.ActionCondCfg {
 		ObjectTypeID: bknCond.ObjectTypeID,
 		Field:        bknCond.Field,
 		Operation:    bknCond.Operation,
-		ActionValueOptCfg: interfaces.ActionValueOptCfg{
+		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: bknCond.ValueFrom,
 			Value:     bknCond.Value,
 		},
@@ -584,12 +607,32 @@ func toADPActionCondCfg(bknCond *bknsdk.CondCfg) *interfaces.ActionCondCfg {
 }
 
 // toBKNCondCfg 将 ADP CondCfg 转换为 BKN CondCfg
-func toBKNActionCondCfg(adpCond *interfaces.ActionCondCfg) *bknsdk.CondCfg {
+func toBKNCondCfg(adpCond *cond.CondCfg) *bknsdk.CondCfg {
 	if adpCond == nil {
 		return nil
 	}
 
 	bknCond := &bknsdk.CondCfg{
+		Field:     adpCond.Field,
+		Operation: adpCond.Operation,
+		ValueFrom: adpCond.ValueFrom,
+		Value:     adpCond.Value,
+	}
+
+	for _, subCond := range adpCond.SubConds {
+		bknCond.SubConds = append(bknCond.SubConds, toBKNCondCfg(subCond))
+	}
+
+	return bknCond
+}
+
+// toBKNCondCfg 将 ADP CondCfg 转换为 BKN CondCfg
+func toBKNActionCondCfg(adpCond *interfaces.ActionCondCfg) *bknsdk.ActionCondCfg {
+	if adpCond == nil {
+		return nil
+	}
+
+	bknCond := &bknsdk.ActionCondCfg{
 		ObjectTypeID: adpCond.ObjectTypeID,
 		Field:        adpCond.Field,
 		Operation:    adpCond.Operation,

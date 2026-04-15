@@ -340,7 +340,7 @@ func Test_ToADPActionType(t *testing.T) {
 				},
 				BoundObject:  "ot1",
 				AffectObject: &bknsdk.ActionAffect{ObjectType: "ot2", Description: "aff"},
-				TriggerCondition: &bknsdk.CondCfg{
+				TriggerCondition: &bknsdk.ActionCondCfg{
 					ObjectTypeID: "ot1", Field: "status", Operation: "eq", Value: "active",
 				},
 				ActionSource: &bknsdk.ActionSource{Type: "tool", BoxID: "box1", ToolID: "tool1"},
@@ -478,13 +478,13 @@ func Test_condCfgConverters(t *testing.T) {
 		})
 
 		Convey("Single condition, no SubConds\n", func() {
-			bknCond := &bknsdk.CondCfg{
+			bknCond := &bknsdk.ActionCondCfg{
 				ObjectTypeID: "ot1", Field: "f1", Operation: "eq", Value: "v1", ValueFrom: "const",
 			}
 			adp := toADPActionCondCfg(bknCond)
 			So(adp.ObjectTypeID, ShouldEqual, "ot1")
 			So(adp.Field, ShouldEqual, "f1")
-			So(adp.ActionValueOptCfg.Value, ShouldEqual, "v1")
+			So(adp.ValueOptCfg.Value, ShouldEqual, "v1")
 			So(adp.SubConds, ShouldBeEmpty)
 
 			// round-trip
@@ -495,11 +495,11 @@ func Test_condCfgConverters(t *testing.T) {
 		})
 
 		Convey("Nested SubConds (recursive)\n", func() {
-			bknCond := &bknsdk.CondCfg{
+			bknCond := &bknsdk.ActionCondCfg{
 				ObjectTypeID: "root",
-				SubConds: []*bknsdk.CondCfg{
+				SubConds: []*bknsdk.ActionCondCfg{
 					{ObjectTypeID: "child1"},
-					{ObjectTypeID: "child2", SubConds: []*bknsdk.CondCfg{{ObjectTypeID: "grandchild"}}},
+					{ObjectTypeID: "child2", SubConds: []*bknsdk.ActionCondCfg{{ObjectTypeID: "grandchild"}}},
 				},
 			}
 			adp := toADPActionCondCfg(bknCond)

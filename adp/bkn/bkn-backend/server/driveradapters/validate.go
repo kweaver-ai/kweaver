@@ -190,7 +190,7 @@ func validateConceptsQuery(ctx context.Context, query *interfaces.ConceptsQuery)
 	query.ActualCondition = actualCond
 
 	knFilter := &cond.CondCfg{
-		Name:      "kn_id",
+		Field:     "kn_id",
 		Operation: cond.OperationEq,
 		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: cond.ValueFrom_Const,
@@ -200,7 +200,7 @@ func validateConceptsQuery(ctx context.Context, query *interfaces.ConceptsQuery)
 
 	// 3. module type的过滤
 	typeFilter := &cond.CondCfg{
-		Name:      "module_type",
+		Field:     "module_type",
 		Operation: cond.OperationEq,
 		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: cond.ValueFrom_Const,
@@ -210,7 +210,7 @@ func validateConceptsQuery(ctx context.Context, query *interfaces.ConceptsQuery)
 
 	// 4. branch的过滤
 	branchFilter := &cond.CondCfg{
-		Name:      "branch",
+		Field:     "branch",
 		Operation: cond.OperationEq,
 		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: cond.ValueFrom_Const,
@@ -263,7 +263,7 @@ func validateCond(ctx context.Context, cfg *cond.CondCfg) error {
 		}
 	default:
 		// 过滤字段名称不能为空
-		if cfg.Operation != cond.OperationMultiMatch && cfg.Name == "" {
+		if cfg.Operation != cond.OperationMultiMatch && cfg.Field == "" {
 			return rest.NewHTTPError(ctx, http.StatusBadRequest, berrors.BknBackend_NullParameter_ConditionName)
 		}
 

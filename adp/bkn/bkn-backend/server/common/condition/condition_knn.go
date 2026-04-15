@@ -22,7 +22,7 @@ func NewKnnCond(ctx context.Context, cfg *CondCfg, fieldScope uint8, fieldsMap m
 		return nil, fmt.Errorf("condition [knn] does not support value_from type '%s'", cfg.ValueFrom)
 	}
 
-	name := getFilterFieldName(cfg.Name, fieldsMap, true)
+	name := getFilterFieldName(cfg.Field, fieldsMap, true)
 	var field string
 	// 如果指定*查询，则把 * 换成 _vector
 	if name == AllField {
@@ -155,7 +155,7 @@ func convertKnnCondToDatasetFilterCondition(ctx context.Context, cfg *CondCfg,
 		return nil, fmt.Errorf("condition [knn]: vectorizer [%s] returned empty result", v)
 	}
 
-	name := getFilterFieldName(cfg.Name, fieldsMap, true)
+	name := getFilterFieldName(cfg.Field, fieldsMap, true)
 	var field string
 	// 如果指定*查询，则把 * 换成 _vector
 	if name == AllField {

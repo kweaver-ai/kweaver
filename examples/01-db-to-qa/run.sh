@@ -8,6 +8,25 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# ── Debug helpers (set DEBUG=1 or DEBUG=true in .env) ───────────────────────
+# Never logs DB_PASS.
+DEBUG="${DEBUG:-0}"
+debug() {
+    if [ "$DEBUG" = "1" ] || [ "$DEBUG" = "true" ]; then
+        echo "[debug] $*" >&2
+    fi
+}
+
+debug_dump_json() {
+    local label="$1"
+    local payload="$2"
+    if [ "$DEBUG" = "1" ] || [ "$DEBUG" = "true" ]; then
+        echo "[debug] --- ${label} (raw) ---" >&2
+        echo "$payload" >&2
+        echo "[debug] --- end ${label} ---" >&2
+    fi
+}
+
 # ── Load config ──────────────────────────────────────────────────────────────
 if [ -f "$SCRIPT_DIR/.env" ]; then
     # shellcheck disable=SC1091
@@ -15,10 +34,49 @@ if [ -f "$SCRIPT_DIR/.env" ]; then
 fi
 
 DB_HOST="${DB_HOST:?Set DB_HOST in .env}"
+# Optional: host for Step 0 only (mysql on your PC). Use public IP / VPN-reachable address if your laptop
+# cannot reach DB_HOST (e.g. DB_HOST is a cloud internal IP like 172.x for kweaver ds connect).
+DB_HOST_SEED="${DB_HOST_SEED:-$DB_HOST}"
 DB_PORT="${DB_PORT:-3306}"
 DB_NAME="${DB_NAME:?Set DB_NAME in .env}"
 DB_USER="${DB_USER:?Set DB_USER in .env}"
 DB_PASS="${DB_PASS:?Set DB_PASS in .env}"
+
+# MySQL client binary (must be installed locally; only `kweaver` talks to the platform)
+MYSQL_BIN="${MYSQL_BIN:-mysql}"
+if ! command -v "$MYSQL_BIN" >/dev/null 2>&1; then
+    # Default name not on PATH: common Homebrew layouts (Intel / Apple Silicon) without requiring PATH
+    if [ "$MYSQL_BIN" = "mysql" ]; then
+        _brew_mysql="$(brew --prefix mysql-client 2>/dev/null)/bin/mysql"
+        for _p in "$_brew_mysql" /opt/homebrew/opt/mysql-client/bin/mysql /usr/local/opt/mysql-client/bin/mysql; do
+            if [ -x "$_p" ]; then
+                MYSQL_BIN="$_p"
+                break
+            fi
+        done
+    fi
+fi
+if ! command -v "$MYSQL_BIN" >/dev/null 2>&1; then
+    echo "Error: MySQL client not found (${MYSQL_BIN}). Step 0 runs mysql on your machine to import seed.sql."
+    echo "  macOS:  brew install mysql-client"
+    echo "          export PATH=\"\$(brew --prefix mysql-client)/bin:\$PATH\""
+    echo "  Ubuntu: sudo apt install -y mysql-client"
+    echo "  Or set MYSQL_BIN in .env to the full path of the mysql executable."
+    exit 1
+fi
+
+debug "script: $SCRIPT_DIR/run.sh"
+debug "host: $(hostname 2>/dev/null || true) date: $(date -Iseconds 2>/dev/null || date)"
+debug "MYSQL_BIN=$MYSQL_BIN"
+debug "kweaver=$(command -v kweaver 2>/dev/null || echo 'not found')"
+if command -v kweaver >/dev/null 2>&1; then
+    debug "kweaver version: $(kweaver --version 2>&1 || true)"
+fi
+if [ "$DEBUG" = "1" ] || [ "$DEBUG" = "true" ]; then
+    echo "[debug] DB_HOST=$DB_HOST (kweaver ds connect / platform) DB_HOST_SEED=$DB_HOST_SEED (local mysql Step 0) DB_PORT=$DB_PORT DB_NAME=$DB_NAME DB_USER=$DB_USER DB_PASS=***" >&2
+    echo "[debug] kweaver config (first lines):" >&2
+    kweaver config show 2>&1 | head -25 >&2 || true
+fi
 
 TIMESTAMP=$(date +%s)
 DS_NAME="example_ds_${TIMESTAMP}"
@@ -39,7 +97,14 @@ trap cleanup EXIT
 
 # ── Step 0: Seed the database ───────────────────────────────────────────────
 echo "=== Step 0: Seed sample data into MySQL ==="
-mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" < "$SCRIPT_DIR/seed.sql"
+if [ "$DB_HOST_SEED" != "$DB_HOST" ]; then
+    echo "  (from this PC: $DB_HOST_SEED:$DB_PORT — platform will use $DB_HOST in Step 1)"
+fi
+debug "Step 0: mysql client imports seed.sql into default database $DB_NAME"
+debug "Step 0: note — this runs on YOUR machine; platform pods use DB_HOST from Step 1."
+debug "Step 0: mysql args (password hidden): -h $DB_HOST_SEED -P $DB_PORT -u $DB_USER -p*** $DB_NAME < seed.sql"
+# Pass DB_NAME as the default database (seed.sql has no USE — works with schema-only users)
+"$MYSQL_BIN" -h "$DB_HOST_SEED" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$SCRIPT_DIR/seed.sql"
 echo "  Imported seed.sql → ${DB_NAME} (erp_material_bom, erp_purchase_order)"
 
 # ── Step 1: Connect datasource ──────────────────────────────────────────────
@@ -47,19 +112,33 @@ echo ""
 echo "=== Step 1: Connect MySQL datasource ==="
 echo "  Host: $DB_HOST:$DB_PORT  Database: $DB_NAME"
 
+debug "Step 1: kweaver ds connect mysql $DB_HOST $DB_PORT $DB_NAME --name $DS_NAME"
 DS_JSON=$(kweaver ds connect mysql "$DB_HOST" "$DB_PORT" "$DB_NAME" \
     --account "$DB_USER" --password "$DB_PASS" --name "$DS_NAME")
+debug_dump_json "ds connect response" "$DS_JSON"
 
-DS_ID=$(echo "$DS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('datasource_id',''))")
+DS_ID=$(echo "$DS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('datasource_id',''))" 2>/dev/null || true)
+if [ -z "$DS_ID" ]; then
+    echo "Error: could not parse datasource_id from kweaver ds connect output." >&2
+    debug_dump_json "ds connect (parse failed)" "$DS_JSON"
+    exit 1
+fi
 echo "  Datasource created: $DS_ID"
 
 # ── Step 2: Create Knowledge Network ────────────────────────────────────────
 echo ""
 echo "=== Step 2: Create Knowledge Network from datasource ==="
 
+debug "Step 2: kweaver bkn create-from-ds $DS_ID --name $KN_NAME --build"
 KN_JSON=$(kweaver bkn create-from-ds "$DS_ID" --name "$KN_NAME" --build)
+debug_dump_json "create-from-ds response" "$KN_JSON"
 
-KN_ID=$(echo "$KN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('kn_id',''))")
+KN_ID=$(echo "$KN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('kn_id',''))" 2>/dev/null || true)
+if [ -z "$KN_ID" ]; then
+    echo "Error: could not parse kn_id from kweaver bkn create-from-ds output." >&2
+    debug_dump_json "create-from-ds (parse failed)" "$KN_JSON"
+    exit 1
+fi
 echo "  Knowledge Network created: $KN_ID"
 
 # Show auto-discovered object types
@@ -165,12 +244,17 @@ ${SCHEMA_RAW}
     echo "  Question: $QUESTION"
     echo ""
 
-    RESPONSE=$(kweaver agent chat "$AGENT_ID" \
-        -m "$PROMPT" \
-        --no-stream 2>/dev/null)
-
+    debug "Step 5: kweaver agent chat $AGENT_ID --stream"
     echo "  Agent response:"
-    echo "$RESPONSE" | fold -s -w 80 | sed 's/^/    /'
+    if [ "$DEBUG" = "1" ] || [ "$DEBUG" = "true" ]; then
+        kweaver agent chat "$AGENT_ID" \
+            -m "$PROMPT" \
+            --stream --verbose 2>&1 | sed 's/^/    /'
+    else
+        kweaver agent chat "$AGENT_ID" \
+            -m "$PROMPT" \
+            --stream 2>/dev/null | sed 's/^/    /'
+    fi
 fi
 
 echo ""

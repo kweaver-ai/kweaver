@@ -1,0 +1,25 @@
+{
+  "agents": [
+    {
+      "id": "",
+      "name": "分析助手",
+      "key": "minimal-analysis-assistant-context-loader",
+      "profile": "轻量分析 / 检索助手：无 Dolphin、无预绑工具；导入后在 Studio 绑定知识网络并挂载 Context Loader 工具箱即可。",
+      "product_key": "dip",
+      "avatar_type": 1,
+      "avatar": "5",
+      "status": "unpublished",
+      "is_built_in": 0,
+      "is_system_agent": 0,
+      "created_at": 0,
+      "updated_at": 0,
+      "created_by": "",
+      "updated_by": "",
+      "deleted_at": 0,
+      "deleted_by": "",
+      "config": "{\"input\":{\"fields\":[{\"name\":\"query\",\"type\":\"string\",\"desc\":\"用户问题\"},{\"name\":\"history\",\"type\":\"object\",\"desc\":\"\"},{\"name\":\"header\",\"type\":\"object\",\"desc\":\"\"},{\"name\":\"self_config\",\"type\":\"object\",\"desc\":\"\"},{\"name\":\"tool\",\"type\":\"object\",\"desc\":\"\"}],\"rewrite\":{\"enable\":false,\"llm_config\":{\"id\":\"\",\"name\":\"REPLACE_WITH_YOUR_LLM_NAME\",\"model_type\":\"llm\",\"temperature\":0.5,\"top_p\":1,\"top_k\":1,\"frequency_penalty\":0,\"presence_penalty\":0,\"max_tokens\":4096}},\"augment\":{\"enable\":false,\"data_source\":{\"kg\":[]}}},\"system_prompt\":\"你是数据分析与知识检索助手。\\n在 Studio 中为该智能体绑定业务知识网络，并在技能中挂载 **Context Loader 工具箱**（语义检索、对象实例查询、Action 调用等）后，优先使用工具返回的事实作答；无工具结果时不要编造业务数据。\\n回答力求简洁，必要时用列表或小标题组织结论。\\n\",\"dolphin\":\"\",\"is_dolphin_mode\":0,\"data_source\":{\"kg\":[],\"doc\":[],\"metric\":[],\"kn_entry\":[],\"knowledge_network\":[],\"advanced_config\":{\"kg\":null,\"doc\":null}},\"skills\":{\"tools\":[],\"agents\":[],\"mcps\":[]},\"llms\":[{\"is_default\":true,\"llm_config\":{\"id\":\"\",\"name\":\"REPLACE_WITH_YOUR_LLM_NAME\",\"model_type\":\"llm\",\"temperature\":0.5,\"top_p\":1,\"top_k\":1,\"frequency_penalty\":0,\"presence_penalty\":0,\"max_tokens\":4096}}],\"is_data_flow_set_enabled\":0,\"opening_remark_config\":{\"type\":\"fixed\",\"fixed_opening_remark\":\"你好，我是分析助手。绑定知识网络并挂载 Context Loader 工具箱后即可开始提问。\",\"dynamic_opening_remark_prompt\":\"\"},\"preset_questions\":[{\"question\":\"当前知识网络里有哪些对象类？\"}],\"output\":{\"default_format\":\"markdown\"},\"memory\":{\"is_enabled\":false},\"related_question\":{\"is_enabled\":false},\"metadata\":{\"config_tpl_version\":\"v1\",\"config_last_set_timestamp\":0}}",
+      "created_type": "import",
+      "create_from": "dip"
+    }
+  ]
+}

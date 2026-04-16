@@ -508,6 +508,8 @@ install_core() {
 
     log_info "KWeaver Core services installation completed."
 
+    maybe_import_context_loader_toolset_post_core "${namespace}" || true
+
     local _host _port _scheme
     _host="$(_read_access_address_field "host" 2>/dev/null || true)"
     _port="$(_read_access_address_field "port" 2>/dev/null || true)"

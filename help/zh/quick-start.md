@@ -33,6 +33,14 @@ kweaver config show
 
 > 其它登录方式（无浏览器、CI 自动化、Playwright 等）和业务域切换见 [认证参考](installation/auth-reference.md)。
 
+Core 安装完成后，`deploy.sh` 会尝试导入 Context Loader 工具集 ADP（可用环境变量关闭或覆盖路径，见仓库 `deploy/deploy.sh` 说明）。若要确认是否已在平台注册工具箱，可执行：
+
+```bash
+kweaver call '/api/agent-operator-integration/v1/tool-box/list?name=contextloader&page=1&page_size=50' -bd bd_public --pretty
+```
+
+（与 `kweaver context-loader tools` 不同：前者为 Operator 工具箱列表，后者为 MCP 工具列表。）
+
 ### 配置模型（按需）
 
 | 能力 | 需要的模型 | 不配会怎样 |
@@ -198,8 +206,6 @@ kweaver agent chat <agent_id>
 # > 哪些供应商交货最慢？
 # > 给出改进建议
 ```
-
-> **提示**：仅绑定知识网络不代表 Agent 能自动查询数据。Agent 还需要配置对应的**工具/技能**（如 BKN 查询技能）才能在对话时调用知识网络。如果 Agent 回复"没有访问数据的权限"，说明缺少工具绑定。工具与技能管理见 [execution-factory.md](execution-factory.md)，Agent 完整配置见 [decision-agent.md](decision-agent.md)。
 
 ---
 

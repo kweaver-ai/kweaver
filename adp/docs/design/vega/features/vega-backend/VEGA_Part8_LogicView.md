@@ -403,111 +403,76 @@ type Property struct {
 ### 7.3 sql
 ```json
 {
+    "id": "test_sql",
+    "catalog_id": "logicview",
+    "name": "复合视图sql",
+    "tags": [],
+    "description": "自定义sql",
+    "category": "logicview",
     "logic_definition": [
         {
-            "id": "node_UgVju",
-            "name": "erp_real_time_inventory",
-            "type": "resource",
-            "inputs": [],
-            "config": {
-                "resource_id": "2017573348090867713",
-                "filters": {},
-                "distinct": false
-            },
+            "id": "node_output",
+            "name": "输出节点",
+            "type": "output",
+            "inputs": [
+                "node4"
+            ],
+            "config": {},
             "output_fields": [
-                "aux_attr",
-                "available_base_qty",
-                "available_inventory_qty",
-                "base_qty",
-                "base_uom",
-                "batch_master",
-                "batch_no",
-                "bin_location",
-                "conv_ratio",
-                "conv_ratio_available",
-                "conv_ratio_reserved",
-                "custodian",
-                "custodian_type",
-                "expiry_date",
-                "inbound_date",
-                "inventory_org",
-                "inventory_qty",
-                "inventory_uom",
-                "manufacture_date",
-                "material_code",
-                "material_name",
-                "owner",
-                "owner_type",
-                "purchase_qty",
-                "purchase_qty_available",
-                "purchase_qty_reserved",
-                "purchase_uom",
-                "reserved_base_qty",
-                "reserved_inventory_qty",
-                "seq_no",
-                "spec_model",
-                "stock_status",
-                "stock_type",
-                "total_col",
-                "warehouse"
+                "*"
             ]
         },
         {
-            "id": "node_CRfXL",
-            "name": "erp_material",
-            "type": "resource",
-            "inputs": [],
-            "config": {
-                "resource_id": "2017573348468355073",
-                "filters": {
-                    "value": "库存商品-产成品",
-                    "operation": "!=",
-                    "value_from": "const",
-                    "field": "group_name"
-                },
-                "distinct": false
-            },
-            "output_fields": [
-                "baseunit_name",
-                "baseunit_number",
-                "group_name",
-                "group_type",
-                "huid_productline_name",
-                "material_code",
-                "material_name",
-                "material_standard_price",
-                "materialattr",
-                "modelnum",
-                "product_fixedleadtime",
-                "product_status",
-                "purchase_fixedleadtime",
-                "purchase_huid_batchqty",
-                "purchase_huid_minlotsize"
-            ]
-        },
-        {
-            "id": "node_DQTew",
-            "name": "SQL",
+            "id": "node4",
+            "name": "全渠道的销售总额、订单量和客单价",
             "type": "sql",
             "inputs": [
-                "node_UgVju",
-                "node_CRfXL"
+                "node1",
+                "node2",
+                "node3"
             ],
             "config": {
-                "sql": "SELECT *\nFROM {{.node_UgVju}} eri\nWHERE NOT EXISTS (\n    SELECT 1\n    FROM {{.node_CRfXL}} emf\n    WHERE emf.material_code = eri.material_code\n)\n"
+                "sql": "SELECT \n channel AS '渠道',\n    COUNT(order_id) AS '总订单量',\n    SUM(revenue) AS '总销售额',\n    ROUND(SUM(revenue) / COUNT(order_id), 2) AS '平均客单价'\nFROM (\n    SELECT order_no AS order_id, amount AS revenue, '商城' AS channel FROM {{.node1}} AS u1 \n    UNION ALL\n    SELECT pdd_id AS order_id, price AS revenue, '拼多多' AS channel FROM {{.node2}} AS u2\n    UNION ALL\n    SELECT dy_code AS order_id, total_fee AS revenue, '抖音' AS channel FROM {{.node3}} AS u3\n) AS all_sales \nGROUP BY channel WITH ROLLUP;"
+            },
+            "output_fields": [
+               "*"
+            ]
+        },
+        {
+            "id": "node3",
+            "name": "抖音表",
+            "type": "resource",
+            "inputs": [],
+            "config": {
+                "resource_id": "d7g5433kqlq74cujv3qg",
+                "distinct": false,
+                "filters": {}
+            }
+        },
+        {
+            "id": "node2",
+            "name": "拼多多表",
+            "type": "resource",
+            "inputs": [],
+            "config": {
+                "resource_id": "d7g5433kqlq74cujv3r0",
+                "distinct": false,
+                "filters": {}
             },
             "output_fields": [
                 "*"
             ]
         },
         {
-            "id": "node-output",
-            "name": "输出视图",
-            "type": "output",
-            "inputs": [
-                "node_DQTew"
-            ],
-            "config": {},
+            "id": "node1",
+            "name": "自营商城表",
+            "type": "resource",
+            "inputs": [],
+            "config": {
+                "distinct": false,
+                "filters": {},
+                "resource_id": "d7g5433kqlq74cujv3rg"
+            },
             "output_fields": [
                 "*"
             ]

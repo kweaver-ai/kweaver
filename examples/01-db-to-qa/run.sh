@@ -37,7 +37,13 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# ── Step 0: Seed the database ───────────────────────────────────────────────
+echo "=== Step 0: Seed sample data into MySQL ==="
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" < "$SCRIPT_DIR/seed.sql"
+echo "  Imported seed.sql → ${DB_NAME} (erp_material_bom, erp_purchase_order)"
+
 # ── Step 1: Connect datasource ──────────────────────────────────────────────
+echo ""
 echo "=== Step 1: Connect MySQL datasource ==="
 echo "  Host: $DB_HOST:$DB_PORT  Database: $DB_NAME"
 
@@ -51,7 +57,7 @@ echo "  Datasource created: $DS_ID"
 echo ""
 echo "=== Step 2: Create Knowledge Network from datasource ==="
 
-KN_JSON=$(kweaver bkn create-from-ds "$DS_ID" --name "$KN_NAME" --no-build)
+KN_JSON=$(kweaver bkn create-from-ds "$DS_ID" --name "$KN_NAME" --build)
 
 KN_ID=$(echo "$KN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('kn_id',''))")
 echo "  Knowledge Network created: $KN_ID"

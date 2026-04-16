@@ -14,7 +14,7 @@ npm install -g @kweaver-ai/kweaver-sdk
 kweaver auth login https://<platform-url>
 
 # 3. Ensure a MySQL database is reachable from the platform
-#    This example uses a supply-chain demo database.
+#    The script imports seed.sql automatically (a fictional smart-home company).
 ```
 
 ## What This Example Does
@@ -35,8 +35,9 @@ MySQL Database
                     └──────────────┘     └─────────────────┘
 ```
 
+0. **Seed** sample data into MySQL (`seed.sql` — fictional smart-home supply chain)
 1. **Connect** a MySQL datasource to the platform
-2. **Create** a Knowledge Network from the datasource schema
+2. **Create & Build** a Knowledge Network from the datasource
 3. **Explore** the auto-discovered object types and properties
 4. **Search** the knowledge graph with natural language
 5. **Chat** with an Agent to answer questions about the data
@@ -62,7 +63,7 @@ kweaver ds connect mysql $DB_HOST $DB_PORT $DB_NAME \
   --account $DB_USER --password $DB_PASS --name "my-datasource"
 
 # Create a Knowledge Network from it
-kweaver bkn create-from-ds <datasource-id> --name "my-kn" --no-build
+kweaver bkn create-from-ds <datasource-id> --name "my-kn" --build
 
 # Explore the schema
 kweaver bkn object-type list <kn-id>

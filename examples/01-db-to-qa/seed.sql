@@ -1,8 +1,8 @@
 -- supply_chain sample data for KWeaver 01-db-to-qa example
 -- Fictional smart-home company — all names are fabricated
-
-CREATE DATABASE IF NOT EXISTS supply_chain DEFAULT CHARACTER SET utf8mb4;
-USE supply_chain;
+--
+-- The database must already exist. run.sh connects with: mysql ... "$DB_NAME" < seed.sql
+-- (Do not put CREATE DATABASE / USE here — the MySQL user may only have schema rights on that DB.)
 
 DROP TABLE IF EXISTS `erp_material_bom`;
 CREATE TABLE `erp_material_bom` (

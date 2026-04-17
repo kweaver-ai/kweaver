@@ -30,7 +30,7 @@ func (s *knSearchService) SearchSchema(ctx context.Context, req *interfaces.Sear
 		return nil, err
 	}
 
-	return FilterSearchSchemaResp(resp, scope), nil
+	return FilterSearchSchemaResp(resp, scope, *req.MaxConcepts), nil
 }
 
 // SearchSchemaScope holds the resolved boolean flags for output filtering.
@@ -97,7 +97,22 @@ func NormalizeSearchSchemaReq(req *interfaces.SearchSchemaReq) (*interfaces.KnSe
 }
 
 // FilterSearchSchemaResp builds a SearchSchemaResp from KnSearchResp, applying scope filtering.
-func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, scope SearchSchemaScope) *interfaces.SearchSchemaResp {
+func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, scope SearchSchemaScope, maxConcepts int) *interfaces.SearchSchemaResp {
+	objectTypes := toAnySlice(resp.ObjectTypes)
+	relationTypes := toAnySlice(resp.RelationTypes)
+	actionTypes := toAnySlice(resp.ActionTypes)
+
+	if scope.IncludeRelationTypes {
+		relationTypes = limitAnySlice(relationTypes, maxConcepts)
+	}
+	if scope.IncludeObjectTypes {
+		if scope.IncludeRelationTypes && len(relationTypes) > 0 {
+			objectTypes = filterObjectTypesByRelations(objectTypes, relationTypes)
+		} else {
+			objectTypes = limitAnySlice(objectTypes, maxConcepts)
+		}
+	}
+
 	result := &interfaces.SearchSchemaResp{
 		ObjectTypes:   []any{},
 		RelationTypes: []any{},
@@ -107,13 +122,13 @@ func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, scope SearchSchemaSco
 		return result
 	}
 	if scope.IncludeObjectTypes {
-		result.ObjectTypes = toAnySlice(resp.ObjectTypes)
+		result.ObjectTypes = objectTypes
 	}
 	if scope.IncludeRelationTypes {
-		result.RelationTypes = toAnySlice(resp.RelationTypes)
+		result.RelationTypes = relationTypes
 	}
 	if scope.IncludeActionTypes {
-		result.ActionTypes = toAnySlice(resp.ActionTypes)
+		result.ActionTypes = actionTypes
 	}
 	return result
 }
@@ -133,3 +148,48 @@ func toAnySlice(v any) []any {
 	return slice
 }
 
+func limitAnySlice(items []any, limit int) []any {
+	if limit <= 0 || len(items) <= limit {
+		return items
+	}
+	return items[:limit]
+}
+
+func filterObjectTypesByRelations(objectTypes, relationTypes []any) []any {
+	if len(objectTypes) == 0 || len(relationTypes) == 0 {
+		return objectTypes
+	}
+
+	referenced := make(map[string]struct{}, len(relationTypes)*2)
+	for _, rel := range relationTypes {
+		relMap, ok := rel.(map[string]any)
+		if !ok {
+			continue
+		}
+		if sourceID, ok := relMap["source_object_type_id"].(string); ok && sourceID != "" {
+			referenced[sourceID] = struct{}{}
+		}
+		if targetID, ok := relMap["target_object_type_id"].(string); ok && targetID != "" {
+			referenced[targetID] = struct{}{}
+		}
+	}
+	if len(referenced) == 0 {
+		return objectTypes
+	}
+
+	filtered := make([]any, 0, len(objectTypes))
+	for _, obj := range objectTypes {
+		objMap, ok := obj.(map[string]any)
+		if !ok {
+			continue
+		}
+		conceptID, ok := objMap["concept_id"].(string)
+		if !ok {
+			continue
+		}
+		if _, keep := referenced[conceptID]; keep {
+			filtered = append(filtered, obj)
+		}
+	}
+	return filtered
+}

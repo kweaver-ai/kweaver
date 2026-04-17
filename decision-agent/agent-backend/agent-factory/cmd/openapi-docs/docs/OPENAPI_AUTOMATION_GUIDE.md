@@ -112,7 +112,7 @@ make validate-api-docs
 
 ### 什么时候需要看运行时副本
 
-当 `/swagger/doc.json`、`/swagger/doc.yaml`、`/swagger/index.html` 表现异常时，优先检查：
+当 `/scalar/doc.json`、`/scalar/doc.yaml`、`/scalar/index.html` 表现异常时，优先检查：
 
 1. `make gen-api-docs` 是否已执行
 2. `../../src/infra/server/apidocs/assets/*` 是否与 `../../docs/api/*` 一致

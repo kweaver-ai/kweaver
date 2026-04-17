@@ -25,9 +25,9 @@ OpenAPI Artifacts:
 - `./api/agent-factory.yaml`
 
 Runtime entry points after starting local service:
-- `http://{ip}/swagger/index.html`
-- `http://{ip}/swagger/doc.json`
-- `http://{ip}/swagger/doc.yaml`
+- `http://{ip}/scalar/index.html`
+- `http://{ip}/scalar/doc.json`
+- `http://{ip}/scalar/doc.yaml`
 
 Key Source Code:
 - `../src/driveradapter/api/httphandler/agenthandler/api_chat.go`
@@ -415,10 +415,10 @@ Static artifacts in repository:
 - `./api/agent-factory.json`
 - `./api/agent-factory.yaml`
 
-Swagger after starting local service:
-- `http://localhost:13020/swagger/index.html`
-- `http://localhost:13020/swagger/doc.json`
-- `http://localhost:13020/swagger/doc.yaml`
+Scalar after starting local service:
+- `http://localhost:13020/scalar/index.html`
+- `http://localhost:13020/scalar/doc.json`
+- `http://localhost:13020/scalar/doc.yaml`
 
 Single Agent dynamic documentation entry (only for Agents published as API):
 

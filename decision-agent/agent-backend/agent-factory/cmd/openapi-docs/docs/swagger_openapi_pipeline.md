@@ -24,7 +24,7 @@ flowchart TD
     H --> I["docs/api/*"]
     H --> J["src/infra/server/apidocs/assets/*"]
     I --> K["用户直接查看"]
-    J --> L["go:embed -> /swagger/*"]
+    J --> L["go:embed -> /scalar/* /redoc/* /apidocs-ui/*"]
 ```
 
 ## 每一步做什么
@@ -84,11 +84,11 @@ go run ./cmd/openapi-docs generate
 
 `router_swagger.go` 暴露：
 
-- `/swagger/index.html`
+- `/scalar/index.html`
 - `/redoc/index.html`
-- `/swagger/doc.json`
-- `/swagger/doc.yaml`
-- `/swagger/favicon.png`
+- `/scalar/doc.json`
+- `/scalar/doc.yaml`
+- `/scalar/favicon.png`
 - `/apidocs-ui/*`
 
 ## 为什么要保留两套最终文件

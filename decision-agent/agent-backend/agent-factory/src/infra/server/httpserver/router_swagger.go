@@ -7,17 +7,18 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kweaver-ai/kweaver-core/decision-agent/agent-backend/agent-factory/internal/openapidoc"
 	"github.com/kweaver-ai/kweaver-core/decision-agent/agent-backend/agent-factory/src/infra/common/global"
 	apidocs "github.com/kweaver-ai/kweaver-core/decision-agent/agent-backend/agent-factory/src/infra/server/apidocs"
 	"github.com/tidwall/sjson"
 )
 
 const (
-	scalarDocsPath    = "/swagger/index.html"
+	scalarDocsPath    = "/scalar/index.html"
 	redocDocsPath     = "/redoc/index.html"
-	scalarDocJSONPath = "/swagger/doc.json"
-	scalarDocYAMLPath = "/swagger/doc.yaml"
-	scalarFaviconPath = "/swagger/favicon.png"
+	scalarDocJSONPath = "/scalar/doc.json"
+	scalarDocYAMLPath = "/scalar/doc.yaml"
+	scalarFaviconPath = "/scalar/favicon.png"
 	apidocsUIPath     = "/apidocs-ui"
 	scalarJSAssetPath = apidocsUIPath + "/scalar-api-reference.js"
 	redocJSAssetPath  = apidocsUIPath + "/redoc.standalone.js"
@@ -31,12 +32,6 @@ func (s *httpServer) registerSwaggerRoutes(engine *gin.Engine) {
 
 	engine.StaticFS(apidocsUIPath, apidocs.UIAssetsFileSystem())
 
-	engine.GET("/swagger", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, scalarDocsPath)
-	})
-	engine.GET("/swagger/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, scalarDocsPath)
-	})
 	engine.GET("/scalar", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, scalarDocsPath)
 	})
@@ -73,7 +68,7 @@ func renderScalarPage(specURL string) string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Decision Agent API Reference</title>
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="%s" />
   <style>
     %s
   </style>
@@ -81,10 +76,16 @@ func renderScalarPage(specURL string) string {
 <body>
   %s
   <noscript>Scalar requires JavaScript to render the API reference.</noscript>
+  <script>
+    %s
+  </script>
+  <script>
+    %s
+  </script>
   <script id="api-reference" data-url="%s"></script>
   <script src="%s"></script>
 </body>
-</html>`, docsPageStyle(), runtimeDocsNavHTML("scalar"), specURL, scalarJSAssetPath)
+</html>`, scalarFaviconPath, openapidoc.DocsPageStyle(), runtimeDocsNavHTML("scalar"), openapidoc.DocsBootstrapScript(), openapidoc.ScalarPageEnhancementScript(), specURL, scalarJSAssetPath)
 }
 
 func renderRedocPage(specURL string) string {
@@ -102,19 +103,16 @@ func renderRedocPage(specURL string) string {
 <body>
   %s
   <noscript>Redoc requires JavaScript to render the API reference.</noscript>
+  <script>
+    %s
+  </script>
   <div id="redoc-container"></div>
   <script src="%s"></script>
   <script>
-    (() => {
-      const container = document.getElementById("redoc-container");
-      Redoc.init("%s", {
-        hideDownloadButton: false,
-        scrollYOffset: 64,
-      }, container);
-    })();
+    %s
   </script>
 </body>
-</html>`, scalarFaviconPath, docsPageStyle(), runtimeDocsNavHTML("redoc"), redocJSAssetPath, specURL)
+</html>`, scalarFaviconPath, openapidoc.DocsPageStyle(), runtimeDocsNavHTML("redoc"), openapidoc.DocsBootstrapScript(), redocJSAssetPath, openapidoc.RedocInitScript(fmt.Sprintf("%q", specURL)))
 }
 
 func renderOpenAPIDocJSON(c *gin.Context) []byte {
@@ -228,91 +226,5 @@ func firstHeaderValue(value string) string {
 }
 
 func runtimeDocsNavHTML(active string) string {
-	scalarAttrs := `href="` + scalarDocsPath + `"`
-	redocAttrs := `href="` + redocDocsPath + `"`
-
-	if active == "scalar" {
-		scalarAttrs += ` aria-current="page"`
-	}
-	if active == "redoc" {
-		redocAttrs += ` aria-current="page"`
-	}
-
-	return `<header class="docs-nav">
-  <div class="docs-nav__title">Decision Agent API Reference</div>
-  <nav class="docs-nav__links">
-    <a ` + scalarAttrs + `>Scalar</a>
-    <a ` + redocAttrs + `>Redoc</a>
-  </nav>
-</header>`
-}
-
-func docsPageStyle() string {
-	return `:root {
-      color-scheme: light;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f5f7fb;
-    }
-
-    .docs-nav {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 16px 24px;
-      background: rgba(15, 23, 42, 0.94);
-      color: #f8fafc;
-      backdrop-filter: blur(12px);
-    }
-
-    .docs-nav__title {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-    }
-
-    .docs-nav__links {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .docs-nav__links a {
-      color: #cbd5e1;
-      text-decoration: none;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.32);
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .docs-nav__links a[aria-current="page"] {
-      color: #0f172a;
-      background: #f8fafc;
-      border-color: #f8fafc;
-    }
-
-    #redoc-container {
-      min-height: calc(100vh - 64px);
-    }
-
-    @media (max-width: 720px) {
-      .docs-nav {
-        padding: 14px 16px;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-    }`
+	return openapidoc.DocsNavHTML(active, scalarDocsPath, redocDocsPath)
 }

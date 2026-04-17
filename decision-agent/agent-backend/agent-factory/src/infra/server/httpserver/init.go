@@ -42,10 +42,9 @@ func NewHTTPServer() IServer {
 		anysharedsHandler:    anysharedshandler.NewAnysharedsHandler(),
 
 		// Run侧 (V1)
-		agentHandler:         agenthandler.NewAgentHTTPHandler(),
-		conversationHandler:  conversationhandler.NewConversationHTTPHandler(),
-		//observabilityHandler: observabilityhandler.NewObservabilityHTTPHandler(),
-		sessionHandler:       sessionhandler.NewSessionHTTPHandler(),
+		agentHandler:        agenthandler.NewAgentHTTPHandler(),
+		conversationHandler: conversationhandler.NewConversationHTTPHandler(),
+		sessionHandler:      sessionhandler.NewSessionHTTPHandler(),
 	}
 
 	return s

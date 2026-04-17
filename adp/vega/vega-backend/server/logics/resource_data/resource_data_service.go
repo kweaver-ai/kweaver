@@ -180,6 +180,22 @@ func (rds *resourceDataService) QueryData(ctx context.Context, resource *interfa
 		}
 		return result.Rows, result.Total, nil
 
+	case interfaces.ResourceCategoryIndex:
+		indexConnector, ok := connector.(connectors.IndexConnector)
+		if !ok {
+			span.SetStatus(codes.Error, "Connector does not support index operations")
+			return nil, 0, rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_Resource_InternalError_InvalidCategory).
+				WithErrorDetails(fmt.Sprintf("connector %s does not support index operations", catalog.ConnectorType))
+		}
+
+		result, err := indexConnector.ExecuteQuery(ctx, resource.SourceIdentifier, resource, params)
+		if err != nil {
+			span.SetStatus(codes.Error, "Execute query failed")
+			return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_Resource_InternalError).
+				WithErrorDetails(fmt.Sprintf("failed to execute query: %v", err))
+		}
+		return result.Rows, result.Total, nil
+
 	case interfaces.ResourceCategoryFileset:
 		fc, ok := connector.(connectors.FilesetConnector)
 		if !ok {
@@ -215,6 +231,21 @@ func (rds *resourceDataService) prepareSortParams(resource *interfaces.Resource,
 	fieldMap := make(map[string]bool)
 	for _, prop := range resource.SchemaDefinition {
 		fieldMap[prop.Name] = true
+	}
+
+	// Add aggregation alias to field map if aggregation is present
+	if params.Aggregation != nil && params.Aggregation.Alias != "" {
+		fieldMap[params.Aggregation.Alias] = true
+	}
+	// Add __value to field map for aggregation queries
+	if params.Aggregation != nil {
+		fieldMap["__value"] = true
+	}
+	// Add GROUP BY fields to field map for aggregation queries
+	if params.GroupBy != nil {
+		for _, groupByItem := range params.GroupBy {
+			fieldMap[groupByItem.Property] = true
+		}
 	}
 
 	filteredParams := params

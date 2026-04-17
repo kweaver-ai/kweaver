@@ -25,9 +25,9 @@ OpenAPI 产物：
 - `./api/agent-factory.yaml`
 
 本地服务启动后的运行时入口：
-- `http://{ip}/swagger/index.html`
-- `http://{ip}/swagger/doc.json`
-- `http://{ip}/swagger/doc.yaml`
+- `http://{ip}/scalar/index.html`
+- `http://{ip}/scalar/doc.json`
+- `http://{ip}/scalar/doc.yaml`
 
 关键源码：
 - `../src/driveradapter/api/httphandler/agenthandler/api_chat.go`
@@ -416,10 +416,10 @@ API Chat handler 的主要行为：
 - `./api/agent-factory.json`
 - `./api/agent-factory.yaml`
 
-本地服务启动后的 Swagger：
-- `http://localhost:13020/swagger/index.html`
-- `http://localhost:13020/swagger/doc.json`
-- `http://localhost:13020/swagger/doc.yaml`
+本地服务启动后的 Scalar：
+- `http://localhost:13020/scalar/index.html`
+- `http://localhost:13020/scalar/doc.json`
+- `http://localhost:13020/scalar/doc.yaml`
 
 单 Agent 动态文档入口（只针对发布为API的Agent）：
 

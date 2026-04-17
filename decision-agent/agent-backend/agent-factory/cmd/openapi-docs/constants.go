@@ -19,6 +19,6 @@ const (
 	defaultFaviconSourcePath    = "src/infra/server/apidocs/assets/favicon.png"
 	defaultUISourceDirPath      = "src/infra/server/apidocs/assets/ui"
 	defaultReportPath           = "test_out/openapi_compare_report.md"
-	defaultExpectPaths          = 55
-	defaultExpectOps            = 69
+	defaultExpectPaths          = 49
+	defaultExpectOps            = 63
 )

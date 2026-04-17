@@ -28,11 +28,16 @@ func TestRegisterSwaggerRoutes_ScalarDocsEnabled(t *testing.T) {
 
 	server.registerSwaggerRoutes(engine)
 
-	redirectReq := httptest.NewRequest(http.MethodGet, "/swagger", nil)
+	redirectReq := httptest.NewRequest(http.MethodGet, "/scalar", nil)
 	redirectResp := httptest.NewRecorder()
 	engine.ServeHTTP(redirectResp, redirectReq)
 	assert.Equal(t, http.StatusMovedPermanently, redirectResp.Code)
 	assert.Equal(t, scalarDocsPath, redirectResp.Header().Get("Location"))
+
+	legacyRedirectReq := httptest.NewRequest(http.MethodGet, "/swagger", nil)
+	legacyRedirectResp := httptest.NewRecorder()
+	engine.ServeHTTP(legacyRedirectResp, legacyRedirectReq)
+	assert.Equal(t, http.StatusNotFound, legacyRedirectResp.Code)
 
 	redocRedirectReq := httptest.NewRequest(http.MethodGet, "/redoc", nil)
 	redocRedirectResp := httptest.NewRecorder()
@@ -47,10 +52,14 @@ func TestRegisterSwaggerRoutes_ScalarDocsEnabled(t *testing.T) {
 	assert.Contains(t, indexResp.Body.String(), scalarJSAssetPath)
 	assert.Contains(t, indexResp.Body.String(), scalarDocJSONPath)
 	assert.Contains(t, indexResp.Body.String(), `rel="icon"`)
-	assert.Contains(t, indexResp.Body.String(), "favicon.png")
+	assert.Contains(t, indexResp.Body.String(), scalarFaviconPath)
 	assert.Contains(t, indexResp.Body.String(), redocDocsPath)
+	assert.Contains(t, indexResp.Body.String(), "promoteScalarModelsGroup")
+	assert.Contains(t, indexResp.Body.String(), "syncDocsNavHeight")
+	assert.Contains(t, indexResp.Body.String(), "--docs-nav-height")
 	assert.NotContains(t, indexResp.Body.String(), "cdn.jsdelivr.net")
 	assert.NotContains(t, indexResp.Body.String(), "cdn.redocly.com")
+	assert.NotContains(t, indexResp.Body.String(), "/swagger/index.html")
 
 	redocIndexReq := httptest.NewRequest(http.MethodGet, redocDocsPath, nil)
 	redocIndexResp := httptest.NewRecorder()
@@ -59,8 +68,30 @@ func TestRegisterSwaggerRoutes_ScalarDocsEnabled(t *testing.T) {
 	assert.Contains(t, redocIndexResp.Body.String(), redocJSAssetPath)
 	assert.Contains(t, redocIndexResp.Body.String(), scalarDocsPath)
 	assert.Contains(t, redocIndexResp.Body.String(), scalarDocJSONPath)
+	assert.Contains(t, redocIndexResp.Body.String(), "syncDocsNavHeight")
+	assert.Contains(t, redocIndexResp.Body.String(), "--docs-nav-height")
 	assert.NotContains(t, redocIndexResp.Body.String(), "cdn.redocly.com")
 	assert.NotContains(t, redocIndexResp.Body.String(), "fonts.googleapis.com")
+
+	legacyIndexReq := httptest.NewRequest(http.MethodGet, "/swagger/index.html", nil)
+	legacyIndexResp := httptest.NewRecorder()
+	engine.ServeHTTP(legacyIndexResp, legacyIndexReq)
+	assert.Equal(t, http.StatusNotFound, legacyIndexResp.Code)
+
+	legacyJSONReq := httptest.NewRequest(http.MethodGet, "/swagger/doc.json", nil)
+	legacyJSONResp := httptest.NewRecorder()
+	engine.ServeHTTP(legacyJSONResp, legacyJSONReq)
+	assert.Equal(t, http.StatusNotFound, legacyJSONResp.Code)
+
+	legacyYAMLReq := httptest.NewRequest(http.MethodGet, "/swagger/doc.yaml", nil)
+	legacyYAMLResp := httptest.NewRecorder()
+	engine.ServeHTTP(legacyYAMLResp, legacyYAMLReq)
+	assert.Equal(t, http.StatusNotFound, legacyYAMLResp.Code)
+
+	legacyFaviconReq := httptest.NewRequest(http.MethodGet, "/swagger/favicon.png", nil)
+	legacyFaviconResp := httptest.NewRecorder()
+	engine.ServeHTTP(legacyFaviconResp, legacyFaviconReq)
+	assert.Equal(t, http.StatusNotFound, legacyFaviconResp.Code)
 
 	jsonReq := httptest.NewRequest(http.MethodGet, scalarDocJSONPath, nil)
 	jsonReq.Header.Set("X-Forwarded-Proto", "https")
@@ -183,7 +214,7 @@ func TestCurrentRequestBaseURL_UsesForwardedHeaders(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
-	req := httptest.NewRequest(http.MethodGet, "http://internal:13020/swagger/doc.json", nil)
+	req := httptest.NewRequest(http.MethodGet, "http://internal:13020/scalar/doc.json", nil)
 	req.Header.Set("X-Forwarded-Proto", "https, http")
 	req.Header.Set("X-Forwarded-Host", "api.example.com, internal:13020")
 	ctx.Request = req
@@ -196,7 +227,7 @@ func TestCurrentRequestHostPort_UsesForwardedHeadersAndDefaultPorts(t *testing.T
 
 	t.Run("forwarded host without port falls back to https default", func(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
-		req := httptest.NewRequest(http.MethodGet, "http://internal/swagger/doc.json", nil)
+		req := httptest.NewRequest(http.MethodGet, "http://internal/scalar/doc.json", nil)
 		req.Header.Set("X-Forwarded-Proto", "https")
 		req.Header.Set("X-Forwarded-Host", "docs.example.com")
 		ctx.Request = req
@@ -208,7 +239,7 @@ func TestCurrentRequestHostPort_UsesForwardedHeadersAndDefaultPorts(t *testing.T
 
 	t.Run("request host with explicit port is preserved", func(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
-		req := httptest.NewRequest(http.MethodGet, "http://internal/swagger/doc.json", nil)
+		req := httptest.NewRequest(http.MethodGet, "http://internal/scalar/doc.json", nil)
 		req.Host = "localhost:13020"
 		ctx.Request = req
 

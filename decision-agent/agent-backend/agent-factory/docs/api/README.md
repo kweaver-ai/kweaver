@@ -52,10 +52,10 @@ make validate-api-docs
 
 启动 Agent Factory 后访问：
 
-- `http://127.0.0.1:30777/swagger/index.html`
+- `http://127.0.0.1:30777/scalar/index.html`
 - `http://127.0.0.1:30777/redoc/index.html`
-- `http://127.0.0.1:30777/swagger/doc.json`
-- `http://127.0.0.1:30777/swagger/doc.yaml`
+- `http://127.0.0.1:30777/scalar/doc.json`
+- `http://127.0.0.1:30777/scalar/doc.yaml`
 
 推荐方式：
 

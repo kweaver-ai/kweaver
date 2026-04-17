@@ -179,7 +179,7 @@ Schema Search 在 MCP / Agent 层的唯一规范工具名定义为：
 | `query` | 是 | 用户问题或关键词，用于触发 Schema 探索 |
 | `search_scope` | 否 | 控制本次是否探索对象类、关系类、动作类，默认全开 |
 | `max_concepts` | 否 | 控制本次返回的 Schema 候选规模上限，默认 `10` |
-| `schema_brief` | 否 | 控制返回精简 Schema 还是相对完整的 Schema 详情，默认 `true` |
+| `schema_brief` | 否 | 控制返回精简 Schema 还是相对完整的 Schema 详情，默认 `false` |
 | `enable_rerank` | 否 | 控制是否启用重排能力，属于高级可选参数，默认 `true` |
 
 #### V1 默认行为
@@ -188,7 +188,7 @@ Schema Search 在 MCP / Agent 层的唯一规范工具名定义为：
 
 - `search_scope` 默认同时包含对象类、关系类、动作类
 - `max_concepts` 默认值为 `10`
-- `schema_brief` 默认值为 `true`
+- `schema_brief` 默认值为 `false`
 - `enable_rerank` 默认值为 `true`
 
 #### 关于数量参数命名的结论

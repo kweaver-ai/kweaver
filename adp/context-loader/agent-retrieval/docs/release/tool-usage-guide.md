@@ -169,7 +169,7 @@ curl -X POST "http://agent-retrieval:30779/api/agent-retrieval/in/v1/kn/query_ob
 | `kn_id` | 否 | Header `x-kn-id` 未传时，可在 body 中兜底传入 |
 | `search_scope` | 否 | 是否包含对象类/关系类/动作类；至少开启一种，默认全开 |
 | `max_concepts` | 否 | 最大候选概念数量（默认 10） |
-| `schema_brief` | 否 | 是否返回精简 Schema（默认 true） |
+| `schema_brief` | 否 | 是否返回精简 Schema（默认 false） |
 | `enable_rerank` | 否 | 是否启用关系类型 Rerank（默认 true） |
 
 返回要点：
@@ -188,7 +188,7 @@ Data Agent 配置（建议）：
 | `query` | 模型生成 | 用户问题/关键词 | `模型生成` |
 | `search_scope` | 模型生成 | 请求体参数（可选） | `模型生成` |
 | `max_concepts` | 固定值 | 最大概念数 | `10` |
-| `schema_brief` | 固定值 | 精简 Schema | `true` |
+| `schema_brief` | 固定值 | 默认返回相对完整 Schema | `false` |
 | `enable_rerank` | 固定值 | 请求体参数（可选） | `true` |
 
 ### 6.2 兼容与 Legacy 说明

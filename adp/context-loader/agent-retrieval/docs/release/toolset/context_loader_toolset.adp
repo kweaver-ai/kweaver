@@ -524,9 +524,9 @@
                           "type": "boolean"
                         },
                         "schema_brief": {
-                          "default": true,
+                          "default": false,
                           "type": "boolean",
-                          "description": "概念召回时是否返回精简schema。True仅返回必要字段（概念ID/名称/关系source&target），不返回大字段。"
+                          "description": "概念召回时是否返回精简schema。默认 false，返回相对完整的 Schema。"
                         },
                         "top_k": {
                           "default": 10,
@@ -658,8 +658,8 @@
                         },
                         "schema_brief": {
                           "type": "boolean",
-                          "default": true,
-                          "description": "是否返回精简 Schema"
+                          "default": false,
+                          "description": "是否返回精简 Schema，默认返回相对完整的 Schema"
                         },
                         "enable_rerank": {
                           "type": "boolean",

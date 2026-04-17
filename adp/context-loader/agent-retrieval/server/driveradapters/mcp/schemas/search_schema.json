@@ -41,8 +41,8 @@
       },
       "schema_brief": {
         "type": "boolean",
-        "default": true,
-        "description": "是否返回精简 Schema。true 仅返回适合 Agent 决策下一步调用的必要字段。"
+        "default": false,
+        "description": "是否返回精简 Schema。默认 false，返回相对完整的 Schema。"
       },
       "enable_rerank": {
         "type": "boolean",

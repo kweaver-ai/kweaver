@@ -449,7 +449,7 @@ OpenAPI 调整要求：
 | `search_scope.include_relation_types` | `boolean` | 是否包含关系类，默认 `true` |
 | `search_scope.include_action_types` | `boolean` | 是否包含动作类，默认 `true` |
 | `max_concepts` | `integer` | 候选规模上限，默认 `10` |
-| `schema_brief` | `boolean` | 是否返回精简 Schema，默认 `true` |
+| `schema_brief` | `boolean` | 是否返回精简 Schema，默认 `false` |
 | `enable_rerank` | `boolean` | 是否启用重排，默认 `true` |
 
 设计约束：
@@ -579,7 +579,7 @@ OpenAPI 调整要求：
 - `query` 为唯一业务必填参数。
 - `search_scope` 不传时默认三类全开。
 - `max_concepts` 默认 `10`。
-- `schema_brief` 默认 `true`。
+- `schema_brief` 默认 `false`。
 - `enable_rerank` 默认 `true`。
 - `kn_id` 继续走 Header 优先、arguments 兼容兜底。
 - 历史请求字段在运行时可被接收，但仅作为兼容输入处理：
@@ -672,7 +672,7 @@ OpenAPI 调整要求：
 | `search_scope.include_relation_types` | `true` | 默认返回关系类 |
 | `search_scope.include_action_types` | `true` | 默认返回动作类 |
 | `max_concepts` | `10` | 默认候选规模上限 |
-| `schema_brief` | `true` | 默认返回精简 Schema |
+| `schema_brief` | `false` | 默认返回相对完整 Schema |
 | `enable_rerank` | `true` | 默认启用重排 |
 | `X-Kn-ID` | 无 | MCP 调用时优先使用的知识网络上下文 Header |
 

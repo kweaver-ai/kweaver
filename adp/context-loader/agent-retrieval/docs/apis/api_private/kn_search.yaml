@@ -102,8 +102,8 @@ components:
                   description: 兼容映射到候选规模上限
                 schema_brief:
                   type: boolean
-                  default: true
-                  description: 兼容映射到 Schema 精简返回控制
+                  default: false
+                  description: 兼容映射到 Schema 精简返回控制，默认返回相对完整的 Schema
                 include_sample_data:
                   type: boolean
                   default: false

@@ -96,8 +96,8 @@ components:
           description: Schema 候选规模上限
         schema_brief:
           type: boolean
-          default: true
-          description: 是否返回精简 Schema
+          default: false
+          description: 是否返回精简 Schema，默认返回相对完整的 Schema
         enable_rerank:
           type: boolean
           default: true

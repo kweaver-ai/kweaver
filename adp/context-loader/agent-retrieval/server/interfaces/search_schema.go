@@ -15,7 +15,7 @@ type SearchSchemaReq struct {
 	KnID         string             `json:"kn_id,omitempty"`
 	SearchScope  *SearchSchemaScope `json:"search_scope,omitempty"`
 	MaxConcepts  *int               `json:"max_concepts,omitempty" default:"10"`
-	SchemaBrief  *bool              `json:"schema_brief,omitempty" default:"true"`
+	SchemaBrief  *bool              `json:"schema_brief,omitempty" default:"false"`
 	EnableRerank *bool              `json:"enable_rerank,omitempty" default:"true"`
 }
 

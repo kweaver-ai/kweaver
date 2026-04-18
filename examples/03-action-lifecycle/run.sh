@@ -266,3 +266,36 @@ AFFECTED=$(echo "$QUERY_JSON" | python3 -c \
     "import sys,json; d=json.load(sys.stdin); print(d.get('total_count',0))" 2>/dev/null || echo "unknown")
 echo "  Found $AFFECTED purchase order(s) linked to at-risk suppliers"
 echo "  (The knowledge network identified these via supplier relationship context)"
+
+# ── Step 8: Create action schedule ────────────────────────────────────────────
+echo ""
+echo "=== Step 8: Schedule — every day at 08:00 ==="
+
+SCHED_BODY=$(python3 -c "
+import json
+print(json.dumps({
+    'name': '采购单风险每日巡检',
+    'cron_expression': '0 8 * * *',
+    'action_type_id': '$AT_ID',
+    '_instance_identities': [{}]
+}))
+")
+SCHED_JSON=$(kweaver bkn action-schedule create "$KN_ID" "$SCHED_BODY")
+debug_dump_json "action-schedule create" "$SCHED_JSON"
+SCHED_ID=$(echo "$SCHED_JSON" | python3 -c \
+    "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))")
+[ -z "$SCHED_ID" ] && { echo "Error: no schedule id in response" >&2; exit 1; }
+echo "  Schedule: $SCHED_ID (cron: 0 8 * * *)"
+
+# ── Step 9: Confirm schedule is active ────────────────────────────────────────
+echo ""
+echo "=== Step 9: Confirm schedule active ==="
+SCHED_DETAIL=$(kweaver bkn action-schedule get "$KN_ID" "$SCHED_ID")
+SCHED_STATUS=$(echo "$SCHED_DETAIL" | python3 -c \
+    "import sys,json; print(json.load(sys.stdin).get('status','unknown'))")
+if [ "$SCHED_STATUS" = "inactive" ]; then
+    kweaver bkn action-schedule set-status "$KN_ID" "$SCHED_ID" active > /dev/null
+    SCHED_STATUS="active"
+fi
+echo "  Schedule status: $SCHED_STATUS"
+echo "  The knowledge network will act autonomously every morning at 08:00."

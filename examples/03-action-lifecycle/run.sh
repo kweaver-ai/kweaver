@@ -104,3 +104,54 @@ cleanup() {
     echo "Done."
 }
 trap cleanup EXIT
+
+# ── Step 0: Seed the database ─────────────────────────────────────────────────
+echo "=== Step 0: Seed sample data into MySQL ==="
+if [ "$DB_HOST_SEED" != "$DB_HOST" ]; then
+    echo "  (from this PC: $DB_HOST_SEED:$DB_PORT — platform will use $DB_HOST in Step 1)"
+fi
+"$MYSQL_BIN" -h "$DB_HOST_SEED" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+    < "$SCRIPT_DIR/seed.sql"
+echo "  Imported: eval_suppliers (5 rows), eval_purchase_orders (10 rows, 4 at-risk)"
+
+if [ "$SEED_ONLY" = "1" ]; then
+    echo "Seed-only mode: done."
+    exit 0
+fi
+
+# ── Step 1: Connect datasource ────────────────────────────────────────────────
+echo ""
+echo "=== Step 1: Connect MySQL datasource ==="
+DS_JSON=$(kweaver ds connect mysql "$DB_HOST" "$DB_PORT" "$DB_NAME" \
+    --account "$DB_USER" --password "$DB_PASS" --name "$DS_NAME")
+debug_dump_json "ds connect" "$DS_JSON"
+DS_ID=$(echo "$DS_JSON" | python3 -c \
+    "import sys,json; d=json.load(sys.stdin); print(d.get('datasource_id') or d.get('id',''))")
+[ -z "$DS_ID" ] && { echo "Error: no datasource_id in response" >&2; exit 1; }
+echo "  Datasource: $DS_ID"
+
+# ── Step 2: Build Knowledge Network ──────────────────────────────────────────
+echo ""
+echo "=== Step 2: Build Knowledge Network ==="
+KN_JSON=$(kweaver bkn create-from-ds "$DS_ID" --name "$KN_NAME" --build)
+debug_dump_json "create-from-ds" "$KN_JSON"
+KN_ID=$(echo "$KN_JSON" | python3 -c \
+    "import sys,json; d=json.load(sys.stdin); print(d.get('kn_id') or d.get('id',''))")
+[ -z "$KN_ID" ] && { echo "Error: no kn_id in response" >&2; exit 1; }
+echo "  Knowledge Network: $KN_ID"
+
+# Discover the purchase-order object type ID (needed for action condition)
+OT_LIST=$(kweaver bkn object-type list "$KN_ID")
+PO_OT_ID=$(echo "$OT_LIST" | python3 -c "
+import sys, json
+entries = json.load(sys.stdin)
+if isinstance(entries, dict):
+    entries = entries.get('entries', [])
+for e in entries:
+    name = (e.get('name','') + e.get('id','')).lower()
+    if 'purchase_order' in name or 'eval_purchase' in name:
+        print(e.get('id',''))
+        break
+")
+[ -z "$PO_OT_ID" ] && { echo "Error: could not find purchase_orders object type" >&2; exit 1; }
+echo "  PO object type: $PO_OT_ID"

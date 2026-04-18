@@ -173,6 +173,7 @@ echo ""
 echo "=== Step 4: Register tool (OpenAPI spec) ==="
 
 _OPENAPI_TMP=$(mktemp /tmp/eval_tool_openapi_XXXXXX.json)
+trap 'rm -f "$_OPENAPI_TMP"' EXIT
 cat > "$_OPENAPI_TMP" <<'OPENAPI'
 {
   "openapi": "3.0.0",

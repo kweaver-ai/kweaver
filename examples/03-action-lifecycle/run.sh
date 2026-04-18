@@ -218,3 +218,51 @@ kweaver call "/api/agent-operator-integration/v1/tool-box/$BOX_ID/status" \
 kweaver call "/api/agent-operator-integration/v1/tool-box/$BOX_ID/tools/status" \
     -X POST -d "[{\"tool_id\":\"$TOOL_ID\",\"status\":\"enabled\"}]" > /dev/null
 echo "  Toolbox published, tool enabled"
+
+# ── Step 6: Define action type ────────────────────────────────────────────────
+echo ""
+echo "=== Step 6: Define action type — 采购单风险跟进 ==="
+
+AT_BODY=$(python3 -c "
+import json
+body = {
+    'name': '采购单风险跟进',
+    'action_type': 'modify',
+    'object_type_id': '$PO_OT_ID',
+    'tags': ['采购', '风险管理'],
+    'comment': '发现供应商状态异常的采购单，自动触发跟进行动',
+    'action_source': {
+        'type': 'tool',
+        'box_id': '$BOX_ID',
+        'tool_id': '$TOOL_ID'
+    },
+    'condition': {
+        'object_type_id': '$PO_OT_ID',
+        'field': 'supplier_status',
+        'operation': '==',
+        'value': 'at_risk'
+    }
+}
+print(json.dumps(body))
+")
+
+AT_JSON=$(kweaver bkn action-type create "$KN_ID" "$AT_BODY")
+debug_dump_json "action-type create" "$AT_JSON"
+AT_ID=$(echo "$AT_JSON" | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+if isinstance(d, list): d = d[0]
+print(d.get('id',''))
+")
+[ -z "$AT_ID" ] && { echo "Error: no action-type id in response" >&2; exit 1; }
+echo "  Action type: $AT_ID"
+
+# ── Step 7: Query — verify affected instances ─────────────────────────────────
+echo ""
+echo "=== Step 7: Query — which POs have at-risk suppliers? ==="
+QUERY_JSON=$(kweaver bkn action-type query "$KN_ID" "$AT_ID" '{}' 2>&1 || true)
+debug_dump_json "action-type query" "$QUERY_JSON"
+AFFECTED=$(echo "$QUERY_JSON" | python3 -c \
+    "import sys,json; d=json.load(sys.stdin); print(d.get('total_count',0))" 2>/dev/null || echo "unknown")
+echo "  Found $AFFECTED purchase order(s) linked to at-risk suppliers"
+echo "  (The knowledge network identified these via supplier relationship context)"

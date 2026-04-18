@@ -7,6 +7,8 @@ End-to-end examples that demonstrate core KWeaver capabilities using the CLI.
 | Example | Description |
 |---------|-------------|
 | [01-db-to-qa](./01-db-to-qa/) | Connect a MySQL database, build a Knowledge Network, and chat with an Agent — from raw tables to intelligent Q&A in one script. |
+| [02-csv-to-kn](./02-csv-to-kn/) | Import CSV data into a Knowledge Network and explore structured information through knowledge graph queries. |
+| [03-action-lifecycle](./03-action-lifecycle/) | Self-Evolving Knowledge Network | MySQL → KN → Action → Schedule → Audit Log |
 
 ## Getting Started
 

@@ -18,6 +18,10 @@ All new features and capabilities added in this branch (`feature/803264`) are do
   - Fixed same-name pod recreation conflicts by waiting for stale terminating pods to be fully deleted before retrying executor pod creation
   - Refreshed recovered sessions' activity timestamps after takeover recovery so the idle cleanup task does not immediately terminate newly recovered sessions
 
+- **K8s Session Scheduling Resource Requests**
+  - Changed K8s sandbox session pods to use zero CPU and memory requests while keeping runtime limits unchanged
+  - Reduces session startup failures caused by per-session resource reservations blocking pod scheduling in constrained clusters
+
 ### 🔧 Improvements
 
 - Added direct session and execution repository support for startup state sync so takeover logic can paginate all active sessions and persist interrupted execution state changes without request-scoped dependencies

@@ -277,8 +277,10 @@ class K8sScheduler(IContainerScheduler):
                 "ephemeral-storage": config.disk_limit,
             },
             requests={
-                "cpu": config.cpu_limit,
-                "memory": config.memory_limit,
+                # Keep requests at zero in K8s session pods so scheduling is not blocked
+                # by per-session resource reservations. Runtime protection still comes from limits.
+                "cpu": "0",
+                "memory": "0",
             },
         )
 

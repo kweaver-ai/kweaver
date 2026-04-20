@@ -672,6 +672,11 @@ class TestK8sSchedulerExtended:
         assert container.resources is not None
         assert container.resources.requests is not None
         assert container.resources.limits is not None
+        assert container.resources.requests["cpu"] == "0"
+        assert container.resources.requests["memory"] == "0"
+        assert container.resources.limits["cpu"] == "2"
+        assert container.resources.limits["memory"] == "1Gi"
+        assert container.resources.limits["ephemeral-storage"] == "10Gi"
 
     def test_build_executor_container_with_dependencies(self, scheduler):
         """测试构建带依赖安装的 executor 容器"""

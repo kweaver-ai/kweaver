@@ -18,6 +18,10 @@
   - 修复同名 Pod 重建时与旧 `Terminating` Pod 冲突的问题，在重试创建前会等待旧 Pod 从 K8s API 中彻底删除
   - 修复 takeover recovery 成功后仍沿用旧 `last_activity_at` 导致被空闲清理任务立即回收的问题，恢复成功后会刷新会话活动时间
 
+- **K8s Session 调度资源请求**
+  - 调整 K8s 沙箱 session Pod 的 CPU 和内存 request 为 0，同时保持运行时 limits 不变
+  - 降低资源紧张集群中由于每个 session 预留 request 导致的 Pod 调度与启动失败概率
+
 ### 🔧 改进
 
 - 为启动时状态同步补充 direct session/execution repository 支持，使接管逻辑可分页扫描全部活跃 session，并在不依赖请求级仓储注入的情况下持久化中断 execution 状态

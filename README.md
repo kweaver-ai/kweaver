@@ -226,19 +226,15 @@ kweaver auth login https://your-instance \
   --client-id <ID> --client-secret <SECRET> --refresh-token <TOKEN>
 ```
 
-**Method 3 — Playwright + username/password (fully non-interactive on the host, no callback paste)**
+**Method 3 — Username/password HTTP sign-in (fully non-interactive on the host, no browser required)**
 
-When the machine can run Node and download a Chromium build (typical CI agents and Linux containers), you can complete the same OAuth2 authorization-code flow as the GUI login, but with Playwright driving a **headless** browser and filling the platform sign-in form:
+No Node/Chromium needed — the CLI calls the platform's `/oauth2/signin` endpoint over HTTPS and stores the returned tokens. Suitable for CI runners, minimal Linux containers, and any host without a browser:
 
 ```bash
-npm install playwright && npx playwright install chromium   # once per environment
 kweaver auth login https://your-instance -u <username> -p <password> -k
 ```
 
-`-u` / `-p` together select this path automatically (no need for `--playwright`). The CLI registers the OAuth client, opens the auth URL, submits credentials, and saves tokens under `~/.kweaver/` including a `refresh_token` when the IdP returns one — same auto-refresh behavior as a normal browser login.
-
-Use `--playwright` *without* `-u`/`-p` if you want Playwright to open a **visible** browser window and you sign in manually (useful when debugging or when the login UI is not the default account/password form).
-
+`-u` / `-p` together select this path automatically (you can also add `--http-signin` explicitly). If you omit `-u` / `-p`, the CLI prompts for them on stdin (password input is hidden on a TTY). The CLI saves tokens under `~/.kweaver/` including a `refresh_token` when the IdP returns one — same auto-refresh behavior as a normal browser login.
 > With saved `~/.kweaver/` sessions, the CLI automatically exchanges `refresh_token` for a new access token when it expires — no extra flags needed. You can also set environment variables (`KWEAVER_BASE_URL`, `KWEAVER_TOKEN`) instead of persisting credentials to disk.
 
 Full details: [kweaver-sdk — Authentication](https://github.com/kweaver-ai/kweaver-sdk#authentication) and [Headless / Server Authentication](https://github.com/kweaver-ai/kweaver-sdk/blob/main/packages/typescript/README.md#headless--server-authentication). The Python `kweaver` CLI still uses interactive browser login; reuse the `~/.kweaver/` directory from a machine where the Node CLI finished login, or set the environment variables above.

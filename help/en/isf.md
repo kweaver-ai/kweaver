@@ -26,16 +26,14 @@ kweaver auth login https://<access-address> --alias prod -k
 kweaver auth login https://<access-address> --no-auth
 
 # Login with username/password directly (non-interactive)
-kweaver auth login https://<access-address> -u admin -p secretpass -k
+kweaver auth login https://<access-address> -u <username> -p <password> -k
 
-# Login via Playwright browser automation (headless OAuth flow)
-kweaver auth login https://<access-address> --playwright -k
+# Login via HTTP sign-in explicitly (no browser, no Node/Chromium needed)
+kweaver auth login https://<access-address> -u <username> -p <password> --http-signin -k
 
-# Custom OAuth redirect port (useful when default 8400 is taken)
-kweaver auth login https://<access-address> --port 9090
-
-# Custom OAuth redirect URI
-kweaver auth login https://<access-address> --redirect-uri http://localhost:9090/callback
+# Headless interactive login: CLI prints an OAuth URL — open it on any
+# device with a browser, then paste the full callback URL (or auth code) back
+kweaver auth login https://<access-address> --no-browser -k
 ```
 
 ### Session Management
@@ -79,7 +77,7 @@ kweaver auth delete <alias>
 # 1. Login to multiple environments
 kweaver auth login https://dev.kweaver.example.com --alias dev -k
 kweaver auth login https://staging.kweaver.example.com --alias staging -k
-kweaver auth login https://prod.kweaver.example.com --alias prod -k -u admin -p secretpass
+kweaver auth login https://prod.kweaver.example.com --alias prod -k -u <username> -p <password>
 
 # 2. List all connections
 kweaver auth list

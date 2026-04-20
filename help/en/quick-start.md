@@ -28,7 +28,7 @@ kweaver auth login <platform-url> -k
 | **Local browser (default)** | `kweaver auth login <platform-url>`; add `-k` for self-signed or untrusted TLS. |
 | **No browser — `--no-browser`** (interactive headless, recommended) | The CLI prints an OAuth URL; open it on another device, sign in, then paste the **full callback URL** from the address bar back into the terminal. |
 | **No browser — export & replay** (CI / fully automated) | After `kweaver auth login` on a machine with a browser: the **browser success page** shows **Headless machine** instructions and a one-line `kweaver auth login '<platform-url>' --client-id '…' --client-secret '…' --refresh-token '…'` (often with a **Copy command** button); or run **`kweaver auth export`** (or `--json`) in a terminal. On the **headless** host, run that one-line command to populate `~/.kweaver/`. |
-| **No browser — Playwright** | `npm install playwright && npx playwright install chromium`, then `kweaver auth login … -u <user> -p <password> -k`. **`--playwright`** without `-u`/`-p` opens a visible browser for manual sign-in. |
+| **No browser — HTTP sign-in** | `kweaver auth login … -u <user> -p <password> -k` (optionally `--http-signin`). The CLI calls the platform's `/oauth2/signin` directly — no Node/Chromium required. Omit `-u`/`-p` to be prompted on stdin. |
 
 After a successful browser login, the page states you can close the tab and explains what to run on a machine **without** a browser (SSH, CI, containers, etc.). **Keep the shown credentials secure** — anyone with the **refresh token** and **client secret** can obtain new access tokens; do not commit them to source control.
 

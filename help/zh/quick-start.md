@@ -31,7 +31,7 @@ kweaver auth login <平台地址> -k
 kweaver config show
 ```
 
-> 其它登录方式（无浏览器、CI 自动化、Playwright 等）和业务域切换见 [认证参考](installation/auth-reference.md)。
+> 其它登录方式（无浏览器、CI 自动化、HTTP 用户名密码登录等）和业务域切换见 [认证参考](installation/auth-reference.md)。
 
 Core 安装完成后，`deploy.sh` 会尝试导入 Context Loader 工具集 ADP（可用环境变量关闭或覆盖路径，见仓库 `deploy/deploy.sh` 说明）。若要确认是否已在平台注册工具箱，可执行：
 

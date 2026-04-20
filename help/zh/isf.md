@@ -21,19 +21,18 @@ kweaver auth login https://kweaver.example.com --alias prod -k
 
 # 使用用户名密码直接登录（非交互式）
 kweaver auth login https://kweaver.example.com \
-  -u admin -p 'MySecurePassword' -k
+  -u <用户名> -p '<密码>' -k
 
 # 最小化安装时跳过认证
 kweaver auth login https://localhost:30000 --no-auth -k
 
-# 使用 Playwright 浏览器完成 OAuth 登录流程
-kweaver auth login https://kweaver.example.com --playwright -k
-
-# 自定义本地回调端口与重定向 URI
+# 显式使用 HTTP 用户名密码登录（无需浏览器与 Node/Chromium）
 kweaver auth login https://kweaver.example.com \
-  --port 8765 \
-  --redirect-uri http://localhost:8765/callback \
-  -k
+  -u <用户名> -p '<密码>' --http-signin -k
+
+# 无浏览器交互登录：CLI 打印 OAuth URL，复制到任意带浏览器的设备登录后，
+# 将地址栏完整回调 URL（或授权码）粘贴回终端
+kweaver auth login https://kweaver.example.com --no-browser -k
 ```
 
 #### 会话管理
@@ -139,7 +138,7 @@ kweaver config show | grep business_domain
 
 ```bash
 # 1. 首次登录
-kweaver auth login https://kweaver.example.com --alias prod -k -u admin -p secret
+kweaver auth login https://kweaver.example.com --alias prod -k -u <用户名> -p <密码>
 
 # 2. 确认身份
 kweaver auth whoami

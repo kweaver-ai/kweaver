@@ -959,6 +959,7 @@ func (c *OpenSearchConnector) ExecuteQuery(ctx context.Context, indexName string
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialize query: %w", err)
 	}
+	logger.Debugf("Executing query: %s", string(queryJSON))
 
 	// Execute search request
 	req := opensearchapi.SearchRequest{
@@ -1530,6 +1531,21 @@ func (c *OpenSearchConnector) CreateDocuments(ctx context.Context, name string, 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
+	if errors, ok := result["errors"].(bool); ok && errors {
+		// 遍历所有操作结果，检查是否有失败
+		if items, ok := result["items"].([]interface{}); ok {
+			for _, item := range items {
+				if itemMap, ok := item.(map[string]interface{}); ok {
+					if indexResult, ok := itemMap["index"].(map[string]interface{}); ok {
+						if errorObj, ok := indexResult["error"].(map[string]interface{}); ok {
+							// 找到失败的文档，返回错误
+							return nil, fmt.Errorf("failed to create document, error type: %s, reason: %s", errorObj["type"].(string), errorObj["reason"].(string))
+						}
+					}
+				}
+			}
+		}
+	}
 
 	var docIDs []string
 	if items, ok := result["items"].([]interface{}); ok {
@@ -1583,37 +1599,6 @@ func (c *OpenSearchConnector) GetDocument(ctx context.Context, name string, docI
 	return source, nil
 }
 
-// Update Document
-func (c *OpenSearchConnector) UpdateDocument(ctx context.Context, name string, docID string, document map[string]any) error {
-	if err := c.Connect(ctx); err != nil {
-		return err
-	}
-
-	data, err := json.Marshal(map[string]any{"doc": document})
-	if err != nil {
-		return err
-	}
-
-	req := opensearchapi.UpdateRequest{
-		Index:      name,
-		DocumentID: docID,
-		Body:       bytes.NewReader(data),
-		Refresh:    "true",
-	}
-
-	resp, err := req.Do(ctx, c.client)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.IsError() {
-		return fmt.Errorf("failed to update document: %s", resp.String())
-	}
-
-	return nil
-}
-
 // Delete Document
 func (c *OpenSearchConnector) DeleteDocument(ctx context.Context, name string, docID string) error {
 	if err := c.Connect(ctx); err != nil {
@@ -1639,9 +1624,9 @@ func (c *OpenSearchConnector) DeleteDocument(ctx context.Context, name string, d
 }
 
 // Update Documents
-func (c *OpenSearchConnector) UpdateDocuments(ctx context.Context, name string, updateRequests []map[string]any) error {
+func (c *OpenSearchConnector) UpsertDocuments(ctx context.Context, name string, updateRequests []map[string]any) ([]string, error) {
 	if err := c.Connect(ctx); err != nil {
-		return err
+		return nil, err
 	}
 
 	var bulkBody bytes.Buffer
@@ -1662,15 +1647,16 @@ func (c *OpenSearchConnector) UpdateDocuments(ctx context.Context, name string, 
 			},
 		}
 		if err := json.NewEncoder(&bulkBody).Encode(metadata); err != nil {
-			return err
+			return nil, err
 		}
 
-		// 写入更新操作的文档
+		// 写入更新操作的文档，添加upsert功能
 		updateDoc := map[string]any{
-			"doc": document,
+			"doc":    document,
+			"upsert": document, // 当文档不存在时，使用整个document作为新文档
 		}
 		if err := json.NewEncoder(&bulkBody).Encode(updateDoc); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -1681,15 +1667,49 @@ func (c *OpenSearchConnector) UpdateDocuments(ctx context.Context, name string, 
 
 	resp, err := req.Do(ctx, c.client)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.IsError() {
-		return fmt.Errorf("failed to update documents: %s", resp.String())
+		return nil, fmt.Errorf("failed to update documents: %s", resp.String())
 	}
 
-	return nil
+	// 检查是否有部分文档更新失败
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	var successDocIDs []string
+	var errMsg string
+	if items, ok := result["items"].([]interface{}); ok {
+		for i, item := range items {
+			if itemMap, ok := item.(map[string]interface{}); ok {
+				if updateResult, ok := itemMap["update"].(map[string]interface{}); ok {
+					if status, ok := updateResult["status"].(float64); ok {
+						if status < 400 {
+							// 提取成功的文档ID
+							if docID, ok := updateRequests[i]["id"].(string); ok {
+								successDocIDs = append(successDocIDs, docID)
+							}
+						} else {
+							// 记录错误信息
+							if errMsg == "" {
+								errMsg = fmt.Sprintf("error type: %s, reason: %s", updateResult["error"].(map[string]interface{})["type"].(string), updateResult["error"].(map[string]interface{})["reason"].(string))
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if errMsg != "" {
+		return successDocIDs, fmt.Errorf("%s", errMsg)
+	}
+
+	return successDocIDs, nil
 }
 
 // Delete Documents

@@ -104,7 +104,13 @@ func TestMigrateHistoryDataForSkillAll(t *testing.T) {
 		mockSkillRepo.EXPECT().CountByWhereClause(gomock.Any(), nil, gomock.Any()).Return(int64(2), nil)
 		mockSkillRepo.EXPECT().SelectSkillListPage(gomock.Any(), nil, gomock.Any(), nil, nil).
 			DoAndReturn(func(ctx context.Context, tx *sql.Tx, filter map[string]interface{}, sort *ormhelper.SortParams, cursor *ormhelper.CursorParams) ([]*model.SkillRepositoryDB, error) {
-				if filter["limit"] != 2 || filter["offset"] != 0 {
+				if filter["status"] != "published" || filter["all"] != true {
+					t.Fatalf("unexpected filter: %#v", filter)
+				}
+				if _, ok := filter["limit"]; ok {
+					t.Fatalf("all=true should ignore limit: %#v", filter)
+				}
+				if _, ok := filter["offset"]; ok {
 					t.Fatalf("unexpected filter: %#v", filter)
 				}
 				return skills, nil

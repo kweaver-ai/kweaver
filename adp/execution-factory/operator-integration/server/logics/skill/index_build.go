@@ -18,7 +18,6 @@ import (
 	infralock "github.com/kweaver-ai/adp/execution-factory/operator-integration/server/infra/lock"
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/interfaces"
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/interfaces/model"
-	"github.com/redis/go-redis/v9"
 )
 
 const skillIndexBuildBatchSize = 200
@@ -513,15 +512,6 @@ func newSkillIndexBuildCreateLockerFactory() func() skillIndexBuildCreateLocker 
 		return nil
 	}
 	lockValue := conf.Project.GetMachineID()
-	return func() skillIndexBuildCreateLocker {
-		return infralock.NewRedisLocker(redisCli, skillIndexBuildCreateLockKey, lockValue, skillIndexBuildCreateLockExpiry)
-	}
-}
-
-func newSkillIndexBuildCreateLockerFromClient(redisCli *redis.Client, lockValue string) func() skillIndexBuildCreateLocker {
-	if redisCli == nil {
-		return nil
-	}
 	return func() skillIndexBuildCreateLocker {
 		return infralock.NewRedisLocker(redisCli, skillIndexBuildCreateLockKey, lockValue, skillIndexBuildCreateLockExpiry)
 	}

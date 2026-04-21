@@ -1,6 +1,6 @@
-# Model Management
+# 🧠 Model management
 
-## Overview
+## 📖 Overview
 
 KWeaver Core manages LLMs and small models through a unified **Model Manager** (`mf-model-manager`). No models are pre-configured by default — you must register them before using semantic search or Agent features.
 
@@ -20,7 +20,7 @@ Typical ingress prefix:
 
 ---
 
-## CLI
+## 💻 CLI
 
 All operations below use `kweaver call`, which auto-injects auth and the platform base URL.
 
@@ -255,7 +255,7 @@ kweaver call /api/mf-model-manager/v1/small-model/delete -d '{
 
 ---
 
-## Enable BKN Semantic Search
+## 🔧 Enable BKN semantic search
 
 After registering an embedding in the **model factory**, point **bkn-backend** and **ontology-query** at the same default name — the **`model_name`** from the list API.
 
@@ -286,7 +286,7 @@ kweaver bkn search <kn_id> "test query"
 
 ---
 
-## Parameter Reference
+## 📋 Parameter reference
 
 ### LLM Parameters
 
@@ -314,7 +314,7 @@ kweaver bkn search <kn_id> "test query"
 
 ---
 
-## Common Providers
+## 🌐 Common providers
 
 | Provider | Model Type | Model Name | API Endpoint |
 |----------|-----------|------------|--------------|
@@ -330,7 +330,7 @@ Self-hosted models (vLLM, Ollama, etc.) work by pointing `api_url` to the local 
 
 ---
 
-## End-to-End Workflow
+## 🎯 End-to-end workflow
 
 ```bash
 # 1. Register LLM

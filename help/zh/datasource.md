@@ -1,6 +1,6 @@
-# 数据源管理
+# 📂 数据源管理
 
-## 概述
+## 📖 概述
 
 **数据源管理（DS）** 负责外部数据库的**连接注册**、**表结构发现**、**CSV 导入**与**生命周期维护**。它是构建知识网络（BKN）的前置步骤——先将数据库接入平台，再通过 `bkn create-from-ds` 或 `bkn create-from-csv` 把表结构转化为知识网络。
 
@@ -12,7 +12,7 @@
 
 **相关模块：** [BKN 引擎](bkn.md)（从数据源创建知识网络）、[VEGA 引擎](vega.md)（数据虚拟化与查询）、[Dataflow](dataflow.md)（数据流转与加工）。
 
-## 支持的数据库类型
+## 🗃️ 支持的数据库类型
 
 mysql、postgresql、sqlserver、oracle、clickhouse、hive、opensearch、elasticsearch 等。使用 `kweaver vega connector-type list` 可查看当前平台已安装的连接器类型。
 

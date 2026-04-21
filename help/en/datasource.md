@@ -1,6 +1,6 @@
-# Data Source Management
+# 📂 Data source management
 
-## Overview
+## 📖 Overview
 
 **Data Source Management (DS)** handles **connection registration**, **table discovery**, **CSV import**, and **lifecycle maintenance** for external databases. It is the prerequisite for building Knowledge Networks (BKN) — first connect a database to the platform, then use `bkn create-from-ds` or `bkn create-from-csv` to turn tables into a knowledge network.
 
@@ -12,7 +12,7 @@ Ingress prefix (typical):
 
 **Related modules:** [BKN Engine](bkn.md) (create knowledge networks from data sources), [VEGA Engine](vega.md) (data virtualization and query), [Dataflow](dataflow.md) (data pipelines and transformation).
 
-## Supported Database Types
+## 🗃️ Supported database types
 
 mysql, postgresql, sqlserver, oracle, clickhouse, hive, opensearch, elasticsearch, and more. Run `kweaver vega connector-type list` to see which connector types are installed on your platform.
 

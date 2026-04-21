@@ -1,14 +1,14 @@
-# 快速开始
+# 🚀 快速开始
 
-以下步骤假设 KWeaver Core 已按 [部署](installation/deploy.md) 文档完成安装及文中的安装后检查。
+以下步骤假设 KWeaver Core 已按 [安装与部署](install.md) 文档完成安装及文中的安装后检查。
 
 ---
 
-## 准备工作
+## 🧰 准备工作
 
 无论选择哪种操作方式，以下准备工作需要在终端中执行一次。
 
-### 安装 CLI
+### 📦 安装 CLI
 
 ```bash
 npm install -g @kweaver-ai/kweaver-sdk
@@ -16,7 +16,7 @@ npm install -g @kweaver-ai/kweaver-sdk
 
 需要 Node.js 22+。也可用 `npx kweaver --help` 免安装试用。
 
-### 登录平台
+### 🔑 登录平台
 
 ```bash
 kweaver auth login <平台地址> -k
@@ -31,9 +31,9 @@ kweaver auth login <平台地址> -k
 kweaver config show
 ```
 
-> 其它登录方式（无浏览器、CI 自动化、HTTP 用户名密码登录等）和业务域切换见 [认证参考](installation/auth-reference.md)。
+> 💡 其它登录方式（无浏览器、CI 自动化、HTTP 用户名密码登录等）和业务域切换见 [安装与部署](install.md) 与 [认证与安全治理](isf.md)。
 
-### 配置模型（按需）
+### 🧠 配置模型（按需）
 
 | 能力 | 需要的模型 | 不配会怎样 |
 |------|-----------|-----------|
@@ -45,22 +45,23 @@ kweaver config show
 
 ---
 
-## 通过 AI 编程助手（推荐）
+## 🤖 通过 AI 编程助手（推荐）
 
 如果你使用 Claude Code、Codex、Cursor 等 AI 编程助手，可以用自然语言完成所有操作——不需要记任何命令和参数。
 
-### 安装 KWeaver Skill
+### 📥 安装 KWeaver Skill
 
 ```bash
-npx skills add https://github.com/kweaver-ai/kweaver-sdk \
+# 将 <技能包路径或 URL> 替换为企业内部分发的技能源
+npx skills add <技能包路径或 URL> \
   --skill kweaver-core --skill create-bkn
 ```
 
-> 安装过程会弹出交互式选择器让你选择目标 AI 编程助手。如需跳过交互直接安装到所有已知助手，可加 `-y` 标志。
+> 💡 安装过程会弹出交互式选择器让你选择目标 AI 编程助手。如需跳过交互直接安装到所有已知助手，可加 `-y` 标志。
 
 安装后，在 AI 编程助手中即可通过自然语言或 `/kweaver-core` 斜杠命令操作平台。
 
-### 完整对话示例
+### 💬 完整对话示例
 
 以下是一个从零到 Agent 对话的完整流程，每一步都是在 AI 编程助手中输入的自然语言：
 
@@ -90,13 +91,13 @@ npx skills add https://github.com/kweaver-ai/kweaver-sdk \
 
 > 查看刚才对话的 trace
 
-AI 助手会自动调用 `kweaver` CLI 完成全部操作，包括数据源发现、表结构解析、主键选择、对象类型创建、Agent 发布等。遇到问题时助手也会自动排查和提示。
+AI 助手会自动调用 `kweaver` CLI 完成全部操作，包括数据源发现、表结构解析、主键选择、对象类创建、Agent 发布等。遇到问题时助手也会自动排查和提示。
 
 ---
 
-## 通过 CLI
+## 💻 通过 CLI
 
-### 场景：5 分钟内完成首次数据查询
+### 🎯 场景：5 分钟内完成首次数据查询
 
 **故事线**：你刚部署好 KWeaver Core，手头有一台 MySQL 数据库装着 ERP 数据。你的目标是把数据库变成一个知识网络，然后查询数据。
 
@@ -128,7 +129,7 @@ kweaver bkn create-from-ds ds-abc123 \
 
 > **表名格式**：`--tables` 需要使用 `数据库名.表名` 的全限定格式（与 `kweaver ds tables` 输出一致）。裸表名会导致 `No tables available` 错误。
 
-这一条命令完成了：自动发现表结构 → 创建对象类型 → 映射字段。如果对象类型是 resource-backed（直接映射数据源表），`--build` 会自动跳过（不需要构建索引，数据直接从源表实时查询）；只有需要独立索引的对象类型才会执行构建。
+这一条命令完成了：自动发现表结构 → 创建对象类 → 映射字段。如果对象类是 resource-backed（直接映射数据源表），`--build` 会自动跳过（不需要构建索引，数据直接从源表实时查询）；只有需要独立索引的对象类才会执行构建。
 
 > **注意**：`create-from-ds` 会自动选择主键（primary key）和显示键（display key）。如果源表没有明确的主键，自动选择可能不理想（如选择 `status` 字段），导致相同主键值的记录被合并。建议后续通过 `kweaver bkn object-type update` 手动指定正确的主键。
 
@@ -158,7 +159,7 @@ kweaver bkn search <kn_id> "超期订单"
 
 ---
 
-### 场景：创建 Agent 并对话
+### 🎯 场景：创建 Agent 并对话
 
 **故事线**：知识网络建好了，你希望给业务团队一个自然语言接口 — 不用写 SQL，直接问问题就能得到回答。
 
@@ -203,7 +204,7 @@ kweaver agent chat <agent_id>
 
 ---
 
-### 场景：追踪推理过程（Trace AI）
+### 🎯 场景：追踪推理过程（Trace AI）
 
 **故事线**：Agent 给出的回答看起来不太对，你想知道它到底查了哪些数据、调了哪些工具、每一步花了多少时间。
 
@@ -232,7 +233,7 @@ Trace 返回按时间排列的 Span 树，展示：
 
 ---
 
-### 场景：从 CSV 文件构建知识网络
+### 🎯 场景：从 CSV 文件构建知识网络
 
 **故事线**：你没有数据库，只有几份 CSV 报表。
 
@@ -254,7 +255,7 @@ kweaver bkn search <kn_id> "库存为零"
 
 ---
 
-### 场景：VEGA 数据视图与 SQL 查询
+### 🎯 场景：VEGA 数据视图与 SQL 查询
 
 **故事线**：你想直接对底层数据执行 SQL，而不是通过知识网络。
 
@@ -283,11 +284,11 @@ kweaver dataview query <view_id> --sql "SELECT supplier_name, city FROM <catalog
 
 其中 `<catalog>` 须替换为该数据源在 **Vega** 中注册得到的 **catalog id**（见 `kweaver vega catalog list`），**不要**用视图逻辑名或裸表名代替；`"supply_chain"`、`"supplier_entity"` 分别对应源库中的 database/schema 与物理表名。**可靠做法**：`kweaver dataview get <view_id>` 取响应中的 **`meta_table_name`** 字段，在 SQL 中原样引用；`sql_str`、`fields` 含义见 [VEGA](vega.md)「数据视图」中的字段表。
 
-仅 **Core** 部署时，`dataview query` 不带 `--sql` 可做分页、选列等结构化查询；**`--sql` 复杂自定义 SQL** 需要 **`vega-calculate-coordinator`**，由 **Etrino** 套件提供（`vega-hdfs`、`vega-calculate`、`vega-metadata`）。在 `deploy` 目录执行 `./deploy.sh etrino install` 即可。详见 [部署文档](installation/deploy.md) 与 [VEGA](vega.md)。
+仅 **Core** 部署时，`dataview query` 不带 `--sql` 可做分页、选列等结构化查询；**`--sql` 复杂自定义 SQL** 需要 **`vega-calculate-coordinator`**，由 **Etrino** 套件提供（`vega-hdfs`、`vega-calculate`、`vega-metadata`）。在 `deploy` 目录执行 `./deploy.sh etrino install` 即可。详见 [安装与部署](install.md) 与 [VEGA](vega.md)。
 
 ---
 
-### 场景：Dataflow 流程编排
+### 🎯 场景：Dataflow 流程编排
 
 **故事线**：你有一个文档处理流水线，需要上传 PDF 触发解析。
 
@@ -307,13 +308,13 @@ kweaver dataflow logs <dag_id> <instance_id> --detail
 
 ---
 
-## 通过 TypeScript SDK
+## 🧑‍💻 通过 TypeScript SDK
 
 如果你更习惯编程方式，以下 TypeScript 代码实现与上面 CLI 完全相同的流程。
 
-> 完整示例见 [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)。
+> 💡 更多可运行示例见随 `@kweaver-ai/kweaver-sdk` 包发布的示例目录。
 
-### 最简方式（Simple API — 3 行代码）
+### ⚡ 最简方式（Simple API — 3 行代码）
 
 ```typescript
 import kweaver from '@kweaver-ai/kweaver-sdk/kweaver';
@@ -329,7 +330,7 @@ for (const c of result.concepts ?? []) {
 }
 ```
 
-### 完整方式（Client API — 更多控制）
+### 🛠️ 完整方式（Client API — 更多控制）
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';
@@ -338,7 +339,7 @@ import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';
 const client = await KWeaverClient.connect();
 ```
 
-### 发现知识网络
+### 🔎 发现知识网络
 
 ```typescript
 const knList = await client.knowledgeNetworks.list({ limit: 10 });
@@ -347,7 +348,7 @@ for (const kn of knList) {
 }
 ```
 
-### 浏览 Schema：对象类型、关系、动作
+### 🧬 浏览 Schema：对象类、关系类、行动类
 
 ```typescript
 const knId = knList[0].id;
@@ -365,7 +366,7 @@ for (const rt of relationTypes) {
 const actionTypes = await client.knowledgeNetworks.listActionTypes(knId);
 ```
 
-### 查询实例与子图遍历
+### 🧮 查询实例与子图遍历
 
 ```typescript
 const otId = objectTypes[0].id;
@@ -377,7 +378,7 @@ const instances = await client.bkn.queryInstances(knId, otId, {
 });
 console.log(instances.datas);
 
-// 子图遍历（沿关系类型展开）
+// 子图遍历（沿关系类展开）
 const rt = relationTypes[0];
 const subgraph = await client.bkn.querySubgraph(knId, {
   relation_type_paths: [{
@@ -391,7 +392,7 @@ const subgraph = await client.bkn.querySubgraph(knId, {
 });
 ```
 
-### 语义搜索
+### 🧭 语义搜索
 
 > 需已注册 Embedding 并完成 [启用 BKN 语义搜索](model.md#启用-bkn-语义搜索)。
 
@@ -402,7 +403,7 @@ for (const concept of result.concepts ?? []) {
 }
 ```
 
-### Context Loader（MCP 分层检索）
+### 📚 Context Loader（MCP 分层检索）
 
 ```typescript
 const { baseUrl } = client.base();
@@ -416,7 +417,7 @@ const schema = await cl.schemaSearch({ query: '订单', max_concepts: 5 });
 const mcpInstances = await cl.queryInstances({ ot_id: otId, limit: 5 });
 ```
 
-### Agent 对话
+### 💬 Agent 对话
 
 ```typescript
 // 列出 Agent
@@ -452,19 +453,17 @@ const messages = await client.conversations.listMessages(conversationId, { limit
 
 ---
 
-## 接下来读什么
+## 📖 接下来读什么
 
 | 目标 | 文档 |
 | --- | --- |
-| 完整 BKN 操作（Schema、条件查询、Action） | [bkn.md](bkn.md) |
-| 模型注册、测试与管理 | [model.md](model.md) |
-| 集群中启用语义搜索（ConfigMap） | [启用 BKN 语义搜索](model.md#启用-bkn-语义搜索) |
-| 数据虚拟化与 Catalog 管理 | [vega.md](vega.md) |
-| Agent 全生命周期 | [decision-agent.md](decision-agent.md) |
-| 流程编排详细 | [dataflow.md](dataflow.md) |
-| MCP 分层检索 | [context-loader.md](context-loader.md) |
-| 工具与技能管理 | [execution-factory.md](execution-factory.md) |
-| 链路追踪与证据链 | [trace-ai.md](trace-ai.md) |
-| 认证与安全治理 | [isf.md](isf.md) |
-
-SDK 完整示例代码见 [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)。
+| 🧱 完整 BKN 操作（Schema、条件查询、Action） | [bkn.md](bkn.md) |
+| 🧠 模型注册、测试与管理 | [model.md](model.md) |
+| 🔧 集群中启用语义搜索（ConfigMap） | [启用 BKN 语义搜索](model.md#启用-bkn-语义搜索) |
+| 🗄️ 数据虚拟化与 Catalog 管理 | [vega.md](vega.md) |
+| 🤖 Agent 全生命周期 | [decision-agent.md](decision-agent.md) |
+| 🔁 流程编排详细 | [dataflow.md](dataflow.md) |
+| 📚 MCP 分层检索 | [context-loader.md](context-loader.md) |
+| 🛠️ 工具与技能管理 | [execution-factory.md](execution-factory.md) |
+| 🔭 链路追踪与证据链 | [trace-ai.md](trace-ai.md) |
+| 🔐 认证与安全治理 | [isf.md](isf.md) |

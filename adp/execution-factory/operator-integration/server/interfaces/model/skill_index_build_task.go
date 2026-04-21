@@ -34,6 +34,8 @@ type ISkillIndexBuildTaskDB interface {
 	SelectByTaskID(ctx context.Context, tx *sql.Tx, taskID string) (*SkillIndexBuildTaskDB, error)
 	SelectRunningTask(ctx context.Context, tx *sql.Tx) (*SkillIndexBuildTaskDB, error)
 	SelectLatestCompletedIncrementalTask(ctx context.Context, tx *sql.Tx) (*SkillIndexBuildTaskDB, error)
+	SelectLatestCompletedFullTask(ctx context.Context, tx *sql.Tx) (*SkillIndexBuildTaskDB, error)
+	DeleteFinishedTasksBefore(ctx context.Context, tx *sql.Tx, cutoff int64) (int64, error)
 	SelectListPage(ctx context.Context, tx *sql.Tx, filter map[string]interface{}, sort *ormhelper.SortParams, cursor *ormhelper.CursorParams) ([]*SkillIndexBuildTaskDB, error)
 	CountByWhereClause(ctx context.Context, tx *sql.Tx, filter map[string]interface{}) (int64, error)
 	UpdateByTaskID(ctx context.Context, tx *sql.Tx, task *SkillIndexBuildTaskDB) error

@@ -63,6 +63,8 @@ func (w *skillIndexBuildWorker) loop() {
 			return
 		case <-ticker.C:
 			_ = w.service.recoverStaleRunningTask(context.Background())
+			_ = w.service.schedulePeriodicFullTask(context.Background())
+			_ = w.service.cleanupExpiredFinishedTasks(context.Background())
 			w.processPendingTask(context.Background())
 		}
 	}

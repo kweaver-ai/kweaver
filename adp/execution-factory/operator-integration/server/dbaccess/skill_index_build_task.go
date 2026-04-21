@@ -139,6 +139,52 @@ func (s *skillIndexBuildTaskDB) SelectLatestCompletedIncrementalTask(ctx context
 	return task, nil
 }
 
+func (s *skillIndexBuildTaskDB) SelectLatestCompletedFullTask(ctx context.Context, tx *sql.Tx) (*model.SkillIndexBuildTaskDB, error) {
+	orm := s.orm
+	if tx != nil {
+		orm = s.orm.WithTx(tx)
+	}
+	task := &model.SkillIndexBuildTaskDB{}
+	err := orm.Select().From(tbSkillIndexBuildTask).
+		WhereEq("f_execute_type", interfaces.SkillIndexBuildExecuteTypeFull.String()).
+		WhereEq("f_status", interfaces.SkillIndexBuildStatusCompleted.String()).
+		OrderByDesc("f_last_finished_time").
+		OrderByDesc("f_update_time").
+		Limit(1).
+		First(ctx, task)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+func (s *skillIndexBuildTaskDB) DeleteFinishedTasksBefore(ctx context.Context, tx *sql.Tx, cutoff int64) (int64, error) {
+	orm := s.orm
+	if tx != nil {
+		orm = s.orm.WithTx(tx)
+	}
+	row, err := orm.Delete().From(tbSkillIndexBuildTask).
+		WhereIn("f_status",
+			interfaces.SkillIndexBuildStatusCompleted.String(),
+			interfaces.SkillIndexBuildStatusFailed.String(),
+			interfaces.SkillIndexBuildStatusCanceled.String(),
+		).
+		WhereGt("f_last_finished_time", 0).
+		WhereLt("f_last_finished_time", cutoff).
+		Execute(ctx)
+	if err != nil {
+		return 0, err
+	}
+	affected, err := row.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return affected, nil
+}
+
 func (s *skillIndexBuildTaskDB) SelectListPage(ctx context.Context, tx *sql.Tx, filter map[string]interface{}, sort *ormhelper.SortParams, cursor *ormhelper.CursorParams) ([]*model.SkillIndexBuildTaskDB, error) {
 	orm := s.orm
 	if tx != nil {

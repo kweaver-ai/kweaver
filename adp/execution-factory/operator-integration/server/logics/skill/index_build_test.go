@@ -450,6 +450,111 @@ func TestSkillIndexBuildService(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 
+		Convey("schedulePeriodicFullTask skips when periodic full scan disabled", func() {
+			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
+			svc := &skillIndexBuildService{
+				logger:             logger.DefaultLogger(),
+				taskRepo:           mockTaskRepo,
+				enablePeriodicFull: false,
+				periodicFullEvery:  7 * 24 * time.Hour,
+			}
+
+			err := svc.schedulePeriodicFullTask(context.Background())
+			So(err, ShouldBeNil)
+		})
+
+		Convey("schedulePeriodicFullTask creates initial full task when no completed full exists", func() {
+			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
+			svc := &skillIndexBuildService{
+				logger:             logger.DefaultLogger(),
+				taskRepo:           mockTaskRepo,
+				enablePeriodicFull: true,
+				periodicFullEvery:  7 * 24 * time.Hour,
+			}
+			gomock.InOrder(
+				mockTaskRepo.EXPECT().SelectRunningTask(gomock.Any(), gomock.Nil()).Return(nil, nil),
+				mockTaskRepo.EXPECT().SelectLatestCompletedFullTask(gomock.Any(), gomock.Nil()).Return(nil, nil),
+				mockTaskRepo.EXPECT().SelectRunningTask(gomock.Any(), gomock.Nil()).Return(nil, nil),
+				mockTaskRepo.EXPECT().Insert(gomock.Any(), gomock.Nil(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ *sql.Tx, task *model.SkillIndexBuildTaskDB) error {
+						So(task.ExecuteType, ShouldEqual, interfaces.SkillIndexBuildExecuteTypeFull.String())
+						So(task.CreateUser, ShouldEqual, "system")
+						return nil
+					}),
+			)
+
+			err := svc.schedulePeriodicFullTask(context.Background())
+			So(err, ShouldBeNil)
+		})
+
+		Convey("schedulePeriodicFullTask skips when latest full task is within interval", func() {
+			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
+			svc := &skillIndexBuildService{
+				logger:             logger.DefaultLogger(),
+				taskRepo:           mockTaskRepo,
+				enablePeriodicFull: true,
+				periodicFullEvery:  7 * 24 * time.Hour,
+			}
+			mockTaskRepo.EXPECT().SelectRunningTask(gomock.Any(), gomock.Nil()).Return(nil, nil)
+			mockTaskRepo.EXPECT().SelectLatestCompletedFullTask(gomock.Any(), gomock.Nil()).Return(&model.SkillIndexBuildTaskDB{
+				TaskID:           "full-latest",
+				Status:           interfaces.SkillIndexBuildStatusCompleted.String(),
+				ExecuteType:      interfaces.SkillIndexBuildExecuteTypeFull.String(),
+				LastFinishedTime: time.Now().Add(-time.Hour).UnixNano(),
+			}, nil)
+
+			err := svc.schedulePeriodicFullTask(context.Background())
+			So(err, ShouldBeNil)
+		})
+
+		Convey("schedulePeriodicFullTask skips when running task exists", func() {
+			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
+			svc := &skillIndexBuildService{
+				logger:             logger.DefaultLogger(),
+				taskRepo:           mockTaskRepo,
+				enablePeriodicFull: true,
+				periodicFullEvery:  7 * 24 * time.Hour,
+			}
+			mockTaskRepo.EXPECT().SelectRunningTask(gomock.Any(), gomock.Nil()).Return(&model.SkillIndexBuildTaskDB{
+				TaskID: "task-running",
+				Status: interfaces.SkillIndexBuildStatusRunning.String(),
+			}, nil)
+
+			err := svc.schedulePeriodicFullTask(context.Background())
+			So(err, ShouldBeNil)
+		})
+
+		Convey("cleanupExpiredFinishedTasks skips when cleanup disabled", func() {
+			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
+			svc := &skillIndexBuildService{
+				logger:            logger.DefaultLogger(),
+				taskRepo:          mockTaskRepo,
+				enableTaskCleanup: false,
+				taskRetention:     30 * 24 * time.Hour,
+			}
+
+			err := svc.cleanupExpiredFinishedTasks(context.Background())
+			So(err, ShouldBeNil)
+		})
+
+		Convey("cleanupExpiredFinishedTasks deletes expired finished tasks when enabled", func() {
+			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
+			svc := &skillIndexBuildService{
+				logger:            logger.DefaultLogger(),
+				taskRepo:          mockTaskRepo,
+				enableTaskCleanup: true,
+				taskRetention:     30 * 24 * time.Hour,
+			}
+			mockTaskRepo.EXPECT().DeleteFinishedTasksBefore(gomock.Any(), gomock.Nil(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, _ *sql.Tx, cutoff int64) (int64, error) {
+					So(cutoff, ShouldBeLessThan, time.Now().UnixNano())
+					return int64(3), nil
+				})
+
+			err := svc.cleanupExpiredFinishedTasks(context.Background())
+			So(err, ShouldBeNil)
+		})
+
 		Convey("failTask reschedules task when retries remain", func() {
 			mockTaskRepo := mocks.NewMockISkillIndexBuildTaskDB(ctrl)
 			svc := &skillIndexBuildService{

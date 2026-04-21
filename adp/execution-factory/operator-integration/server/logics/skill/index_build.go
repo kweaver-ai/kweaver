@@ -34,6 +34,10 @@ type skillIndexBuildService struct {
 	releaseRepo         model.ISkillReleaseDB
 	indexSync           interfaces.SkillIndexSyncService
 	assignLockerFactory func(taskID string) skillIndexBuildAssignLocker
+	enablePeriodicFull  bool
+	periodicFullEvery   time.Duration
+	enableTaskCleanup   bool
+	taskRetention       time.Duration
 }
 
 var (
@@ -45,6 +49,14 @@ var (
 func NewSkillIndexBuildService() interfaces.SkillIndexBuildService {
 	skillIndexBuildOnce.Do(func() {
 		conf := config.NewConfigLoader()
+		periodicEvery := 7 * 24 * time.Hour
+		if d, err := time.ParseDuration(conf.SkillIndexBuildConfig.PeriodicFullScanInterval); err == nil && d > 0 {
+			periodicEvery = d
+		}
+		taskRetention := 30 * 24 * time.Hour
+		if d, err := time.ParseDuration(conf.SkillIndexBuildConfig.TaskRetention); err == nil && d > 0 {
+			taskRetention = d
+		}
 		skillIndexBuildInst = &skillIndexBuildService{
 			logger:              conf.GetLogger(),
 			taskRepo:            dbaccess.NewSkillIndexBuildTaskDB(),
@@ -52,6 +64,10 @@ func NewSkillIndexBuildService() interfaces.SkillIndexBuildService {
 			releaseRepo:         dbaccess.NewSkillReleaseDB(),
 			indexSync:           NewSkillIndexSyncService(),
 			assignLockerFactory: newSkillIndexBuildAssignLockerFactory(),
+			enablePeriodicFull:  conf.SkillIndexBuildConfig.EnablePeriodicFullScan,
+			periodicFullEvery:   periodicEvery,
+			enableTaskCleanup:   conf.SkillIndexBuildConfig.EnableTaskCleanup,
+			taskRetention:       taskRetention,
 		}
 	})
 	return skillIndexBuildInst
@@ -506,6 +522,37 @@ func shouldStopTask(task *model.SkillIndexBuildTaskDB) bool {
 	return status == interfaces.SkillIndexBuildStatusCanceled || status == interfaces.SkillIndexBuildStatusCompleted || status == interfaces.SkillIndexBuildStatusFailed
 }
 
+func (s *skillIndexBuildService) schedulePeriodicFullTask(ctx context.Context) error {
+	if s == nil || !s.enablePeriodicFull {
+		return nil
+	}
+	runningTask, err := s.taskRepo.SelectRunningTask(ctx, nil)
+	if err != nil {
+		return err
+	}
+	if runningTask != nil {
+		return nil
+	}
+	lastFullTask, err := s.taskRepo.SelectLatestCompletedFullTask(ctx, nil)
+	if err != nil {
+		return err
+	}
+	if lastFullTask != nil && time.Since(time.Unix(0, lastFullTask.LastFinishedTime)) < s.periodicFullEvery {
+		return nil
+	}
+	_, err = s.createTask(ctx, "system", interfaces.SkillIndexBuildExecuteTypeFull)
+	return err
+}
+
+func (s *skillIndexBuildService) cleanupExpiredFinishedTasks(ctx context.Context) error {
+	if s == nil || !s.enableTaskCleanup {
+		return nil
+	}
+	cutoff := time.Now().Add(-s.taskRetention).UnixNano()
+	_, err := s.taskRepo.DeleteFinishedTasksBefore(ctx, nil, cutoff)
+	return err
+}
+
 func (s *skillIndexBuildService) tryStartPendingTask(ctx context.Context, taskID string) (bool, error) {
 	if taskID == "" {
 		return false, nil
@@ -575,6 +622,6 @@ func newSkillIndexBuildAssignLocker(redisCli *redis.Client, taskID, instanceID s
 	if redisCli == nil || taskID == "" {
 		return nil
 	}
-	lockKey := "lock:skill:index:build:assign:" + taskID
+	lockKey := "eexecution-factory-lock:skill:index:build:assign:" + taskID
 	return infralock.NewRedisLocker(redisCli, lockKey, instanceID, skillIndexBuildAssignLockExpiry)
 }

@@ -58,6 +58,21 @@ func (mr *MockISkillIndexBuildTaskDBMockRecorder) CountByWhereClause(ctx, tx, fi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByWhereClause", reflect.TypeOf((*MockISkillIndexBuildTaskDB)(nil).CountByWhereClause), ctx, tx, filter)
 }
 
+// DeleteFinishedTasksBefore mocks base method.
+func (m *MockISkillIndexBuildTaskDB) DeleteFinishedTasksBefore(ctx context.Context, tx *sql.Tx, cutoff int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFinishedTasksBefore", ctx, tx, cutoff)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteFinishedTasksBefore indicates an expected call of DeleteFinishedTasksBefore.
+func (mr *MockISkillIndexBuildTaskDBMockRecorder) DeleteFinishedTasksBefore(ctx, tx, cutoff any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFinishedTasksBefore", reflect.TypeOf((*MockISkillIndexBuildTaskDB)(nil).DeleteFinishedTasksBefore), ctx, tx, cutoff)
+}
+
 // Insert mocks base method.
 func (m *MockISkillIndexBuildTaskDB) Insert(ctx context.Context, tx *sql.Tx, task *model.SkillIndexBuildTaskDB) error {
 	m.ctrl.T.Helper()
@@ -100,6 +115,21 @@ func (m *MockISkillIndexBuildTaskDB) SelectLatestCompletedIncrementalTask(ctx co
 func (mr *MockISkillIndexBuildTaskDBMockRecorder) SelectLatestCompletedIncrementalTask(ctx, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectLatestCompletedIncrementalTask", reflect.TypeOf((*MockISkillIndexBuildTaskDB)(nil).SelectLatestCompletedIncrementalTask), ctx, tx)
+}
+
+// SelectLatestCompletedFullTask mocks base method.
+func (m *MockISkillIndexBuildTaskDB) SelectLatestCompletedFullTask(ctx context.Context, tx *sql.Tx) (*model.SkillIndexBuildTaskDB, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectLatestCompletedFullTask", ctx, tx)
+	ret0, _ := ret[0].(*model.SkillIndexBuildTaskDB)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectLatestCompletedFullTask indicates an expected call of SelectLatestCompletedFullTask.
+func (mr *MockISkillIndexBuildTaskDBMockRecorder) SelectLatestCompletedFullTask(ctx, tx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectLatestCompletedFullTask", reflect.TypeOf((*MockISkillIndexBuildTaskDB)(nil).SelectLatestCompletedFullTask), ctx, tx)
 }
 
 // SelectListPage mocks base method.

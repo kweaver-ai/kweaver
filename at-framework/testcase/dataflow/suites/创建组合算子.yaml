@@ -111,6 +111,7 @@ cases:
 
 - name: Negative_创建组合算子_title已存在_请求失败
   url: 创建组合算子
+  teardown_operator_name: duplicate_test_title_fixed
   body_params: |
     {
       "title": "duplicate_test_title_fixed",

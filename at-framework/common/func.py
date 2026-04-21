@@ -15,6 +15,7 @@ import re
 import string
 import time
 import uuid
+from urllib.parse import urlparse
 
 from genson import SchemaBuilder
 
@@ -249,8 +250,38 @@ def load_case(path: str):
     if not _YAML_AVAILABLE:
         raise ImportError("YAML 用例加载需要安装 PyYAML: pip install PyYAML")
 
-    # 加载全局变量
-    global_flat = _read_yaml(os.path.join(path, "_config", "global.yaml"))
+    # 加载全局变量（兼容 dict 或 [{name, value}, ...]）
+    raw_global = _read_yaml(os.path.join(path, "_config", "global.yaml"))
+    if isinstance(raw_global, list):
+        global_flat = {
+            str(item.get("name")).strip(): item.get("value")
+            for item in raw_global
+            if isinstance(item, dict) and str(item.get("name", "")).strip()
+        }
+    elif isinstance(raw_global, dict):
+        global_flat = dict(raw_global)
+    else:
+        global_flat = {}
+
+    # host/port/protocol 未显式配置时，从 config.ini 的 [server] 注入默认值
+    try:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        sys_cfg = load_sys_config(os.path.join(project_root, "config", "config.ini"))
+    except Exception:
+        sys_cfg = {}
+    server_cfg = sys_cfg.get("server") or {}
+    base_url = str(server_cfg.get("base_url", "")).strip()
+    parsed = urlparse(base_url) if base_url else None
+    default_protocol = (parsed.scheme if parsed and parsed.scheme else "https")
+    default_host = (server_cfg.get("host", "") or (parsed.hostname if parsed else "") or "").strip()
+    default_port = (
+        str(server_cfg.get("public_port", "")).strip()
+        or (str(parsed.port) if parsed and parsed.port else ("443" if default_protocol == "https" else "80"))
+    )
+
+    global_flat.setdefault("protocol", default_protocol)
+    global_flat.setdefault("host", default_host)
+    global_flat.setdefault("port", default_port)
 
     # 加载接口信息
     # 为方便查找，转换index格式：name -> {name, url, method, headers, response: {200: {}, 400: {}}}

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import os
 from typing import Any, Dict, Optional, Tuple
+from urllib.parse import urlparse
 
 
 def _strip(s: Any) -> str:
@@ -74,6 +75,24 @@ def server_host_for_requests(ini_config: Dict[str, Dict[str, str]]) -> str:
     return _strip(srv.get("host"))
 
 
+def server_public_port(ini_config: Dict[str, Dict[str, str]]) -> str:
+    """读取 [server].public_port。"""
+    srv = ini_config.get("server") or {}
+    return _strip(srv.get("public_port"))
+
+
+def _host_has_port(host: str) -> bool:
+    """判断 host 是否已包含端口（支持常见 host:port 写法）。"""
+    if not host:
+        return False
+    try:
+        # 借助 urlparse 统一解析 host:port / ipv4:port 场景
+        p = urlparse("http://%s" % host)
+        return p.port is not None
+    except Exception:
+        return False
+
+
 def request_scheme(ini_config: Dict[str, Dict[str, str]]) -> str:
     """从 [server].base_url 推导协议；无有效 base_url 时默认为 https。"""
     srv = ini_config.get("server") or {}
@@ -85,7 +104,13 @@ def request_scheme(ini_config: Dict[str, Dict[str, str]]) -> str:
 
 def resolve_request_target(ini_config: Dict[str, Dict[str, str]]) -> Tuple[str, str]:
     """返回 (scheme, host)，用于拼接 API URL。"""
-    return request_scheme(ini_config), server_host_for_requests(ini_config)
+    scheme = request_scheme(ini_config)
+    host = server_host_for_requests(ini_config)
+    port = server_public_port(ini_config)
+    # 仅当显式配置了非 443 端口时，自动拼接到请求 host。
+    if host and port and port != "443" and not _host_has_port(host):
+        host = "%s:%s" % (host, port)
+    return scheme, host
 
 
 def default_case_file(ini_config: Dict[str, Dict[str, str]]) -> str:

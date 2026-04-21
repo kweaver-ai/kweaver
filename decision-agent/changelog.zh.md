@@ -4,7 +4,7 @@
 
 ### 功能与改进
 
-- 在 agent-executor 中新增 React Agent 模式支持
+- 在 agent 中新增 React Agent 模式支持
   - issue: https://github.com/kweaver-ai/kweaver-core/issues/171
   - docs 目录: decision-agent/agent-backend/agent-factory/docs/feature/03-agent-mode
 - 新增 LLM 消息日志功能，用于调试和监控
@@ -15,6 +15,10 @@
 - 新增 Agent 模式枚举并重构配置结构，提升可扩展性
 - 更新 kweaver-dolphin 依赖到 v0.6.0
 
+### Bug 修复
+
+- 修复复制 Agent 模板时未清除已发布字段的问题
+
 ### 重构与清理
 
 - 简化可观测性系统并移除冗余组件
@@ -24,13 +28,14 @@
   - 清理环境变量和 configmap 模板
 - 移除 benchmark 相关代码并优化 API 文档
 - 移除已废弃的服务配置和 disable_biz_domain_init 配置
-- 复制 Agent 模板时清除已发布字段
 
 ### 文档
 
 - 增强 API 文档，在 Swagger 基础上新增 Redoc 支持
 - 更新 Swagger 路由和文档结构
-- 重构文档并新增 API Chat API 集成指南
+- 更新 API Chat 页面文档信息并新增 API Chat API 集成指南
+  - issue: https://github.com/kweaver-ai/kweaver-core/issues/173
+  - doc: decision-agent/agent-backend/agent-factory/docs/api-chat-integration.zh.md
 - 更新 API 文档和版本信息
 
 ## 0.6.0

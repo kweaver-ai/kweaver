@@ -1,14 +1,14 @@
-# Info Security Fabric (ISF)
+# 🔐 Info Security Fabric (ISF)
 
-## Overview
+## 📖 Overview
 
 The **Info Security Fabric** is the **cross-cutting security layer**: unified **identity**, **permissions**, **policies**, and **audit** across data access, model output, and tool invocation. In full installs it may integrate with OAuth2/OIDC stacks (e.g. Hydra) and business-domain services.
 
-With **`--minimum` install**, many auth components are disabled for a simpler lab setup — APIs may not require tokens. For production, enable the full auth profile per [deploy/README.md](../../deploy/README.md).
+With **`--minimum` install**, many auth components are disabled for a simpler lab setup — APIs may not require tokens. For production, enable the full auth profile per the deployment and security guide bundled with your release.
 
 **Related modules:** All subsystems that accept `Authorization` headers; [Decision Agent](decision-agent.md) and [VEGA Engine](vega.md) are primary consumers.
 
-## CLI
+## 💻 CLI
 
 ### Authentication — Login
 

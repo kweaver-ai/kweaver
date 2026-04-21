@@ -1,6 +1,6 @@
-# Decision Agent
+# 🤖 Decision Agent
 
-## 概述
+## 📖 概述
 
 **Decision Agent** 是面向目标的智能体：规划、检索上下文、在策略下调用工具并基于反馈迭代。核心服务包括 **agent-factory**（编排 API）、**agent-executor**、**记忆**与检索集成等。
 
@@ -14,9 +14,9 @@
 
 **相关模块：** [Context Loader](context-loader.md)、[Execution Factory](execution-factory.md)、[BKN 引擎](bkn.md)、[Trace AI](trace-ai.md)。
 
-> **模型配置前置条件**：Agent 需要 LLM（大语言模型）和 Embedding 小模型。`--minimum` 安装不包含预置模型，使用前请先完成 [部署文档中的模型配置](installation/deploy.md#配置模型语义搜索与-agent-必需)。创建 Agent 时需通过 `--llm-id` 指定已注册的 LLM ID。
+> **模型配置前置条件**：Agent 需要 LLM（大语言模型）和 Embedding 小模型。`--minimum` 安装不包含预置模型，使用前请先完成 [安装与部署 — 配置模型](install.md#配置模型)。创建 Agent 时需通过 `--llm-id` 指定已注册的 LLM ID。
 
-## 使用方式
+## 🚀 使用方式
 
 推荐先 `kweaver auth login <平台地址>`（自签名证书加 `-k`），再使用下文 CLI；REST 示例见文档末尾 curl 一节。
 
@@ -281,7 +281,7 @@ for cat in categories["data"]:
 
 ### TypeScript SDK
 
-> 完整可运行示例见 [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)
+> 💡 更多可运行示例见随 `@kweaver-ai/kweaver-sdk` 包发布的示例目录。
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';

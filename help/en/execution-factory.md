@@ -1,6 +1,6 @@
-# Execution Factory
+# 🛠️ Execution Factory
 
-## Overview
+## 📖 Overview
 
 The **Execution Factory** registers and runs **operators**, **tools**, and **skills** that agents invoke under policy. It bridges LLM planning to concrete business actions (HTTP tools, code runners, MCP integrations, etc.).
 

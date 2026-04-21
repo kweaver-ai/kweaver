@@ -248,11 +248,6 @@ func (g *logicViewSQLGenerator) buildJoinNodeSQL(ctx context.Context, node *inte
 		return "", nil, fmt.Errorf("join node must have exactly 2 inputs, got %d", len(node.Inputs))
 	}
 
-	// MariaDB 不支持 FULL OUTER JOIN
-	if strings.EqualFold(cfg.JoinType, interfaces.JoinType_FullOuter) {
-		return "", nil, fmt.Errorf("MariaDB does not support FULL OUTER JOIN, please use LEFT JOIN + UNION instead")
-	}
-
 	leftID := node.Inputs[0]
 	rightID := node.Inputs[1]
 

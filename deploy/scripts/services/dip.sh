@@ -452,7 +452,8 @@ _dip_prompt_openclaw_config() {
         gateway_port="${gateway_port:-18789}"
         log_info "Using defaults (-y): hostPath=${host_path}, gatewayHost=${gateway_host}, gatewayPort=${gateway_port}"
         if [[ -z "${gateway_token}" ]]; then
-            log_warn "gatewayToken is empty. Set it later in ${CONFIG_YAML_PATH} or pass via --set."
+            log_error "gatewayToken is required. Pre-configure studio.openclaw.gatewayToken in ${CONFIG_YAML_PATH}, or drop -y and run interactively."
+            return 1
         fi
     else
         if [[ -z "${host_path}" ]]; then

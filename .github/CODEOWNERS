@@ -16,13 +16,13 @@
 # ── ADP (Application Delivery Platform) ─────────────────────
 adp/bkn/**                                 @kenlee1988
 adp/context-loader/**                      @criller
-adp/dataflow/**                            @kerrykuang2023 @zhangaishucn
+adp/dataflow/**                            @zhangaishucn
 adp/execution-factory/**                   @criller
 adp/vega/**                                @kenlee1988 @Flynn-Zh
 adp/docs/**                                @kenlee1988
 
 # ── Decision Agent ───────────────────────────────────────────
-decision-agent/**                          @guodawn @kerrykuang2023
+decision-agent/**                          @guodawn
 
 # ── Infrastructure ───────────────────────────────────────────
 infra/mf-model-api/**                      @jiankang-kw
@@ -31,7 +31,7 @@ infra/oss-gateway-backend/**               @jiankang-kw
 infra/sandbox/**                           @guodawn
 
 # ── Trace AI (Observability) ────────────────────────────────
-trace-ai/**                                @guodawn @kerrykuang2023
+trace-ai/**                                @guodawn
 
 # ── Deployment ───────────────────────────────────────────────
 deploy/**                                  @sh00tg0a1 @tangkelu

@@ -1,9 +1,2 @@
-# 全局变量定义
-- name: host
-  value: 192.168.112.12
-
-- name: port
-  value: "443"
-
-- name: protocol
-  value: https
+# data-operator-hub 模块不在此文件配置环境参数。
+# 运行环境统一从 config/config.ini 的 [server] 读取。

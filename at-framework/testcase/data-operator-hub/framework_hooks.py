@@ -112,11 +112,11 @@ def _offline_toolbox(base_url, headers, box_id, box_name):
     try:
         resp = requests.post(url, json=data, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 下架成功: {box_name}")
+            print(f"  [OK] 下架成功: {box_name}")
         else:
-            print(f"  ✗ 下架失败: {box_name} - {resp.status_code}")
+            print(f"  [FAIL] 下架失败: {box_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 下架异常: {box_name} - {e}")
+        print(f"  [FAIL] 下架异常: {box_name} - {e}")
 
 
 def _delete_toolbox(base_url, headers, box_id, box_name):
@@ -125,11 +125,11 @@ def _delete_toolbox(base_url, headers, box_id, box_name):
     try:
         resp = requests.delete(url, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 删除成功: {box_name}")
+            print(f"  [OK] 删除成功: {box_name}")
         else:
-            print(f"  ✗ 删除失败: {box_name} - {resp.status_code}")
+            print(f"  [FAIL] 删除失败: {box_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 删除异常: {box_name} - {e}")
+        print(f"  [FAIL] 删除异常: {box_name} - {e}")
 
 
 def _cleanup_mcp_servers(base_url, headers):
@@ -178,11 +178,11 @@ def _offline_mcp(base_url, headers, mcp_id, mcp_name):
     try:
         resp = requests.post(url, json=data, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 下架成功: {mcp_name}")
+            print(f"  [OK] 下架成功: {mcp_name}")
         else:
-            print(f"  ✗ 下架失败: {mcp_name} - {resp.status_code}")
+            print(f"  [FAIL] 下架失败: {mcp_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 下架异常: {mcp_name} - {e}")
+        print(f"  [FAIL] 下架异常: {mcp_name} - {e}")
 
 
 def _delete_mcp(base_url, headers, mcp_id, mcp_name):
@@ -191,11 +191,11 @@ def _delete_mcp(base_url, headers, mcp_id, mcp_name):
     try:
         resp = requests.delete(url, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 删除成功: {mcp_name}")
+            print(f"  [OK] 删除成功: {mcp_name}")
         else:
-            print(f"  ✗ 删除失败: {mcp_name} - {resp.status_code}")
+            print(f"  [FAIL] 删除失败: {mcp_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 删除异常: {mcp_name} - {e}")
+        print(f"  [FAIL] 删除异常: {mcp_name} - {e}")
 
 
 def _cleanup_operators(base_url, headers):
@@ -218,8 +218,15 @@ def _cleanup_operators(base_url, headers):
             op_id = op.get("operator_id")
             op_name = op.get("name", "") or op.get("operator_info", {}).get("name", "")
             status = op.get("status", "")
+            is_internal = bool(op.get("is_internal", False))
+            source = str(op.get("source", "")).lower()
 
             if not op_id:
+                continue
+
+            # 保留内置算子：仅清理非内置（自定义）算子
+            if is_internal or source == "internal":
+                print(f"跳过内置算子: {op_name} (ID: {op_id})")
                 continue
 
             print(f"处理算子: {op_name} (ID: {op_id}, 状态: {status})")
@@ -244,11 +251,11 @@ def _offline_operator(base_url, headers, op_id, op_name):
     try:
         resp = requests.post(url, json=data, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 下架成功: {op_name}")
+            print(f"  [OK] 下架成功: {op_name}")
         else:
-            print(f"  ✗ 下架失败: {op_name} - {resp.status_code}")
+            print(f"  [FAIL] 下架失败: {op_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 下架异常: {op_name} - {e}")
+        print(f"  [FAIL] 下架异常: {op_name} - {e}")
 
 
 def _delete_operator(base_url, headers, op_id, op_name):
@@ -258,11 +265,11 @@ def _delete_operator(base_url, headers, op_id, op_name):
     try:
         resp = requests.delete(url, json=data, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 删除成功: {op_name}")
+            print(f"  [OK] 删除成功: {op_name}")
         else:
-            print(f"  ✗ 删除失败: {op_name} - {resp.status_code}")
+            print(f"  [FAIL] 删除失败: {op_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 删除异常: {op_name} - {e}")
+        print(f"  [FAIL] 删除异常: {op_name} - {e}")
 
 
 def _cleanup_skills(base_url, headers):
@@ -311,11 +318,11 @@ def _offline_skill(base_url, headers, skill_id, skill_name):
     try:
         resp = requests.post(url, json=data, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 下架成功: {skill_name}")
+            print(f"  [OK] 下架成功: {skill_name}")
         else:
-            print(f"  ✗ 下架失败: {skill_name} - {resp.status_code}")
+            print(f"  [FAIL] 下架失败: {skill_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 下架异常: {skill_name} - {e}")
+        print(f"  [FAIL] 下架异常: {skill_name} - {e}")
 
 
 def _delete_skill(base_url, headers, skill_id, skill_name):
@@ -324,8 +331,8 @@ def _delete_skill(base_url, headers, skill_id, skill_name):
     try:
         resp = requests.delete(url, headers=headers, verify=False, timeout=30)
         if resp.status_code == 200:
-            print(f"  ✓ 删除成功: {skill_name}")
+            print(f"  [OK] 删除成功: {skill_name}")
         else:
-            print(f"  ✗ 删除失败: {skill_name} - {resp.status_code}")
+            print(f"  [FAIL] 删除失败: {skill_name} - {resp.status_code}")
     except Exception as e:
-        print(f"  ✗ 删除异常: {skill_name} - {e}")
+        print(f"  [FAIL] 删除异常: {skill_name} - {e}")

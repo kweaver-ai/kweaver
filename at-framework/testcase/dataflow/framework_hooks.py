@@ -39,7 +39,12 @@ def session_clean_up(config, allure):
     # 数据流名称模式（测试创建的）
     dag_patterns = ["upload_", "版本管理测试", "版本创建测试", "更新测试", "完整流程测试", "完整流程更新"]
     # 组合算子名称模式
-    operator_patterns = ["组合算子_sync_nodes_", "组合算子_combo_nodes_", "组合算子_python_nodes_", "组合算子_loop_nodes_"]
+    operator_patterns = [
+        "组合算子_sync_nodes_",
+        "组合算子_combo_nodes_",
+        "组合算子_python_nodes_",
+        "组合算子_loop_nodes_",
+    ]
 
     # 1. 使用正确的API获取数据流列表
     print("[清理] 查询数据流列表 (type=data-flow)...")
@@ -116,11 +121,11 @@ def session_clean_up(config, allure):
         try:
             resp = requests.delete(url, headers=headers, verify=False, timeout=30)
             if resp.status_code in [200, 204]:
-                print(f"[清理] ✓ 删除数据流: {dag_id}")
+                print(f"[清理] [OK] 删除数据流: {dag_id}")
             else:
-                print(f"[清理] ✗ 删除数据流失败: {dag_id} - {resp.status_code}")
+                print(f"[清理] [FAIL] 删除数据流失败: {dag_id} - {resp.status_code}")
         except Exception as e:
-            print(f"[清理] ✗ 删除数据流异常: {dag_id} - {e}")
+            print(f"[清理] [FAIL] 删除数据流异常: {dag_id} - {e}")
         time.sleep(0.2)
 
     # 5. 清理组合算子（先下架再删除）
@@ -141,11 +146,11 @@ def session_clean_up(config, allure):
             resp = requests.delete(del_url, json=[{"operator_id": op_id}],
                                   headers=headers, verify=False, timeout=30)
             if resp.status_code == 200:
-                print(f"[清理] ✓ 删除算子: {op_id}")
+                print(f"[清理] [OK] 删除算子: {op_id}")
             else:
-                print(f"[清理] ✗ 删除算子失败: {op_id} - {resp.status_code}")
+                print(f"[清理] [FAIL] 删除算子失败: {op_id} - {resp.status_code}")
         except Exception as e:
-            print(f"[清理] ✗ 删除算子异常: {op_id} - {e}")
+            print(f"[清理] [FAIL] 删除算子异常: {op_id} - {e}")
         time.sleep(0.2)
 
     print("\n========== dataflow 测试数据清理完成 ==========\n")

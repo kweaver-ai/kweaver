@@ -37,7 +37,7 @@ cases:
 - name: Negative_获取历史版本列表_无效dag_id_请求失败
   url: 获取历史版本列表
   path_params: '{"dag_id": "invalid_dag_id_12345"}'
-  code_check: '200'
+  code_check: '404'
   description: 使用无效的dag_id获取历史版本列表（API返回空列表或错误）
 
 # 获取下一个版本号测试
@@ -52,7 +52,7 @@ cases:
 - name: Negative_获取下一个版本号_无效dag_id_请求失败
   url: 获取下一个版本号
   path_params: '{"dag_id": "invalid_dag_id_12345"}'
-  code_check: '200'
+  code_check: '404'
   description: 使用无效的dag_id获取下一个版本号（API返回默认值或错误）
 
 # 创建数据流带版本号测试
@@ -156,7 +156,7 @@ cases:
 - name: Negative_回退历史版本_无效dag_id_请求失败
   url: 回退历史版本
   path_params: '{"dag_id": "invalid_dag_id_12345", "version_id": "v1.0.0"}'
-  code_check: '500'
+  code_check: '404'
   description: 使用无效的dag_id回退版本
 
 # 完整版本管理流程测试

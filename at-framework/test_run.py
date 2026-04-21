@@ -16,6 +16,8 @@ from datetime import datetime, timedelta
 import allure
 import jsonpath
 import pytest
+import requests
+import urllib3
 from jinja2 import Environment
 from jsonschema.validators import validate
 
@@ -31,6 +33,7 @@ from conftest import config, compute_case_list
 from request.http_client import HTTPClient
 
 resp_values = {}
+urllib3.disable_warnings(urllib3.connectionpool.InsecureRequestWarning)
 
 
 def _truthy(val):
@@ -383,6 +386,94 @@ def _build_multipart_files(case_info):
     return files or None, handles
 
 
+def _parse_teardown_operator_names(case_info):
+    """
+    解析单条用例声明的算子清理名称。
+    支持：
+      - teardown_operator_name: "name1,name2"
+      - teardown_operator_name: ["name1", "name2"]
+    """
+    raw = case_info.get("teardown_operator_name")
+    if raw is None or raw == "":
+        return []
+    if isinstance(raw, str):
+        names = [x.strip() for x in re.split(r"[,;\n]+", raw) if x.strip()]
+    elif isinstance(raw, (list, tuple, set)):
+        names = [str(x).strip() for x in raw if str(x).strip()]
+    else:
+        names = [str(raw).strip()] if str(raw).strip() else []
+    # 去重并保持顺序
+    out = []
+    seen = set()
+    for n in names:
+        if n not in seen:
+            seen.add(n)
+            out.append(n)
+    return out
+
+
+def _teardown_delete_operators_by_names(names):
+    """按名称清理算子：先下架再删除。"""
+    if not names:
+        return
+    scheme, host = at_env.resolve_request_target(config)
+    base_url = "%s://%s" % (scheme, host)
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "x-business-domain": "bd_public",
+    }
+
+    try:
+        list_url = "%s/api/agent-operator-integration/v1/operator/info/list" % base_url
+        resp = requests.get(list_url, params={"all": "true"}, headers=headers, verify=False, timeout=30)
+        if resp.status_code != 200:
+            print("[teardown] query operator list failed: %s" % resp.status_code)
+            return
+        operators = (resp.json() or {}).get("data", [])
+    except Exception as e:
+        print("[teardown] query operator list error: %s" % e)
+        return
+
+    name_to_ids = {}
+    for op in operators:
+        op_name = (op.get("name") or op.get("operator_info", {}).get("name") or "").strip()
+        op_id = str(op.get("operator_id") or "").strip()
+        if op_name and op_id:
+            name_to_ids.setdefault(op_name, []).append(op_id)
+
+    for name in names:
+        ids = name_to_ids.get(name, [])
+        if not ids:
+            print("[teardown] operator not found by name: %s" % name)
+            continue
+        for op_id in ids:
+            try:
+                requests.post(
+                    "%s/api/agent-operator-integration/v1/operator/status" % base_url,
+                    json=[{"operator_id": op_id, "status": "offline"}],
+                    headers=headers,
+                    verify=False,
+                    timeout=30,
+                )
+            except Exception:
+                pass
+            try:
+                del_resp = requests.delete(
+                    "%s/api/agent-operator-integration/v1/operator/delete" % base_url,
+                    json=[{"operator_id": op_id}],
+                    headers=headers,
+                    verify=False,
+                    timeout=30,
+                )
+                if del_resp.status_code == 200:
+                    print("[teardown] [OK] deleted operator by name: %s (%s)" % (name, op_id))
+                else:
+                    print("[teardown] [FAIL] delete operator failed: %s (%s) - %s" % (name, op_id, del_resp.status_code))
+            except Exception as e:
+                print("[teardown] [FAIL] delete operator error: %s (%s) - %s" % (name, op_id, e))
+
+
 def pytest_generate_tests(metafunc):
     if metafunc.function.__name__ != "test_case":
         return
@@ -400,6 +491,7 @@ def test_case(feature, story, case_name, case_info):
 
     allure.dynamic.feature(feature)
     allure.dynamic.story(story)
+    raw_url_template = case_info.get("url", "")
 
     if case_info.get("prev_case", "") != '':
         with allure.step("执行前置用例执行"):
@@ -427,6 +519,9 @@ def test_case(feature, story, case_name, case_info):
         # 替换path参数
         case_path_params = json.loads(case_info.get("path_params", "{}"))
         case_info = replace_params(case_info, **case_path_params)
+        # URL 以原始模板为基准再做一次 path_params 替换，确保 path_params 覆盖优先于 resp_values。
+        if raw_url_template:
+            case_info["url"] = replace_params({"url": raw_url_template}, **case_path_params)["url"]
 
         with allure.step("前置：小模型（prepare_models）"):
             _run_prepare_models_for_case(case_info)
@@ -539,6 +634,11 @@ def test_case(feature, story, case_name, case_info):
                 resp_values[k] = json.dumps(param, ensure_ascii=False)
             else:
                 resp_values[k] = param
+
+    # 用例后置清理：按名称删除算子（示例：teardown_operator_name: duplicate_test_title_fixed）
+    teardown_names = _parse_teardown_operator_names(case_info)
+    if teardown_names:
+        _teardown_delete_operators_by_names(teardown_names)
 
 
 if __name__ == '__main__':

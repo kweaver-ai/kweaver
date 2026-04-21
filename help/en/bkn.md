@@ -1,6 +1,6 @@
-# BKN Engine
+# 🕸️ BKN engine
 
-## Overview
+## 📖 Overview
 
 The **Business Knowledge Network (BKN)** is the semantic layer of KWeaver Core. It models your domain with **object types**, **relation types**, and **action types**, stores **instances** and **relations**, and powers agents and analytics.
 
@@ -10,11 +10,11 @@ The **Business Knowledge Network (BKN)** is the semantic layer of KWeaver Core. 
 
 ---
 
-## BKN Language
+## 📝 BKN language
 
 **BKN (Business Knowledge Network)** is a Markdown-based declarative modeling language for defining objects, relations, and actions in a business knowledge network. BKN describes model structure and semantics only — it contains no execution logic.
 
-Full language specification: [bkn-specification](https://github.com/kweaver-ai/bkn-specification).
+> Full BKN language specification is provided with your product documentation.
 
 ### Core Concepts
 
@@ -105,19 +105,17 @@ Official SDKs for parsing, validating, and transforming BKN files:
 |----------|---------|---------|
 | Python | [PyPI](https://pypi.org/project/kweaver-bkn/) | `pip install kweaver-bkn` |
 | TypeScript | [npm](https://www.npmjs.com/package/@kweaver-ai/bkn) | `npm install @kweaver-ai/bkn` |
-| Golang | — | `go get github.com/kweaver-ai/bkn-specification/sdk/golang` |
+| Golang | See your release notes | Follow the BKN SDK guide bundled with your distribution |
 
 ---
 
-## Create BKN with an Agent
+## 🤖 Create BKN with an agent
 
-AI coding agents (Cursor, Claude Code, Codex, etc.) can generate spec-compliant BKN directories automatically via the [create-bkn](https://github.com/kweaver-ai/bkn-specification/tree/main/.cursor/skills/create-bkn) skill.
+AI coding agents (Cursor, Claude Code, Codex, etc.) can generate spec-compliant BKN directories when the **create-bkn** and **kweaver-core** skills are installed.
 
-### Install the Skill
+### 📥 Install the skill
 
-For Cursor, place the `create-bkn` skill directory under `~/.cursor/skills/` or `.cursor/skills/` in your project. Other agent environments follow their own skill-loading mechanism.
-
-Also install the [kweaver-core](https://github.com/kweaver-ai/kweaver-sdk) skill for CLI validation and push capabilities.
+> **create-bkn** and **kweaver-core** are distributed by your organization. For Cursor, place skill directories under `~/.cursor/skills/` or `.cursor/skills/` in your project. Other agent environments follow their own skill-loading mechanism.
 
 ### Describe Your Domain in Natural Language
 
@@ -172,7 +170,7 @@ kweaver bkn search <kn_id> "materials running low on stock"
 
 ---
 
-## Create from Data Source
+## 🔌 Create from data source
 
 Instead of writing BKN files, you can generate a knowledge network directly from an existing data source:
 
@@ -192,7 +190,7 @@ kweaver bkn create-from-csv <ds_id> \
 
 ---
 
-## CLI
+## 💻 CLI
 
 ### Knowledge Network Management
 
@@ -323,7 +321,7 @@ kweaver bkn search <kn_id> "top spending customers"
 
 ---
 
-## Python SDK
+## 🐍 Python SDK
 
 ```python
 from kweaver_sdk import KWeaverClient
@@ -387,9 +385,9 @@ print(execution["status"], execution["output"])
 
 ---
 
-## TypeScript SDK
+## 📘 TypeScript SDK
 
-> Full runnable examples at [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)
+> More runnable examples ship with the `@kweaver-ai/kweaver-sdk` npm package.
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';
@@ -455,7 +453,7 @@ const buildStatus = await client.knowledgeNetworks.buildAndWait(knId, {
 
 ---
 
-## curl
+## 🌐 curl
 
 ```bash
 # List knowledge networks

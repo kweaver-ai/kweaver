@@ -1,12 +1,12 @@
-# Quick Start
+# 🚀 Quick start
 
-This walkthrough assumes KWeaver Core is already [deployed](installation/deploy.md), including the post-install checks in that page.
+This walkthrough assumes KWeaver Core is already [installed and deployed](install.md), including the post-install checks on that page.
 
-> **Model configuration note**: **Register at least one LLM and one embedding (vector) small model** when possible: the LLM powers Agent chat and reasoning; the embedding model powers semantic search and vectorization. Semantic search (Step 4) and Agent chat (Step 5) depend on these; after registering an embedding, complete [Enable BKN semantic search](model.md#enable-bkn-semantic-search) in the cluster (ConfigMap / default small-model name). Other registration details are in [Model management](model.md). A `--minimum` install has no bundled models; see also [Deploy — model configuration](installation/deploy.md#configure-models-required-for-semantic-search-and-agent). Data source connection, knowledge network creation, and conditional queries work without models.
+> **Model configuration note**: **Register at least one LLM and one embedding (vector) small model** when possible: the LLM powers Agent chat and reasoning; the embedding model powers semantic search and vectorization. Semantic search (Step 4) and Agent chat (Step 5) depend on these; after registering an embedding, complete [Enable BKN semantic search](model.md#enable-bkn-semantic-search) in the cluster (ConfigMap / default small-model name). Other registration details are in [Model management](model.md). A `--minimum` install has no bundled models; see also [Install and deploy — Configure models](install.md#configure-models). Data source connection, knowledge network creation, and conditional queries work without models.
 
 ---
 
-## Scenario: First Semantic Search in 5 Minutes
+## 🎯 Scenario: First semantic search in 5 minutes
 
 **Story**: You just deployed KWeaver Core. You have a MySQL database with ERP data. Your goal is to turn the database into a knowledge network and search it with natural language — "which orders are overdue?"
 
@@ -86,7 +86,7 @@ This single command discovers table schemas, creates object types, and maps fiel
 
 **Option B: Via AI coding assistant**
 
-If you have installed the [AI Agent Skills](https://github.com/kweaver-ai/kweaver-sdk) (see the root [README](../../README.md#ai-agent-skills) for setup), you can use natural language in your AI coding assistant (Cursor, Claude Code, etc.):
+If you have installed the **kweaver-core** / **create-bkn** AI Agent skills (from your organization’s skill bundle), you can use natural language in your AI coding assistant (Cursor, Claude Code, etc.):
 
 ```
 Create a knowledge network called erp-supply-chain from datasource ds-abc123 using the orders, products, and customers tables
@@ -111,7 +111,7 @@ kweaver bkn object-type list <kn_id>
 
 ### Step 4: Semantic Search
 
-> Semantic search requires an embedding model and [Enable BKN semantic search](model.md#enable-bkn-semantic-search). If either is missing, this step may fail. See also [Model management](model.md) and [Deploy — model configuration](installation/deploy.md#configure-models-required-for-semantic-search-and-agent). The **conditional query** below works without semantic search enabled.
+> Semantic search requires an embedding model and [Enable BKN semantic search](model.md#enable-bkn-semantic-search). If either is missing, this step may fail. See also [Model management](model.md) and [Install and deploy — Configure models](install.md#configure-models). The **conditional query** below works without semantic search enabled.
 
 ```bash
 kweaver bkn search <kn_id> "overdue orders"
@@ -128,11 +128,11 @@ kweaver bkn object-type query <kn_id> ot-1 \
 
 ---
 
-## Scenario: Same Thing, With the TypeScript SDK
+## 🎯 Scenario: Same thing, with the TypeScript SDK
 
 If you prefer code over CLI, here's the same flow in TypeScript.
 
-> Full runnable examples at [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples).
+> More runnable examples ship with the `@kweaver-ai/kweaver-sdk` npm package.
 
 ### Simplest Way (Simple API — 3 Lines of Code)
 
@@ -239,11 +239,11 @@ const mcpInstances = await cl.queryInstances({ ot_id: otId, limit: 5 });
 
 ---
 
-## Scenario: Create an Agent and Chat
+## 🎯 Scenario: Create an agent and chat
 
 **Story**: The knowledge network is built. Now you want to give your business team a natural-language interface — no SQL needed, just ask questions and get answers.
 
-> **Prerequisite**: Agents require an LLM and an embedding; see [Model management](model.md) and [Deploy — model configuration](installation/deploy.md#configure-models-required-for-semantic-search-and-agent). For semantic features, also complete [Enable BKN semantic search](model.md#enable-bkn-semantic-search).
+> **Prerequisite**: Agents require an LLM and an embedding; see [Model management](model.md) and [Install and deploy — Configure models](install.md#configure-models). For semantic features, also complete [Enable BKN semantic search](model.md#enable-bkn-semantic-search).
 
 ### CLI
 
@@ -320,7 +320,7 @@ const messages = await client.conversations.listMessages(conversationId, { limit
 
 ---
 
-## Scenario: Trace the Reasoning (Trace AI)
+## 🎯 Scenario: Trace the reasoning (Trace AI)
 
 **Story**: The agent's answer looks wrong. You want to know exactly what data it queried, which tools it called, and how long each step took.
 
@@ -349,7 +349,7 @@ The trace returns a Span tree ordered by time, showing:
 
 ---
 
-## Scenario: Build a Knowledge Network From CSV Files
+## 🎯 Scenario: Build a knowledge network from CSV files
 
 **Story**: You don't have a database — just a few CSV reports.
 
@@ -371,7 +371,7 @@ kweaver bkn search <kn_id> "zero inventory"
 
 ---
 
-## Scenario: VEGA Data Views & SQL
+## 🎯 Scenario: VEGA data views and SQL
 
 **Story**: You want to run SQL directly against the underlying data, bypassing the knowledge network.
 
@@ -400,11 +400,11 @@ kweaver dataview query <view_id> --sql "SELECT supplier_name, city FROM <catalog
 
 `<catalog>` must be the **Vega catalog id** for that data source (see `kweaver vega catalog list`); `"supply_chain"` / `"supplier_entity"` map to the source database/schema and table. **Reliable approach**: copy the **`meta_table_name`** field from **`kweaver dataview get <view_id>`** into your SQL. For `sql_str`, `fields`, and the field table, see the Dataview section in [VEGA](vega.md).
 
-On a **Core-only** install, `dataview query` without `--sql` supports structured reads (pagination, column selection, etc.). **Ad-hoc `--sql`** requires **`vega-calculate-coordinator`**, shipped as part of the **Etrino** stack (`vega-hdfs`, `vega-calculate`, `vega-metadata`). From the `deploy` directory run `./deploy.sh etrino install`. See [Deploy](installation/deploy.md) and [VEGA](vega.md).
+On a **Core-only** install, `dataview query` without `--sql` supports structured reads (pagination, column selection, etc.). **Ad-hoc `--sql`** requires **`vega-calculate-coordinator`**, shipped as part of the **Etrino** stack (`vega-hdfs`, `vega-calculate`, `vega-metadata`). From the `deploy` directory run `./deploy.sh etrino install`. See [Install and deploy](install.md) and [VEGA](vega.md).
 
 ---
 
-## Scenario: Dataflow Pipeline Orchestration
+## 🎯 Scenario: Dataflow pipeline orchestration
 
 **Story**: You have a document-processing pipeline and need to upload a PDF to trigger parsing.
 
@@ -424,7 +424,7 @@ kweaver dataflow logs <dag_id> <instance_id> --detail
 
 ---
 
-## Where to Go Next
+## 📖 Where to go next
 
 | Goal | Doc |
 | --- | --- |
@@ -439,4 +439,4 @@ kweaver dataflow logs <dag_id> <instance_id> --detail
 | Trace & evidence chain | [trace-ai.md](trace-ai.md) |
 | Auth & security governance | [isf.md](isf.md) |
 
-Full SDK example code at [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples).
+Full SDK example code ships with the `@kweaver-ai/kweaver-sdk` npm package.

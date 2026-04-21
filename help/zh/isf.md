@@ -1,14 +1,14 @@
-# Info Security Fabric（ISF）
+# 🔐 Info Security Fabric（ISF）
 
-## 概述
+## 📖 概述
 
 **Info Security Fabric** 是**横切的安全层**：在数据访问、模型输出与工具调用上提供统一的**身份**、**权限**、**策略**与**审计**。完整安装可能对接 OAuth2/OIDC（如 Hydra）与业务域服务。
 
-使用 **`--minimum` 安装**时，多数认证组件关闭，便于实验环境快速上手，部分 API 可能无需 Token。生产环境请按 [deploy/README.zh.md](../../deploy/README.zh.md) 启用完整认证配置。
+使用 **`--minimum` 安装**时，多数认证组件关闭，便于实验环境快速上手，部分 API 可能无需 Token。生产环境请按随产品提供的部署与安全文档启用完整认证配置。
 
 **相关模块：** 所有接受 `Authorization` 的子系统；主要消费者包括 [Decision Agent](decision-agent.md)、[VEGA 引擎](vega.md)。
 
-### CLI
+### 💻 CLI
 
 #### 登录
 
@@ -33,7 +33,17 @@ kweaver auth login https://kweaver.example.com \
 # 无浏览器交互登录：CLI 打印 OAuth URL，复制到任意带浏览器的设备登录后，
 # 将地址栏完整回调 URL（或授权码）粘贴回终端
 kweaver auth login https://kweaver.example.com --no-browser -k
+
+# 首次登录强制改密（非交互一次性完成）：服务端要求重置初始密码时使用
+kweaver auth login https://kweaver.example.com \
+  -u <用户名> -p '<初始密码>' --new-password '<新密码>' -k
 ```
+
+> 🔑 **首次登录可能要求修改密码**：当账号仍使用初始密码时，服务端会返回错误码 **`401001017`**，CLI 行为如下：
+> - **TTY（交互终端）**：自动确认后引导你输入新密码（6–100 字符），改密成功后自动重试登录，无需手动重跑。
+> - **非 TTY（脚本 / CI）**：不会弹提示，请改用上面的 `--new-password '<新密码>'` 一次性完成；或先用 [`kweaver auth change-password`](#-修改密码) 改密后再正常登录。
+>
+> 改密后旧的初始密码立即失效，请同步更新自动化脚本与 CI 中保存的密码。
 
 #### 会话管理
 
@@ -80,6 +90,61 @@ kweaver auth logout
 # 删除已保存的会话（同时清理本地凭据）
 kweaver auth delete prod
 ```
+
+#### 🔑 修改密码
+
+通过 `kweaver auth change-password` 直接修改账号密码，**无需依赖**已保存的 OAuth Token，底层调用 EACP `POST /api/eacp/v1/auth1/modifypassword`，新密码长度 **6–100 字符**。
+
+```bash
+# 完整参数（非交互式，适合脚本/CI）
+kweaver auth change-password https://kweaver.example.com \
+  -u <用户名> -o '<旧密码>' -n '<新密码>' -k
+
+# 省略 <url>：使用当前激活平台（kweaver auth use 设置的）
+kweaver auth change-password -u <用户名> -o '<旧密码>' -n '<新密码>'
+
+# 交互式：在 TTY 下省略 -o / -n，会以隐藏输入方式提示；
+# 省略 -u 时会用当前激活账号（token.json 的 displayName），并先做 yes/no 确认
+kweaver auth change-password prod
+```
+
+| 参数 | 说明 |
+|------|------|
+| `<url>` | 平台地址或别名；省略时使用当前激活平台。无激活平台则报错退出。 |
+| `-u <account>` | 账号名。**TTY** 下省略时会确认是否使用当前激活账号；**非 TTY** 下必须显式提供（避免脚本误改账号）。 |
+| `-o <old>` | 旧密码；TTY 下可省略以隐藏方式输入。 |
+| `-n <new>` | 新密码（6–100 字符）；TTY 下可省略以隐藏方式输入。 |
+| `--insecure` / `-k` | 跳过 TLS 校验；省略时沿用登录平台时保存的偏好。 |
+
+> ⚠️ **初始密码（错误码 401001017）**：服务端要求重置初始密码时，普通的 `kweaver auth login -u … -p …` 会失败。
+> - **TTY**：CLI 会确认后引导你输入新密码并自动重试登录。
+> - **非 TTY**：请用 `kweaver auth login <url> -u <用户名> -p '<旧密码>' --new-password '<新密码>'` 在登录的同时一次性完成首次密码设置。
+
+```python
+# Python SDK：通过 client.auth 直接修改密码
+from kweaver_sdk import KWeaverClient
+
+client = KWeaverClient(base_url="https://kweaver.example.com", verify_ssl=False)
+client.auth.change_password(
+    account="<用户名>",
+    old_password="<旧密码>",
+    new_password="<新密码>",
+)
+```
+
+```typescript
+// TypeScript SDK
+import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';
+
+const client = new KWeaverClient({ baseUrl: 'https://kweaver.example.com', verifySsl: false });
+await client.auth.changePassword({
+  account: '<用户名>',
+  oldPassword: '<旧密码>',
+  newPassword: '<新密码>',
+});
+```
+
+> 💡 失败时报错信息会附带 `(account="<用户名>")`，方便快速定位是哪个账号失败。
 
 #### 多账户工作流
 

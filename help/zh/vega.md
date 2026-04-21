@@ -1,6 +1,6 @@
-# VEGA 引擎
+# 🗄️ VEGA 引擎
 
-## 概述
+## 📖 概述
 
 **VEGA** 提供跨异构数据源的**数据虚拟化**：**数据连接（Catalog）**、**资源发现**、**连接器类型**与**数据视图**（含原子视图与组合视图）。智能体与应用通过统一的类 SQL 访问面查询，而无需为每个数据源单独适配。
 
@@ -12,11 +12,11 @@
 
 **相关模块：** [BKN 引擎](bkn.md)、[Context Loader](context-loader.md)、[Dataflow](dataflow.md)（数据落地与转换流程）。
 
-文末 **[curl](#curl)** 一节仅供需要 **自行拼 HTTP / 脚本里调 API** 时参考；只用 CLI 或语言 SDK 的读者可以不看。
+文末 **curl** 一节仅供需要 **自行拼 HTTP / 脚本里调 API** 时参考；只用 CLI 或语言 SDK 的读者可以不看。
 
 ---
 
-## CLI
+## 💻 CLI
 
 所有 `kweaver vega` 子命令支持的公共参数：`-bd` / `--biz-domain <s>`（默认取自 `kweaver config`）、`--pretty`（JSON 美化，默认开启）。完整列表见 `kweaver vega --help`。
 
@@ -206,7 +206,7 @@ kweaver dataview query dv_001 \
   --sql "SELECT customer_name, order_count FROM mysql_demo.\"sales\".\"customer_orders\" WHERE region = '华东' LIMIT 20"
 ```
 
-**自定义 SQL（`--sql`）与 Etrino**：不带 `--sql` 时，`dataview query` 使用视图内建定义，走直连数据源；`--sql` 会经 `vega-gateway-pro` 调用 **`vega-calculate-coordinator`**（Hetu/Presto 系引擎），该组件不在 KWeaver Core 默认清单中，需部署 **Etrino 相关 Chart**：`vega-hdfs`、`vega-calculate`（内含 coordinator）、`vega-metadata`。在 `deploy` 目录执行 `./deploy.sh etrino install` 即可单独安装 Etrino。**复杂 SQL 请使用 catalog.`"schema"."table"` 全限定名。** 步骤见 [部署文档](installation/deploy.md) 中的「可选：Etrino」。
+**自定义 SQL（`--sql`）与 Etrino**：不带 `--sql` 时，`dataview query` 使用视图内建定义，走直连数据源；`--sql` 会经 `vega-gateway-pro` 调用 **`vega-calculate-coordinator`**（Hetu/Presto 系引擎），该组件不在 KWeaver Core 默认清单中，需部署 **Etrino 相关 Chart**：`vega-hdfs`、`vega-calculate`（内含 coordinator）、`vega-metadata`。在 `deploy` 目录执行 `./deploy.sh etrino install` 即可单独安装 Etrino。**复杂 SQL 请使用 catalog.`"schema"."table"` 全限定名。** 步骤见 [安装与部署](install.md) 中的「可选：Etrino」。
 
 **`dataview get` 响应字段（自定义 `--sql` 时）**：`kweaver dataview get <view_id> --pretty` 返回的 JSON 中，与表引用直接相关的是下表（字段名与 REST / TypeScript / Python SDK 一致）。
 
@@ -242,7 +242,7 @@ kweaver dataview query dv_001 \
 
 ---
 
-## Python SDK
+## 🐍 Python SDK
 
 **`client.vega.*`** 为 vega-backend 能力（嵌套资源：`catalogs`、`resources`、`query`、`connector_types` 等）。当前 Python 包中的 **`VegaCatalogsResource` / `VegaResourcesResource` 尚未暴露 Catalog/Resource 的创建更新删除以及 dataset 构建**；请使用上文 **CLI**、下文 **TypeScript** 示例，或本文 **curl** 一节直接调 REST。
 
@@ -290,7 +290,7 @@ result = client.dataviews.query(
 
 ---
 
-## TypeScript SDK
+## 📘 TypeScript SDK
 
 `client.vega` 为**扁平**方法名（`listCatalogs`、`createCatalog` 等）。`executeQuery`、`sqlQuery`、`createResource`、`updateCatalog` 等需要 **JSON 字符串**（`JSON.stringify(...)`）。
 
@@ -353,7 +353,7 @@ const dvResult = await client.dataviews.query('dv_001', {
 
 ---
 
-## curl
+## 🌐 curl
 
 已 `kweaver auth login` 时，可将示例中的 **`Authorization: Bearer $(kweaver token)`** 用于受保护接口；将 **`https://<访问地址>`** 换为实际平台地址。
 
@@ -444,4 +444,4 @@ curl -sk -X POST "https://<访问地址>/api/vega-backend/v1/connector-types/mys
 
 Dataview 的 HTTP 路径由 **mdl-uniquery** / **mdl-data-model** 提供，不在 vega-backend 的 `router.go` 中；请使用 `kweaver dataview` 或 `client.dataviews`。
 
-更多说明见 [kweaver-sdk](https://github.com/kweaver-ai/kweaver-sdk) 以及 `kweaver vega --help`。
+更多说明见 npm 包 `@kweaver-ai/kweaver-sdk` 以及 `kweaver vega --help`。

@@ -541,7 +541,7 @@ F1 Bench is based on the BIRD test set with the Formula-1 database mixed with 30
 
 <a id="toc-community"></a>
 
-## Community
+## 🤝 Community
 
 **KWeaver WeChat Group QR Code**
 

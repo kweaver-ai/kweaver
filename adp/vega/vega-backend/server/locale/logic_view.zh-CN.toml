@@ -28,13 +28,18 @@ Description = "字段备注长度超限"
 Solution = "请缩短备注内容"
 ErrorLink = "暂无"
 
+[VegaBackend.LogicView.Duplicated.NodeID]
+Description = "逻辑视图逻辑定义里节点ID重复"
+Solution = "请使用不同的节点ID"
+ErrorLink = "暂无"
+
 [VegaBackend.LogicView.Duplicated.FieldName]
-Description = "数据视图字段名称已存在"
+Description = "逻辑视图字段名称已存在"
 Solution = "请使用不同的字段名称"
 ErrorLink = "暂无"
 
 [VegaBackend.LogicView.Duplicated.FieldDisplayName]
-Description = "数据视图字段显示名称已存在"
+Description = "逻辑视图字段显示名称已存在"
 Solution = "请使用不同的显示名称"
 ErrorLink = "暂无"
 

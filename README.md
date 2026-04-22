@@ -27,10 +27,7 @@ KWeaver Core is a harness-first foundation for enterprise decision agents. It tu
 - 📦 [Examples](examples/README.md) - End-to-end CLI walkthroughs (DB / CSV / actions)
 - 📘 [Documentation](help/README.md) - Product documentation and usage guides ([EN](help/en/README.md) / [中文](help/zh/README.md))
 - 📝 [Blog](https://kweaver-ai.github.io/kweaver-core/) - KWeaver technical articles and updates
-- 🚀 [Release Guidelines](rules/RELEASE.md) - Version management and release process
-- 🏗️ [Architecture](rules/ARCHITECTURE.md) - Architecture design specification
 - 🧾 [Release Notes](release-notes/) - All notable changes
-- 📄 [License](LICENSE.txt) - Apache License 2.0
 - 🐛 [Report Bug](https://github.com/kweaver-ai/kweaver-core/issues) - Report a bug or issue
 - 💡 [Request Feature](https://github.com/kweaver-ai/kweaver-core/issues) - Suggest a new feature
 

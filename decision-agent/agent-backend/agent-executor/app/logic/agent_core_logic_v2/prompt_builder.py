@@ -52,6 +52,10 @@ class PromptBuilder:
         由环境变量 ADD_SKILL_USAGE_RULES_IN_SYSTEM_PROMPT 控制，默认 false，
         仅当值为 true/1/yes（大小写不敏感）时才拼接。
         """
+
+        # 先临时这样写，等健康来统一处理（2026-04-22）
+        return True
+
         return os.getenv("ADD_SKILL_USAGE_RULES_IN_SYSTEM_PROMPT", "false").lower() in (
             "true",
             "1",

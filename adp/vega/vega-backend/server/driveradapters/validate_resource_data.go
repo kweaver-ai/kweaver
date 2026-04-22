@@ -31,6 +31,11 @@ func ValidateResourceDataQueryParams(ctx context.Context, params *interfaces.Res
 		}
 	}
 
+	// limit 默认值为 10
+	if params.Limit == 0 {
+		params.Limit = interfaces.DEFAULT_DATA_LIMIT
+	}
+
 	// 校验分页参数
 	err := validatePaginationParams(ctx, params.Offset, params.Limit)
 	if err != nil {

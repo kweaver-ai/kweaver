@@ -8,6 +8,11 @@ CONFIG_YAML_PATH="${CONFIG_YAML_PATH:-${CONF_DIR}/config.yaml}"
 # Global flag: skip all interactive prompts and use defaults
 ASSUME_YES="${ASSUME_YES:-false}"
 
+# Global flag: bypass "skip when chart version unchanged" optimization so that
+# helm upgrade re-renders templates with the latest values.yaml. Use this after
+# editing config.yaml on a previously-installed cluster.
+FORCE_UPGRADE="${FORCE_UPGRADE:-false}"
+
 # Fix paths to use script's conf directory, not user home
 FLANNEL_MANIFEST_PATH="${SCRIPT_DIR}/conf/kube-flannel.yml"
 LOCALPV_MANIFEST_PATH="${SCRIPT_DIR}/conf/local-path-storage.yaml"
@@ -112,6 +117,8 @@ usage() {
     echo ""
     echo "Global Options:"
     echo "  -y, --yes                     Skip all interactive prompts and use defaults"
+    echo "  --force-upgrade               Always run helm upgrade even if installed chart version equals target."
+    echo "                                Use this after editing config.yaml on a previously-installed cluster."
     echo "  --config=<path>               Specify config.yaml path (values file for helm installs)"
     echo "                                (default: ~/.kweaver-ai/config.yaml or \$CONFIG_YAML_PATH env var)"
     echo "  --charts_dir=<path>           Use a specific local chart directory for download/install"
@@ -340,6 +347,7 @@ main() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -y|--yes) ASSUME_YES="true"; shift ;;
+            --force-upgrade) FORCE_UPGRADE="true"; shift ;;
             *) break ;;
         esac
     done
@@ -391,6 +399,7 @@ main() {
             case "$1" in
                 --api_server_address=*) API_SERVER_ADVERTISE_ADDRESS="${1#*=}"; shift ;;
                 --api_server_address)   API_SERVER_ADVERTISE_ADDRESS="$2"; shift 2 ;;
+                --force-upgrade)        FORCE_UPGRADE="true"; shift ;;
                 --access_address=*)     KWEAVER_ACCESS_ADDRESS="${1#*=}"; shift ;;
                 --access_address)       KWEAVER_ACCESS_ADDRESS="$2"; shift 2 ;;
                 -y|--yes)               ASSUME_YES="true"; shift ;;

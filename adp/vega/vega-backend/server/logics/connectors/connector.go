@@ -70,12 +70,8 @@ type FilesetConnector interface {
 	Connector
 	// ListFilesets lists file and folder objects for discovery (typically one level per parent).
 	ListFilesets(ctx context.Context) ([]*interfaces.FilesetMeta, error)
-	// SearchFiles searches files based on query parameters.
-	// docID is the source object id (e.g. AnyShare gns id).
-	// keyword is the search keyword for fuzzy search.
-	// rows is the number of results to return.
-	// start is the starting index for pagination.
-	SearchFiles(ctx context.Context, docID, keyword string, rows, start int) ([]map[string]any, int64, error)
+	// ExecuteQuery executes a query on the fileset
+	ExecuteQuery(ctx context.Context, resource *interfaces.Resource, params *interfaces.ResourceDataQueryParams) (*interfaces.QueryResult, error)
 }
 
 // TopicConnector defines the interface for message queue connectors.

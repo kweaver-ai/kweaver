@@ -14,12 +14,12 @@
 *                                          @xforce-io @sh00tg0a1
 
 # ── ADP (Application Delivery Platform) ─────────────────────
-adp/bkn/**                                 @kenlee1988
+adp/bkn/**                                 @kenlee1988 @Yana-tao
 adp/context-loader/**                      @criller
 adp/dataflow/**                            @zhangaishucn
 adp/execution-factory/**                   @criller
-adp/vega/**                                @kenlee1988 @Flynn-Zh
-adp/docs/**                                @kenlee1988
+adp/vega/**                                @kenlee1988 @Flynn-Zh @LuckyCaptain-go
+adp/docs/**                                @kenlee1988 @Flynn-Zh @LuckyCaptain-go @Yana-tao
 
 # ── Decision Agent ───────────────────────────────────────────
 decision-agent/**                          @guodawn

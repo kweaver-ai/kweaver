@@ -83,6 +83,10 @@ parse_dip_args() {
                 ASSUME_YES="true"
                 shift
                 ;;
+            --force-upgrade)
+                FORCE_UPGRADE="true"
+                shift
+                ;;
             *)
                 log_error "Unknown argument: $1"
                 return 1

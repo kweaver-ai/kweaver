@@ -13,6 +13,8 @@ const (
 
 	// 最大查询长度设置为10000
 	MAX_SEARCH_SIZE = 10000
+
+	DEFAULT_DATA_LIMIT = 10
 )
 
 // SortField represents a field to sort by.
@@ -43,7 +45,4 @@ type ResourceDataQueryParams struct {
 
 	// CursorEncoded keyset 游标值，由 query session 注入；非空时用 WHERE (sort_cols) > cursor 替代 OFFSET
 	CursorEncoded string `json:"-"`
-
-	// SearchKeyword 搜索关键字，用于文件集资源的模糊搜索
-	SearchKeyword string `json:"search_keyword,omitempty"`
 }

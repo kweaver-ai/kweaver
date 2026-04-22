@@ -128,15 +128,6 @@ func validateDataTagName(ctx context.Context, dataTagName string) error {
 	return nil
 }
 
-// 备注合法性校验
-func validateObjectComment(ctx context.Context, comment string) error {
-	if utf8.RuneCountInString(comment) > interfaces.COMMENT_MAX_LENGTH {
-		return rest.NewHTTPError(ctx, http.StatusBadRequest, berrors.BknBackend_LengthExceeded_Comment).
-			WithErrorDetails(fmt.Sprintf("The length of the comment exceeds %v", interfaces.COMMENT_MAX_LENGTH))
-	}
-	return nil
-}
-
 // 分页参数合法性校验
 func validatePaginationQueryParameters(ctx context.Context, offset, limit, sort, direction string,
 	supportedSortTypes map[string]string) (interfaces.PaginationQueryParameters, error) {
@@ -199,7 +190,7 @@ func validateConceptsQuery(ctx context.Context, query *interfaces.ConceptsQuery)
 	query.ActualCondition = actualCond
 
 	knFilter := &cond.CondCfg{
-		Name:      "kn_id",
+		Field:     "kn_id",
 		Operation: cond.OperationEq,
 		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: cond.ValueFrom_Const,
@@ -209,7 +200,7 @@ func validateConceptsQuery(ctx context.Context, query *interfaces.ConceptsQuery)
 
 	// 3. module type的过滤
 	typeFilter := &cond.CondCfg{
-		Name:      "module_type",
+		Field:     "module_type",
 		Operation: cond.OperationEq,
 		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: cond.ValueFrom_Const,
@@ -219,7 +210,7 @@ func validateConceptsQuery(ctx context.Context, query *interfaces.ConceptsQuery)
 
 	// 4. branch的过滤
 	branchFilter := &cond.CondCfg{
-		Name:      "branch",
+		Field:     "branch",
 		Operation: cond.OperationEq,
 		ValueOptCfg: cond.ValueOptCfg{
 			ValueFrom: cond.ValueFrom_Const,
@@ -272,7 +263,7 @@ func validateCond(ctx context.Context, cfg *cond.CondCfg) error {
 		}
 	default:
 		// 过滤字段名称不能为空
-		if cfg.Operation != cond.OperationMultiMatch && cfg.Name == "" {
+		if cfg.Operation != cond.OperationMultiMatch && cfg.Field == "" {
 			return rest.NewHTTPError(ctx, http.StatusBadRequest, berrors.BknBackend_NullParameter_ConditionName)
 		}
 
@@ -355,8 +346,8 @@ func validateID(ctx context.Context, id string) error {
 		re := regexp2.MustCompile(interfaces.RegexPattern_NonBuiltin_ID, regexp2.RE2)
 		match, err := re.MatchString(id)
 		if err != nil || !match {
-			errDetails := `The id can contain only lowercase letters, digits and underscores(_),
-			it cannot start with underscores and cannot exceed 40 characters`
+			errDetails := fmt.Sprintf(`The id can contain only lowercase letters, digits and underscores(_),
+			it cannot start with underscores and cannot exceed 40 characters, but got %s`, id)
 			return rest.NewHTTPError(ctx, http.StatusBadRequest, berrors.BknBackend_InvalidParameter_ID).
 				WithErrorDetails(errDetails)
 		}

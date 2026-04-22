@@ -1,6 +1,6 @@
-# Context Loader
+# 📚 Context Loader
 
-## Overview
+## 📖 Overview
 
 The **Context Loader** (including **agent-retrieval** services) assembles **high-quality context** for Decision Agents: ontology-aware recall, ranking, and on-demand loading from BKN and data plane. It sits between raw data/VEGA and the agent runtime.
 
@@ -16,7 +16,7 @@ Typical ingress prefix:
 
 ---
 
-## MCP Integration
+## 🔌 MCP integration
 
 The Context Loader exposes a standard [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server over Streamable HTTP transport. AI coding tools (Cursor, Claude Desktop, Cline, etc.) and custom agents can call all Context Loader capabilities directly via the MCP protocol.
 
@@ -91,7 +91,7 @@ kweaver context-loader tools
 
 ---
 
-## CLI
+## 💻 CLI
 
 ### Configuration Management
 
@@ -240,7 +240,7 @@ for tool in tools:
 
 ## TypeScript SDK
 
-> Full runnable examples at [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)
+> More runnable examples ship with the `@kweaver-ai/kweaver-sdk` npm package.
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';

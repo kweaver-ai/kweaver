@@ -1,6 +1,6 @@
-# Decision Agent
+# 🤖 Decision Agent
 
-## Overview
+## 📖 Overview
 
 **Decision Agents** are goal-oriented systems that plan, retrieve context, call tools under policy, and iterate with feedback. Core services include **agent-factory** (orchestration APIs), **agent-executor**, **memory**, and **retrieval** integration.
 
@@ -14,13 +14,13 @@ Typical ingress prefixes:
 
 **Related modules:** [Context Loader](context-loader.md), [Execution Factory](execution-factory.md), [BKN Engine](bkn.md), [Trace AI](trace-ai.md).
 
-> **Model configuration prerequisite**: Agents require an LLM and an Embedding model. A `--minimum` install does not include pre-configured models — complete the [model configuration in the deploy guide](installation/deploy.md#configure-models-required-for-semantic-search-and-agent) before using agents. Use `--llm-id` when creating an agent to specify the registered LLM ID.
+> **Model configuration prerequisite**: Agents require an LLM and an Embedding model. A `--minimum` install does not include pre-configured models — complete [Install and deploy — Configure models](install.md#configure-models) before using agents. Use `--llm-id` when creating an agent to specify the registered LLM ID.
 
-## Usage
+## 🚀 Usage
 
 Run `kweaver auth login <platform-url>` first (`-k` for self-signed TLS). The CLI examples below assume a saved session. For raw HTTP, see the **curl** section at the end.
 
-## CLI
+## 💻 CLI
 
 ### Listing Agents
 
@@ -258,7 +258,7 @@ client.agent.delete(agent["id"])
 
 ## TypeScript SDK
 
-> Full runnable examples at [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)
+> More runnable examples ship with the `@kweaver-ai/kweaver-sdk` npm package.
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';

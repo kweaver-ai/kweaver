@@ -1052,7 +1052,7 @@ func (cs *ConceptSyncer) getAllActionTypesFromDatasetByKnID(ctx context.Context,
 		// Deserialize condition from JSON string
 		if condStr, exists := entry["condition"]; exists {
 			if condStrStr, ok := condStr.(string); ok && condStrStr != "" {
-				var condCfg interfaces.CondCfg
+				var condCfg interfaces.ActionCondCfg
 				if err := sonic.Unmarshal([]byte(condStrStr), &condCfg); err != nil {
 					logger.Errorf("Failed to unmarshal action_type condition: %s", err.Error())
 					return map[string]*interfaces.ActionType{}, err

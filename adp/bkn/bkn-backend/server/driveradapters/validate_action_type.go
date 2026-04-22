@@ -86,7 +86,7 @@ func ValidateActionType(ctx context.Context, actionType *interfaces.ActionType, 
 	// 校验行动类型为有效类型
 	if !interfaces.ActionTypeMap[actionType.ActionType] {
 		return rest.NewHTTPError(ctx, http.StatusBadRequest, berrors.BknBackend_ActionType_InvalidParameter).
-			WithErrorDetails(fmt.Sprintf("The action type is expected one of [create, update, delete], actual is [%s]",
+			WithErrorDetails(fmt.Sprintf("The action type is expected one of [add, modify, delete], actual is [%s]",
 				actionType.ActionType))
 	}
 
@@ -112,7 +112,7 @@ func ValidateActionType(ctx context.Context, actionType *interfaces.ActionType, 
 		// type 不为空，则代表在配置映射了，则需要校验映射
 		if !interfaces.IsValidActionSourceType(actionType.ActionSource.Type) {
 			return rest.NewHTTPError(ctx, http.StatusBadRequest, berrors.BknBackend_ActionType_InvalidParameter).
-				WithErrorDetails(fmt.Sprintf("The type of action source is expected one of [tool, map], actual is [%s]",
+				WithErrorDetails(fmt.Sprintf("The type of action source is expected one of [tool, mcp], actual is [%s]",
 					actionType.ActionSource.Type))
 		}
 		// strict_mode off: allow empty or draft combinations for McpID, ToolName, BoxID, ToolID (no cross-kind checks).

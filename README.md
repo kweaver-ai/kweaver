@@ -10,15 +10,20 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.txt) [![skills.sh kweaver-core](https://img.shields.io/badge/skills.sh-kweaver--core-blue)](https://skills.sh/kweaver-ai/kweaver-sdk/kweaver-core) [![skills.sh create-bkn](https://img.shields.io/badge/skills.sh-create--bkn-green)](https://skills.sh/kweaver-ai/kweaver-sdk/create-bkn)
 
-KWeaver Core is a harness-first foundation for enterprise decision agents. It turns fragmented data, knowledge, tools, and policies into governed context, safe execution, and verifiable feedback loops. With semantic modeling, real-time access, runtime control, and TraceAI, it helps AI systems reason, adapt, and act reliable in complex enterprises.
+KWeaver Core is a harness-first foundation for enterprise decision agents. It turns fragmented data, knowledge, tools, and policies into governed context, safe execution, and verifiable feedback loops. With semantic modeling, real-time access, runtime control, and TraceAI, it helps AI systems reason, adapt, and act reliably in complex enterprises.
+
+**On this page:** [📚 Quick links](#toc-quick-links) · [🎬 Demo video](#toc-demo) · [🚀 Quick start](#toc-quick-start) · [🛠️ KWeaver SDK](#toc-kweaver-sdk) · [🏗️ KWeaver Core](#toc-kweaver-core) · [📐 BKN Lang](#toc-bkn-lang) · [📊 Benchmarks](#toc-benchmarks) · [💬 Community](#toc-community) · [📬 Support](#toc-support)
 
 > **Note:** KWeaver Core is a **backend-only framework** — it does not include a web UI. All interactions are through the CLI, SDK, or API. If you need a graphical interface, please install [**KWeaver DIP**](https://github.com/kweaver-ai/kweaver).
+
+<a id="toc-quick-links"></a>
 
 ## 📚 Quick Links
 
 - 🌐 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) - Web UI for KWeaver (username: `kweaver`, password: `111111`)
 - 🤝 [Contributing](rules/CONTRIBUTING.md) - Guidelines for contributing to the project
 - 🚢 [Deployment](deploy/README.md) - One-click deploy to Kubernetes
+- 📦 [Examples](examples/README.md) - End-to-end CLI walkthroughs (DB / CSV / actions)
 - 📘 [Documentation](help/README.md) - Product documentation and usage guides ([EN](help/en/README.md) / [中文](help/zh/README.md))
 - 📝 [Blog](https://kweaver-ai.github.io/kweaver-core/) - KWeaver technical articles and updates
 - 🚀 [Release Guidelines](rules/RELEASE.md) - Version management and release process
@@ -28,15 +33,18 @@ KWeaver Core is a harness-first foundation for enterprise decision agents. It tu
 - 🐛 [Report Bug](https://github.com/kweaver-ai/kweaver-core/issues) - Report a bug or issue
 - 💡 [Request Feature](https://github.com/kweaver-ai/kweaver-core/issues) - Suggest a new feature
 
+<a id="toc-demo"></a>
+
 ## 🎬 Demo Video
 
 [Watch the KWeaver demo on Bilibili](https://www.bilibili.com/video/BV1nGXVBTEmo/?vd_source=4cdad687b2ac18a0b25e434f1fafe2f7).
 
+<a id="toc-quick-start"></a>
+
 ## 🚀 Quick Start
 
-1. **Source deployment**: see the [Deployment Guide](deploy/README.md).
-2. **Prerequisites**: follow the prerequisites described in `deploy/README.md`.
-3. **Run installation scripts**:
+1. **Prerequisites & planning** — read the [Deployment Guide](deploy/README.md) and satisfy its prerequisites.
+2. **Run installation scripts**:
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver-core.git
@@ -61,7 +69,7 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
-4. **Verify the deployment**:
+3. **Verify the deployment**:
 
 ```bash
 # Check cluster status
@@ -72,14 +80,18 @@ kubectl get pods -A
 ./deploy.sh kweaver status
 ```
 
-5. **Verify API access**:
+4. **Verify API access**
+
+   KWeaver Core is backend-only and does not provide a web console. On the machine you use to reach the cluster (laptop, bastion, etc.), use the `kweaver` CLI from [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk): either `npm install -g @kweaver-ai/kweaver-sdk` or `npx kweaver` (no global install; see [KWeaver SDK](#toc-kweaver-sdk) below). Then run:
 
 ```bash
 kweaver auth login https://<node-ip> -k
 kweaver bkn list
+# or: npx kweaver auth login https://<node-ip> -k
+#     npx kweaver bkn list
 ```
 
-6. **View help**:
+5. **View help**:
 
 ```bash
 kweaver --help                   # list all commands
@@ -90,14 +102,18 @@ For full product documentation, see the [Documentation](help/README.md) ([EN](he
 
 > **No deployment yet?** Use the [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) web UI to try KWeaver online (username: `kweaver`, password: `111111`), or connect your CLI/SDK directly to the demo environment (see below).
 
-### Core Subsystems
+<a id="toc-kweaver-sdk"></a>
 
-| Sub-project | Description | Repository |
+## 🛠️ KWeaver SDK
+
+<a id="toc-kweaver-core-and-sdk"></a>
+
+KWeaver is split across two open-source projects: **kweaver-core** (this repository) is the **server platform** you deploy in your environment, and **kweaver-sdk** is the **client CLI and language SDKs** you install on a laptop, bastion, or CI host. The table below is a one-line map; the rest of this section covers the client SDK, and [KWeaver Core](#toc-kweaver-core) documents the server platform in depth.
+
+| Project | Description | Repository |
 | --- | --- | --- |
 | **KWeaver SDK** | CLI and SDK (TypeScript/Python) for AI agents and developers to access KWeaver knowledge networks and Decision Agents programmatically | [kweaver-sdk](https://github.com/kweaver-ai/kweaver-sdk) |
 | **KWeaver Core** | AI-native platform foundation — Decision Agent, AI Data Platform (BKN Engine, VEGA Engine, Context Loader, Execution Factory), Info Security Fabric, Trace AI | [kweaver-core](https://github.com/kweaver-ai/kweaver-core) (this repo) |
-
-## KWeaver SDK
 
 ### Install the SDK First
 
@@ -298,7 +314,9 @@ msg  = client.conversations.send_message("", "Hello", agent_id="agent-id")
 
 ---
 
-## KWeaver Core
+<a id="toc-kweaver-core"></a>
+
+## 🏗️ KWeaver Core
 
 **KWeaver Core** is the AI-native platform foundation for autonomous decision-making. It sits between AI Agents (above) and AI/Data infrastructure (below), with the **Business Knowledge Network (BKN)** at its center, providing unified data access, execution, and security governance for Agents.
 
@@ -379,7 +397,9 @@ Beyond "seeing more", Agents must "do it right". KWeaver Core provides constrain
 | **Info Security Fabric** | Unified identity, permissions, and policies as a single entry point — end-to-end control and audit over data access, model output, and tool invocation, reducing privilege escalation, leakage, and prompt injection risks |
 | **Trace AI** | Full-chain observability and evidence chain tracing — supports issue localization and automatic optimization recommendations, enabling explainable and auditable AI applications |
 
-### BKN Lang
+<a id="toc-bkn-lang"></a>
+
+### 📐 BKN Lang
 
 BKN Lang is a Markdown-based business knowledge modeling language, designed for human-machine bidirectional friendliness:
 
@@ -387,7 +407,9 @@ BKN Lang is a Markdown-based business knowledge modeling language, designed for 
 - **Easy to understand** — "Object-Relationship-Risk-Action" four-in-one model perfectly maps enterprise business models. Humans read business semantics; Agents parse precise context constraints in real-time. Logic is made explicit, rejecting black boxes, fundamentally reducing LLM reasoning hallucination and logical deviation.
 - **Easy to integrate** — Definitions stored as full-text in specific database fields with no complex underlying table coupling. Context Loader dynamically loads on demand, discarding static hardcoding. Plug-and-play across systems and Agents, flowing as lightweight assets through AI Data Platform.
 
-### Benchmarks & Experiments
+<a id="toc-benchmarks"></a>
+
+### 📊 Benchmarks & Experiments
 
 See more details: [KWeaver Blog](https://kweaver-ai.github.io/kweaver-core/)
 
@@ -458,6 +480,8 @@ F1 Bench is based on the BIRD test set with the Formula-1 database mixed with 30
 | **BKN Build Efficiency** | 300% improvement in knowledge network construction |
 | **Token Cost Savings** | 50% reduction through context optimization and compression |
 
+<a id="toc-community"></a>
+
 ## 💬 Community
 
 <div align="center">
@@ -466,7 +490,9 @@ F1 Bench is based on the BIRD test set with the Formula-1 database mixed with 30
 Scan to join the KWeaver community group
 </div>
 
-## Support & Contact
+<a id="toc-support"></a>
+
+## 📬 Support & Contact
 
 - **Contributing**: [Contributing Guide](rules/CONTRIBUTING.md)
 - **Issues**: [GitHub Issues](https://github.com/kweaver-ai/kweaver-core/issues)

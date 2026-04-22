@@ -219,6 +219,8 @@ kweaver-admin role add-member <roleId> -u alice
 kweaver-admin role remove-member <roleId> -u alice
 ```
 
+Always run **`role list` first** and use the **roleId** values from the output (role name strings such as `super_admin` / `normal_user` are described in [kweaver-admin role reference](https://github.com/kweaver-ai/kweaver-admin/blob/main/docs/product-specs/role-permission.md)). For **quick start or POC**, to avoid 403s from missing roles, often assign **every** role in `role list` to a new user with one `kweaver-admin user assign-role <userId> <roleId>` per entry. In **production**, grant least privilege; verify with `kweaver-admin user roles <userId>`.
+
 #### Models (LLM / Embedding)
 
 ```bash

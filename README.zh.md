@@ -25,8 +25,8 @@ KWeaver Core 是面向企业决策智能体的治理优先（harness-first）基
 - 🛡️ [kweaver-admin](https://github.com/kweaver-ai/kweaver-admin) - 平台管理员 CLI（用户/组织/角色/模型/审计），完整安装后使用
 - 🤝 [贡献指南](rules/CONTRIBUTING.zh.md) - 项目贡献指南
 - 🚢 [部署指南](deploy/README.zh.md) - 一键部署到 Kubernetes
-- 📦 [示例](examples/README.zh.md) - 端到端 CLI 示例（数据库 / CSV / Action）
 - 📘 [产品文档](help/README.md) - 产品文档与使用指南（[中文](help/zh/README.md) / [EN](help/en/README.md)）
+- 📦 [示例](examples/README.zh.md) - 端到端 CLI 示例（数据库 / CSV / Action）
 - 📝 [博客](https://kweaver-ai.github.io/kweaver-core/) - KWeaver 技术文章与更新
 - 🧾 [版本发布](release-notes/) - 重要变更记录
 

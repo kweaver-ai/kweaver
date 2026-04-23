@@ -20,7 +20,7 @@ KWeaver Core 是面向企业决策智能体的治理优先（harness-first）基
 
 ## 📚 快速链接
 
-- 🌐 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) - KWeaver DIP Demo 环境（公开体验可能受限，请先 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)）。历史共享试用账号：`kweaver` / `111111`（以平台策略为准）。
+- 🌐 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) - KWeaver DIP Demo 环境（公开体验可能受限，请先 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)）。
 - 🛠️ [KWeaver SDK](https://github.com/kweaver-ai/kweaver-sdk) - 终端用户 / Agent 使用的 `kweaver` CLI、TypeScript / Python SDK 与 Agent Skill
 - 🛡️ [kweaver-admin](https://github.com/kweaver-ai/kweaver-admin) - 平台管理员 CLI（用户/组织/角色/模型/审计），完整安装后使用
 - 🤝 [贡献指南](rules/CONTRIBUTING.zh.md) - 项目贡献指南
@@ -30,7 +30,7 @@ KWeaver Core 是面向企业决策智能体的治理优先（harness-first）基
 - 📝 [博客](https://kweaver-ai.github.io/kweaver-core/) - KWeaver 技术文章与更新
 - 🧾 [版本发布](release-notes/) - 重要变更记录
 
-> 想直观感受 KWeaver DIP 的核心功能？点击下方链接报名，立即开启试用体验，快速解锁产品价值！  
+> 想直观感受 KWeaver DIP 的核心功能？点击下方链接报名，立即开启试用体验，快速解锁产品价值！
 > 👉 **试用报名：** <https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf>
 
 <a id="toc-demo"></a>
@@ -101,7 +101,7 @@ kweaver <command> --help         # 查看某命令的帮助，例如 kweaver bkn
 
 > **完整安装（未加 `--minimum`）？** 建议同时安装 [`kweaver-admin`](#toc-kweaver-admin) 进行用户、组织、角色、模型与审计管理 — 详见 [help/zh/install.md — 完整安装后的管理员工具](help/zh/install.md#-完整安装后的管理员工具kweaver-admin)。
 
-> **尚未部署？** KWeaver DIP / 公开 Demo 可能需先报名试用 — 请填写 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)。获得权限后，可打开 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) Web 界面，或将 CLI/SDK 连接到 Demo 环境（见下方说明）。共享试用账号 `kweaver` / `111111` 可能已关闭或受限。
+> **尚未部署？** KWeaver DIP / 公开 Demo 可能需先报名试用 — 请填写 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)。获得权限后，可打开 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) Web 界面，或将 CLI/SDK 连接到 Demo 环境（见下方说明）。
 
 <a id="toc-kweaver-core"></a>
 
@@ -264,7 +264,7 @@ kweaver auth login https://your-kweaver-instance.com
 
 ### 使用 Demo 环境快速体验
 
-无需部署 — 请先完成 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)，再将 AI Agent 连接到 Demo 环境（Web 界面见 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list)）。共享试用凭据可能受限。
+无需部署 — 请先完成 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)，再将 AI Agent 连接到 Demo 环境（Web 界面见 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list)）。
 
 ```bash
 npx skills add https://github.com/kweaver-ai/kweaver-sdk \
@@ -296,7 +296,7 @@ kweaver auth login https://dip-poc.aishu.cn -k
 /kweaver-core 跟 Agent xxx 对话，问他"当前库存情况"
 ```
 
-> **Demo 访问：** 如需请先 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)。**Demo 账号**（若仍开放）：用户名 `kweaver`，密码 `111111` — 可能受限。
+> **Demo 访问：** 如需请先 [试用报名](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)。
 
 ### 无浏览器环境认证（SSH、CI、容器等）
 

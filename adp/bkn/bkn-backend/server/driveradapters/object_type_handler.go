@@ -288,6 +288,7 @@ func (r *restHandler) ValidateObjectTypesForKN(c *gin.Context, visitor hydra.Vis
 
 	// request来的actionTypes的branch都用url里的branch
 	for i := range objectTypes {
+		objectTypes[i].KNID = knID
 		objectTypes[i].Branch = branch
 	}
 	if err = ValidateObjectTypes(ctx, knID, objectTypes, strictMode); err != nil {

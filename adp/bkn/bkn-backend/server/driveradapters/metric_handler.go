@@ -235,6 +235,12 @@ func (r *restHandler) ValidateMetrics(c *gin.Context, vis hydra.Visitor) {
 	}
 	metrics := body.Entries
 
+	// request来的actionTypes的branch都用url里的branch
+	for i := range metrics {
+		metrics[i].KnID = knID
+		metrics[i].Branch = branch
+	}
+
 	if err := ValidateMetricRequests(ctx, metrics, strictMode, mode); err != nil {
 		var httpErr *rest.HTTPError
 		if errors.As(err, &httpErr) {

@@ -289,6 +289,7 @@ func (r *restHandler) ValidateRelationTypesForKN(c *gin.Context, visitor hydra.V
 
 	// request来的relationTypes的branch都用url里的branch
 	for i := range relationTypes {
+		relationTypes[i].KNID = knID
 		relationTypes[i].Branch = branch
 	}
 

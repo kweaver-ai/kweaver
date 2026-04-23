@@ -858,18 +858,18 @@ func (r *skillRegistry) ExecuteSkill(ctx context.Context, req *interfaces.Execut
 }
 
 func (r *skillRegistry) buildSkillArchive(ctx context.Context, skillID string) (*model.SkillRepositoryDB, string, []byte, error) {
-	release, err := r.releaseRepo.SelectBySkillID(ctx, nil, skillID)
+	skillDB, err := r.skillRepo.SelectSkillByID(ctx, nil, skillID)
 	if err != nil {
 		return nil, "", nil, err
 	}
-	if release == nil {
-		return nil, "", nil, fmt.Errorf("published skill not found: %s", skillID)
+	if skillDB == nil {
+		return nil, "", nil, fmt.Errorf("skill not found: %s", skillID)
 	}
-	files, err := r.fileRepo.SelectSkillFileBySkillID(ctx, nil, skillID, release.Version)
+	files, err := r.fileRepo.SelectSkillFileBySkillID(ctx, nil, skillID, skillDB.Version)
 	if err != nil {
 		return nil, "", nil, err
 	}
-	return r.buildSkillArchiveFromSnapshot(ctx, convertSkillReleaseToRepository(release), files)
+	return r.buildSkillArchiveFromSnapshot(ctx, skillDB, files)
 }
 
 func (r *skillRegistry) buildSkillArchiveFromSnapshot(ctx context.Context, skill *model.SkillRepositoryDB,
@@ -886,12 +886,6 @@ func (r *skillRegistry) buildSkillArchiveFromSnapshot(ctx context.Context, skill
 		return writeErr
 	}
 
-	skillMarkdown := fmt.Sprintf("---\nname: %s\ndescription: %s\nversion: %s\n---\n%s",
-		skill.Name, skill.Description, skill.Version, skill.SkillContent)
-	if err = writeFile("SKILL.md", []byte(skillMarkdown)); err != nil {
-		_ = zw.Close()
-		return nil, "", nil, err
-	}
 	for _, file := range files {
 		content, readErr := r.assetStore.Download(ctx, &interfaces.OssObject{
 			StorageID:  file.StorageID,
@@ -943,7 +937,7 @@ func (r *skillRegistry) QuerySkillList(ctx context.Context, req *interfaces.Quer
 				fmt.Sprintf(" %s category not found", req.Category))
 			return
 		}
-		filter["category"] = req.Category
+		filter["category"] = req.Category.String()
 	}
 
 	authResp, resourceToBdMap, err := r.querySkillListPage(ctx, filter, req.CommonPageParams, req.UserID, interfaces.AuthOperationTypeView)
@@ -1115,7 +1109,7 @@ func (r *skillRegistry) QuerySkillMarketList(ctx context.Context, req *interface
 				fmt.Sprintf(" %s category not found", req.Category))
 			return
 		}
-		filter["category"] = req.Category
+		filter["category"] = req.Category.String()
 	}
 
 	authResp, resourceToBdMap, err := r.querySkillListPage(ctx, filter, req.CommonPageParams, req.UserID,

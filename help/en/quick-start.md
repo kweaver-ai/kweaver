@@ -38,6 +38,16 @@ After a successful browser login, the page states you can close the tab and expl
 kweaver config show
 ```
 
+After Core installation, `deploy.sh` attempts to import the Context Loader toolset ADP (disable or override the path via environment variables; see `deploy/deploy.sh`). To verify the toolbox is registered:
+
+```bash
+kweaver call '/api/agent-operator-integration/v1/tool-box/list?name=contextloader&page=1&page_size=50' -bd bd_public --pretty
+```
+
+(This differs from `kweaver context-loader tools`: the former lists Operator toolboxes; the latter lists MCP tools.)
+
+A minimal “analysis assistant” Agent import template is at [`sample-agent.import.json`](../examples/sample-agent.import.json).
+
 If later commands return empty results, the domain may be wrong. The next two commands — **`kweaver config list-bd`** and **`kweaver config set-bd`** — require the platform’s **business-domain management service**. **`--minimum` / minimal installs omit that service**, so **these two CLI subcommands are not available** (e.g. `list-bd` returns **404**). That does **not** mean there is no business domain or that `config show` is wrong — on minimal installs **do not run** the commands below; trust `config show`. Use them only on a **full install** when you need to **list or switch** among multiple domains:
 
 ```bash
@@ -281,8 +291,6 @@ kweaver agent chat <agent_id>
 # > Which suppliers have the slowest delivery?
 # > What improvements do you suggest?
 ```
-
-> **Tip**: Binding a knowledge network alone does not mean the Agent can automatically query data. The Agent also needs **tools/skills** configured (e.g. BKN query skill) to invoke the knowledge network during conversation. If the Agent replies "I don't have access to the data", it likely lacks tool bindings. See [execution-factory.md](execution-factory.md) for tool & skill management, and [decision-agent.md](decision-agent.md) for full Agent configuration.
 
 ### TypeScript SDK
 

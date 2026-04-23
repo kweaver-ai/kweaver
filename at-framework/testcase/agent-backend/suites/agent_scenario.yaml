@@ -137,7 +137,6 @@ cases:
       "agent_id": "${memory_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_长期记忆智能体_第二轮对话_验证记忆
   description: '清理：取消发布长期记忆智能体'
 
 - name: Cleanup_删除长期记忆智能体
@@ -148,7 +147,6 @@ cases:
       "agent_id": "${memory_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布长期记忆智能体
   description: '清理：删除长期记忆智能体'
 
 # ==================== 场景2：角色指令模式智能体 - 相关问题 ====================
@@ -245,7 +243,6 @@ cases:
       "agent_id": "${related_q_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_相关问题智能体_进行问答
   description: '清理：取消发布相关问题智能体'
 
 - name: Cleanup_删除相关问题智能体
@@ -256,7 +253,6 @@ cases:
       "agent_id": "${related_q_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布相关问题智能体
   description: '清理：删除相关问题智能体'
 
 # ==================== 场景3：角色指令模式智能体 - 任务规划 ====================
@@ -353,7 +349,6 @@ cases:
       "agent_id": "${plan_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_任务规划智能体_执行复杂任务
   description: '清理：取消发布任务规划智能体'
 
 - name: Cleanup_删除任务规划智能体
@@ -364,7 +359,6 @@ cases:
       "agent_id": "${plan_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布任务规划智能体
   description: '清理：删除任务规划智能体'
 
 # ==================== 场景4：Dolphin模式智能体 - 内置沙箱工具 ====================
@@ -614,7 +608,6 @@ cases:
       "agent_id": "${sandbox_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_沙箱智能体_文件问答
   description: '清理：取消发布沙箱智能体'
 
 - name: Cleanup_删除沙箱智能体
@@ -625,7 +618,6 @@ cases:
       "agent_id": "${sandbox_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布沙箱智能体
   description: '清理：删除沙箱智能体'
 
 # ==================== 场景5：Agent技能调用场景 ====================
@@ -832,7 +824,6 @@ cases:
       "agent_id": "${skill_caller_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_验证技能调用_响应内容质量检查
   description: '清理：取消发布调用方Agent'
 
 - name: Cleanup_取消发布技能Agent
@@ -843,7 +834,6 @@ cases:
       "agent_id": "${skill_called_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布调用方Agent
   description: '清理：取消发布技能Agent'
 
 - name: Cleanup_删除调用方Agent
@@ -854,7 +844,6 @@ cases:
       "agent_id": "${skill_caller_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布技能Agent
   description: '清理：删除调用方Agent'
 
 - name: Cleanup_删除技能Agent
@@ -865,7 +854,6 @@ cases:
       "agent_id": "${skill_called_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_删除调用方Agent
   description: '清理：删除技能Agent'
 
 # ==================== 场景6：React模式智能体 - 禁用历史记录 ====================
@@ -1003,7 +991,6 @@ cases:
       "agent_id": "${react_disable_history_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_React禁用历史_第二轮对话_验证不记住信息
   description: '清理：取消发布React禁用历史智能体'
 
 - name: Cleanup_删除React禁用历史智能体
@@ -1014,7 +1001,6 @@ cases:
       "agent_id": "${react_disable_history_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布React禁用历史智能体
   description: '清理：删除React禁用历史智能体'
 
 # ==================== 场景7：React模式智能体 - 启用历史记录 ====================
@@ -1152,7 +1138,6 @@ cases:
       "agent_id": "${react_enable_history_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_React启用历史_第二轮对话_验证记住信息
   description: '清理：取消发布React启用历史智能体'
 
 - name: Cleanup_删除React启用历史智能体
@@ -1163,7 +1148,6 @@ cases:
       "agent_id": "${react_enable_history_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布React启用历史智能体
   description: '清理：删除React启用历史智能体'
 
 # ==================== 场景8：React模式智能体 - 禁用LLM缓存 ====================
@@ -1314,7 +1298,6 @@ cases:
       "agent_id": "${react_disable_cache_agent_id}"
     }
   code_check: '204'
-  prev_case: Positive_React禁用缓存_第三次相同问题_验证仍不命中缓存
   description: '清理：取消发布React禁用缓存智能体'
 
 - name: Cleanup_删除React禁用缓存智能体
@@ -1325,5 +1308,4 @@ cases:
       "agent_id": "${react_disable_cache_agent_id}"
     }
   code_check: '204'
-  prev_case: Cleanup_取消发布React禁用缓存智能体
   description: '清理：删除React禁用缓存智能体'

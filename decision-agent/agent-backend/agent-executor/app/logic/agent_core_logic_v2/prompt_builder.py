@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from opentelemetry.trace import Span
@@ -49,18 +48,10 @@ class PromptBuilder:
     def _is_skill_usage_rules_enabled() -> bool:
         """是否将 _SKILL_USAGE_RULES 拼接到系统提示词。
 
-        由环境变量 ADD_SKILL_USAGE_RULES_IN_SYSTEM_PROMPT 控制，默认 false，
-        仅当值为 true/1/yes（大小写不敏感）时才拼接。
+        从配置文件的 features.add_skill_usage_rules_in_system_prompt 读取，
+        默认为 true，仅当配置为 false 时才不拼接。
         """
-
-        # 先临时这样写，等健康来统一处理（2026-04-22）
-        return True
-
-        return os.getenv("ADD_SKILL_USAGE_RULES_IN_SYSTEM_PROMPT", "false").lower() in (
-            "true",
-            "1",
-            "yes",
-        )
+        return Config.features.add_skill_usage_rules_in_system_prompt
 
     @internal_span()
     async def build(self, span: Optional[Span] = None) -> str:
@@ -107,6 +98,7 @@ class PromptBuilder:
             related_questions_prompt = self.get_related_questions_prompt()
 
             # Append skill usage rules to the auto-generated explore system prompt
+            # 调整顺序：技能使用规则在前，用户的系统提示词在后
             explore_system_prompt = ""
             if self.agent_config.is_plan_mode():
                 explore_system_prompt = plan_mode_logic.get_system_prompt_with_plan(
@@ -114,10 +106,18 @@ class PromptBuilder:
                 )
                 self.agent_config.append_task_plan_agent()
             else:
-                explore_system_prompt = self.agent_config.system_prompt
+                # 确保 system_prompt 不为 None，避免 repr(None) 变成字符串 'None'
+                explore_system_prompt = self.agent_config.system_prompt or ""
 
             if skill_rules_enabled:
-                explore_system_prompt = explore_system_prompt + _SKILL_USAGE_RULES
+                # Dolphin 会将标记符替换为通用的 Tools Usage Guidelines
+                # 最终顺序：_SKILL_USAGE_RULES -> Tools Usage Guidelines -> 用户提示词
+                if explore_system_prompt and explore_system_prompt.strip():
+                    # 用户设置了有效的角色指令（非空且不只是空白字符）
+                    explore_system_prompt = _SKILL_USAGE_RULES + "\n{__BUILTIN_SKILL_RULES__}\n\n" + explore_system_prompt
+                else:
+                    # 用户未设置角色指令或角色指令为空/空白
+                    explore_system_prompt = _SKILL_USAGE_RULES + "\n{__BUILTIN_SKILL_RULES__}"
 
             history_enabled = (
                 not self.agent_config.react_disable_history_in_a_conversation()

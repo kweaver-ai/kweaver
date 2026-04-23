@@ -82,6 +82,11 @@ async def build_llm_config(
 
         llm_config["llms"][llm["llm_config"]["name"]] = llm["llm_config"]
 
+    # 添加自定义配置：是否显示 Skill 使用规则
+    llm_config["add_skill_usage_rules_in_system_prompt"] = (
+        Config.features.add_skill_usage_rules_in_system_prompt
+    )
+
     return llm_config
 
 

@@ -322,6 +322,7 @@ agentExecutor:
   enableDolphinAgentOutputVariablesCtrl: false
   isSkillAgentNeedProgress: false
   enableTraceAiEvidence: false
+  addSkillUsageRulesInSystemPrompt: true  # 是否在系统提示词中添加 Skill 使用规则说明
   rps:
     limit: 100
 

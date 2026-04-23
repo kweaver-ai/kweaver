@@ -22,6 +22,7 @@ const (
 type IComponentImpexConfig interface {
 	ExportConfig(ctx context.Context, exportReq *ExportConfigReq) (config *ComponentImpexConfigModel, err error)
 	ImportConfig(ctx context.Context, importReq *ImportConfigReq) (err error)
+	ImportConfigInternal(ctx context.Context, importReq *InternalImportConfigReq) (resp *InternalImportConfigResp, err error)
 }
 
 // ExportConfigReq 导出配置请求
@@ -38,6 +39,32 @@ type ImportConfigReq struct {
 	Type             ComponentType   `uri:"type" validate:"required,oneof=operator toolbox mcp"`   // 组件类型
 	Mode             ImportType      `form:"mode" default:"create" validate:"oneof=create upsert"` // 配置导入类型
 	Data             json.RawMessage `form:"data" validate:"required"`
+}
+
+// InternalImportConfigReq 内部导入配置请求
+type InternalImportConfigReq struct {
+	UserID         string          `header:"user_id"`                                            // 用户ID，内部接口可缺省
+	Type           ComponentType   `uri:"type" validate:"required,oneof=toolbox"`                // 组件类型
+	Mode           ImportType      `form:"mode" default:"upsert" validate:"oneof=create upsert"` // 配置导入类型
+	PackageVersion string          `form:"package_version" validate:"required"`                  // 包版本
+	Data           json.RawMessage `form:"data" validate:"required"`                             // 导入数据
+}
+
+// InternalImportStatus 内部导入状态
+type InternalImportStatus string
+
+const (
+	InternalImportStatusImported InternalImportStatus = "imported"
+	InternalImportStatusUpdated  InternalImportStatus = "updated"
+	InternalImportStatusSkipped  InternalImportStatus = "skipped"
+)
+
+// InternalImportConfigResp 内部导入配置响应
+type InternalImportConfigResp struct {
+	Status      InternalImportStatus `json:"status"`
+	Type        ComponentType        `json:"type"`
+	ResourceIDs []string             `json:"resource_ids,omitempty"`
+	Message     string               `json:"message,omitempty"`
 }
 
 // ComponentImpexConfigModel 组件导入导出配置模型

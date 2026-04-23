@@ -37,7 +37,7 @@
 docs/release/
 ├── overview.md                # 本版本说明文档（唯一入口）
 ├── toolset/                   # Context Loader 工具集快照（ADP 形式交付）
-├── tool-deps/                 # Context Loader 依赖的其他工具集快照（按需导入）
+├── tool-deps/                 # Context Loader 依赖的其他工具集快照（镜像内固定携带，启动自动同步）
 ├── agent-deps/                # 必选依赖：逻辑属性解析等能力依赖的 Agent
 └── agent-recall-examples/     # 可选示例：用于接入参考与回放验证
 ```
@@ -45,7 +45,7 @@ docs/release/
 说明如下：
 
 - `toolset/`：本版 Context Loader 工具集快照，接入时优先导入。
-- `tool-deps/`：本版依赖的其他工具集快照；如当前场景不涉及相关能力，可按需导入。
+- `tool-deps/`：本版依赖的其他工具集快照；镜像启动后会自动同步到执行工厂，当前不需要人工单独导入。
 - `agent-deps/`：本版必选的 Agent 依赖；逻辑属性解析能力依赖此处的 Agent。
 - `agent-recall-examples/`：本版回放样例，用于接入参考与最小验证。
 
@@ -54,7 +54,7 @@ docs/release/
 ### 导入顺序
 
 1. 导入 `toolset/`
-2. 按需导入 `tool-deps/`
+2. 等待启动阶段自动同步 `tool-deps/`
 3. 导入 `agent-deps/`
 4. 使用 `agent-recall-examples/` 做回放验证
 
@@ -74,7 +74,7 @@ docs/release/
 ## 4. 最小验证
 
 - 交付清单验证：`docs/release/` 下的实际内容与本文档描述一致
-- 导入验证：`toolset/`、`tool-deps/`、`agent-deps/` 无缺失依赖
+- 导入验证：`toolset/`、`agent-deps/` 无缺失依赖，`tool-deps/` 会在服务启动后自动同步
 - `find_skills` 验证：至少验证一种召回模式（对象类级 / 实例级），确认返回结构为候选 Skill 列表或空列表
 - HTTP 验证：任选一个支持 `response_format` 的接口，确认默认返回 JSON，指定 `toon` 时返回 TOON
 - MCP 验证：任选一个 tool，确认默认返回 TOON 文本，显式指定 `json` 时返回 JSON 文本

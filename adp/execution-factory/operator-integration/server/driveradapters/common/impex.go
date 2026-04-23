@@ -3,8 +3,8 @@ package common
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"sync"
 	"time"
@@ -24,6 +24,7 @@ import (
 type ImpexHandler interface {
 	Export(c *gin.Context)
 	Import(c *gin.Context)
+	ImportInternal(c *gin.Context)
 }
 
 var (
@@ -80,69 +81,93 @@ func (impexH *impexHandler) Export(c *gin.Context) {
 
 // Import 导入
 func (impexH *impexHandler) Import(c *gin.Context) {
-	var err error
 	req := &interfaces.ImportConfigReq{}
-	if err = c.ShouldBindHeader(req); err != nil {
+	if err := impexH.bindMultipartImportRequest(c, req); err != nil {
 		rest.ReplyError(c, err)
 		return
 	}
-	if err = c.ShouldBindUri(req); err != nil {
+	if err := impexH.ComponentImpexConfig.ImportConfig(c.Request.Context(), req); err != nil {
 		rest.ReplyError(c, err)
 		return
 	}
-	// 检查Content-Type
-	if c.ContentType() != "multipart/form-data" {
-		err = errors.DefaultHTTPError(c.Request.Context(), http.StatusUnsupportedMediaType, "Content-Type must be multipart/form-data")
-		rest.ReplyError(c, err)
-		return
-	}
+	rest.ReplyOK(c, http.StatusCreated, nil)
+}
 
-	err = c.ShouldBindWith(req, binding.Form)
-	if err != nil {
-		err = errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
+// ImportInternal 内部导入
+func (impexH *impexHandler) ImportInternal(c *gin.Context) {
+	req := &interfaces.InternalImportConfigReq{}
+	if err := impexH.bindMultipartImportRequest(c, req); err != nil {
 		rest.ReplyError(c, err)
 		return
 	}
-	var file *multipart.FileHeader
-	file, err = c.FormFile("data")
-	if err != nil {
-		err = errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
+	if err := impexH.Validator.ValidatorIntCompVersion(c.Request.Context(), req.PackageVersion); err != nil {
 		rest.ReplyError(c, err)
 		return
 	}
-	var fileContent multipart.File
-	// TODO: 检查文件大小
-	fileContent, err = file.Open()
+	resp, err := impexH.ComponentImpexConfig.ImportConfigInternal(c.Request.Context(), req)
 	if err != nil {
-		err = errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
 		rest.ReplyError(c, err)
 		return
+	}
+	rest.ReplyOK(c, http.StatusCreated, resp)
+}
+
+func (impexH *impexHandler) bindMultipartImportRequest(c *gin.Context, req any) error {
+	if err := c.ShouldBindHeader(req); err != nil {
+		return err
+	}
+	if err := c.ShouldBindUri(req); err != nil {
+		return err
+	}
+	if c.ContentType() != "multipart/form-data" {
+		return errors.DefaultHTTPError(c.Request.Context(), http.StatusUnsupportedMediaType, "Content-Type must be multipart/form-data")
+	}
+	if err := c.ShouldBindWith(req, binding.Form); err != nil {
+		return errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
+	}
+	data, err := readMultipartFormFile(c, "data")
+	if err != nil {
+		return err
+	}
+	if err := defaults.Set(req); err != nil {
+		return errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
+	}
+	if err := setRawData(req, data); err != nil {
+		return errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
+	}
+	if err := impexH.Validator.ValidatorStruct(c.Request.Context(), req); err != nil {
+		return err
+	}
+	return nil
+}
+
+func readMultipartFormFile(c *gin.Context, field string) (json.RawMessage, error) {
+	file, err := c.FormFile(field)
+	if err != nil {
+		return nil, errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
+	}
+	fileContent, err := file.Open()
+	if err != nil {
+		return nil, errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
 	}
 	defer func() {
 		_ = fileContent.Close()
 	}()
 	buf := new(bytes.Buffer)
 	if _, err = buf.ReadFrom(fileContent); err != nil {
-		err = errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
-		rest.ReplyError(c, err)
-		return
+		return nil, errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
 	}
-	req.Data = buf.Bytes()
-	err = defaults.Set(req)
-	if err != nil {
-		err = errors.DefaultHTTPError(c.Request.Context(), http.StatusBadRequest, err.Error())
-		rest.ReplyError(c, err)
-		return
+	return buf.Bytes(), nil
+}
+
+func setRawData(req any, data json.RawMessage) error {
+	switch typed := req.(type) {
+	case *interfaces.ImportConfigReq:
+		typed.Data = data
+	case *interfaces.InternalImportConfigReq:
+		typed.Data = data
+	default:
+		return fmt.Errorf("unsupported import request type")
 	}
-	err = impexH.Validator.ValidatorStruct(c.Request.Context(), req)
-	if err != nil {
-		rest.ReplyError(c, err)
-		return
-	}
-	err = impexH.ComponentImpexConfig.ImportConfig(c.Request.Context(), req)
-	if err != nil {
-		rest.ReplyError(c, err)
-		return
-	}
-	rest.ReplyOK(c, http.StatusCreated, nil)
+	return nil
 }

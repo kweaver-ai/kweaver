@@ -3,9 +3,11 @@ package impex
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"sync"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/dbaccess"
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/drivenadapters"
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/infra/config"
@@ -18,7 +20,6 @@ import (
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/logics/operator"
 	"github.com/kweaver-ai/adp/execution-factory/operator-integration/server/logics/toolbox"
 	o11y "github.com/kweaver-ai/kweaver-go-lib/observability"
-	jsoniter "github.com/json-iterator/go"
 )
 
 var (
@@ -84,79 +85,99 @@ func (m *componentImpexManager) ExportConfig(ctx context.Context, req *interface
 
 // ImportConfig 导入组件配置
 func (m *componentImpexManager) ImportConfig(ctx context.Context, importReq *interfaces.ImportConfigReq) (err error) {
-	// 解析数据
-	data := &interfaces.ComponentImpexConfigModel{
-		Operator: &interfaces.OperatorImpexConfig{},
-		Toolbox:  &interfaces.ToolBoxImpexConfig{},
-		MCP:      &interfaces.MCPImpexConfig{},
-	}
-	err = jsoniter.Unmarshal(importReq.Data, data)
+	data, err := m.parseImportData(ctx, importReq.Data)
 	if err != nil {
-		m.Logger.WithContext(ctx).Errorf("import config failed, err: %v", err)
-		err = errors.DefaultHTTPError(ctx, http.StatusBadRequest, "import config failed")
 		return
 	}
-	// 校验数据
-	err = m.Validator.ValidatorStruct(ctx, data)
-	if err != nil {
-		m.Logger.WithContext(ctx).Errorf("validate config failed, err: %v", err)
-		err = errors.DefaultHTTPError(ctx, http.StatusBadRequest, "validate config failed")
+	if err = m.validateImportData(ctx, data); err != nil {
 		return
 	}
-	// 检查资源新建权限
 	resourceType := convertResourceType(importReq.Type)
 	if resourceType == "" {
 		err = errors.DefaultHTTPError(ctx, http.StatusBadRequest, "component type not support")
 		return
 	}
-	// 检查资源新建权限
-	accessor, err := m.AuthService.GetAccessor(ctx, importReq.UserID)
-	if err != nil {
+	if err = m.checkImportPermissions(ctx, importReq.UserID, resourceType, data); err != nil {
 		return
 	}
-	err = m.AuthService.CheckCreatePermission(ctx, accessor, resourceType)
-	if err != nil {
+	if err = m.executeImport(ctx, importReq.Type, data, importReq.Mode, importReq.UserID); err != nil {
 		return
+	}
+	return
+}
+
+func (m *componentImpexManager) parseImportData(ctx context.Context, raw json.RawMessage) (data *interfaces.ComponentImpexConfigModel, err error) {
+	data = &interfaces.ComponentImpexConfigModel{
+		Operator: &interfaces.OperatorImpexConfig{},
+		Toolbox:  &interfaces.ToolBoxImpexConfig{},
+		MCP:      &interfaces.MCPImpexConfig{},
+	}
+	if err = jsoniter.Unmarshal(raw, data); err != nil {
+		m.Logger.WithContext(ctx).Errorf("import config failed, err: %v", err)
+		return nil, errors.DefaultHTTPError(ctx, http.StatusBadRequest, "import config failed")
+	}
+	return data, nil
+}
+
+func (m *componentImpexManager) validateImportData(ctx context.Context, data *interfaces.ComponentImpexConfigModel) (err error) {
+	if err = m.Validator.ValidatorStruct(ctx, data); err != nil {
+		m.Logger.WithContext(ctx).Errorf("validate config failed, err: %v", err)
+		return errors.DefaultHTTPError(ctx, http.StatusBadRequest, "validate config failed")
+	}
+	return nil
+}
+
+func (m *componentImpexManager) checkImportPermissions(ctx context.Context, userID string,
+	resourceType interfaces.AuthResourceType, data *interfaces.ComponentImpexConfigModel) (err error) {
+	accessor, err := m.AuthService.GetAccessor(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if err = m.AuthService.CheckCreatePermission(ctx, accessor, resourceType); err != nil {
+		return err
 	}
 	switch resourceType {
 	case interfaces.AuthResourceTypeOperator:
+		return nil
 	case interfaces.AuthResourceTypeToolBox:
 		if data.Operator != nil && len(data.Operator.Configs) > 0 {
-			err = m.AuthService.CheckCreatePermission(ctx, accessor, interfaces.AuthResourceTypeOperator)
-			if err != nil {
-				return
-			}
+			return m.AuthService.CheckCreatePermission(ctx, accessor, interfaces.AuthResourceTypeOperator)
 		}
+		return nil
 	case interfaces.AuthResourceTypeMCP:
 		if data.Operator != nil && len(data.Operator.Configs) > 0 {
-			err = m.AuthService.CheckCreatePermission(ctx, accessor, interfaces.AuthResourceTypeOperator)
-			if err != nil {
-				return
+			if err = m.AuthService.CheckCreatePermission(ctx, accessor, interfaces.AuthResourceTypeOperator); err != nil {
+				return err
 			}
 		}
 		if data.Toolbox != nil && len(data.Toolbox.Configs) > 0 {
-			err = m.AuthService.CheckCreatePermission(ctx, accessor, interfaces.AuthResourceTypeToolBox)
-			if err != nil {
-				return
+			if err = m.AuthService.CheckCreatePermission(ctx, accessor, interfaces.AuthResourceTypeToolBox); err != nil {
+				return err
 			}
 		}
+		return nil
 	default:
-		err = errors.DefaultHTTPError(ctx, http.StatusBadRequest, "component type not support")
-		return
+		return errors.DefaultHTTPError(ctx, http.StatusBadRequest, "component type not support")
 	}
-	err = m.importConfigWithTx(ctx, importReq.Type, data, importReq.Mode, importReq.UserID)
-	if err != nil {
-		return
+}
+
+func (m *componentImpexManager) executeImport(ctx context.Context, compType interfaces.ComponentType,
+	data *interfaces.ComponentImpexConfigModel, mode interfaces.ImportType, userID string) (err error) {
+	if err = m.importConfigWithTx(ctx, compType, data, mode, userID); err != nil {
+		return err
 	}
+	return m.runImportHooks(ctx, data, mode, userID)
+}
+
+func (m *componentImpexManager) runImportHooks(ctx context.Context, data *interfaces.ComponentImpexConfigModel,
+	mode interfaces.ImportType, userID string) (err error) {
 	if data.Operator != nil && len(data.Operator.CompositeConfigs) > 0 {
-		// 导入依赖
 		req := &interfaces.FlowAutomationImportReq{
-			Mode:    string(importReq.Mode),
+			Mode:    string(mode),
 			Configs: data.Operator.CompositeConfigs,
 		}
-		err = m.FlowAutomation.Import(ctx, req, importReq.UserID)
-		if err != nil {
-			return
+		if err = m.FlowAutomation.Import(ctx, req, userID); err != nil {
+			return err
 		}
 	}
 	if data.MCP != nil && len(data.MCP.Configs) > 0 {
@@ -167,7 +188,7 @@ func (m *componentImpexManager) ImportConfig(ctx context.Context, importReq *int
 			}
 		}
 	}
-	return
+	return nil
 }
 
 // 事务导入

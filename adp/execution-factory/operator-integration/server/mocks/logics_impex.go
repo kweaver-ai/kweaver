@@ -71,6 +71,21 @@ func (mr *MockIComponentImpexConfigMockRecorder) ImportConfig(ctx, importReq any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportConfig", reflect.TypeOf((*MockIComponentImpexConfig)(nil).ImportConfig), ctx, importReq)
 }
 
+// ImportConfigInternal mocks base method.
+func (m *MockIComponentImpexConfig) ImportConfigInternal(ctx context.Context, importReq *interfaces.InternalImportConfigReq) (*interfaces.InternalImportConfigResp, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ImportConfigInternal", ctx, importReq)
+	ret0, _ := ret[0].(*interfaces.InternalImportConfigResp)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ImportConfigInternal indicates an expected call of ImportConfigInternal.
+func (mr *MockIComponentImpexConfigMockRecorder) ImportConfigInternal(ctx, importReq any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportConfigInternal", reflect.TypeOf((*MockIComponentImpexConfig)(nil).ImportConfigInternal), ctx, importReq)
+}
+
 // MockImpex is a mock of Impex interface.
 type MockImpex[T any] struct {
 	ctrl     *gomock.Controller

@@ -16,9 +16,9 @@ import (
 
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/drivenadapters"
 	logicsKar "github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knactionrecall"
+	logicsFs "github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knfindskills"
 	logicsKlp "github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knlogicpropertyresolver"
 	logicsKqs "github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knquerysubgraph"
-	logicsFs "github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knfindskills"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knsearch"
 )
 

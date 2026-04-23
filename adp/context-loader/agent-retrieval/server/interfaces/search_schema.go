@@ -24,6 +24,7 @@ type SearchSchemaScope struct {
 	IncludeObjectTypes   *bool `json:"include_object_types,omitempty" default:"true"`
 	IncludeRelationTypes *bool `json:"include_relation_types,omitempty" default:"true"`
 	IncludeActionTypes   *bool `json:"include_action_types,omitempty" default:"true"`
+	IncludeMetricTypes   *bool `json:"include_metric_types,omitempty" default:"true"`
 }
 
 // SearchSchemaResp search_schema standard response
@@ -31,4 +32,5 @@ type SearchSchemaResp struct {
 	ObjectTypes   []any `json:"object_types"`
 	RelationTypes []any `json:"relation_types"`
 	ActionTypes   []any `json:"action_types"`
+	MetricTypes   []any `json:"metric_types"`
 }

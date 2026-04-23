@@ -17,11 +17,11 @@ import (
 
 // localSearchImpl 本地检索实现体
 type localSearchImpl struct {
-	logger          interfaces.Logger
-	config          *config.Config
-	bknBackend      interfaces.BknBackendAccess
-	ontologyQuery   interfaces.DrivenOntologyQuery
-	rerankClient    interfaces.DrivenMFModelAPIClient
+	logger        interfaces.Logger
+	config        *config.Config
+	bknBackend    interfaces.BknBackendAccess
+	ontologyQuery interfaces.DrivenOntologyQuery
+	rerankClient  interfaces.DrivenMFModelAPIClient
 }
 
 var (
@@ -34,11 +34,11 @@ func NewLocalSearchService() interfaces.IKnSearchLocalService {
 	localSearchOnce.Do(func() {
 		configLoader := config.NewConfigLoader()
 		localSearchService = &localSearchImpl{
-			logger:          configLoader.GetLogger(),
-			config:          configLoader,
-			bknBackend:      drivenadapters.NewBknBackendAccess(),
-			ontologyQuery:   drivenadapters.NewOntologyQueryAccess(),
-			rerankClient:    drivenadapters.NewMFModelAPIClient(),
+			logger:        configLoader.GetLogger(),
+			config:        configLoader,
+			bknBackend:    drivenadapters.NewBknBackendAccess(),
+			ontologyQuery: drivenadapters.NewOntologyQueryAccess(),
+			rerankClient:  drivenadapters.NewMFModelAPIClient(),
 		}
 	})
 	return localSearchService

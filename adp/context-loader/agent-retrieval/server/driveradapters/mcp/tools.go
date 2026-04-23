@@ -20,6 +20,11 @@ import (
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/logics/knsearch"
 )
 
+const (
+	defaultResolveMaxRepairRounds = 1
+	defaultResolveMaxConcurrency  = 4
+)
+
 // handleSearchSchema returns a tool handler for search_schema.
 func handleSearchSchema(knSearchService knsearch.KnSearchService) func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -163,8 +168,8 @@ func handleGetLogicPropertiesValues(service interfaces.IKnLogicPropertyResolverS
 
 		resolveReq.Options = &interfaces.ResolveOptions{
 			ReturnDebug:     false,
-			MaxRepairRounds: 1,
-			MaxConcurrency:  4,
+			MaxRepairRounds: defaultResolveMaxRepairRounds,
+			MaxConcurrency:  defaultResolveMaxConcurrency,
 		}
 		if err := validator.New().Struct(resolveReq); err != nil {
 			return mcp.NewToolResultError(err.Error()), nil

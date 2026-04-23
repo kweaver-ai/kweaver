@@ -14,7 +14,7 @@
       },
       "search_scope": {
         "type": "object",
-        "description": "Schema 探索范围。至少需要开启一种概念类型；不传时默认三类全开。",
+        "description": "Schema 探索范围。至少需要开启一种概念类型；不传时默认四类全开。",
         "properties": {
           "include_object_types": {
             "type": "boolean",
@@ -30,6 +30,11 @@
             "type": "boolean",
             "default": true,
             "description": "是否返回动作类"
+          },
+          "include_metric_types": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否返回指标类"
           }
         }
       },
@@ -74,6 +79,14 @@
       "action_types": {
         "type": "array",
         "description": "动作类型列表",
+        "items": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "metric_types": {
+        "type": "array",
+        "description": "指标类型列表",
         "items": {
           "type": "object",
           "additionalProperties": true

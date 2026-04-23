@@ -128,6 +128,88 @@ func TestSearchSchema_MaxConceptsPassedThrough(t *testing.T) {
 	}
 }
 
+func TestSearchSchema_IncludeMetricTypesPassedThrough(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	service := &stubKnSearchService{
+		searchSchemaResp: &interfaces.SearchSchemaResp{
+			ObjectTypes:   []any{},
+			RelationTypes: []any{},
+			ActionTypes:   []any{},
+			MetricTypes:   []any{map[string]any{"id": "m_1"}},
+		},
+	}
+	handler := &knSearchHandler{
+		Logger:          logger.DefaultLogger(),
+		KnSearchService: service,
+	}
+
+	body := `{
+		"query":"test query",
+		"search_scope":{
+			"include_metric_types":true
+		}
+	}`
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/kn/search_schema", bytes.NewBufferString(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	c.Request.Header.Set("X-Kn-ID", "kn-001")
+
+	handler.SearchSchema(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d, body=%s", http.StatusOK, w.Code, w.Body.String())
+	}
+	if !service.searchSchemaCalled {
+		t.Fatal("expected SearchSchema service to be called")
+	}
+	if service.searchSchemaReq == nil || service.searchSchemaReq.SearchScope == nil {
+		t.Fatal("expected SearchSchemaReq.SearchScope to be captured")
+	}
+	if service.searchSchemaReq.SearchScope.IncludeMetricTypes == nil || !*service.searchSchemaReq.SearchScope.IncludeMetricTypes {
+		t.Fatalf("expected include_metric_types=true to be passed through, got %+v", service.searchSchemaReq.SearchScope.IncludeMetricTypes)
+	}
+}
+
+func TestSearchSchema_AllFourScopeDisabled_ReturnsBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	service := &stubKnSearchService{
+		searchSchemaErr: errors.New("search_scope must enable at least one concept type"),
+	}
+	handler := &knSearchHandler{
+		Logger:          logger.DefaultLogger(),
+		KnSearchService: service,
+	}
+
+	body := `{
+		"query":"test query",
+		"search_scope":{
+			"include_object_types":false,
+			"include_relation_types":false,
+			"include_action_types":false,
+			"include_metric_types":false
+		}
+	}`
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/kn/search_schema", bytes.NewBufferString(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+	c.Request.Header.Set("X-Kn-ID", "kn-001")
+
+	handler.SearchSchema(c)
+
+	if w.Code == http.StatusOK {
+		t.Fatalf("expected non-200 status for disabled search_scope, got %d, body=%s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "search_scope must enable at least one concept type") {
+		t.Fatalf("expected error details for disabled search_scope, got body=%s", w.Body.String())
+	}
+}
+
 func TestKnSearch_CallsServiceKnSearch(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

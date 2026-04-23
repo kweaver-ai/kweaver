@@ -14,9 +14,12 @@ import (
 
 	"github.com/creasty/defaults"
 
+	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/drivenadapters"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/infra/errors"
 	"github.com/kweaver-ai/adp/context-loader/agent-retrieval/server/interfaces"
 )
+
+var newBknBackendAccess = drivenadapters.NewBknBackendAccess
 
 // SearchSchema normalizes the request, delegates to KnSearch, and filters the response.
 func (s *knSearchService) SearchSchema(ctx context.Context, req *interfaces.SearchSchemaReq) (*interfaces.SearchSchemaResp, error) {
@@ -30,7 +33,15 @@ func (s *knSearchService) SearchSchema(ctx context.Context, req *interfaces.Sear
 		return nil, err
 	}
 
-	return FilterSearchSchemaResp(resp, scope, *req.MaxConcepts), nil
+	metricTypes := []any{}
+	if scope.IncludeMetricTypes {
+		metricTypes, err = s.resolveMetricTypes(ctx, req, resp)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return FilterSearchSchemaResp(resp, metricTypes, scope, *req.MaxConcepts), nil
 }
 
 // SearchSchemaScope holds the resolved boolean flags for output filtering.
@@ -38,6 +49,7 @@ type SearchSchemaScope struct {
 	IncludeObjectTypes   bool
 	IncludeRelationTypes bool
 	IncludeActionTypes   bool
+	IncludeMetricTypes   bool
 }
 
 // NormalizeSearchSchemaReq converts a SearchSchemaReq into KnSearchReq + scope.
@@ -53,13 +65,15 @@ func NormalizeSearchSchemaReq(req *interfaces.SearchSchemaReq) (*interfaces.KnSe
 		IncludeObjectTypes:   true,
 		IncludeRelationTypes: true,
 		IncludeActionTypes:   true,
+		IncludeMetricTypes:   true,
 	}
 	if req.SearchScope != nil {
 		scope.IncludeObjectTypes = *req.SearchScope.IncludeObjectTypes
 		scope.IncludeRelationTypes = *req.SearchScope.IncludeRelationTypes
 		scope.IncludeActionTypes = *req.SearchScope.IncludeActionTypes
+		scope.IncludeMetricTypes = *req.SearchScope.IncludeMetricTypes
 	}
-	if !scope.IncludeObjectTypes && !scope.IncludeRelationTypes && !scope.IncludeActionTypes {
+	if !scope.IncludeObjectTypes && !scope.IncludeRelationTypes && !scope.IncludeActionTypes && !scope.IncludeMetricTypes {
 		return nil, scope, stderrors.New("search_scope must enable at least one concept type")
 	}
 
@@ -97,10 +111,15 @@ func NormalizeSearchSchemaReq(req *interfaces.SearchSchemaReq) (*interfaces.KnSe
 }
 
 // FilterSearchSchemaResp builds a SearchSchemaResp from KnSearchResp, applying scope filtering.
-func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, scope SearchSchemaScope, maxConcepts int) *interfaces.SearchSchemaResp {
-	objectTypes := toAnySlice(resp.ObjectTypes)
-	relationTypes := toAnySlice(resp.RelationTypes)
-	actionTypes := toAnySlice(resp.ActionTypes)
+func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, metricTypes []any, scope SearchSchemaScope, maxConcepts int) *interfaces.SearchSchemaResp {
+	objectTypes := []any{}
+	relationTypes := []any{}
+	actionTypes := []any{}
+	if resp != nil {
+		objectTypes = toAnySlice(resp.ObjectTypes)
+		relationTypes = toAnySlice(resp.RelationTypes)
+		actionTypes = toAnySlice(resp.ActionTypes)
+	}
 
 	if scope.IncludeRelationTypes {
 		relationTypes = limitAnySlice(relationTypes, maxConcepts)
@@ -117,9 +136,7 @@ func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, scope SearchSchemaSco
 		ObjectTypes:   []any{},
 		RelationTypes: []any{},
 		ActionTypes:   []any{},
-	}
-	if resp == nil {
-		return result
+		MetricTypes:   []any{},
 	}
 	if scope.IncludeObjectTypes {
 		result.ObjectTypes = objectTypes
@@ -130,7 +147,162 @@ func FilterSearchSchemaResp(resp *interfaces.KnSearchResp, scope SearchSchemaSco
 	if scope.IncludeActionTypes {
 		result.ActionTypes = actionTypes
 	}
+	if scope.IncludeMetricTypes {
+		result.MetricTypes = limitAnySlice(metricTypes, maxConcepts)
+	}
 	return result
+}
+
+func (s *knSearchService) resolveMetricTypes(ctx context.Context, req *interfaces.SearchSchemaReq, resp *interfaces.KnSearchResp) ([]any, error) {
+	backend := newBknBackendAccess()
+	if backend == nil {
+		return []any{}, nil
+	}
+
+	directReq := buildMetricRecallQuery(strings.TrimSpace(req.KnID), strings.TrimSpace(req.Query), *req.MaxConcepts)
+	if strings.TrimSpace(req.XKnID) != "" {
+		directReq.KnID = strings.TrimSpace(req.XKnID)
+	}
+
+	directResp, err := backend.SearchMetricTypes(ctx, directReq)
+	if err != nil {
+		return nil, err
+	}
+
+	objectIDs := extractObjectCandidateIDs(resp)
+	expansionMetrics := []*interfaces.MetricType{}
+	if len(objectIDs) > 0 {
+		expansionReq := buildMetricExpansionQuery(directReq.KnID, strings.TrimSpace(req.Query), objectIDs, *req.MaxConcepts)
+		expansionResp, expansionErr := backend.SearchMetricTypes(ctx, expansionReq)
+		if expansionErr != nil {
+			s.Logger.WithContext(ctx).Warnf("[SearchSchema] metric expansion failed, fallback to direct recall: %v", expansionErr)
+		} else if expansionResp != nil {
+			expansionMetrics = expansionResp.Entries
+		}
+	}
+
+	directMetrics := []*interfaces.MetricType{}
+	if directResp != nil {
+		directMetrics = directResp.Entries
+	}
+
+	return toAnySlice(mergeMetricTypesByID(directMetrics, expansionMetrics, *req.MaxConcepts)), nil
+}
+
+func buildMetricRecallQuery(knID, query string, limit int) *interfaces.QueryConceptsReq {
+	return &interfaces.QueryConceptsReq{
+		KnID: knID,
+		Cond: &interfaces.KnCondition{
+			Operation: interfaces.KnOperationTypeOr,
+			SubConditions: []*interfaces.KnCondition{
+				{
+					Field:      "*",
+					Operation:  interfaces.KnOperationTypeKnn,
+					Value:      query,
+					ValueFrom:  interfaces.CondValueFromConst,
+					LimitKey:   interfaces.CondLimitKeyK,
+					LimitValue: limit,
+				},
+				{
+					Field:     "*",
+					Operation: interfaces.KnOperationTypeMatch,
+					Value:     query,
+					ValueFrom: interfaces.CondValueFromConst,
+				},
+			},
+		},
+		Sort: []*interfaces.KnSortParams{
+			{Field: "_score", Direction: "desc"},
+		},
+		Limit:     limit,
+		NeedTotal: false,
+	}
+}
+
+func buildMetricExpansionQuery(knID, query string, objectIDs []string, limit int) *interfaces.QueryConceptsReq {
+	return &interfaces.QueryConceptsReq{
+		KnID: knID,
+		Cond: &interfaces.KnCondition{
+			Operation: interfaces.KnOperationTypeAnd,
+			SubConditions: []*interfaces.KnCondition{
+				{
+					Field:     "scope_type",
+					Operation: interfaces.KnOperationTypeEqual,
+					Value:     "object_type",
+					ValueFrom: interfaces.CondValueFromConst,
+				},
+				{
+					Field:     "scope_ref",
+					Operation: interfaces.KnOperationTypeIn,
+					Value:     objectIDs,
+					ValueFrom: interfaces.CondValueFromConst,
+				},
+				buildMetricRecallQuery(knID, query, limit).Cond,
+			},
+		},
+		Sort: []*interfaces.KnSortParams{
+			{Field: "_score", Direction: "desc"},
+		},
+		Limit:     limit,
+		NeedTotal: false,
+	}
+}
+
+func extractObjectCandidateIDs(resp *interfaces.KnSearchResp) []string {
+	if resp == nil {
+		return nil
+	}
+	objectTypes := toAnySlice(resp.ObjectTypes)
+	if len(objectTypes) == 0 {
+		return nil
+	}
+
+	objectIDs := make([]string, 0, len(objectTypes))
+	seen := make(map[string]struct{}, len(objectTypes))
+	for _, obj := range objectTypes {
+		objMap, ok := obj.(map[string]any)
+		if !ok {
+			continue
+		}
+		conceptID, ok := objMap["concept_id"].(string)
+		if !ok || conceptID == "" {
+			continue
+		}
+		if _, exists := seen[conceptID]; exists {
+			continue
+		}
+		seen[conceptID] = struct{}{}
+		objectIDs = append(objectIDs, conceptID)
+	}
+	return objectIDs
+}
+
+func mergeMetricTypesByID(directMetrics, expansionMetrics []*interfaces.MetricType, limit int) []*interfaces.MetricType {
+	merged := make([]*interfaces.MetricType, 0, len(directMetrics)+len(expansionMetrics))
+	seen := make(map[string]struct{}, len(directMetrics)+len(expansionMetrics))
+
+	appendMetric := func(metric *interfaces.MetricType) {
+		if metric == nil || metric.ID == "" {
+			return
+		}
+		if _, exists := seen[metric.ID]; exists {
+			return
+		}
+		seen[metric.ID] = struct{}{}
+		merged = append(merged, metric)
+	}
+
+	for _, metric := range directMetrics {
+		appendMetric(metric)
+	}
+	for _, metric := range expansionMetrics {
+		appendMetric(metric)
+	}
+
+	if limit > 0 && len(merged) > limit {
+		return merged[:limit]
+	}
+	return merged
 }
 
 func toAnySlice(v any) []any {
@@ -155,12 +327,14 @@ func limitAnySlice(items []any, limit int) []any {
 	return items[:limit]
 }
 
+const relationReferencedObjectTypes = 2
+
 func filterObjectTypesByRelations(objectTypes, relationTypes []any) []any {
 	if len(objectTypes) == 0 || len(relationTypes) == 0 {
 		return objectTypes
 	}
 
-	referenced := make(map[string]struct{}, len(relationTypes)*2)
+	referenced := make(map[string]struct{}, len(relationTypes)*relationReferencedObjectTypes)
 	for _, rel := range relationTypes {
 		relMap, ok := rel.(map[string]any)
 		if !ok {

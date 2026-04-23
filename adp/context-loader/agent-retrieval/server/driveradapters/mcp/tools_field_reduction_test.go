@@ -82,6 +82,7 @@ func (s *stubMCPKnSearchService) SearchSchema(_ context.Context, req *interfaces
 		ObjectTypes:   []any{},
 		RelationTypes: []any{},
 		ActionTypes:   []any{},
+		MetricTypes:   []any{},
 	}, nil
 }
 
@@ -172,6 +173,77 @@ func TestHandleSearchSchema_MaxConceptsPassedThrough(t *testing.T) {
 	})
 }
 
+func TestHandleSearchSchema_IncludeMetricTypesPassedThrough(t *testing.T) {
+	convey.Convey("handleSearchSchema passes include_metric_types through to SearchSchema", t, func() {
+		stub := &stubMCPKnSearchService{
+			searchSchemaResp: &interfaces.SearchSchemaResp{
+				ObjectTypes:   []any{},
+				RelationTypes: []any{},
+				ActionTypes:   []any{},
+				MetricTypes:   []any{map[string]any{"id": "m_1"}},
+			},
+		}
+
+		handler := handleSearchSchema(stub)
+		req := mcpReq(map[string]any{
+			"query":           "test query",
+			"kn_id":           "kn-001",
+			"response_format": "json",
+			"search_scope": map[string]any{
+				"include_metric_types": true,
+			},
+		})
+
+		result, err := handler(withAuthCtx(context.Background()), req)
+		convey.So(err, convey.ShouldBeNil)
+		convey.So(result, convey.ShouldNotBeNil)
+		convey.So(result.IsError, convey.ShouldBeFalse)
+		convey.So(stub.searchSchemaReq, convey.ShouldNotBeNil)
+		convey.So(stub.searchSchemaReq.SearchScope, convey.ShouldNotBeNil)
+		convey.So(stub.searchSchemaReq.SearchScope.IncludeMetricTypes, convey.ShouldNotBeNil)
+		convey.So(*stub.searchSchemaReq.SearchScope.IncludeMetricTypes, convey.ShouldBeTrue)
+	})
+}
+
+func TestHandleSearchSchema_ReturnsMetricTypes(t *testing.T) {
+	convey.Convey("handleSearchSchema includes metric_types in structured output", t, func() {
+		stub := &stubMCPKnSearchService{
+			searchSchemaResp: &interfaces.SearchSchemaResp{
+				ObjectTypes:   []any{},
+				RelationTypes: []any{},
+				ActionTypes:   []any{},
+				MetricTypes: []any{
+					map[string]any{
+						"id":                  "m_1",
+						"name":                "cpu_usage",
+						"metric_type":         "atomic",
+						"scope_type":          "object_type",
+						"scope_ref":           "pod",
+						"calculation_formula": map[string]any{"op": "avg"},
+					},
+				},
+			},
+		}
+
+		handler := handleSearchSchema(stub)
+		req := mcpReq(map[string]any{
+			"query":           "test query",
+			"kn_id":           "kn-001",
+			"response_format": "json",
+		})
+
+		result, err := handler(withAuthCtx(context.Background()), req)
+		convey.So(err, convey.ShouldBeNil)
+		convey.So(result, convey.ShouldNotBeNil)
+		convey.So(result.IsError, convey.ShouldBeFalse)
+
+		resultMap := resultToMap(t, result)
+		metricTypes, ok := resultMap["metric_types"].([]interface{})
+		convey.So(ok, convey.ShouldBeTrue)
+		convey.So(len(metricTypes), convey.ShouldEqual, 1)
+	})
+}
+
 // ==================== FR-3: get_logic_properties_values ====================
 
 func TestHandleGetLogicPropertiesValues_FixesDefaultParams(t *testing.T) {
@@ -185,10 +257,10 @@ func TestHandleGetLogicPropertiesValues_FixesDefaultParams(t *testing.T) {
 		handler := handleGetLogicPropertiesValues(stub)
 		req := mcpReq(map[string]any{
 			"kn_id":                "kn-001",
-			"ot_id":               "ot-001",
-			"query":               "last year revenue",
+			"ot_id":                "ot-001",
+			"query":                "last year revenue",
 			"_instance_identities": []any{map[string]any{"id": "inst_1"}},
-			"properties":          []any{"revenue"},
+			"properties":           []any{"revenue"},
 			"options": map[string]any{
 				"return_debug":      true,
 				"max_repair_rounds": 5,

@@ -62,23 +62,23 @@ func TestKnSearchReqToLocal_RetrievalConfigTypedPreservesFalseBools(t *testing.T
 	if cr == nil {
 		t.Fatal("expected ConceptRetrieval")
 	}
-	assertBoolPtr(t, "IncludeSampleData", cr.IncludeSampleData, false)
-	assertBoolPtr(t, "SchemaBrief", cr.SchemaBrief, false)
-	assertBoolPtr(t, "EnablePropertyBrief", cr.EnablePropertyBrief, false)
-	assertBoolPtr(t, "EnableCoarseRecall", cr.EnableCoarseRecall, false)
+	assertFalseBoolPtr(t, "IncludeSampleData", cr.IncludeSampleData)
+	assertFalseBoolPtr(t, "SchemaBrief", cr.SchemaBrief)
+	assertFalseBoolPtr(t, "EnablePropertyBrief", cr.EnablePropertyBrief)
+	assertFalseBoolPtr(t, "EnableCoarseRecall", cr.EnableCoarseRecall)
 	pf := local.RetrievalConfig.PropertyFilter
 	if pf == nil {
 		t.Fatal("expected PropertyFilter")
 	}
-	assertBoolPtr(t, "EnablePropertyFilter", pf.EnablePropertyFilter, false)
+	assertFalseBoolPtr(t, "EnablePropertyFilter", pf.EnablePropertyFilter)
 }
 
-func assertBoolPtr(t *testing.T, name string, p *bool, want bool) {
+func assertFalseBoolPtr(t *testing.T, name string, p *bool) {
 	t.Helper()
 	if p == nil {
-		t.Fatalf("%s: got nil, want %v", name, want)
+		t.Fatalf("%s: got nil, want false", name)
 	}
-	if *p != want {
-		t.Fatalf("%s: got %v, want %v", name, *p, want)
+	if *p {
+		t.Fatalf("%s: got %v, want false", name, *p)
 	}
 }

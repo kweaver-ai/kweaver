@@ -6,13 +6,14 @@
 
 | 字段 | 值 |
 | :--- | :--- |
-| 文档版本 | v1.3 |
-| 适用版本 | context-loader v0.6.0 |
-| 发布日期 | 2026-04-16 |
+| 文档版本 | v1.4 |
+| 适用版本 | context-loader v0.7.0 |
+| 发布日期 | 2026-04-23 |
 | 状态 | 正式发布 |
 
 | 修订日期 | 修订说明 |
 | :--- | :--- |
+| 2026-04-23 | 更新为 context-loader `0.7.0`；本版 release 仅纳入 `issue-189` / `issue-234`；`search_schema` 的 HTTP `kn_id` 改为通过 body 传递，并补充 `metric_types` 发布口径 |
 | 2026-04-16 | Schema 探索入口统一为 `search_schema`；MCP 不再暴露 `kn_search` / `kn_schema_search`；补充标准 / 兼容 / legacy 接口分层说明 |
 | 2026-04-10 | 更新为 context-loader `0.6.0`，新增 `find_skills` 工具说明，并补充 `search/query/find/get` 四类工具语义 |
 | 2026-03-26 | 根据 `docs/apis/api_private` OpenAPI 更新 6 个工具的依赖说明与参数配置 |
@@ -51,7 +52,7 @@ http://agent-retrieval:30779
 
 ### 3.2 认证与通用 Header
 
-多数接口要求在 Header 中携带：
+多数接口要求在 Header 中携带以下认证信息：
 
 | Header | 必填 | 说明 |
 | :--- | :--- | :--- |
@@ -67,13 +68,14 @@ curl -X POST "http://agent-retrieval:30779/api/agent-retrieval/in/v1/kn/search_s
   -H "Content-Type: application/json" \
   -H "x-account-id: <your-account-id>" \
   -H "x-account-type: user" \
-  -H "x-kn-id: kn_medical" \
   -d '{
+    "kn_id": "kn_medical",
     "query": "头晕吃什么药",
     "search_scope": {
       "include_object_types": true,
       "include_relation_types": true,
-      "include_action_types": true
+      "include_action_types": true,
+      "include_metric_types": true
     },
     "max_concepts": 10
   }'
@@ -158,23 +160,24 @@ curl -X POST "http://agent-retrieval:30779/api/agent-retrieval/in/v1/kn/query_ob
 > 接口定义：[docs/apis/api_private/search_schema.yaml](../apis/api_private/search_schema.yaml)
 
 - API：`POST /api/agent-retrieval/in/v1/kn/search_schema`
-- 作用：根据 query 返回与之相关的 `object_types / relation_types / action_types`
+- 作用：根据 query 返回与之相关的 `object_types / relation_types / action_types / metric_types`
 - 说明：这是新版本标准 Schema 探索接口，也是 MCP / Agent 唯一推荐入口。
+- HTTP 口径：`kn_id` 通过 request body 传入，不再使用 `x-kn-id` Header。
 
 请求体（关键字段）：
 
 | 字段 | 必填 | 说明 |
 | :--- | :--- | :--- |
 | `query` | 是 | 用户自然语言查询 |
-| `kn_id` | 否 | Header `x-kn-id` 未传时，可在 body 中兜底传入 |
-| `search_scope` | 否 | 是否包含对象类/关系类/动作类；至少开启一种，默认全开 |
+| `kn_id` | 是 | 知识网络 ID，通过 request body 传入 |
+| `search_scope` | 否 | 是否包含对象类/关系类/动作类/指标类；至少开启一种，默认全开 |
 | `max_concepts` | 否 | 最大候选概念数量（默认 10） |
 | `schema_brief` | 否 | 是否返回精简 Schema（默认 false） |
 | `enable_rerank` | 否 | 是否启用关系类型 Rerank（默认 true） |
 
 返回要点：
 
-- `object_types / relation_types / action_types`：分组后的 Schema 结果
+- `object_types / relation_types / action_types / metric_types`：分组后的 Schema 结果
 - 不返回实例数据，不返回 `nodes` / `message`
 
 Data Agent 配置（建议）：
@@ -183,8 +186,7 @@ Data Agent 配置（建议）：
 | :--- | :--- | :--- | :--- |
 | `x-account-id` | 应用变量 | Header 参数 | `header.x-account-id` |
 | `x-account-type` | 固定值/应用变量 | Header 参数 | `user` 或 `header.x-account-type` |
-| `x-kn-id` | 固定值/应用变量 | Header 参数（推荐） | `"kn_medical"` 或 `header.x-kn-id` |
-| `kn_id` | 固定值/应用变量 | 请求体兜底参数（可选） | `"kn_medical"` |
+| `kn_id` | 固定值/应用变量 | 请求体参数（必填） | `"kn_medical"` |
 | `query` | 模型生成 | 用户问题/关键词 | `模型生成` |
 | `search_scope` | 模型生成 | 请求体参数（可选） | `模型生成` |
 | `max_concepts` | 固定值 | 最大概念数 | `10` |

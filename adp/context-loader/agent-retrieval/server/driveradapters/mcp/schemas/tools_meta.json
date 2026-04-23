@@ -1,7 +1,7 @@
 {
   "search_schema": {
     "name": "search_schema",
-    "description": "统一的 Schema 探索入口。根据 query 返回相关 object_types、relation_types、action_types，供 query_*、find_*、get_* 工具继续消费。"
+    "description": "统一的 Schema 探索入口。根据 query 返回相关 object_types、relation_types、action_types、metric_types，供 query_*、find_*、get_* 工具继续消费。"
   },
   "query_object_instance": {
     "name": "query_object_instance",

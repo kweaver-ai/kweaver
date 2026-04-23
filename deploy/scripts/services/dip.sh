@@ -79,6 +79,10 @@ parse_dip_args() {
                 DIP_CONFIRM_MISSING_OPENCLAW_PATHS="true"
                 shift
                 ;;
+            -y|--yes)
+                ASSUME_YES="true"
+                shift
+                ;;
             --force-upgrade)
                 FORCE_UPGRADE="true"
                 shift
@@ -388,6 +392,11 @@ _dip_confirm_missing_openclaw_paths() {
         log_warn "${message}"
     done
 
+    if [[ "${ASSUME_YES}" == "true" ]]; then
+        log_info "Continuing with configured paths (-y). Ensure they will be created before dip-studio starts."
+        return 0
+    fi
+
     echo ""
     echo "Options:"
     echo "  1) Re-enter the paths"
@@ -436,42 +445,52 @@ _dip_prompt_openclaw_config() {
     local default_gateway_host
     default_gateway_host="$(get_access_address_field "host")"
     
-    # Always try to prompt for input
     local input_host_path=""
     local input_gateway_token=""
     local input_gateway_host=""
     local input_gateway_port=""
-    
-    if [[ -z "${host_path}" ]]; then
-        read -r -p "Enter hostPath: " input_host_path </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
-            return 1
-        }
-        host_path="${input_host_path}"
-    fi
 
-    if [[ -z "${gateway_token}" ]]; then
-        read -r -p "Enter gatewayToken: " input_gateway_token </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
+    if [[ "${ASSUME_YES}" == "true" ]]; then
+        host_path="${host_path:-${HOME}}"
+        gateway_host="${gateway_host:-${default_gateway_host}}"
+        gateway_port="${gateway_port:-18789}"
+        log_info "Using defaults (-y): hostPath=${host_path}, gatewayHost=${gateway_host}, gatewayPort=${gateway_port}"
+        if [[ -z "${gateway_token}" ]]; then
+            log_error "gatewayToken is required. Pre-configure studio.openclaw.gatewayToken in ${CONFIG_YAML_PATH}, or drop -y and run interactively."
             return 1
-        }
-        gateway_token="${input_gateway_token}"
-    fi
+        fi
+    else
+        if [[ -z "${host_path}" ]]; then
+            read -r -p "Enter hostPath: " input_host_path </dev/tty || {
+                log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
+                return 1
+            }
+            host_path="${input_host_path}"
+        fi
 
-    if [[ -z "${gateway_host}" ]]; then
-        read -r -p "Enter gatewayHost [${default_gateway_host}]: " input_gateway_host </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
-            return 1
-        }
-        gateway_host="${input_gateway_host:-${default_gateway_host}}"
-    fi
+        if [[ -z "${gateway_token}" ]]; then
+            read -r -p "Enter gatewayToken: " input_gateway_token </dev/tty || {
+                log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
+                return 1
+            }
+            gateway_token="${input_gateway_token}"
+        fi
 
-    if [[ -z "${gateway_port}" ]]; then
-        read -r -p "Enter gatewayPort [18789]: " input_gateway_port </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
-            return 1
-        }
-        gateway_port="${input_gateway_port:-18789}"
+        if [[ -z "${gateway_host}" ]]; then
+            read -r -p "Enter gatewayHost [${default_gateway_host}]: " input_gateway_host </dev/tty || {
+                log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
+                return 1
+            }
+            gateway_host="${input_gateway_host:-${default_gateway_host}}"
+        fi
+
+        if [[ -z "${gateway_port}" ]]; then
+            read -r -p "Enter gatewayPort [18789]: " input_gateway_port </dev/tty || {
+                log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
+                return 1
+            }
+            gateway_port="${input_gateway_port:-18789}"
+        fi
     fi
 
     # Validate that required fields are not empty

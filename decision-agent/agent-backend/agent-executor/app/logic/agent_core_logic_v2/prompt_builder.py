@@ -114,10 +114,16 @@ class PromptBuilder:
                 # 最终顺序：_SKILL_USAGE_RULES -> Tools Usage Guidelines -> 用户提示词
                 if explore_system_prompt and explore_system_prompt.strip():
                     # 用户设置了有效的角色指令（非空且不只是空白字符）
-                    explore_system_prompt = _SKILL_USAGE_RULES + "\n{__BUILTIN_SKILL_RULES__}\n\n" + explore_system_prompt
+                    explore_system_prompt = (
+                        f"{_SKILL_USAGE_RULES}\n"
+                        f"{{__BUILTIN_SKILL_RULES__}}\n\n"
+                        f"{explore_system_prompt}"
+                    )
                 else:
                     # 用户未设置角色指令或角色指令为空/空白
-                    explore_system_prompt = _SKILL_USAGE_RULES + "\n{__BUILTIN_SKILL_RULES__}"
+                    explore_system_prompt = (
+                        f"{_SKILL_USAGE_RULES}\n{{__BUILTIN_SKILL_RULES__}}"
+                    )
 
             history_enabled = (
                 not self.agent_config.react_disable_history_in_a_conversation()

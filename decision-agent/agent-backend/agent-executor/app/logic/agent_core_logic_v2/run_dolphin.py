@@ -1,3 +1,4 @@
+import copy
 import json
 from typing import Any, AsyncGenerator, Dict, Optional, TYPE_CHECKING
 from dolphin.sdk.agent.dolphin_agent import DolphinAgent
@@ -126,8 +127,20 @@ async def run_dolphin(
     )
 
 
-    # 8. 从llm_config字典创建GlobalConfig对象
-    global_config = GlobalConfig.from_dict(llm_config)
+    # 8. 创建GlobalConfig对象
+    # 8.1 使用 deepcopy 确保嵌套结构（如 llms/headers 等）也与原 llm_config 完全隔离，
+    # 避免后续对 dolphin_global_config_dict 的修改影响到 llm_config。
+    dolphin_global_config_dict = copy.deepcopy(llm_config)
+
+    # 8.2 添加自定义配置：是否显示 Skill 使用规则
+    dolphin_global_config_dict["add_skill_usage_rules_in_system_prompt"] = (
+        Config.features.add_skill_usage_rules_in_system_prompt
+    )
+    
+    # 8.3 从字典创建GlobalConfig对象
+    global_config = GlobalConfig.from_dict(dolphin_global_config_dict)
+
+
     # 只启用内置日期函数
     global_config.skill_config.enabled_skills = [
         "system_functions._date",

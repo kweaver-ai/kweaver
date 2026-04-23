@@ -251,12 +251,6 @@ func (r *restHandler) ValidateMetrics(c *gin.Context, vis hydra.Visitor) {
 		rest.ReplyError(c, err)
 		return
 	}
-
-	for i := range metrics {
-		metrics[i].KnID = knID
-		metrics[i].Branch = branch
-	}
-
 	if err := r.ms.ValidateMetrics(ctx, metrics, strictMode, mode); err != nil {
 		rest.ReplyError(c, err.(*rest.HTTPError))
 		return

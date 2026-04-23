@@ -125,17 +125,9 @@ def _ensure_oss_port_forward_via_ssh(config: Dict[str, Dict[str, str]]) -> bool:
 
 def server_api_origin(config: Dict[str, Dict[str, str]]) -> str:
     """
-    从 [server].base_url 解析 scheme://host[:port]（不含路径）。
-    base_url 无效时回退 at_env.resolve_request_target（scheme + host）。
+    统一从 at_env.resolve_request_target 读取 scheme://host[:port]（不含路径）。
+    不再优先读取 [server].base_url，避免端口与 host/public_port 不一致。
     """
-    srv = config.get("server") or {}
-    base = (srv.get("base_url") or "").strip()
-    if base:
-        if "://" not in base:
-            base = "https://" + base
-        p = urlparse(base)
-        if p.scheme and p.netloc:
-            return "%s://%s" % (p.scheme, p.netloc.rstrip("/"))
     scheme, host = at_env.resolve_request_target(config)
     host = (host or "").strip()
     if host:

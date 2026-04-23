@@ -95,12 +95,20 @@ def admin_credentials(ini_config: Dict[str, Dict[str, str]]) -> Tuple[str, str]:
 
 
 def server_host_for_requests(ini_config: Dict[str, Dict[str, str]]) -> str:
-    """AT_SERVER_HOST > SERVER_HOST > [server].host。"""
+    """AT_SERVER_HOST > SERVER_HOST > [server].host(+public_port)。"""
     h = _strip(os.environ.get("AT_SERVER_HOST") or os.environ.get("SERVER_HOST"))
     if h:
         return h
     srv = ini_config.get("server") or {}
-    return _strip(srv.get("host"))
+    host = _strip(srv.get("host"))
+    if not host:
+        return ""
+    if ":" in host:
+        return host
+    public_port = _strip(srv.get("public_port"))
+    if public_port:
+        return "%s:%s" % (host, public_port)
+    return host
 
 
 def server_public_port(ini_config: Dict[str, Dict[str, str]]) -> str:
@@ -122,11 +130,10 @@ def _host_has_port(host: str) -> bool:
 
 
 def request_scheme(ini_config: Dict[str, Dict[str, str]]) -> str:
-    """从 [server].base_url 推导协议；无有效 base_url 时默认为 https。"""
-    srv = ini_config.get("server") or {}
-    base_url = _strip(srv.get("base_url", ""))
-    if "://" in base_url:
-        return base_url.split("://", 1)[0].rstrip(":/").lower() or "https"
+    """AT_REQUEST_SCHEME > REQUEST_SCHEME；默认 https。"""
+    v = _strip(os.environ.get("AT_REQUEST_SCHEME") or os.environ.get("REQUEST_SCHEME"))
+    if v:
+        return v.lower()
     return "https"
 
 

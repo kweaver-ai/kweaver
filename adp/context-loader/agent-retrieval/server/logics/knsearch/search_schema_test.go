@@ -134,7 +134,6 @@ func TestSearchSchema_AppliesMaxConceptsPerResourceType(t *testing.T) {
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(&stubSearchSchemaBknBackend{}, func() {
@@ -195,7 +194,6 @@ func TestSearchSchema_LimitsObjectTypesWhenRelationTypesExcluded(t *testing.T) {
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(&stubSearchSchemaBknBackend{}, func() {
@@ -251,7 +249,6 @@ func TestSearchSchema_DefaultsIncludeMetricTypes(t *testing.T) {
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(backend, func() {
@@ -287,7 +284,6 @@ func TestSearchSchema_ExcludeMetricTypesFromResponse(t *testing.T) {
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(backend, func() {
@@ -342,7 +338,6 @@ func TestSearchSchema_MergesDirectAndExpansionMetrics(t *testing.T) {
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(backend, func() {
@@ -399,7 +394,6 @@ func TestSearchSchema_ExpansionQueryConstrainsScopeTypeToObjectType(t *testing.T
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(backend, func() {
@@ -441,7 +435,6 @@ func TestSearchSchema_DirectMetricRecallErrorReturnsError(t *testing.T) {
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(backend, func() {
@@ -480,7 +473,6 @@ func TestSearchSchema_ExpansionMetricRecallErrorFallsBackToDirectOnly(t *testing
 				},
 			},
 		},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(backend, func() {
@@ -510,7 +502,6 @@ func TestSearchSchema_AllScopeDisabled_ReturnsBadRequest(t *testing.T) {
 	service := &knSearchService{
 		Logger:         infraLogger.DefaultLogger(),
 		LocalSearch:    &stubSearchSchemaLocalService{},
-		UseLocalSearch: true,
 	}
 
 	withStubSearchSchemaBknBackend(&stubSearchSchemaBknBackend{}, func() {

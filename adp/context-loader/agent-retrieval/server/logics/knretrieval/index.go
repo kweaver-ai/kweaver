@@ -21,13 +21,13 @@ import (
 const useLocalRerank = true
 
 type knRetrievalServiceImpl struct {
-	logger              interfaces.Logger
-	agentClient         interfaces.AgentApp
-	ontologyQueryAccess interfaces.DrivenOntologyQuery
-	bknBackendAccess    interfaces.BknBackendAccess
-	dataRetrieval       interfaces.DataRetrieval
-	knReranker          *knrerank.KnowledgeReranker
-	useLocalRerank      bool
+	logger                interfaces.Logger
+	agentClient           interfaces.AgentApp
+	ontologyQueryAccess   interfaces.DrivenOntologyQuery
+	bknBackendAccess      interfaces.BknBackendAccess
+	dataRetrieval         interfaces.DataRetrieval
+	knReranker            *knrerank.KnowledgeReranker
+	useLocalRerank        bool
 }
 
 var (
@@ -44,13 +44,13 @@ func NewKnRetrievalService() interfaces.IKnRetrievalService {
 		mfModelClient := drivenadapters.NewMFModelAPIClient()
 
 		knRetrievalService = &knRetrievalServiceImpl{
-			logger:              logger,
-			agentClient:         drivenadapters.NewAgentAppClient(),
-			ontologyQueryAccess: drivenadapters.NewOntologyQueryAccess(),
-			bknBackendAccess:    drivenadapters.NewBknBackendAccess(),
-			dataRetrieval:       drivenadapters.NewDataRetrievalClient(),
-			knReranker:          knrerank.NewKnowledgeReranker(mfModelClient, logger), // 单例
-			useLocalRerank:      useLocalRerank,
+			logger:                logger,
+			agentClient:           drivenadapters.NewAgentAppClient(),
+			ontologyQueryAccess:   drivenadapters.NewOntologyQueryAccess(),
+			bknBackendAccess:      drivenadapters.NewBknBackendAccess(),
+			dataRetrieval:         drivenadapters.NewDataRetrievalClient(),
+			knReranker:            knrerank.NewKnowledgeReranker(mfModelClient, logger), // 单例
+			useLocalRerank:        useLocalRerank,
 		}
 	})
 	return knRetrievalService

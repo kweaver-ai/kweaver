@@ -20,7 +20,7 @@ KWeaver Core is a harness-first foundation for enterprise decision agents. It tu
 
 ## 📚 Quick Links
 
-- 🌐 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) - KWeaver DIP demo environment, [Trial registration](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)
+- 🌐 [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) - KWeaver DIP demo environment, [Apply for a trial](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)
 - 🛠️ [KWeaver SDK](https://github.com/kweaver-ai/kweaver-sdk) - End-user / agent `kweaver` CLI, TypeScript / Python SDK, and AI agent skills
 - 🛡️ [kweaver-admin](https://github.com/kweaver-ai/kweaver-admin) - Platform administrator CLI (users / orgs / roles / models / audit) for full installs
 - 🤝 [Contributing](rules/CONTRIBUTING.md) - Guidelines for contributing to the project
@@ -31,7 +31,7 @@ KWeaver Core is a harness-first foundation for enterprise decision agents. It tu
 - 🧾 [Release Notes](release-notes/) - All notable changes
 
 > Want to have an intuitive experience of the core functions of KWeaver DIP? Click the link below to sign up and start your trial experience immediately to quickly unlock the product's value!
-> 👉 **Trial registration:** <https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf>
+> 👉 **Apply for a trial:** <https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf>
 
 <a id="toc-demo"></a>
 
@@ -102,7 +102,7 @@ For full product documentation, see the [Documentation](help/README.md) ([EN](he
 
 > **Did a full install (without `--minimum`)?** Also install [`kweaver-admin`](#toc-kweaver-admin) to manage users, organizations, roles, models, and audit logs — see [help/en/install.md — Administrator tool after a full install](help/en/install.md#-administrator-tool-after-a-full-install-kweaver-admin).
 
-> **No deployment yet?** KWeaver DIP / public demo access may require prior signup — use [trial registration](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf). After you have access, open the [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) web UI or connect your CLI/SDK to the demo environment (see below).
+> **No deployment yet?** KWeaver DIP / public demo access may require prior signup — [Apply for a trial](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf). After you have access, open the [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list) web UI or connect your CLI/SDK to the demo environment (see below).
 
 <a id="toc-kweaver-core"></a>
 
@@ -266,7 +266,7 @@ kweaver auth login https://your-kweaver-instance.com
 
 ### Try with Demo Environment
 
-No deployment needed — sign up for a trial first ([trial registration](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf)); then connect your AI agent to the demo environment (for the web UI, visit [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list)).
+No deployment needed — [Apply for a trial](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf) first, then connect your AI agent to the demo environment (for the web UI, visit [KWeaver DIP](https://dip-poc.aishu.cn/studio/agent/development/my-agent-list)).
 
 ```bash
 npx skills add https://github.com/kweaver-ai/kweaver-sdk \
@@ -298,7 +298,7 @@ Or use `/kweaver-core` slash commands (the skill takes over automatically):
 /kweaver-core Chat with Agent <agent-id>, ask "What is the current inventory status?"
 ```
 
-> **Demo access:** sign up via [trial registration](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf) if needed.
+> **Demo access:** [Apply for a trial](https://kweaver-ai.feishu.cn/share/base/form/shrcni732cNDY4x3A5SYTncrguf) if needed.
 
 ### Headless / no-browser authentication (SSH, CI, containers)
 

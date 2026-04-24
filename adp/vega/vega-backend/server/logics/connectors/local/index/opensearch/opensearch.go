@@ -667,6 +667,221 @@ func (c *OpenSearchConnector) ExecuteQuery(ctx context.Context, indexName string
 		return nil, fmt.Errorf("index name is empty in resource")
 	}
 
+	// 聚合查询：当Aggregation、GroupBy或Having任一参数存在时执行
+	if params.Aggregation != nil || len(params.GroupBy) > 0 || params.Having != nil {
+		// 构建OpenSearch聚合查询
+		query := map[string]any{
+			"size": 0, // 聚合查询不需要返回文档
+		}
+
+		// 处理过滤条件
+		if params.ActualFilterCond != nil {
+			filterQuery, err := c.ConvertFilterCondition(params.ActualFilterCond, resource.SchemaDefinition)
+			if err != nil {
+				return nil, fmt.Errorf("failed to build filter query: %w", err)
+			}
+			if filterQuery != nil {
+				query["query"] = filterQuery
+			}
+		} else {
+			query["query"] = map[string]any{
+				"match_all": map[string]any{},
+			}
+		}
+
+		// 构建聚合查询
+		aggs := map[string]any{}
+
+		// 确定聚合函数和别名
+		var aggAlias string
+		var metricBody map[string]any
+		if params.Aggregation != nil {
+			if params.Aggregation.Alias != "" {
+				aggAlias = params.Aggregation.Alias
+			} else {
+				aggAlias = "__value"
+			}
+
+			aggField := params.Aggregation.Property
+			aggFunc := params.Aggregation.Aggr
+
+			switch aggFunc {
+			case "count":
+				metricBody = map[string]any{
+					"value_count": map[string]any{
+						"field": aggField,
+					},
+				}
+			case "count_distinct":
+				metricBody = map[string]any{
+					"cardinality": map[string]any{
+						"field": aggField,
+					},
+				}
+			case "sum":
+				metricBody = map[string]any{
+					"sum": map[string]any{
+						"field": aggField,
+					},
+				}
+			case "avg":
+				metricBody = map[string]any{
+					"avg": map[string]any{
+						"field": aggField,
+					},
+				}
+			case "max":
+				metricBody = map[string]any{
+					"max": map[string]any{
+						"field": aggField,
+					},
+				}
+			case "min":
+				metricBody = map[string]any{
+					"min": map[string]any{
+						"field": aggField,
+					},
+				}
+			}
+		}
+
+		// 分组：自内向外嵌套 terms / date_histogram；度量与 HAVING 挂在最内层桶下。
+		if len(params.GroupBy) > 0 {
+			leafAggs := make(map[string]any)
+			if metricBody != nil {
+				leafAggs[aggAlias] = metricBody
+			}
+			if params.Having != nil && params.Aggregation != nil {
+				leafAggs["having_filter"] = c.buildHavingBucketSelector(params.Having, aggAlias)
+			}
+
+			innerNode := leafAggs
+			n := len(params.GroupBy)
+			for i := n - 1; i >= 0; i-- {
+				gb := params.GroupBy[i]
+				name := "group_by_" + gb.Property
+				var bucket map[string]any
+				if gb.CalendarInterval != "" {
+					bucket = map[string]any{
+						"date_histogram": map[string]any{
+							"field":             gb.Property,
+							"calendar_interval": gb.CalendarInterval,
+						},
+					}
+				} else {
+					bucket = map[string]any{
+						"terms": map[string]any{
+							"field": gb.Property,
+							"size":  nestedTermsSize(i, n, params.Limit),
+						},
+					}
+				}
+				if len(innerNode) > 0 {
+					bucket["aggs"] = innerNode
+				}
+				innerNode = map[string]any{name: bucket}
+			}
+			for k, v := range innerNode {
+				aggs[k] = v
+			}
+			// 对每一层 terms 应用 sort 映射到的 order（第二维度排序写在内层 terms 上）
+			for _, v := range aggs {
+				if node, ok := v.(map[string]any); ok {
+					c.applyTermsOrderToGroupAggNode(node, params, aggAlias)
+				}
+			}
+		} else if metricBody != nil {
+			aggs[aggAlias] = metricBody
+		}
+
+		// 将聚合添加到查询
+		query["aggs"] = aggs
+
+		// 序列化查询
+		queryJSON, err := json.Marshal(query)
+		if err != nil {
+			return nil, fmt.Errorf("failed to serialize aggregate query: %w", err)
+		}
+
+		logger.Debugf("OpenSearch aggregate query: %s", string(queryJSON))
+
+		// 执行搜索请求
+		req := opensearchapi.SearchRequest{
+			Index: []string{indexName},
+			Body:  bytes.NewReader(queryJSON),
+		}
+
+		resp, err := req.Do(ctx, c.client)
+		if err != nil {
+			return nil, fmt.Errorf("failed to execute aggregate search: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.IsError() {
+			return nil, fmt.Errorf("aggregate search failed: %s", resp.String())
+		}
+
+		// 读取响应体用于日志记录
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body: %w", err)
+		}
+		logger.Debugf("OpenSearch aggregate response: %s", string(bodyBytes))
+
+		// 解析响应
+		var result map[string]any
+		if err := json.Unmarshal(bodyBytes, &result); err != nil {
+			return nil, fmt.Errorf("failed to decode aggregate search result: %w", err)
+		}
+
+		// 提取文档总数
+		var totalCount int64
+		if hits, ok := result["hits"].(map[string]any); ok {
+			if totalMap, ok := hits["total"].(map[string]any); ok {
+				if value, ok := totalMap["value"].(float64); ok {
+					totalCount = int64(value)
+				} else if value, ok := totalMap["value"].(int64); ok {
+					totalCount = value
+				}
+			}
+		}
+
+		// 提取聚合结果
+		aggregations, ok := result["aggregations"].(map[string]any)
+		if !ok {
+			return &interfaces.QueryResult{
+				Rows:  []map[string]any{},
+				Total: totalCount,
+			}, nil
+		}
+
+		// 处理分组聚合结果（支持多层 group_by 嵌套桶展平）
+		var rows []map[string]any
+		if len(params.GroupBy) > 0 {
+			groupByAggName := "group_by_" + params.GroupBy[0].Property
+			if groupByAgg, ok := aggregations[groupByAggName].(map[string]any); ok {
+				rows = c.flattenNestedGroupByRows(groupByAgg, params, aggAlias)
+			}
+		} else {
+			// 没有分组，只有聚合
+			if params.Aggregation != nil {
+				row := make(map[string]any)
+				if aggResult, ok := aggregations[aggAlias].(map[string]any); ok {
+					if value, ok := aggResult["value"]; ok {
+						row[aggAlias] = value
+					}
+				}
+				rows = append(rows, row)
+			}
+		}
+
+		return &interfaces.QueryResult{
+			Rows:  rows,
+			Total: totalCount,
+		}, nil
+	}
+
+	// 明细查询
 	// Build the OpenSearch query
 	query := map[string]any{
 		"query": map[string]any{
@@ -810,6 +1025,217 @@ func (c *OpenSearchConnector) ExecuteQuery(ctx context.Context, indexName string
 		Rows:  documents,
 		Total: int64(total),
 	}, nil
+}
+
+// nestedTermsSize 为嵌套 group_by 中每一层 terms 设置 size：最内层用 limit 控制「每个父桶下」的行数，外层用较大上限以展开组合。
+func nestedTermsSize(levelIndex, numLevels, limit int) int {
+	if numLevels <= 1 {
+		if limit > 0 {
+			return limit
+		}
+		return 10
+	}
+	if levelIndex == numLevels-1 {
+		if limit > 0 {
+			return limit
+		}
+		return 10
+	}
+	outer := 1000
+	if limit > 0 {
+		if x := limit * 100; x > 10000 {
+			outer = 10000
+		} else if x < 100 {
+			outer = 100
+		} else {
+			outer = x
+		}
+	}
+	return outer
+}
+
+// applyTermsOrderToGroupAggNode 递归为子树中每个 terms 桶写入 order（多维度时第二维 sort 落在内层 terms）。
+// 按度量排序仅在该 terms 的直接子 aggs 中包含度量名时生效，避免外层 terms 引用嵌套过深的子聚合导致 DSL 非法。
+func (c *OpenSearchConnector) applyTermsOrderToGroupAggNode(node map[string]any, params *interfaces.ResourceDataQueryParams, aggAlias string) {
+	if terms, ok := node["terms"].(map[string]any); ok {
+		field, _ := terms["field"].(string)
+		sub, _ := node["aggs"].(map[string]any)
+		metricDirectChild := aggAlias != "" && sub != nil && sub[aggAlias] != nil
+
+		var orderList []map[string]any
+		for _, sortItem := range params.Sort {
+			dir := strings.ToLower(sortItem.Direction)
+			if dir != "asc" && dir != "desc" {
+				dir = "asc"
+			}
+			if params.Aggregation != nil && metricDirectChild && (sortItem.Field == aggAlias || sortItem.Field == "__value") {
+				orderList = append(orderList, map[string]any{aggAlias: dir})
+			}
+			if sortItem.Field == field {
+				orderList = append(orderList, map[string]any{"_key": dir})
+			}
+		}
+		if len(orderList) > 0 {
+			terms["order"] = orderList
+		}
+	}
+	sub, ok := node["aggs"].(map[string]any)
+	if !ok {
+		return
+	}
+	for name, child := range sub {
+		if name == "having_filter" {
+			continue
+		}
+		if childMap, ok := child.(map[string]any); ok {
+			c.applyTermsOrderToGroupAggNode(childMap, params, aggAlias)
+		}
+	}
+}
+
+func (c *OpenSearchConnector) mergeMetricIntoRowFromBucket(bucket map[string]any, row map[string]any, aggAlias string) {
+	if aggAlias == "" {
+		return
+	}
+	if value, ok := bucket[aggAlias]; ok {
+		if valueMap, ok := value.(map[string]any); ok {
+			if val, ok := valueMap["value"]; ok {
+				row[aggAlias] = val
+			}
+		} else {
+			row[aggAlias] = value
+		}
+	}
+}
+
+// collectGroupByRowsFromBucket 自外层桶递归展开为多行（每行包含各维度键与可选度量）。
+func (c *OpenSearchConnector) collectGroupByRowsFromBucket(bucket map[string]any, level int, params *interfaces.ResourceDataQueryParams, aggAlias string, rowSoFar map[string]any) []map[string]any {
+	if level < 0 || level >= len(params.GroupBy) {
+		return nil
+	}
+	gb := params.GroupBy[level]
+	row := make(map[string]any, len(rowSoFar)+2)
+	for k, v := range rowSoFar {
+		row[k] = v
+	}
+	if key, ok := bucket["key"]; ok {
+		row[gb.Property] = key
+	} else if keyStr, ok := bucket["key_as_string"]; ok {
+		row[gb.Property] = keyStr
+	}
+
+	if level == len(params.GroupBy)-1 {
+		if params.Aggregation != nil {
+			c.mergeMetricIntoRowFromBucket(bucket, row, aggAlias)
+		}
+		return []map[string]any{row}
+	}
+
+	nextName := "group_by_" + params.GroupBy[level+1].Property
+	// OpenSearch bucket 的子聚合结果直接平铺在 bucket 下，而不是挂在 bucket["aggs"] 中。
+	childAgg, ok := bucket[nextName].(map[string]any)
+	if !ok {
+		return []map[string]any{row}
+	}
+	nextBuckets, ok := childAgg["buckets"].([]any)
+	if !ok {
+		return []map[string]any{row}
+	}
+	var out []map[string]any
+	for _, nb := range nextBuckets {
+		nbm, ok := nb.(map[string]any)
+		if !ok {
+			continue
+		}
+		out = append(out, c.collectGroupByRowsFromBucket(nbm, level+1, params, aggAlias, row)...)
+	}
+	return out
+}
+
+// flattenNestedGroupByRows 读取最外层 group_by 聚合并展平为结果行，最后按 limit 截断。
+func (c *OpenSearchConnector) flattenNestedGroupByRows(rootAgg map[string]any, params *interfaces.ResourceDataQueryParams, aggAlias string) []map[string]any {
+	buckets, ok := rootAgg["buckets"].([]any)
+	if !ok {
+		return []map[string]any{}
+	}
+	var rows []map[string]any
+	for _, b := range buckets {
+		bm, ok := b.(map[string]any)
+		if !ok {
+			continue
+		}
+		rows = append(rows, c.collectGroupByRowsFromBucket(bm, 0, params, aggAlias, nil)...)
+	}
+	if params.Limit > 0 && len(rows) > params.Limit {
+		rows = rows[:params.Limit]
+	}
+	return rows
+}
+
+// buildHavingBucketSelector 构建HAVING条件的bucket_selector聚合
+func (c *OpenSearchConnector) buildHavingBucketSelector(having *interfaces.HavingClause, aggAlias string) map[string]any {
+	// OpenSearch使用bucket_selector聚合实现HAVING
+	script := ""
+	switch having.Operation {
+	case "==":
+		script = fmt.Sprintf("params.%s == %v", aggAlias, having.Value)
+	case "!=":
+		script = fmt.Sprintf("params.%s != %v", aggAlias, having.Value)
+	case ">":
+		script = fmt.Sprintf("params.%s > %v", aggAlias, having.Value)
+	case ">=":
+		script = fmt.Sprintf("params.%s >= %v", aggAlias, having.Value)
+	case "<":
+		script = fmt.Sprintf("params.%s < %v", aggAlias, having.Value)
+	case "<=":
+		script = fmt.Sprintf("params.%s <= %v", aggAlias, having.Value)
+	case "in":
+		if values, ok := having.Value.([]any); ok {
+			script = fmt.Sprintf("%s.contains(params.%s.toString())", formatInValuesForScript(values), aggAlias)
+		}
+	case "not_in":
+		if values, ok := having.Value.([]any); ok {
+			script = fmt.Sprintf("!%s.contains(params.%s.toString())", formatInValuesForScript(values), aggAlias)
+		}
+	case "range":
+		if values, ok := having.Value.([]any); ok && len(values) == 2 {
+			script = fmt.Sprintf("params.%s >= %v && params.%s <= %v", aggAlias, values[0], aggAlias, values[1])
+		}
+	case "out_range":
+		if values, ok := having.Value.([]any); ok && len(values) == 2 {
+			script = fmt.Sprintf("params.%s < %v || params.%s > %v", aggAlias, values[0], aggAlias, values[1])
+		}
+	}
+
+	return map[string]any{
+		"bucket_selector": map[string]any{
+			"buckets_path": map[string]any{
+				aggAlias: aggAlias,
+			},
+			"script": map[string]any{
+				"source": script,
+			},
+		},
+	}
+}
+
+// formatInValuesForScript 格式化IN操作的值列表为Painless脚本格式
+func formatInValuesForScript(values []any) string {
+	if len(values) == 0 {
+		return "[]"
+	}
+
+	var strValues []string
+	for _, v := range values {
+		switch val := v.(type) {
+		case string:
+			strValues = append(strValues, fmt.Sprintf("'%s'", val))
+		default:
+			strValues = append(strValues, fmt.Sprintf("%v", val))
+		}
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(strValues, ", "))
 }
 
 // buildFieldMappings 构建字段映射

@@ -80,6 +80,37 @@ onboard_probe() {
         exit 1
     fi
     onboard_log_info "OK: kweaver + kubectl (ns=${NAMESPACE})"
+    onboard_recommend_admin_cli
+}
+
+# Detect ISF (full install) and recommend kweaver-admin when present.
+onboard_recommend_admin_cli() {
+    local has_isf="false" isf_releases=""
+    if command -v helm &>/dev/null; then
+        isf_releases="$(helm list -A 2>/dev/null \
+            | awk 'NR>1 {print $1}' \
+            | grep -E '^(authentication|hydra|user-management|eacp|isfweb|isf-data-migrator|policy-management|audit-log|authorization|sharemgnt|oauth2-ui|ingress-informationsecurityfabric)$' \
+            | paste -sd ',' - || true)"
+        [[ -n "${isf_releases}" ]] && has_isf="true"
+    fi
+    if [[ "${has_isf}" != "true" ]]; then
+        if kubectl get ns 2>/dev/null | awk '{print $1}' | grep -qiE '^(isf|information-security-fabric)$'; then
+            has_isf="true"
+        fi
+    fi
+
+    if [[ "${has_isf}" == "true" ]]; then
+        onboard_log_info "Detected ISF (full install) on this cluster${isf_releases:+ — releases: ${isf_releases}}"
+        if command -v kweaver-admin &>/dev/null; then
+            onboard_log_info "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -n1)"
+        else
+            onboard_log_warn "kweaver-admin not in PATH. Full install needs it for user/org/role/model/audit ops."
+            onboard_log_warn "  Install:  npm i -g @kweaver-ai/kweaver-admin"
+            onboard_log_warn "  Login:    kweaver-admin auth login <https://access-url> -k"
+        fi
+    else
+        onboard_log_info "No ISF releases detected — minimum install. kweaver-sdk (this CLI) is enough; kweaver-admin not required."
+    fi
 }
 
 onboard_do_bkn_bash() {

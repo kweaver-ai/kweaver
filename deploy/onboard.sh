@@ -20,6 +20,7 @@ INTERACTIVE="true"
 
 usage() {
     echo "Usage: $0 [options]"
+    echo "  Requires: Node 22+ (kweaver-sdk npm engines), kweaver, kubectl, python3; run from deploy/"
     echo "  (no flags)                Interactive: prompts for auth if kweaver bkn list fails, then models/BKN"
     echo "  --config=PATH            YAML: deploy/conf/models.yaml.example (needs PyYAML)"
     echo "  --namespace=NS           (default: kweaver; or key 'namespace' in yaml)"
@@ -28,6 +29,13 @@ usage() {
     echo "  --skip-bkn               With --config: register models but skip BKN + rollout"
     echo "  -h, --help"
 }
+
+for _ob_arg in "$@"; do
+    if [[ "${_ob_arg}" == "-h" || "${_ob_arg}" == "--help" ]]; then
+        usage
+        exit 0
+    fi
+done
 
 if ! command -v kweaver &>/dev/null; then
     log_error "kweaver not found. Install: npm i -g @kweaver-ai/kweaver-sdk (needs Node 22+; npm may warn on older Node)"
@@ -43,6 +51,28 @@ if ! command -v python3 &>/dev/null; then
     log_error "python3 not found"
     exit 1
 fi
+
+# kweaver-sdk declares engines node >= 22; Node 18 fails in deps (e.g. RegExp /v, string-width) at runtime
+onboard_require_node_22() {
+    if ! command -v node &>/dev/null; then
+        log_error "node not in PATH. kweaver is a Node CLI: install Node 22+ LTS and ensure \"node\" is on the same PATH as kweaver (e.g. nvm use 22)"
+        exit 1
+    fi
+    local _mj
+    _mj="$(node -v 2>/dev/null)"
+    _mj="${_mj#v}"
+    _mj="${_mj%%.*}"
+    if [[ ! "${_mj}" =~ ^[0-9]+$ ]]; then
+        return 0
+    fi
+    if [[ $(( 10#${_mj} )) -lt 22 ]]; then
+        log_error "Node is $(node -v) but kweaver CLI needs Node 22+ (see npm @kweaver-ai/kweaver-sdk engines)."
+        log_error "On Node 18 you may get: SyntaxError: Invalid regular expression flags (dependencies use RegExp 'v' / modern Unicode, which needs Node 22+)."
+        log_error "Fix: nvm install 22 && nvm use 22  (or fnm / official Node 22 LTS), then reinstall: npm i -g @kweaver-ai/kweaver-sdk"
+        exit 1
+    fi
+}
+onboard_require_node_22
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -96,7 +126,8 @@ onboard_ensure_kweaver_auth() {
                 read -r -p "Access base URL (e.g. https://your-host:port): " _kurl
                 if [[ -n "${_kurl}" ]]; then
                     if ! kweaver auth login "${_kurl}" -k; then
-                        onboard_log_warn "kweaver auth login exited with an error. Fix the URL or run login elsewhere, then choose 2 to retry."
+                        onboard_log_warn "kweaver auth login failed. If you saw 'Invalid regular expression' or SyntaxError under node_modules, upgrade to Node 22+ (kweaver-sdk engines), then reinstall the CLI."
+                        onboard_log_warn "Otherwise: fix the URL, or run \"kweaver auth login <url> -k\" elsewhere, then choose 2 to retry."
                     fi
                 else
                     onboard_log_warn "No URL. Enter a URL, or run login yourself and then choose 2."

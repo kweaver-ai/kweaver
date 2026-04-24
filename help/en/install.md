@@ -64,7 +64,7 @@ npm install -g @kweaver-ai/kweaver-sdk
 # or: npx kweaver --help
 ```
 
-> **Node.js 22+** is required (the npm package sets `engines` to `node >= 22`; you will get `EBADENGINE` on Node 18).
+> **Node.js 22+** is required. This matches the [`engines`](https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk) field of `@kweaver-ai/kweaver-sdk` on npm (`node >= 22`); Node 18 will get `EBADENGINE` or runtime issues.
 
 - **curl** — for raw HTTP API calls
 
@@ -161,7 +161,7 @@ After a full install (with `auth.enabled=true` and `businessDomain.enabled=true`
 
 ### 📥 Install
 
-Requires **Node.js 22+** (matches the `engines` field of `@kweaver-ai/kweaver-sdk` on npm; some transitive deps may list `>=20`). Credentials are stored under `~/.kweaver-admin/platforms/`, isolated from `~/.kweaver/`.
+Requires **Node.js 22+** (same as [`@kweaver-ai/kweaver-sdk` on npm](https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk)). Credentials are stored under `~/.kweaver-admin/platforms/`, isolated from `~/.kweaver/`.
 
 ```bash
 npm install -g @kweaver-ai/kweaver-admin

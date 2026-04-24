@@ -17,6 +17,12 @@ declare -a PREFLIGHT_JSON_FIXED=()
 declare -a PREFLIGHT_JSON_DECLINED=()
 declare -a PREFLIGHT_FAIL_SNAPSHOT=()
 
+# Node major for kweaver / onboard / kweaver-admin in this deploy path (default 22: aligns with
+# @kweaver-ai/kweaver-sdk; we use the same bar for kweaver-admin even if npm lists >=18). Override for experiments.
+PREFLIGHT_KWEAVER_MIN_NODE_MAJOR="${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR:-22}"
+# If the user does not install Node 22+ on the server they ran preflight on, they need *some* environment with it.
+PREFLIGHT_OFFHOST_NODE22_HINT="If you do not upgrade Node on this host, run ./onboard.sh and kweaver CLIs from a machine (or job) where Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ is on PATH — e.g. your laptop, a jump box with nvm, a devcontainer, or CI."
+
 # --- reporting helpers ---------------------------------------------------------
 preflight_reset_counters() {
     PREFLIGHT_OK_COUNT=0
@@ -1178,7 +1184,7 @@ preflight_check_target_tools() {
     fi
 }
 
-# Node major from `node -v` (0 if missing or unparseable). kweaver-sdk engines node >=22. Default: check only; optional install via --fix + user confirmation.
+# Node major from `node -v` (0 if missing or unparseable). Align with npm `engines` (default: 22+). Check only unless --fix + confirm.
 preflight_node_major() {
     if ! command -v node &>/dev/null; then
         echo 0
@@ -1197,29 +1203,59 @@ preflight_node_major() {
 
 preflight_check_admin_tools() {
     preflight_skip "admin-tools" && return 0
-    log_info "Checking admin / optional tools (kweaver, node, npm)..."
-    if command -v kweaver &>/dev/null; then
-        preflight_ok "kweaver: $(kweaver --version 2>/dev/null | head -1 || echo ok)"
-    else
-        preflight_warn "kweaver CLI not in PATH (install: npm i -g @kweaver-ai/kweaver-sdk; or run: sudo preflight --fix and approve the kweaver-sdk step if you want help installing after Node 22+ is available)"
-    fi
+    log_info "Checking admin / optional tools (node, npm, kweaver, kweaver-admin) — target Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+; below that is [WARN] only (not [FAIL])..."
 
+    local _nmj
+    _nmj=""
     if command -v node &>/dev/null; then
-        local _nmj
         _nmj="$(preflight_node_major)"
-        if [[ -n "${_nmj}" && $(( 10#${_nmj} )) -ge 22 ]]; then
-            preflight_ok "node: $(node -v 2>/dev/null) (>= 22; kweaver-sdk / kweaver-admin per npm engines)"
+        if [[ -n "${_nmj}" && $(( 10#${_nmj} )) -ge ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+            preflight_ok "node: $(node -v 2>/dev/null) (>= ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}; kweaver-sdk + onboard; this installer also uses the same for kweaver-admin)"
         else
-            preflight_warn "node: $(node -v 2>/dev/null) (need 22+ for kweaver / onboard. To get guided upgrade: sudo preflight --fix and confirm node-22 (nvm, else NodeSource) when prompted)"
+            preflight_warn "node: $(node -v 2>/dev/null) (need ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+. Not a hard failure. Fix: sudo preflight --fix → allow onboard-tooling, then accept node-22 (nvm/NodeSource), or upgrade Node yourself. ${PREFLIGHT_OFFHOST_NODE22_HINT}"
         fi
     else
-        preflight_warn "node not in PATH (install Node 22+; or: sudo preflight --fix and confirm nodejs-npm, then node-22 — only if you opt in at each prompt)"
+        preflight_warn "node not in PATH (need Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ for CLIs / onboard. [WARN] only. Fix: sudo preflight --fix and opt in to nodejs-npm + node-22 when prompted. ${PREFLIGHT_OFFHOST_NODE22_HINT}"
     fi
 
     if command -v npm &>/dev/null; then
         preflight_ok "npm: $(npm -v 2>/dev/null) ($(command -v npm))"
     else
-        preflight_warn "npm not in PATH (usually bundled with Node 22+; or confirm nodejs-npm in sudo preflight --fix)"
+        preflight_warn "npm not in PATH (usually bundled with Node; sudo preflight --fix can offer nodejs-npm, then node-22)"
+    fi
+
+    if command -v kweaver &>/dev/null; then
+        if ! command -v node &>/dev/null; then
+            preflight_ok "kweaver: $(kweaver --version 2>/dev/null | head -1 || echo ok) (node issue called out above)"
+        elif [[ -n "${_nmj}" && $(( 10#${_nmj} )) -ge ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+            preflight_ok "kweaver: $(kweaver --version 2>/dev/null | head -1 || echo ok)"
+        else
+            preflight_warn "kweaver on PATH, but Node is < ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} — prefer upgrading to Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (npm i -g and onboard expect that here). ${PREFLIGHT_OFFHOST_NODE22_HINT}"
+        fi
+    else
+        preflight_warn "kweaver CLI not in PATH (npm i -g @kweaver-ai/kweaver-sdk; or sudo preflight --fix after Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+). ${PREFLIGHT_OFFHOST_NODE22_HINT}"
+    fi
+
+    if command -v kweaver-admin &>/dev/null; then
+        if ! command -v node &>/dev/null; then
+            preflight_ok "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -1 || echo ok) (node issue called out above)"
+        elif [[ -n "${_nmj}" && $(( 10#${_nmj} )) -ge ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+            preflight_ok "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -1 || echo ok)"
+        else
+            preflight_warn "kweaver-admin on PATH, but Node is < ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} — this deploy path standardizes on ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (same as kweaver-sdk); upgrade via sudo preflight --fix → onboard-tooling + node-22 if you opt in. ${PREFLIGHT_OFFHOST_NODE22_HINT}"
+        fi
+    else
+        if [[ "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *authentication* \
+            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *hydra* \
+            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *user-management* \
+            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *eacp* \
+            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *isfweb* ]]; then
+            if ! command -v node &>/dev/null || [[ -z "${_nmj}" || $(( 10#${_nmj} )) -lt ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+                preflight_warn "kweaver-admin not in PATH; cluster has ISF-related components — get Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ first, then: npm i -g @kweaver-ai/kweaver-admin (or sudo preflight --fix: onboard-tooling → node-22 → kweaver-admin). ${PREFLIGHT_OFFHOST_NODE22_HINT}"
+            else
+                preflight_warn "kweaver-admin not in PATH (ISF-related release detected; install: npm i -g @kweaver-ai/kweaver-admin, or sudo preflight --fix and approve kweaver-admin). ${PREFLIGHT_OFFHOST_NODE22_HINT}"
+            fi
+        fi
     fi
 }
 
@@ -1424,10 +1460,10 @@ preflight_fix_node_npm() {
     local _ok=true _mj
     _mj="$(preflight_node_major)"
     if command -v npm &>/dev/null && command -v node &>/dev/null; then
-        if [[ -n "${_mj}" && $(( 10#${_mj} )) -ge 22 ]]; then
+        if [[ -n "${_mj}" && $(( 10#${_mj} )) -ge ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
             return 0
         fi
-        preflight_warn "Node is $(node -v 2>/dev/null) but kweaver CLIs need 22+; 'nodejs-npm' only adds distro packages and will not replace an old Node. Use node-22 fix or nvm/Node 22 LTS."
+        preflight_warn "Node is $(node -v 2>/dev/null) but kweaver CLIs need ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+; 'nodejs-npm' only adds distro packages and will not replace an old Node. Use node-22 fix or nvm/Node LTS. ${PREFLIGHT_OFFHOST_NODE22_HINT}"
         return 0
     fi
     if command -v apt-get &>/dev/null; then
@@ -1456,12 +1492,12 @@ preflight_fix_node_npm() {
         fi
     fi
     _mj="$(preflight_node_major)"
-    if command -v node &>/dev/null && [[ -n "${_mj}" && $(( 10#${_mj} )) -lt 22 ]]; then
-        preflight_warn "node after install: $(node -v 2>/dev/null) (still < 22; run the node-22 fix if you agreed to it, or nvm/Node 22+)"
+    if command -v node &>/dev/null && [[ -n "${_mj}" && $(( 10#${_mj} )) -lt ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+        preflight_warn "node after install: $(node -v 2>/dev/null) (still < ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}; run the node-22 fix if you agreed to it, or nvm/Node 22+). ${PREFLIGHT_OFFHOST_NODE22_HINT}"
     fi
 }
 
-# Node 22+: prefer nvm; fallback NodeSource. Opt-in at preflight --fix prompt only.
+# When below minimum: prefer nvm Node 22 LTS, fallback NodeSource 22.x. Opt-in at preflight --fix prompt only.
 preflight_fix_node_22() {
     local m
     if ! command -v curl &>/dev/null; then
@@ -1489,11 +1525,11 @@ preflight_fix_node_22() {
     fi
     hash -r 2>/dev/null || true
     m="$(preflight_node_major)"
-    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge 22 ]]; then
+    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
         preflight_fixed "Node.js $(node -v) via nvm (NVM_DIR=${NVM_DIR}, $(command -v node); npm $(npm -v 2>/dev/null))"
         return 0
     fi
-    preflight_warn "nvm did not yield Node 22+ in this shell; falling back to NodeSource (adds a third-party OS repo)…"
+    preflight_warn "nvm did not yield Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ in this shell; falling back to NodeSource (adds a third-party OS repo)…"
     preflight_fix_node_22_nodesource
 }
 
@@ -1535,14 +1571,14 @@ preflight_fix_node_22_nodesource() {
             }
         fi
     else
-        preflight_warn "Node 22 needs apt/dnf/yum for NodeSource, or install from https://nodejs.org/ or nvm"
+        preflight_warn "NodeSource needs apt/dnf/yum for this fallback, or install from https://nodejs.org/ or nvm"
         return 0
     fi
 
     hash -r 2>/dev/null || true
     local m
     m="$(preflight_node_major)"
-    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge 22 ]]; then
+    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
         preflight_fixed "Node.js is now $(node -v) at $(command -v node) (includes npm $(npm -v 2>/dev/null))"
     else
         preflight_warn "NodeSource step finished but node is still ${m:-0}: $(node -v 2>/dev/null)"
@@ -1592,7 +1628,7 @@ preflight_print_fix_preview() {
     for line in "${PREFLIGHT_FAIL_SNAPSHOT[@]}"; do
         log_info "  * ${line}"
     done
-    log_info "  Suggested fix names: k3s-uninstall, kubeadm-reset, k8s-apt-source, containerd-install, helm-v3, chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, iptables-legacy, etc-hosts, nodejs-npm, node-22, kweaver-sdk, kweaver-admin (opt-in: each fix asks y/N unless -y or --fix-allow)"
+    log_info "  Suggested fix names: k3s-uninstall, kubeadm-reset, k8s-apt-source, containerd-install, helm-v3, chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, iptables-legacy, etc-hosts, onboard-tooling, nodejs-npm, node-22, kweaver-sdk, kweaver-admin (opt-in; bundle onboard-tooling asks if this host will run ./onboard.sh)"
     log_info "------------------------------------------------------------------"
 }
 
@@ -1614,6 +1650,40 @@ preflight_recheck_after_fixes() {
     fi
     preflight_run_all_checks
     PREFLIGHT_IN_RECHECK=false
+}
+
+# True (exit 0) if any optional fix for running deploy/onboard.sh on this host could apply.
+preflight_onboard_tooling_needed() {
+    if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
+        return 0
+    fi
+    local _om
+    _om="$(preflight_node_major)"
+    if [[ -n "${_om}" && $(( 10#${_om} )) -lt ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+        return 0
+    fi
+    if ! command -v kweaver &>/dev/null; then
+        return 0
+    fi
+    if [[ "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *authentication* \
+        || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *hydra* \
+        || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *user-management* \
+        || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *eacp* \
+        || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *isfweb* ]]; then
+        if ! command -v kweaver-admin &>/dev/null; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+preflight_fix_allow_includes_onboard_step() {
+    [[ -n "${PREFLIGHT_FIX_ALLOW:-}" ]] || return 1
+    [[ "${PREFLIGHT_FIX_ALLOW}" == *"|onboard-tooling|"* ]] \
+        || [[ "${PREFLIGHT_FIX_ALLOW}" == *"|nodejs-npm|"* ]] \
+        || [[ "${PREFLIGHT_FIX_ALLOW}" == *"|node-22|"* ]] \
+        || [[ "${PREFLIGHT_FIX_ALLOW}" == *"|kweaver-sdk|"* ]] \
+        || [[ "${PREFLIGHT_FIX_ALLOW}" == *"|kweaver-admin|"* ]]
 }
 
 # --- safe auto-fixes (requires root) ------------------------------------------
@@ -1795,11 +1865,27 @@ preflight_apply_safe_fixes() {
         fi
     fi
 
-    # --- Node / kweaver (opt-in: each step asks; only in --fix, not in default check-only) ----
+    # --- Node / kweaver: first ask if THIS host will run ./onboard.sh (needs minimum Node + kweaver on PATH) ----
+    local _ot_run=false
+    if preflight_onboard_tooling_needed; then
+        if preflight_fix_allow_includes_onboard_step; then
+            _ot_run=true
+        elif preflight_confirm_fix "onboard-tooling" \
+            "Will you run ./onboard.sh (and optionally kweaver CLIs) on this machine? We standardize on Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (kweaver-sdk, kweaver-admin, onboard); we can nvm/NodeSource → npm -g in the next prompts if you say Yes" \
+            "Choose No if you will run onboard/CLIs on another host with Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (nvm, container, laptop, etc.). If you stay on this machine without node-22, you still need that other environment. Yes = may run node-22 and global npm; each step y/N unless -y."; then
+            _ot_run=true
+        else
+            log_info "Skipped preparing this host for onboard (onboard-tooling: No). You still need Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ somewhere for ./onboard.sh and the CLIs — use another machine, nvm in your user, a devcontainer, or CI. Re-run with --fix to install on this host later."
+        fi
+    else
+        _ot_run=true
+    fi
+
+    if [[ "${_ot_run}" == "true" ]]; then
     if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
         if preflight_confirm_fix "nodejs-npm" \
             "apt/dnf/yum install nodejs and npm (if missing only)" \
-            "Distro packages; version may be < 22. You can run node-22 next. Skip if you use nvm only."; then
+            "Distro packages; version may be below our minimum. You can run node-22 next. Skip if you use nvm only."; then
             preflight_fix_node_npm
         fi
     fi
@@ -1807,10 +1893,10 @@ preflight_apply_safe_fixes() {
     if command -v node &>/dev/null; then
         local _nmj22
         _nmj22="$(preflight_node_major)"
-        if [[ -n "${_nmj22}" && $(( 10#${_nmj22} )) -lt 22 ]]; then
+        if [[ -n "${_nmj22}" && $(( 10#${_nmj22} )) -lt ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
             if preflight_confirm_fix "node-22" \
-                "nvm in \$HOME/.nvm + nvm install 22; if nvm fails, NodeSource 22.x (adds OS repo; needs HTTPS)" \
-                "User accepted at this prompt. nvm: GitHub+nodejs.org; NodeSource: third-party apt/dnf. Air-gapped: install Node 22 manually."; then
+                "nvm in \$HOME/.nvm + nvm install 22 (LTS); if nvm fails, NodeSource 22.x (adds OS repo; needs HTTPS)" \
+                "For hosts below Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}. nvm: GitHub+nodejs.org; NodeSource: third-party apt/dnf. Air-gapped: install Node 22+ manually. ${PREFLIGHT_OFFHOST_NODE22_HINT}"; then
                 preflight_fix_node_22
             fi
         fi
@@ -1819,13 +1905,13 @@ preflight_apply_safe_fixes() {
     if command -v npm &>/dev/null; then
         local _npmj
         _npmj="$(preflight_node_major)"
-        if [[ -z "${_npmj}" || $(( 10#${_npmj} )) -lt 22 ]]; then
-            preflight_warn "Skipping kweaver-sdk / kweaver-admin global npm installs: need Node 22+ (current: $(node -v 2>/dev/null || echo 'no node')). Run node-22 fix with consent, or upgrade Node manually, then re-run preflight --fix."
+        if [[ -z "${_npmj}" || $(( 10#${_npmj} )) -lt ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR} ]]; then
+            preflight_warn "Skipping kweaver-sdk / kweaver-admin global npm installs: need Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (current: $(node -v 2>/dev/null || echo 'no node')). Run node-22 fix with consent, or upgrade Node manually, then re-run preflight --fix. ${PREFLIGHT_OFFHOST_NODE22_HINT}"
         else
         if ! command -v kweaver &>/dev/null; then
             if preflight_confirm_fix "kweaver-sdk" \
                 "npm install -g @kweaver-ai/kweaver-sdk" \
-                "User accepted: installs kweaver CLI. Requires working npm and Node 22+ on PATH in this root shell."; then
+                "User accepted: installs kweaver CLI. Requires working npm and Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ on PATH in this root shell (same as https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk)."; then
                 if npm install -g @kweaver-ai/kweaver-sdk; then
                     preflight_fixed "Installed @kweaver-ai/kweaver-sdk ($(kweaver --version 2>/dev/null | head -n1 || echo ok))"
                 else
@@ -1842,7 +1928,7 @@ preflight_apply_safe_fixes() {
             if ! command -v kweaver-admin &>/dev/null; then
                 if preflight_confirm_fix "kweaver-admin" \
                     "npm install -g @kweaver-ai/kweaver-admin" \
-                    "User accepted: full install (ISF) admin CLI. Token store: ~/.kweaver-admin/"; then
+                    "User accepted: ISF admin CLI. This path requires Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (stricter than npm engines may show). Token store: ~/.kweaver-admin/"; then
                     if npm install -g @kweaver-ai/kweaver-admin; then
                         preflight_fixed "Installed @kweaver-ai/kweaver-admin ($(kweaver-admin --version 2>/dev/null | head -n1 || echo ok))"
                     else
@@ -1852,6 +1938,7 @@ preflight_apply_safe_fixes() {
             fi
         fi
         fi
+    fi
     fi
 }
 

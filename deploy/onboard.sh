@@ -20,7 +20,7 @@ INTERACTIVE="true"
 
 usage() {
     echo "Usage: $0 [options]"
-    echo "  Requires: Node 22+ (kweaver-sdk npm engines), kweaver, kubectl, python3; run from deploy/"
+    echo "  Requires: Node 22+ (see @kweaver-ai/kweaver-sdk on npm), kweaver, kubectl, python3; run from deploy/"
     echo "  (no flags)                Interactive: prompts for auth if kweaver bkn list fails, then models/BKN"
     echo "  --config=PATH            YAML: deploy/conf/models.yaml.example (needs PyYAML)"
     echo "  --namespace=NS           (default: kweaver; or key 'namespace' in yaml)"
@@ -37,11 +37,12 @@ for _ob_arg in "$@"; do
     fi
 done
 
-# kweaver-sdk declares engines node >= 22; Node 18 fails in deps (e.g. RegExp /v, string-width) at runtime
-# preflight.sh only *checks* the host — it does not install/upgrade Node; we enforce and explain here.
-onboard_require_node_22() {
+# Same requirement as @kweaver-ai/kweaver-sdk on npm (node >= 22). https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk
+# preflight.sh only *checks* the host — it does not install/upgrade Node; we enforce the minimum here.
+ONBOARD_MIN_NODE_MAJOR="${ONBOARD_MIN_NODE_MAJOR:-22}"
+onboard_require_node() {
     if ! command -v node &>/dev/null; then
-        log_error "node is not in PATH. Install Node.js 22+ first, or: sudo preflight --fix and opt in to nodejs-npm + node-22 (per-prompt approval)"
+        log_error "node is not in PATH. Install Node.js ${ONBOARD_MIN_NODE_MAJOR}+ first, or: sudo preflight --fix and opt in to nodejs-npm + node-22 (per-prompt approval)"
         log_error "Default preflight (without --fix) only checks; use --fix if you want guided installs."
         exit 1
     fi
@@ -52,18 +53,18 @@ onboard_require_node_22() {
     if [[ ! "${_mj}" =~ ^[0-9]+$ ]]; then
         return 0
     fi
-    if [[ $(( 10#${_mj} )) -lt 22 ]]; then
-        log_error "Your Node is $(node -v); kweaver (onboard) needs Node 22+ (@kweaver-ai/kweaver-sdk engines on npm)."
+    if [[ $(( 10#${_mj} )) -lt ${ONBOARD_MIN_NODE_MAJOR} ]]; then
+        log_error "Your Node is $(node -v); kweaver (onboard) needs Node ${ONBOARD_MIN_NODE_MAJOR}+ (matches @kweaver-ai/kweaver-sdk engines on npm)."
         log_error "To get help on this host (only if you agree at each prompt):  sudo preflight --fix  and confirm the node-22 step (nvm, then NodeSource if needed)"
         log_error "Or install manually, e.g.:  nvm install 22 && nvm use 22  &&  npm i -g @kweaver-ai/kweaver-sdk"
-        log_error "On older Node you may see: SyntaxError: Invalid regular expression flags (e.g. in string-width)."
+        log_error "On Node < 22 you may see EBADENGINE from npm or runtime errors in dependencies; use Node 22+."
         exit 1
     fi
 }
-onboard_require_node_22
+onboard_require_node
 
 if ! command -v kweaver &>/dev/null; then
-    log_error "kweaver not in PATH. Install: npm i -g @kweaver-ai/kweaver-sdk  (Node 22+ active; or: sudo preflight --fix and approve kweaver-sdk)"
+    log_error "kweaver not in PATH. Install: npm i -g @kweaver-ai/kweaver-sdk  (Node ${ONBOARD_MIN_NODE_MAJOR}+ active; or: sudo preflight --fix and approve kweaver-sdk)"
     log_error "  sudo: on many Linux hosts global install needs: sudo npm i -g @kweaver-ai/kweaver-sdk (or EACCES)"
     log_error "  no sudo: nvm + user prefix, or: npm config set prefix \"\$HOME/.local\" and add ~/.local/bin to PATH"
     exit 1
@@ -129,7 +130,7 @@ onboard_ensure_kweaver_auth() {
                 read -r -p "Access base URL (e.g. https://your-host:port): " _kurl
                 if [[ -n "${_kurl}" ]]; then
                     if ! kweaver auth login "${_kurl}" -k; then
-                        onboard_log_warn "kweaver auth login failed. If you saw 'Invalid regular expression' or SyntaxError under node_modules, upgrade to Node 22+ (kweaver-sdk engines), then reinstall the CLI."
+                        onboard_log_warn "kweaver auth login failed. If you saw engine, SyntaxError, or RegExp issues under node_modules, upgrade Node (see npm @kweaver-ai/kweaver-sdk engines), then reinstall the CLI."
                         onboard_log_warn "Otherwise: fix the URL, or run \"kweaver auth login <url> -k\" elsewhere, then choose 2 to retry."
                     fi
                 else

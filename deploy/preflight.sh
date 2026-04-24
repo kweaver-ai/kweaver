@@ -30,17 +30,17 @@ usage() {
     echo "Options:"
     echo "  -h, --help           Show this help"
     echo "  --check-only         Only run checks, do not modify the system (default; still requires root)"
-    echo "  --fix                Check + apply fixes (K8s/sysctl/etc.); also offers optional Node 22 + kweaver CLIs (each ask y/N unless -y)"
+    echo "  --fix                Check + apply fixes (K8s/sysctl/etc.); also offers optional Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ + kweaver CLIs (each ask y/N unless -y)"
     echo "  -y, --yes            Auto-approve every fix (skip per-fix y/N prompt)"
     echo "  -n, --no             Auto-decline every fix (preview risk text, change nothing)"
     echo "  --fix-allow=LIST     Comma-separated fix names to auto-approve (others are skipped)."
     echo "                       Names: k3s-uninstall,kubeadm-reset,k8s-apt-source,containerd-install,helm-v3,"
     echo "                       chrony,firewalld,ufw,selinux,system-tuning,bridge-sysctl,kernel-limits,iptables-legacy,etc-hosts,"
-    echo "                       nodejs-npm,node-22,kweaver-sdk,kweaver-admin"
+    echo "                       onboard-tooling,nodejs-npm,node-22,kweaver-sdk,kweaver-admin"
     echo "  --list-fixes         Run checks then list fixes that would be offered (no changes; requires root)"
     echo "  --output=json        Emit JSON summary to stdout (human logs to stderr); requires python3"
     echo "  --role=target|admin|both  Target = kubectl/helm only; admin = kweaver/node/npm; both = all (default)"
-    echo "                              kweaver CLIs need Node.js 22+ (kweaver-sdk engines; help/zh/install.md)"
+    echo "                              kweaver CLIs need Node.js ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ (per @kweaver-ai/kweaver-sdk on npm; help/zh/install.md)"
     echo "  --no-recheck         Do not re-run full checks after applying fixes"
     echo "  --report=PATH        Append full log to a file"
     echo "  --skip=LIST          Comma-separated check names to skip (see source: preflight_checks.sh preflight_skip)"
@@ -244,7 +244,7 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         if [[ "${_pf_bad}" -eq 0 ]]; then
             echo ""
             echo "  Suggested next step (skip install, just configure / verify):"
-            echo "    - Node/kweaver on an admin host: default preflight is check-only; run sudo preflight --fix to opt in to help installing Node 22 and CLIs (y/N per step)"
+            echo "    - Node/kweaver on an admin host: default preflight is check-only; run sudo preflight --fix to opt in to help installing Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ and CLIs (y/N per step)"
             echo "    - Configure models / BKN search:    ./onboard.sh"
             echo "    - Check status:                     ./deploy.sh kweaver-core status"
             echo "    - Only if you really want to upgrade: ./deploy.sh kweaver-core install --force-upgrade"
@@ -263,7 +263,7 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         fi
         echo "    sudo ./deploy.sh kweaver-core install --minimum    # try first / for evaluation"
         echo "    sudo ./deploy.sh kweaver-core install              # full install (auth + business-domain)"
-        echo "  Then run ./onboard.sh (after Node 22+ + kweaver on the admin host, or: sudo preflight --fix to install with confirmation)"
+        echo "  Then run ./onboard.sh (after Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ + kweaver on the admin host, or: sudo preflight --fix to install with confirmation)"
     fi
     echo "${_PF_BAR}"
 fi

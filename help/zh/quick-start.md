@@ -14,7 +14,7 @@
 npm install -g @kweaver-ai/kweaver-sdk
 ```
 
-需要 Node.js 22+。也可用 `npx kweaver --help` 免安装试用。
+需要 Node.js 22+（与 [npm 上 kweaver-sdk](https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk) 的 `engines` 一致）。也可用 `npx kweaver --help` 免安装试用。
 
 ### 🛡️ 完整安装：先用 kweaver-admin 创建可登录用户
 

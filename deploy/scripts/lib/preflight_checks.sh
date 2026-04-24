@@ -552,7 +552,7 @@ preflight_check_kubeadm_deps() {
         fi
     done
     if [[ ${#miss[@]} -gt 0 ]]; then
-        preflight_fail "Missing required tools for Kubernetes: ${miss[*]}. Install with your package manager (e.g. conntrack socat ebtables ethtool ipset iptables)"
+        preflight_warn "Optional kubeadm tools not found: ${miss[*]}. Not required by deploy.sh, but upstream Kubernetes docs recommend them (apt install conntrack socat ebtables ethtool ipset)"
     else
         preflight_ok "kubeadm dependency tools present (conntrack, socat, ebtables, ethtool, ipset, iptables)"
     fi
@@ -913,8 +913,10 @@ preflight_check_config_yaml() {
     else
         preflight_ok "config.yaml: registry field present"
     fi
-    if ! grep -qE 'businessDomain' "${cfg}"; then
-        preflight_warn "config.yaml: no 'businessDomain' key; Core/DIP may rely on --set businessDomain.* from CLI"
+    if grep -qE 'businessDomain' "${cfg}"; then
+        preflight_ok "config.yaml: businessDomain present"
+    else
+        preflight_ok "config.yaml: no businessDomain (optional; only add or use --set when you need business-domain features; otherwise leave unset)"
     fi
 }
 

@@ -228,16 +228,36 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
     _pf_total="${PREFLIGHT_KWEAVER_RELEASE_TOTAL:-0}"
     _pf_bad="${PREFLIGHT_KWEAVER_RELEASE_BAD:-0}"
     if [[ "${_pf_total}" -gt 0 ]]; then
+        echo "  KWeaver appears INSTALLED on this cluster (${_pf_total} helm release(s))."
+        echo "  You probably do NOT need to run a fresh install — the components below already exist:"
+        if [[ -n "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" ]]; then
+            _pf_first=true
+            _pf_line=""
+            IFS=',' read -r -a _pf_names <<< "${PREFLIGHT_KWEAVER_RELEASE_NAMES}"
+            for _pf_n in "${_pf_names[@]}"; do
+                if [[ -z "${_pf_line}" ]]; then
+                    _pf_line="    ${_pf_n}"
+                elif [[ ${#_pf_line} -gt 72 ]]; then
+                    echo "${_pf_line},"
+                    _pf_line="    ${_pf_n}"
+                else
+                    _pf_line="${_pf_line}, ${_pf_n}"
+                fi
+            done
+            [[ -n "${_pf_line}" ]] && echo "${_pf_line}"
+        fi
         if [[ "${_pf_bad}" -eq 0 ]]; then
-            echo "  KWeaver appears INSTALLED on this cluster (${_pf_total} helm release(s), all 'deployed')."
-            echo "  Suggested next step:"
-            echo "    - Re-run install only if you intend to upgrade:  ./deploy.sh kweaver-core install --force-upgrade"
-            echo "    - Configure models / BKN search:                 ./onboard.sh"
-            echo "    - Check status:                                  ./deploy.sh kweaver-core status"
+            echo ""
+            echo "  Suggested next step (skip install, just configure / verify):"
+            echo "    - Configure models / BKN search:    ./onboard.sh"
+            echo "    - Check status:                     ./deploy.sh kweaver-core status"
+            echo "    - Only if you really want to upgrade: ./deploy.sh kweaver-core install --force-upgrade"
         else
-            echo "  KWeaver is INSTALLED but ${_pf_bad}/${_pf_total} release(s) are not in 'deployed' state."
-            echo "  Suggested next step: inspect with 'helm list -A | grep -iE kweaver|isf|dip'"
-            echo "                       and re-run:  ./deploy.sh kweaver-core install --force-upgrade"
+            echo ""
+            echo "  However, ${_pf_bad}/${_pf_total} release(s) are NOT in 'deployed' state."
+            echo "  Suggested next step:"
+            echo "    - Inspect:  helm list -A | grep -iE 'kweaver|isf|dip'"
+            echo "    - Repair:   ./deploy.sh kweaver-core install --force-upgrade"
         fi
     else
         if [[ ${exit_code} -eq 0 ]]; then

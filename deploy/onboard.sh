@@ -20,6 +20,7 @@ INTERACTIVE="true"
 
 usage() {
     echo "Usage: $0 [options]"
+    echo "  (no flags)                Interactive: prompts for auth if kweaver bkn list fails, then models/BKN"
     echo "  --config=PATH            YAML: deploy/conf/models.yaml.example (needs PyYAML)"
     echo "  --namespace=NS           (default: kweaver; or key 'namespace' in yaml)"
     echo "  --enable-bkn-search      Only patch bkn/ontology ConfigMaps and rollout"
@@ -72,16 +73,60 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# When kweaver bkn list fails, interactively let the user log in or retry; non-interactive exits.
+onboard_ensure_kweaver_auth() {
+    while true; do
+        if kweaver bkn list &>/dev/null; then
+            return 0
+        fi
+        if [[ "${INTERACTIVE}" != "true" ]]; then
+            onboard_log_err "kweaver bkn list failed. Run: kweaver auth login <https://access-url> -k"
+            exit 1
+        fi
+        onboard_log_warn "kweaver bkn list failed (not logged in or platform unreachable)."
+        echo ""
+        echo "Choose:"
+        echo "  1) Enter KWeaver access URL and run login (kweaver auth login <url> -k)"
+        echo "  2) Retry (after you ran login in another terminal)"
+        echo "  3) Quit"
+        read -r -p "Select [1-3] (default: 1): " _kwa
+        _kwa="${_kwa:-1}"
+        case "${_kwa}" in
+            1)
+                read -r -p "Access base URL (e.g. https://your-host:port): " _kurl
+                if [[ -n "${_kurl}" ]]; then
+                    if ! kweaver auth login "${_kurl}" -k; then
+                        onboard_log_warn "kweaver auth login exited with an error. Fix the URL or run login elsewhere, then choose 2 to retry."
+                    fi
+                else
+                    onboard_log_warn "No URL. Enter a URL, or run login yourself and then choose 2."
+                fi
+                ;;
+            2) : ;;
+            3) exit 1 ;;
+            *) onboard_log_warn "Invalid choice, try again." ;;
+        esac
+    done
+}
+
 onboard_probe() {
-    if ! kweaver bkn list &>/dev/null; then
-        onboard_log_err "kweaver bkn list failed. Run: kweaver auth login <https://access-url> -k"
-        exit 1
+    onboard_ensure_kweaver_auth
+    if [[ "${INTERACTIVE}" == "true" ]]; then
+        if ! kubectl get ns &>/dev/null; then
+            onboard_log_err "kubectl: cannot list namespaces (check KUBECONFIG / cluster access)"
+            exit 1
+        fi
+    else
+        if ! kubectl get "namespace/${NAMESPACE}" &>/dev/null; then
+            onboard_log_err "kubectl: namespace ${NAMESPACE} not found (export NAMESPACE=...)"
+            exit 1
+        fi
     fi
-    if ! kubectl get "namespace/${NAMESPACE}" &>/dev/null; then
-        onboard_log_err "kubectl: namespace ${NAMESPACE} not found (export NAMESPACE=...)"
-        exit 1
+    if [[ "${INTERACTIVE}" == "true" ]]; then
+        onboard_log_info "OK: kweaver + kubectl (enter namespace in the next prompt if not ${NAMESPACE})"
+    else
+        onboard_log_info "OK: kweaver + kubectl (ns=${NAMESPACE})"
     fi
-    onboard_log_info "OK: kweaver + kubectl (ns=${NAMESPACE})"
     onboard_recommend_admin_cli
 }
 

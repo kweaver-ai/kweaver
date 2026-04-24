@@ -1178,7 +1178,7 @@ preflight_check_target_tools() {
     fi
 }
 
-# Node major from `node -v` (0 if missing or unparseable). kweaver-sdk declares engines node >=22; preflight enforces 22+.
+# Node major from `node -v` (0 if missing or unparseable). kweaver-sdk declares engines node >=22; preflight only *reports* (no install/upgrade).
 preflight_node_major() {
     if ! command -v node &>/dev/null; then
         echo 0
@@ -1201,7 +1201,7 @@ preflight_check_admin_tools() {
     if command -v kweaver &>/dev/null; then
         preflight_ok "kweaver: $(kweaver --version 2>/dev/null | head -1 || echo ok)"
     else
-        preflight_warn "kweaver CLI not in PATH (npm i -g @kweaver-ai/kweaver-sdk for onboard / API)"
+        preflight_warn "kweaver CLI not in PATH (install: npm i -g @kweaver-ai/kweaver-sdk; preflight only checks — it does not install CLIs. onboard.sh will prompt if Node is too old or kweaver is missing.)"
     fi
 
     if command -v node &>/dev/null; then
@@ -1210,16 +1210,16 @@ preflight_check_admin_tools() {
         if [[ -n "${_nmj}" && $(( 10#${_nmj} )) -ge 22 ]]; then
             preflight_ok "node: $(node -v 2>/dev/null) (>= 22; kweaver-sdk / kweaver-admin per npm engines)"
         else
-            preflight_warn "node: $(node -v 2>/dev/null) (need Node 22+ for kweaver CLIs; run: sudo ./preflight.sh --fix and approve node-22, or use nvm / https://nodejs.org/)"
+            preflight_warn "node: $(node -v 2>/dev/null) (need Node 22+ for kweaver / onboard. Preflight does not upgrade Node. Fix before ./onboard.sh: nvm install 22, or https://nodejs.org/ LTS 22+)"
         fi
     else
-        preflight_warn "node not in PATH (on Linux admin host: sudo ./preflight.sh --fix --fix-allow=nodejs-npm, or use npx / a dev machine with Node 22+ LTS)"
+        preflight_warn "node not in PATH (needed for kweaver CLI. Preflight does not install Node. Install Node 22+ first, e.g. nvm or your distro, then: npm i -g @kweaver-ai/kweaver-sdk)"
     fi
 
     if command -v npm &>/dev/null; then
         preflight_ok "npm: $(npm -v 2>/dev/null) ($(command -v npm))"
     else
-        preflight_warn "npm not in PATH (need npm for kweaver-sdk / kweaver-admin; run: sudo ./preflight.sh --fix --fix-allow=nodejs-npm, or install Node LTS + npm yourself)"
+        preflight_warn "npm not in PATH (ship with a proper Node 22+ install, or your package manager. Preflight does not install npm.)"
     fi
 }
 
@@ -1419,140 +1419,6 @@ preflight_fix_helm_v3() {
     fi
 }
 
-# Install distro nodejs + npm (needed before npm -g kweaver-* fixes).
-# Uses apt/dnf/yum; does not add NodeSource/nvm (keeps preflight self-contained).
-# KWeaver CLIs need Node 22+ (kweaver-sdk engines); if the distro only provides older, use LTS/NodeSource/nvm.
-preflight_fix_node_npm() {
-    local _ok=true _mj
-    _mj="$(preflight_node_major)"
-    if command -v npm &>/dev/null && command -v node &>/dev/null; then
-        if [[ -n "${_mj}" && $(( 10#${_mj} )) -ge 22 ]]; then
-            return 0
-        fi
-        preflight_warn "Node is $(node -v 2>/dev/null) but kweaver CLIs need 22+; 'nodejs-npm' only adds distro packages and will not replace an old Node. Install Node 22 LTS (nodejs.org, NodeSource, nvm), then re-run preflight."
-        return 0
-    fi
-    if command -v apt-get &>/dev/null; then
-        apt-get update -y 2>/dev/null || true
-        if ! apt-get install -y nodejs npm 2>/dev/null; then
-            apt-get install -y nodejs 2>/dev/null || _ok=false
-        fi
-    elif command -v dnf &>/dev/null; then
-        dnf install -y nodejs npm 2>/dev/null || dnf install -y nodejs 2>/dev/null || _ok=false
-    elif command -v yum &>/dev/null; then
-        yum install -y nodejs npm 2>/dev/null || yum install -y nodejs 2>/dev/null || _ok=false
-    else
-        preflight_warn "No apt/dnf/yum: install Node.js LTS and npm yourself (e.g. https://nodejs.org/ or nvm)"
-        return 0
-    fi
-    if command -v node &>/dev/null; then
-        preflight_fixed "node: $(node -v 2>/dev/null) ($(command -v node))"
-    elif [[ "${_ok}" == "false" ]]; then
-        preflight_warn "Package install did not provide node; check repos / EPEL (RHEL) or use Node LTS + npm manually"
-    fi
-    if command -v npm &>/dev/null; then
-        preflight_fixed "npm: $(npm -v 2>/dev/null) ($(command -v npm))"
-    else
-        if command -v node &>/dev/null; then
-            preflight_warn "node is present but npm is still missing; install the 'npm' package or use npx / a newer Node distribution"
-        fi
-    fi
-    _mj="$(preflight_node_major)"
-    if command -v node &>/dev/null && [[ -n "${_mj}" && $(( 10#${_mj} )) -lt 22 ]]; then
-        preflight_warn "node after install: $(node -v 2>/dev/null) (still < 22; preflight --fix: approve node-22 — nvm first, then NodeSource fallback, or use https://nodejs.org/)"
-    fi
-}
-
-# Node 22+: prefer nvm in $HOME/.nvm (no distro repo churn); fallback NodeSource.
-# nvm: https://github.com/nvm-sh/nvm
-preflight_fix_node_22() {
-    local m
-    if ! command -v curl &>/dev/null; then
-        preflight_warn "curl is required (nvm + NodeSource). E.g. apt-get install -y curl"
-        return 0
-    fi
-    if ! command -v bash &>/dev/null; then
-        return 0
-    fi
-    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-    if [[ ! -s "${NVM_DIR}/nvm.sh" ]]; then
-        if ! curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh 2>/dev/null | bash; then
-            preflight_warn "nvm install.sh failed (network, firewalls, or missing deps). See https://github.com/nvm-sh/nvm"
-        fi
-    fi
-    if [[ -s "${NVM_DIR}/nvm.sh" ]]; then
-        # shellcheck source=/dev/null
-        if ! . "${NVM_DIR}/nvm.sh"; then
-            preflight_warn "could not source nvm.sh"
-        elif type nvm &>/dev/null; then
-            nvm install 22 || preflight_warn "nvm install 22 failed (see log above)"
-            nvm use 22 || true
-            nvm alias default 22 2>/dev/null || true
-        fi
-    fi
-    hash -r 2>/dev/null || true
-    m="$(preflight_node_major)"
-    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge 22 ]]; then
-        preflight_fixed "Node.js $(node -v) via nvm (NVM_DIR=${NVM_DIR}, $(command -v node); npm $(npm -v 2>/dev/null))"
-        return 0
-    fi
-    preflight_warn "nvm did not yield Node 22+ in this shell; falling back to NodeSource (adds a third-party OS repo)…"
-    preflight_fix_node_22_nodesource
-}
-
-# Upgrade to Node 22+ via NodeSource (third-party repo; needs outbound HTTPS). Supports apt and rpm families.
-# See: https://github.com/nodesource/distributions
-preflight_fix_node_22_nodesource() {
-    if ! command -v curl &>/dev/null; then
-        preflight_warn "curl is required to fetch the NodeSource setup script; e.g. apt-get install -y curl"
-        return 0
-    fi
-    if ! command -v bash &>/dev/null; then
-        preflight_warn "bash is required to run the NodeSource setup script"
-        return 0
-    fi
-
-    if command -v apt-get &>/dev/null; then
-        apt-get update -y 2>/dev/null || true
-        if ! curl -fsSL https://deb.nodesource.com/setup_22.x 2>/dev/null | bash -; then
-            preflight_warn "NodeSource deb setup_22.x failed (network, GPG, or unsupported release). See https://github.com/nodesource/distributions"
-            return 0
-        fi
-        if ! apt-get install -y nodejs; then
-            preflight_warn "apt-get install -y nodejs failed after NodeSource setup (package conflict or held packages)"
-            return 0
-        fi
-    elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
-        if ! curl -fsSL https://rpm.nodesource.com/setup_22.x 2>/dev/null | bash -; then
-            preflight_warn "NodeSource rpm setup_22.x failed (network or unsupported release)"
-            return 0
-        fi
-        if command -v dnf &>/dev/null; then
-            dnf install -y nodejs || {
-                preflight_warn "dnf install -y nodejs failed"
-                return 0
-            }
-        else
-            yum install -y nodejs || {
-                preflight_warn "yum install -y nodejs failed"
-                return 0
-            }
-        fi
-    else
-        preflight_warn "Node 22 auto-upgrade needs apt-get or dnf/yum. Install Node 22 LTS from https://nodejs.org/ or nvm"
-        return 0
-    fi
-
-    hash -r 2>/dev/null || true
-    local m
-    m="$(preflight_node_major)"
-    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge 22 ]]; then
-        preflight_fixed "Node.js is now $(node -v) at $(command -v node) (includes npm $(npm -v 2>/dev/null))"
-    else
-        preflight_warn "NodeSource step finished but node is still ${m:-0}: $(node -v 2>/dev/null). Check for held packages or multiple Node installs."
-    fi
-}
-
 preflight_fix_iptables_legacy() {
     if ! command -v update-alternatives &>/dev/null; then
         return 0
@@ -1596,7 +1462,7 @@ preflight_print_fix_preview() {
     for line in "${PREFLIGHT_FAIL_SNAPSHOT[@]}"; do
         log_info "  * ${line}"
     done
-    log_info "  Suggested fix names: k3s-uninstall, kubeadm-reset, k8s-apt-source, containerd-install, helm-v3, chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, iptables-legacy, etc-hosts, nodejs-npm, node-22, kweaver-sdk, kweaver-admin (only applicable steps run)"
+    log_info "  Suggested fix names: k3s-uninstall, kubeadm-reset, k8s-apt-source, containerd-install, helm-v3, chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, iptables-legacy, etc-hosts (only applicable steps run). Node/kweaver: checks only, no fix — see onboard.sh / npm.)"
     log_info "------------------------------------------------------------------"
 }
 
@@ -1799,67 +1665,7 @@ preflight_apply_safe_fixes() {
         fi
     fi
 
-    # --- nodejs + npm (distro packages; before kweaver-* global installs) ----
-    if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
-        if preflight_confirm_fix "nodejs-npm" \
-            "apt/dnf/yum install nodejs and npm" \
-            "KWeaver CLIs need Node.js 22+ (kweaver-sdk engines). Distro nodejs is often <22 — use Node 22 LTS, NodeSource, or nvm if needed."; then
-            preflight_fix_node_npm
-        fi
-    fi
-
-    # --- Node 22+ via NodeSource (when node exists but major < 22) ----------
-    if command -v node &>/dev/null; then
-        local _nmj22
-        _nmj22="$(preflight_node_major)"
-        if [[ -n "${_nmj22}" && $(( 10#${_nmj22} )) -lt 22 ]]; then
-            if preflight_confirm_fix "node-22" \
-                "nvm: install to \$HOME/.nvm + nvm install 22 (default; no apt/dnf repo); else NodeSource if nvm fails" \
-                "nvm=download from GitHub + nodejs.org; default shell gets Node. NodeSource=third-party OS repo, same as before. Air-gapped: install Node 22 manually."; then
-                preflight_fix_node_22
-            fi
-        fi
-    fi
-
-    # --- npm-installed CLIs (kweaver-sdk, kweaver-admin) --------------------
-    # Only when npm is present; kweaver-sdk declares engines node >=22.
-    if command -v npm &>/dev/null; then
-        local _npmj
-        _npmj="$(preflight_node_major)"
-        if [[ -z "${_npmj}" || $(( 10#${_npmj} )) -lt 22 ]]; then
-            preflight_warn "Skipping kweaver-sdk / kweaver-admin npm installs: need Node.js 22+ (current: $(node -v 2>/dev/null || echo 'no node')). Upgrade Node, then re-run with --fix or install CLIs by hand."
-        else
-        if ! command -v kweaver &>/dev/null; then
-            if preflight_confirm_fix "kweaver-sdk" \
-                "npm install -g @kweaver-ai/kweaver-sdk" \
-                "Installs the kweaver CLI used by onboard.sh and day-to-day API calls."; then
-                if npm install -g @kweaver-ai/kweaver-sdk; then
-                    preflight_fixed "Installed @kweaver-ai/kweaver-sdk ($(kweaver --version 2>/dev/null | head -n1 || echo ok))"
-                else
-                    preflight_warn "npm install -g @kweaver-ai/kweaver-sdk failed (check npm registry / proxy)"
-                fi
-            fi
-        fi
-
-        if [[ "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *authentication* \
-            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *hydra* \
-            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *user-management* \
-            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *eacp* \
-            || "${PREFLIGHT_KWEAVER_RELEASE_NAMES:-}" == *isfweb* ]]; then
-            if ! command -v kweaver-admin &>/dev/null; then
-                if preflight_confirm_fix "kweaver-admin" \
-                    "npm install -g @kweaver-ai/kweaver-admin" \
-                    "Full install detected (ISF). Admin CLI handles users / orgs / roles / models / audit. Token store is ~/.kweaver-admin/, isolated from kweaver-sdk."; then
-                    if npm install -g @kweaver-ai/kweaver-admin; then
-                        preflight_fixed "Installed @kweaver-ai/kweaver-admin ($(kweaver-admin --version 2>/dev/null | head -n1 || echo ok))"
-                    else
-                        preflight_warn "npm install -g @kweaver-ai/kweaver-admin failed (check npm registry / proxy)"
-                    fi
-                fi
-            fi
-        fi
-        fi
-    fi
+    # (Node / kweaver / npm: preflight is check-only. Install/upgrade on the host, then use onboard.sh.)
 }
 
 # --- run all checks in order ---------------------------------------------------

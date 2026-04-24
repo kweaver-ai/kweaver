@@ -37,25 +37,12 @@ for _ob_arg in "$@"; do
     fi
 done
 
-if ! command -v kweaver &>/dev/null; then
-    log_error "kweaver not found. Install: npm i -g @kweaver-ai/kweaver-sdk (needs Node 22+; npm may warn on older Node)"
-    log_error "  sudo: on many Linux hosts the global prefix is under /usr → use sudo npm i -g @kweaver-ai/kweaver-sdk, or get EACCES without it."
-    log_error "  no sudo: use nvm/fnm, or npm config set prefix \"\$HOME/.local\" and put ~/.local/bin on PATH, then npm i -g without sudo."
-    exit 1
-fi
-if ! command -v kubectl &>/dev/null; then
-    log_error "kubectl not found"
-    exit 1
-fi
-if ! command -v python3 &>/dev/null; then
-    log_error "python3 not found"
-    exit 1
-fi
-
 # kweaver-sdk declares engines node >= 22; Node 18 fails in deps (e.g. RegExp /v, string-width) at runtime
+# preflight.sh only *checks* the host — it does not install/upgrade Node; we enforce and explain here.
 onboard_require_node_22() {
     if ! command -v node &>/dev/null; then
-        log_error "node not in PATH. kweaver is a Node CLI: install Node 22+ LTS and ensure \"node\" is on the same PATH as kweaver (e.g. nvm use 22)"
+        log_error "node is not in PATH. Install Node.js 22+ first (e.g. nvm install 22, or https://nodejs.org/ LTS 22+)."
+        log_error "Note: preflight is check-only; it will not install Node for you. Upgrade the machine, then re-run this script."
         exit 1
     fi
     local _mj
@@ -66,13 +53,29 @@ onboard_require_node_22() {
         return 0
     fi
     if [[ $(( 10#${_mj} )) -lt 22 ]]; then
-        log_error "Node is $(node -v) but kweaver CLI needs Node 22+ (see npm @kweaver-ai/kweaver-sdk engines)."
-        log_error "On Node 18 you may get: SyntaxError: Invalid regular expression flags (dependencies use RegExp 'v' / modern Unicode, which needs Node 22+)."
-        log_error "Fix: nvm install 22 && nvm use 22  (or fnm / official Node 22 LTS), then reinstall: npm i -g @kweaver-ai/kweaver-sdk"
+        log_error "Your Node is $(node -v); kweaver (onboard) needs Node 22+ (@kweaver-ai/kweaver-sdk engines on npm)."
+        log_error "Preflight only reports this — it does not upgrade Node. You must install Node 22+ on this host before onboard can run."
+        log_error "Typical fix:  nvm install 22 && nvm use 22  &&  npm i -g @kweaver-ai/kweaver-sdk"
+        log_error "On older Node you may see: SyntaxError: Invalid regular expression flags (e.g. in string-width)."
         exit 1
     fi
 }
 onboard_require_node_22
+
+if ! command -v kweaver &>/dev/null; then
+    log_error "kweaver not in PATH. Install: npm i -g @kweaver-ai/kweaver-sdk  (Node 22+ must be active, see above; preflight does not install the CLI.)"
+    log_error "  sudo: on many Linux hosts global install needs: sudo npm i -g @kweaver-ai/kweaver-sdk (or EACCES)"
+    log_error "  no sudo: nvm + user prefix, or: npm config set prefix \"\$HOME/.local\" and add ~/.local/bin to PATH"
+    exit 1
+fi
+if ! command -v kubectl &>/dev/null; then
+    log_error "kubectl not found"
+    exit 1
+fi
+if ! command -v python3 &>/dev/null; then
+    log_error "python3 not found"
+    exit 1
+fi
 
 while [[ $# -gt 0 ]]; do
     case "$1" in

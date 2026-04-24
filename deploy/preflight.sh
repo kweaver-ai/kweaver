@@ -30,13 +30,12 @@ usage() {
     echo "Options:"
     echo "  -h, --help           Show this help"
     echo "  --check-only         Only run checks, do not modify the system (default; still requires root)"
-    echo "  --fix                Check + interactively apply safe fixes (interactive; use -y to auto-approve)"
+    echo "  --fix                Check + apply safe *host* fixes (K8s/sysctl/etc.); does not install Node or kweaver CLIs"
     echo "  -y, --yes            Auto-approve every fix (skip per-fix y/N prompt)"
     echo "  -n, --no             Auto-decline every fix (preview risk text, change nothing)"
     echo "  --fix-allow=LIST     Comma-separated fix names to auto-approve (others are skipped)."
     echo "                       Names: k3s-uninstall,kubeadm-reset,k8s-apt-source,containerd-install,helm-v3,"
-    echo "                       chrony,firewalld,ufw,selinux,system-tuning,bridge-sysctl,kernel-limits,iptables-legacy,etc-hosts,"
-    echo "                       nodejs-npm,node-22,kweaver-sdk,kweaver-admin"
+    echo "                       chrony,firewalld,ufw,selinux,system-tuning,bridge-sysctl,kernel-limits,iptables-legacy,etc-hosts"
     echo "  --list-fixes         Run checks then list fixes that would be offered (no changes; requires root)"
     echo "  --output=json        Emit JSON summary to stdout (human logs to stderr); requires python3"
     echo "  --role=target|admin|both  Target = kubectl/helm only; admin = kweaver/node/npm; both = all (default)"
@@ -244,6 +243,7 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         if [[ "${_pf_bad}" -eq 0 ]]; then
             echo ""
             echo "  Suggested next step (skip install, just configure / verify):"
+            echo "    - On the machine you run CLIs: install Node 22+ + kweaver (preflight does not do this; onboard.sh will tell you to upgrade if missing.)"
             echo "    - Configure models / BKN search:    ./onboard.sh"
             echo "    - Check status:                     ./deploy.sh kweaver-core status"
             echo "    - Only if you really want to upgrade: ./deploy.sh kweaver-core install --force-upgrade"
@@ -262,7 +262,7 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         fi
         echo "    sudo ./deploy.sh kweaver-core install --minimum    # try first / for evaluation"
         echo "    sudo ./deploy.sh kweaver-core install              # full install (auth + business-domain)"
-        echo "  Then run ./onboard.sh to register models and enable BKN semantic search."
+        echo "  Then, with Node 22+ and kweaver CLI on an admin host, run ./onboard.sh to register models and enable BKN semantic search (onboard will validate Node/CLI; preflight only checks.)"
     fi
     echo "${_PF_BAR}"
 fi

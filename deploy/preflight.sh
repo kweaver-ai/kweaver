@@ -151,21 +151,22 @@ fi
 
 preflight_reset_counters
 
-if [[ "${PREFLIGHT_OUTPUT_JSON}" == "true" ]]; then
-    log_info "========== KWeaver preflight checks ==========" >&2
-else
-    log_info "========== KWeaver preflight checks =========="
-fi
+_PF_BAR="================================================================"
+_pf_section() {
+    if [[ "${PREFLIGHT_OUTPUT_JSON}" == "true" ]]; then
+        printf '\n%s\n%s\n%s\n' "${_PF_BAR}" "  $1" "${_PF_BAR}" >&2
+    else
+        printf '\n%s\n%s\n%s\n' "${_PF_BAR}" "  $1" "${_PF_BAR}"
+    fi
+}
+
+_pf_section "KWeaver preflight checks"
 preflight_run_all_checks
 PREFLIGHT_FAIL_COUNT_INITIAL="${PREFLIGHT_FAIL_COUNT}"
 export PREFLIGHT_FAIL_COUNT_INITIAL
 
 if [[ "${PREFLIGHT_CHECK_ONLY}" != "true" || "${PREFLIGHT_LIST_FIXES_ONLY}" == "true" ]]; then
-    if [[ "${PREFLIGHT_OUTPUT_JSON}" == "true" ]]; then
-        log_info "========== Safe fixes ==========" >&2
-    else
-        log_info "========== Safe fixes =========="
-    fi
+    _pf_section "Safe fixes"
     preflight_apply_safe_fixes
     if [[ "${PREFLIGHT_NO_RECHECK}" != "true" && "${PREFLIGHT_CHECK_ONLY}" != "true" && "${PREFLIGHT_LIST_FIXES_ONLY}" != "true" ]]; then
         preflight_recheck_after_fixes
@@ -173,14 +174,14 @@ if [[ "${PREFLIGHT_CHECK_ONLY}" != "true" || "${PREFLIGHT_LIST_FIXES_ONLY}" == "
 fi
 
 if [[ "${PREFLIGHT_OUTPUT_JSON}" == "true" ]]; then
-    log_info "========== Summary ==========" >&2
+    _pf_section "Summary"
     echo "  [OK]    ${PREFLIGHT_OK_COUNT}" >&2
     echo "  [WARN]  ${PREFLIGHT_WARN_COUNT}" >&2
     echo "  [FAIL]  ${PREFLIGHT_FAIL_COUNT}" >&2
     echo "  [FIXED] ${PREFLIGHT_FIXED_COUNT}" >&2
     emit_preflight_json
 else
-    log_info "========== Summary =========="
+    _pf_section "Summary"
     echo "  [OK]    ${PREFLIGHT_OK_COUNT}"
     echo "  [WARN]  ${PREFLIGHT_WARN_COUNT}"
     echo "  [FAIL]  ${PREFLIGHT_FAIL_COUNT}"
@@ -223,8 +224,7 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         log_info "Preflight passed."
     fi
 
-    echo ""
-    echo "========== Conclusion =========="
+    _pf_section "Conclusion"
     _pf_total="${PREFLIGHT_KWEAVER_RELEASE_TOTAL:-0}"
     _pf_bad="${PREFLIGHT_KWEAVER_RELEASE_BAD:-0}"
     if [[ "${_pf_total}" -gt 0 ]]; then
@@ -269,7 +269,7 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         echo "    sudo ./deploy.sh kweaver-core install              # full install (auth + business-domain)"
         echo "  Then run ./onboard.sh to register models and enable BKN semantic search."
     fi
-    echo "================================"
+    echo "${_PF_BAR}"
 fi
 
 exit "${exit_code}"

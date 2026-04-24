@@ -808,24 +808,28 @@ preflight_check_existing_release() {
         return 0
     fi
     log_info "Checking for existing kweaver/isf/dip-related Helm releases..."
-    local r names count preview
+    local r total bad bad_names bad_count
     r="$(helm list -A 2>/dev/null | awk 'NR>1 && tolower($0) ~ /kweaver|isf|dip/' || true)"
-    if [[ -n "${r}" ]]; then
-        names="$(echo "${r}" | awk '{print $1}')"
-        count="$(echo "${names}" | grep -c . || true)"
-        preview="$(echo "${names}" | head -n 5 | paste -sd ',' -)"
-        if [[ "${count}" -gt 5 ]]; then
-            preview="${preview}, … (+$((count - 5)) more)"
-        fi
-        preflight_warn "Helm has ${count} existing kweaver/isf/dip release(s): ${preview} (reuse ok if intended; full list: helm list -A | grep -iE 'kweaver|isf|dip')"
-        if [[ -n "${PREFLIGHT_REPORT_FILE:-}" ]]; then
-            {
-                echo "--- existing helm releases (kweaver/isf/dip) ---"
-                echo "${r}"
-            } >> "${PREFLIGHT_REPORT_FILE}" 2>/dev/null || true
-        fi
-    else
+    if [[ -z "${r}" ]]; then
         preflight_ok "No obvious kweaver/isf/dip Helm release names in helm list -A"
+        return 0
+    fi
+
+    total="$(echo "${r}" | grep -c . || true)"
+    # Anything other than the healthy steady state "deployed" is worth flagging.
+    bad="$(echo "${r}" | awk '$8!="deployed" && $0!~/[Dd]eployed/' || true)"
+    if [[ -z "${bad}" ]]; then
+        preflight_ok "Helm has ${total} kweaver/isf/dip release(s), all in 'deployed' state — reusing"
+    else
+        bad_names="$(echo "${bad}" | awk '{print $1"("$8")"}' | paste -sd ',' -)"
+        bad_count="$(echo "${bad}" | grep -c . || true)"
+        preflight_warn "Helm: ${bad_count}/${total} kweaver/isf/dip release(s) not in 'deployed' state: ${bad_names} (others are healthy and will be reused)"
+    fi
+    if [[ -n "${PREFLIGHT_REPORT_FILE:-}" ]]; then
+        {
+            echo "--- existing helm releases (kweaver/isf/dip) ---"
+            echo "${r}"
+        } >> "${PREFLIGHT_REPORT_FILE}" 2>/dev/null || true
     fi
     local tns
     tns="$(kubectl get ns 2>/dev/null | awk '$2=="Terminating"{print $1}' || true)"

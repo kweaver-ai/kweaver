@@ -1459,8 +1459,45 @@ preflight_fix_node_npm() {
     fi
     _mj="$(preflight_node_major)"
     if command -v node &>/dev/null && [[ -n "${_mj}" && $(( 10#${_mj} )) -lt 22 ]]; then
-        preflight_warn "node after install: $(node -v 2>/dev/null) (still < 22; preflight --fix: approve step node-22 for NodeSource, or use nvm / https://nodejs.org/)"
+        preflight_warn "node after install: $(node -v 2>/dev/null) (still < 22; preflight --fix: approve node-22 — nvm first, then NodeSource fallback, or use https://nodejs.org/)"
     fi
+}
+
+# Node 22+: prefer nvm in $HOME/.nvm (no distro repo churn); fallback NodeSource.
+# nvm: https://github.com/nvm-sh/nvm
+preflight_fix_node_22() {
+    local m
+    if ! command -v curl &>/dev/null; then
+        preflight_warn "curl is required (nvm + NodeSource). E.g. apt-get install -y curl"
+        return 0
+    fi
+    if ! command -v bash &>/dev/null; then
+        return 0
+    fi
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    if [[ ! -s "${NVM_DIR}/nvm.sh" ]]; then
+        if ! curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh 2>/dev/null | bash; then
+            preflight_warn "nvm install.sh failed (network, firewalls, or missing deps). See https://github.com/nvm-sh/nvm"
+        fi
+    fi
+    if [[ -s "${NVM_DIR}/nvm.sh" ]]; then
+        # shellcheck source=/dev/null
+        if ! . "${NVM_DIR}/nvm.sh"; then
+            preflight_warn "could not source nvm.sh"
+        elif type nvm &>/dev/null; then
+            nvm install 22 || preflight_warn "nvm install 22 failed (see log above)"
+            nvm use 22 || true
+            nvm alias default 22 2>/dev/null || true
+        fi
+    fi
+    hash -r 2>/dev/null || true
+    m="$(preflight_node_major)"
+    if command -v node &>/dev/null && [[ -n "${m}" && $(( 10#${m} )) -ge 22 ]]; then
+        preflight_fixed "Node.js $(node -v) via nvm (NVM_DIR=${NVM_DIR}, $(command -v node); npm $(npm -v 2>/dev/null))"
+        return 0
+    fi
+    preflight_warn "nvm did not yield Node 22+ in this shell; falling back to NodeSource (adds a third-party OS repo)…"
+    preflight_fix_node_22_nodesource
 }
 
 # Upgrade to Node 22+ via NodeSource (third-party repo; needs outbound HTTPS). Supports apt and rpm families.
@@ -1777,9 +1814,9 @@ preflight_apply_safe_fixes() {
         _nmj22="$(preflight_node_major)"
         if [[ -n "${_nmj22}" && $(( 10#${_nmj22} )) -lt 22 ]]; then
             if preflight_confirm_fix "node-22" \
-                "NodeSource: curl setup_22.x | bash, then install nodejs (adds nodesource.com repo; needs HTTPS)" \
-                "Third-party repo; may replace distro nodejs. Offline / air-gapped hosts must install Node 22 manually."; then
-                preflight_fix_node_22_nodesource
+                "nvm: install to \$HOME/.nvm + nvm install 22 (default; no apt/dnf repo); else NodeSource if nvm fails" \
+                "nvm=download from GitHub + nodejs.org; default shell gets Node. NodeSource=third-party OS repo, same as before. Air-gapped: install Node 22 manually."; then
+                preflight_fix_node_22
             fi
         fi
     fi

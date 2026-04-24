@@ -69,12 +69,11 @@ class PromptBuilder:
         is_skill_enabled = self._is_skill_enabled()
 
         if self.agent_config.is_dolphin_mode:
-            # Skill usage rules are placed first so that every /explore/ or
-            # /explore_v2/ block — whether it appears in pre_dolphin, dolphin,
-            # or post_dolphin — can always see them.  Moving this after
-            # pre_dolphin would hide the rules from any explore block that the
-            # author placed inside a pre_dolphin section.
-            dolphin_prompt = (_SKILL_USAGE_RULES + "\n") if is_skill_enabled else ""
+            # In dolphin_mode, do NOT directly append _SKILL_USAGE_RULES to dolphin_prompt
+            # because it's Markdown text (not valid Dolphin syntax) and will cause parse errors.
+            # The Skill Usage Rules will be automatically added by explore_block_v2.py
+            # through the system_prompt parameter when skill_enabled=true.
+            dolphin_prompt = ""
 
             for pre_dolphin in self.agent_config.pre_dolphin:
                 if not pre_dolphin.get("enabled", False):

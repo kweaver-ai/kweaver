@@ -1188,13 +1188,13 @@ preflight_check_admin_tools() {
     if command -v node &>/dev/null; then
         preflight_ok "node: $(node -v 2>/dev/null)"
     else
-        preflight_warn "node not in PATH (use npx kweaver on admin machine as alternative)"
+        preflight_warn "node not in PATH (on Linux admin host: sudo ./preflight.sh --fix --fix-allow=nodejs-npm, or use npx / a dev machine with Node LTS)"
     fi
 
     if command -v npm &>/dev/null; then
         preflight_ok "npm: $(npm -v 2>/dev/null) ($(command -v npm))"
     else
-        preflight_warn "npm not in PATH (needed for 'preflight --fix' kweaver-sdk / kweaver-admin; install Node.js LTS or your distro's nodejs+npm package)"
+        preflight_warn "npm not in PATH (need npm for kweaver-sdk / kweaver-admin; run: sudo ./preflight.sh --fix --fix-allow=nodejs-npm, or install Node LTS + npm yourself)"
     fi
 }
 
@@ -1394,6 +1394,40 @@ preflight_fix_helm_v3() {
     fi
 }
 
+# Install distro nodejs + npm (needed before npm -g kweaver-* fixes).
+# Uses apt/dnf/yum; does not add NodeSource/nvm (keeps preflight self-contained).
+preflight_fix_node_npm() {
+    local _ok=true
+    if command -v npm &>/dev/null && command -v node &>/dev/null; then
+        return 0
+    fi
+    if command -v apt-get &>/dev/null; then
+        apt-get update -y 2>/dev/null || true
+        if ! apt-get install -y nodejs npm 2>/dev/null; then
+            apt-get install -y nodejs 2>/dev/null || _ok=false
+        fi
+    elif command -v dnf &>/dev/null; then
+        dnf install -y nodejs npm 2>/dev/null || dnf install -y nodejs 2>/dev/null || _ok=false
+    elif command -v yum &>/dev/null; then
+        yum install -y nodejs npm 2>/dev/null || yum install -y nodejs 2>/dev/null || _ok=false
+    else
+        preflight_warn "No apt/dnf/yum: install Node.js LTS and npm yourself (e.g. https://nodejs.org/ or nvm)"
+        return 0
+    fi
+    if command -v node &>/dev/null; then
+        preflight_fixed "node: $(node -v 2>/dev/null) ($(command -v node))"
+    elif [[ "${_ok}" == "false" ]]; then
+        preflight_warn "Package install did not provide node; check repos / EPEL (RHEL) or use Node LTS + npm manually"
+    fi
+    if command -v npm &>/dev/null; then
+        preflight_fixed "npm: $(npm -v 2>/dev/null) ($(command -v npm))"
+    else
+        if command -v node &>/dev/null; then
+            preflight_warn "node is present but npm is still missing; install the 'npm' package or use npx / a newer Node distribution"
+        fi
+    fi
+}
+
 preflight_fix_iptables_legacy() {
     if ! command -v update-alternatives &>/dev/null; then
         return 0
@@ -1437,7 +1471,7 @@ preflight_print_fix_preview() {
     for line in "${PREFLIGHT_FAIL_SNAPSHOT[@]}"; do
         log_info "  * ${line}"
     done
-    log_info "  Suggested fix names: k3s-uninstall, kubeadm-reset, k8s-apt-source, containerd-install, helm-v3, chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, iptables-legacy, etc-hosts, kweaver-sdk, kweaver-admin (only applicable steps run)"
+    log_info "  Suggested fix names: k3s-uninstall, kubeadm-reset, k8s-apt-source, containerd-install, helm-v3, chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, iptables-legacy, etc-hosts, nodejs-npm, kweaver-sdk, kweaver-admin (only applicable steps run)"
     log_info "------------------------------------------------------------------"
 }
 
@@ -1637,6 +1671,15 @@ preflight_apply_safe_fixes() {
             preflight_backup_file /etc/hosts
             echo "127.0.0.1 ${hn}" >> /etc/hosts
             preflight_fixed "Appended 127.0.0.1 ${hn} to /etc/hosts"
+        fi
+    fi
+
+    # --- nodejs + npm (distro packages; before kweaver-* global installs) ----
+    if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
+        if preflight_confirm_fix "nodejs-npm" \
+            "apt/dnf/yum install nodejs and npm" \
+            "Brings in distro Node + npm for global CLIs. Versions may lag upstream LTS; use NodeSource/nvm if you need newer."; then
+            preflight_fix_node_npm
         fi
     fi
 

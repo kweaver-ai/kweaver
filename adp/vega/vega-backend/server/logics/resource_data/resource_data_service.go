@@ -73,7 +73,7 @@ func (rds *resourceDataService) Query(ctx context.Context, resource *interfaces.
 	switch resource.Category {
 	case interfaces.ResourceCategoryDataset:
 		// 调用 dataset access 列出文档
-		documents, total, err := rds.ds.ListDocuments(ctx, resource, params)
+		documents, total, err := rds.ds.ListDocuments(ctx, resource.ID, resource, params)
 		if err != nil {
 			span.SetStatus(codes.Error, "List dataset documents failed")
 			return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_Resource_InternalError).
@@ -82,6 +82,17 @@ func (rds *resourceDataService) Query(ctx context.Context, resource *interfaces.
 		return documents, total, nil
 
 	case interfaces.ResourceCategoryTable:
+		// 检查是否有索引名称，如果有则直接查询索引
+		if resource.LocalIndexName != "" {
+			// 调用 dataset access 列出文档
+			documents, total, err := rds.ds.ListDocuments(ctx, resource.LocalIndexName, resource, params)
+			if err != nil {
+				span.SetStatus(codes.Error, "Query table data from local index failed")
+				return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_Resource_InternalError).
+					WithErrorDetails(err.Error())
+			}
+			return documents, total, nil
+		}
 		// 准备 sort参数
 		params = rds.prepareSortParams(resource, params)
 		data, total, err := rds.QueryData(ctx, resource, params)

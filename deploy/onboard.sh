@@ -17,58 +17,168 @@ BKN_NAME=""
 ENABLE_BKN_ONLY="false"
 SKIP_BKN="false"
 INTERACTIVE="true"
+ONBOARD_ASSUME_YES="false"
+
+# Same requirement as @kweaver-ai/kweaver-sdk on npm (node >= 22). https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk
+ONBOARD_MIN_NODE_MAJOR="${ONBOARD_MIN_NODE_MAJOR:-22}"
+
+# Node/kweaver bootstrap prompts use the terminal (even with --config); -y skips those prompts; no TTY + no -y = error.
+onboard_is_bootstrap_tty() {
+    [[ -t 0 && -t 1 ]]
+}
 
 usage() {
     echo "Usage: $0 [options]"
     echo "  Requires: Node 22+ (see @kweaver-ai/kweaver-sdk on npm), kweaver, kubectl, python3; run from deploy/"
-    echo "  (no flags)                Interactive: prompts for auth if kweaver bkn list fails, then models/BKN"
-    echo "  --config=PATH            YAML: deploy/conf/models.yaml.example (needs PyYAML)"
+    echo "  (no flags)                Interactive: nvm+Node 22 and npm -g (Y/n) in your terminal, then models/BKN"
+    echo "  -y, --yes                 Auto nvm+Node 22 and npm -g (no Y/n) — for CI, pipes, or scripts"
+    echo "  --config=PATH            YAML: deploy/conf/models.yaml.example; model prompts off, but nvm/kweaver still Y/n in a TTY (use -y to skip those asks)"
     echo "  --namespace=NS           (default: kweaver; or key 'namespace' in yaml)"
     echo "  --enable-bkn-search      Only patch bkn/ontology ConfigMaps and rollout"
     echo "  --bkn-embedding-name=X   Required with --enable-bkn-search (registered model_name)"
     echo "  --skip-bkn               With --config: register models but skip BKN + rollout"
     echo "  -h, --help"
+    echo ""
+    echo "  Environment: ONBOARD_SKIP_NODE_INSTALL=true  skip nvm in onboard (fail if Node < ${ONBOARD_MIN_NODE_MAJOR})"
+    echo "                ONBOARD_SKIP_KWEAVER_INSTALL=true  never run npm -g for kweaver in onboard"
+    echo "  (preflight on the server: sudo preflight --fix still optional; this script can install Node in your *user* account via nvm.)"
 }
 
 for _ob_arg in "$@"; do
-    if [[ "${_ob_arg}" == "-h" || "${_ob_arg}" == "--help" ]]; then
-        usage
-        exit 0
-    fi
+    case "${_ob_arg}" in
+        -h | --help) usage; exit 0 ;;
+        --config=*) INTERACTIVE="false" ;;
+        -y | --yes) ONBOARD_ASSUME_YES="true" ;;
+    esac
 done
 
-# Same requirement as @kweaver-ai/kweaver-sdk on npm (node >= 22). https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk
-# preflight.sh only *checks* the host — it does not install/upgrade Node; we enforce the minimum here.
-ONBOARD_MIN_NODE_MAJOR="${ONBOARD_MIN_NODE_MAJOR:-22}"
-onboard_require_node() {
+onboard_node_major() {
     if ! command -v node &>/dev/null; then
-        log_error "node is not in PATH. Install Node.js ${ONBOARD_MIN_NODE_MAJOR}+ first, or: sudo preflight --fix and opt in to nodejs-npm + node-22 (per-prompt approval)"
-        log_error "Default preflight (without --fix) only checks; use --fix if you want guided installs."
-        exit 1
+        echo 0
+        return
     fi
-    local _mj
-    _mj="$(node -v 2>/dev/null)"
-    _mj="${_mj#v}"
-    _mj="${_mj%%.*}"
-    if [[ ! "${_mj}" =~ ^[0-9]+$ ]]; then
-        return 0
-    fi
-    if [[ $(( 10#${_mj} )) -lt ${ONBOARD_MIN_NODE_MAJOR} ]]; then
-        log_error "Your Node is $(node -v); kweaver (onboard) needs Node ${ONBOARD_MIN_NODE_MAJOR}+ (matches @kweaver-ai/kweaver-sdk engines on npm)."
-        log_error "To get help on this host (only if you agree at each prompt):  sudo preflight --fix  and confirm the node-22 step (nvm, then NodeSource if needed)"
-        log_error "Or install manually, e.g.:  nvm install 22 && nvm use 22  &&  npm i -g @kweaver-ai/kweaver-sdk"
-        log_error "On Node < 22 you may see EBADENGINE from npm or runtime errors in dependencies; use Node 22+."
-        exit 1
+    local v
+    v="$(node -v 2>/dev/null)"
+    v="${v#v}"
+    v="${v%%.*}"
+    if [[ "${v}" =~ ^[0-9]+$ ]]; then
+        echo "${v}"
+    else
+        echo 0
     fi
 }
-onboard_require_node
 
-if ! command -v kweaver &>/dev/null; then
-    log_error "kweaver not in PATH. Install: npm i -g @kweaver-ai/kweaver-sdk  (Node ${ONBOARD_MIN_NODE_MAJOR}+ active; or: sudo preflight --fix and approve kweaver-sdk)"
-    log_error "  sudo: on many Linux hosts global install needs: sudo npm i -g @kweaver-ai/kweaver-sdk (or EACCES)"
-    log_error "  no sudo: nvm + user prefix, or: npm config set prefix \"\$HOME/.local\" and add ~/.local/bin to PATH"
-    exit 1
-fi
+# Install nvm + Node 22 in the current user (no sudo; same idea as preflight's node-22 fix, user-local).
+onboard_install_node22_nvm() {
+    if ! command -v curl &>/dev/null; then
+        log_error "curl is required to install nvm. Install curl, or install Node ${ONBOARD_MIN_NODE_MAJOR}+ from https://nodejs.org/"
+        return 1
+    fi
+    if ! command -v bash &>/dev/null; then
+        log_error "bash is required to run the nvm installer."
+        return 1
+    fi
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    if [[ ! -s "${NVM_DIR}/nvm.sh" ]]; then
+        log_info "Installing nvm into ${NVM_DIR}…"
+        if ! curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash; then
+            log_error "nvm install.sh failed (network, proxy, or missing deps). See https://github.com/nvm-sh/nvm"
+            return 1
+        fi
+    fi
+    # shellcheck source=/dev/null
+    if ! . "${NVM_DIR}/nvm.sh"; then
+        log_error "Could not source \${NVM_DIR}/nvm.sh (${NVM_DIR})"
+        return 1
+    fi
+    if ! nvm install 22; then
+        log_error "nvm install 22 failed"
+        return 1
+    fi
+    nvm use 22
+    nvm alias default 22 2>/dev/null || true
+    hash -r 2>/dev/null || true
+    return 0
+}
+
+# If not sudo preflight --fix, still help: offer (or with -y, run) nvm+Node 22 in this user.
+onboard_ensure_node_22() {
+    local mj
+    mj="$(onboard_node_major)"
+    if command -v node &>/dev/null && [[ -n "${mj}" && $(( 10#${mj} )) -ge ${ONBOARD_MIN_NODE_MAJOR} ]]; then
+        return 0
+    fi
+
+    if [[ "${ONBOARD_SKIP_NODE_INSTALL:-false}" == "true" ]]; then
+        log_error "Node is $(node -v 2>/dev/null || echo missing) but Node.js ${ONBOARD_MIN_NODE_MAJOR}+ is required. Unset ONBOARD_SKIP_NODE_INSTALL or install Node manually."
+        exit 1
+    fi
+
+    # Interactive on a TTY: always ask, including when --config is set. No TTY: must pass -y to auto-install.
+    if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
+        log_info "Node ${ONBOARD_MIN_NODE_MAJOR}+ not active; installing via nvm (-y)…"
+    elif onboard_is_bootstrap_tty; then
+        echo ""
+        read -r -p "Node.js ${ONBOARD_MIN_NODE_MAJOR}+ is required for kweaver/onboard. Install nvm and Node 22 in this user account now? [Y/n]: " _obn
+        if [[ "${_obn}" =~ ^[Nn] ]]; then
+            log_error "Install Node ${ONBOARD_MIN_NODE_MAJOR}+ (e.g. nvm install 22), or use another machine with Node 22+ on PATH, or run: sudo preflight --fix on the host where you need system-wide Node."
+            exit 1
+        fi
+    else
+        log_error "Node ${ONBOARD_MIN_NODE_MAJOR}+ required (or missing). In a real terminal you get a Y/n prompt; without a TTY pass  $0 -y  (e.g. CI), or install Node / nvm first. Or: sudo preflight --fix (onboard-tooling) on a server."
+        exit 1
+    fi
+
+    if ! onboard_install_node22_nvm; then
+        exit 1
+    fi
+    mj="$(onboard_node_major)"
+    if ! command -v node &>/dev/null || [[ -z "${mj}" || $(( 10#${mj} )) -lt ${ONBOARD_MIN_NODE_MAJOR} ]]; then
+        log_error "Node is still < ${ONBOARD_MIN_NODE_MAJOR} in this process. In a new terminal run:  source \"\$NVM_DIR/nvm.sh\" && nvm use 22  then:  $0  again."
+        exit 1
+    fi
+    log_info "Using Node $(node -v) ($(command -v node))"
+}
+
+onboard_ensure_kweaver_cli() {
+    if command -v kweaver &>/dev/null; then
+        return 0
+    fi
+    if ! command -v npm &>/dev/null; then
+        log_error "kweaver not in PATH and npm not found. With nvm+Node, npm should exist; re-open a shell and re-run."
+        exit 1
+    fi
+    if [[ "${ONBOARD_SKIP_KWEAVER_INSTALL:-false}" == "true" ]]; then
+        log_error "kweaver not in PATH. Install: npm i -g @kweaver-ai/kweaver-sdk  (or unset ONBOARD_SKIP_KWEAVER_INSTALL to allow this script to run npm -g.)"
+        exit 1
+    fi
+    if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
+        log_info "Installing @kweaver-ai/kweaver-sdk globally (-y)…"
+    elif onboard_is_bootstrap_tty; then
+        echo ""
+        read -r -p "kweaver CLI not in PATH. Install @kweaver-ai/kweaver-sdk globally now? (npm i -g) [Y/n]: " _obk
+        if [[ "${_obk}" =~ ^[Nn] ]]; then
+            log_error "kweaver is required. Run:  npm i -g @kweaver-ai/kweaver-sdk"
+            exit 1
+        fi
+    else
+        log_error "kweaver not in PATH. In a TTY you get a Y/n prompt; without a TTY use  $0 -y  or install: npm i -g @kweaver-ai/kweaver-sdk"
+        exit 1
+    fi
+    if ! npm i -g @kweaver-ai/kweaver-sdk; then
+        log_error "npm i -g @kweaver-ai/kweaver-sdk failed. Check registry/proxy, or EACCES (avoid sudo; use nvm user prefix.)"
+        exit 1
+    fi
+    hash -r 2>/dev/null || true
+    if ! command -v kweaver &>/dev/null; then
+        log_error "kweaver still not on PATH. Add npm global bin to PATH, e.g.:  export PATH=\"\$(npm config get prefix 2>/dev/null)/bin:\$PATH\""
+        exit 1
+    fi
+    log_info "kweaver: $(kweaver --version 2>/dev/null | head -1)"
+}
+
+onboard_ensure_node_22
+onboard_ensure_kweaver_cli
 if ! command -v kubectl &>/dev/null; then
     log_error "kubectl not found"
     exit 1
@@ -83,6 +193,10 @@ while [[ $# -gt 0 ]]; do
         -h | --help)
             usage
             exit 0
+            ;;
+        -y | --yes)
+            ONBOARD_ASSUME_YES="true"
+            shift
             ;;
         --config=*)
             CONFIG_FILE="${1#*=}"

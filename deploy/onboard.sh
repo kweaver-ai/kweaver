@@ -412,7 +412,7 @@ onboard_kweaver_auth_login_for_url() {
         if [[ -z "${_htt}" || ! "${_htt}" =~ ^[Nn] ]]; then
             read -r -p "  Username [Enter = ${_duser}]: " _u
             _u="${_u:-${_duser}}"
-            read -r -s -p "  Password [Enter = ${_dpass} if still default / 未改密] " _p
+            read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
             echo
             _p="${_p:-${_dpass}}"
             if ! kweaver auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin -k; then
@@ -444,7 +444,7 @@ onboard_kweaver_auth_login_for_url() {
     fi
     read -r -p "  Username [Enter = ${_duser}]: " _u
     _u="${_u:-${_duser}}"
-    read -r -s -p "  Password [Enter = ${_dpass} if still default / 未改密] " _p
+    read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
     echo
     _p="${_p:-${_dpass}}"
     if ! kweaver auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin -k; then

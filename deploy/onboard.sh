@@ -133,6 +133,7 @@ usage() {
     echo ""
     echo "  Environment: ONBOARD_SKIP_NODE_INSTALL=true  skip nvm in onboard (fail if Node < ${ONBOARD_MIN_NODE_MAJOR})"
     echo "                ONBOARD_SKIP_KWEAVER_INSTALL=true  never run npm -g for kweaver in onboard"
+    echo "                ONBOARD_SKIP_KWEAVER_ADMIN_INSTALL=true  on ISF: do not auto/offer  npm -g  kweaver-admin  ( -y  也不会装 )"
     echo "                ONBOARD_SKIP_ISF_TEST_USER=true  same as --skip-isf-test-user"
     echo "                ONBOARD_SKIP_CONTEXT_LOADER=true  same as --skip-context-loader"
     echo "                IMPORT_CONTEXT_LOADER_TOOLSET=false  skip Context Loader (legacy name; same effect)"
@@ -475,6 +476,52 @@ onboard_ensure_kweaver_auth() {
     done
 }
 
+# ISF 全量：无 kweaver-admin 则无法  user create / assign-role ；可选安装（交互 Y/n 或  -y  自动、或跳过）
+onboard_ensure_kweaver_admin_for_isf() {
+    if ! (type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null); then
+        return 0
+    fi
+    command -v kweaver-admin &>/dev/null && return 0
+    if [[ "${ONBOARD_SKIP_KWEAVER_ADMIN_INSTALL:-false}" == "true" ]]; then
+        onboard_log_info "kweaver-admin: skip npm install (ONBOARD_SKIP_KWEAVER_ADMIN_INSTALL=true)."
+        return 0
+    fi
+    if ! command -v npm &>/dev/null; then
+        onboard_log_warn "kweaver-admin not in PATH and npm is missing; cannot offer install. Install Node/npm first."
+        return 0
+    fi
+    if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
+        onboard_log_info "ISF: installing @kweaver-ai/kweaver-admin (-y)…"
+        if ! npm i -g @kweaver-ai/kweaver-admin; then
+            onboard_log_warn "npm i -g @kweaver-ai/kweaver-admin failed; install manually, then: kweaver-admin auth login <url> -k"
+        fi
+        hash -r 2>/dev/null || true
+        if command -v kweaver-admin &>/dev/null; then
+            onboard_log_info "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -n1)"
+        fi
+        return 0
+    fi
+    if ! onboard_is_bootstrap_tty; then
+        return 0
+    fi
+    echo ""
+    read -r -p "ISF (full) install: need kweaver-admin to create user [test]. Install @kweaver-ai/kweaver-admin now (npm i -g)? [Y/n]: " _kadm
+    if [[ -n "${_kadm}" && "${_kadm}" =~ ^[Nn] ]]; then
+        onboard_log_warn "kweaver-admin not installed: user test will not be created this run. Install later: npm i -g @kweaver-ai/kweaver-admin"
+        return 0
+    fi
+    if ! npm i -g @kweaver-ai/kweaver-admin; then
+        onboard_log_warn "npm i -g @kweaver-ai/kweaver-admin failed (registry, proxy, or EACCES)."
+        return 0
+    fi
+    hash -r 2>/dev/null || true
+    if command -v kweaver-admin &>/dev/null; then
+        onboard_log_info "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -n1)"
+    else
+        onboard_log_warn "kweaver-admin still not on PATH. Add: export PATH=\"\$(npm config get prefix 2>/dev/null)/bin:\$PATH\""
+    fi
+}
+
 onboard_probe() {
     onboard_ensure_kweaver_auth
     if [[ "${INTERACTIVE}" == "true" ]]; then
@@ -494,6 +541,7 @@ onboard_probe() {
         onboard_log_info "OK: kweaver + kubectl (ns=${NAMESPACE})"
     fi
     onboard_recommend_admin_cli
+    onboard_ensure_kweaver_admin_for_isf
     onboard_offer_isf_test_user
     onboard_offer_context_loader_toolset
 }

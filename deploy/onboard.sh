@@ -584,7 +584,7 @@ onboard_recommend_admin_cli() {
         if command -v kweaver-admin &>/dev/null; then
             onboard_log_info "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -n1)"
         else
-            onboard_log_info "kweaver-admin: 未在初始 PATH 中。已尝试加入 npm 全局 bin；若本步仍无，下一段会再装或见提示。全量建用户需:  kweaver-admin auth login <url> -k 。"
+            onboard_log_info "kweaver-admin: not on initial PATH; prepended npm global bin. If still missing, the next step may install or show hints. For full install user ops:  kweaver-admin auth login <url> -k  ."
         fi
     else
         onboard_log_info "No ISF releases detected — minimum install. kweaver-sdk (this CLI) is enough; kweaver-admin not required."

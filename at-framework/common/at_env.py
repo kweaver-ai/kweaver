@@ -33,6 +33,34 @@ def _strip(s: Any) -> str:
     return (s if s is not None else "").strip()
 
 
+def _to_bool(v: Any, default: bool = False) -> bool:
+    s = _strip(v).lower()
+    if not s:
+        return default
+    if s in ("1", "true", "yes", "on", "y"):
+        return True
+    if s in ("0", "false", "no", "off", "n"):
+        return False
+    return default
+
+
+def isf_enabled(ini_config: Dict[str, Dict[str, str]]) -> bool:
+    """
+    是否启用 ISF（是否默认携带 Authorization）。
+    优先读取运行参数 AT_ISF（由 --isf 注入），
+    其次 [server].isf，再次 [server].isf_default；都未配置时默认 True。
+    """
+    env_v = _strip(os.environ.get("AT_ISF"))
+    if env_v:
+        return _to_bool(env_v, default=True)
+    srv = ini_config.get("server") or {}
+    if "isf" in srv:
+        return _to_bool(srv.get("isf"), default=True)
+    if "isf_default" in srv:
+        return _to_bool(srv.get("isf_default"), default=True)
+    return True
+
+
 def normalize_bearer_token_value(raw: str) -> str:
     """去掉首尾空白；若以 Bearer 开头则去掉该前缀，得到 access_token 本体。"""
     s = _strip(raw)
@@ -67,12 +95,20 @@ def admin_credentials(ini_config: Dict[str, Dict[str, str]]) -> Tuple[str, str]:
 
 
 def server_host_for_requests(ini_config: Dict[str, Dict[str, str]]) -> str:
-    """AT_SERVER_HOST > SERVER_HOST > [server].host。"""
+    """AT_SERVER_HOST > SERVER_HOST > [server].host(+public_port)。"""
     h = _strip(os.environ.get("AT_SERVER_HOST") or os.environ.get("SERVER_HOST"))
     if h:
         return h
     srv = ini_config.get("server") or {}
-    return _strip(srv.get("host"))
+    host = _strip(srv.get("host"))
+    if not host:
+        return ""
+    if ":" in host:
+        return host
+    public_port = _strip(srv.get("public_port"))
+    if public_port:
+        return "%s:%s" % (host, public_port)
+    return host
 
 
 def server_public_port(ini_config: Dict[str, Dict[str, str]]) -> str:
@@ -94,11 +130,10 @@ def _host_has_port(host: str) -> bool:
 
 
 def request_scheme(ini_config: Dict[str, Dict[str, str]]) -> str:
-    """从 [server].base_url 推导协议；无有效 base_url 时默认为 https。"""
-    srv = ini_config.get("server") or {}
-    base_url = _strip(srv.get("base_url", ""))
-    if "://" in base_url:
-        return base_url.split("://", 1)[0].rstrip(":/").lower() or "https"
+    """AT_REQUEST_SCHEME > REQUEST_SCHEME；默认 https。"""
+    v = _strip(os.environ.get("AT_REQUEST_SCHEME") or os.environ.get("REQUEST_SCHEME"))
+    if v:
+        return v.lower()
     return "https"
 
 

@@ -351,3 +351,31 @@ for sku in MAT-001 MAT-002 MAT-003; do
         | tail -40
 done
 
+# ── Step 12: Bonus (optional via --bonus) ────────────────────────────────────
+if [ "$BONUS" = "1" ]; then
+    echo ""
+    echo "=== Bonus: change SUP-2 capability → AI re-routes MAT-002 ==="
+
+    echo ""
+    echo "[business system] update SUP-2.capability: expedite → normal"
+    curl -s -X POST "$TOOL_BACKEND_URL/admin/supplier-capability" \
+        -H "Content-Type: application/json" \
+        -d '{"supplier_id":"SUP-2","capability":"normal"}' | python3 -m json.tool
+
+    sleep 2  # let Vega see the new state (Step D in spec — verify in this run)
+
+    echo ""
+    echo "--- MAT-002 (re-trigger after capability change) ---"
+    kweaver agent chat "$AGENT_ID" \
+        -m "Material MAT-002 hit critical stock level again. Decide and report." \
+        --stream 2>&1 \
+        | sed '/^(node:.*Warning:/d; /trace-warnings/d; /To continue this conversation/,$d' \
+        | tail -40
+
+    echo ""
+    echo ">>> Compare with the MAT-002 result above (Step 11)."
+    echo ">>> If business→AI propagation works: this run picks standard_replenish."
+fi
+
+echo ""
+echo "=== All steps completed; cleanup runs on exit ==="

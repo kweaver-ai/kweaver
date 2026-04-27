@@ -586,7 +586,8 @@ onboard_ensure_kweaver_admin_auth_for_isf() {
         onboard_log_info "kweaver-admin: authenticated (user list ok)."
         return 0
     fi
-    onboard_log_warn "Full ISF:  kweaver  (SDK) and  kweaver-admin  are different sessions. After  kweaver  above, use the same HTTP pattern for  kweaver-admin:  -u ${ONBOARD_DEFAULT_KWEAVER_USER:-admin}  -p …  --http-signin  (defaults match kweaver), then create [test] and switch  kweaver  to  test  for ADP import."
+    onboard_log_warn "ISF (full install):  kweaver  and  kweaver-admin  are two different logins — two different saved sessions. The sign-in you just did only applies to  kweaver  (the SDK), not to  kweaver-admin  (user/role management)."
+    onboard_log_warn "Next, sign in to  kweaver-admin  the same way as  kweaver  (HTTP). User:  ${ONBOARD_DEFAULT_KWEAVER_USER:-admin} ; password: the same as the web console (factory default is often  ${ONBOARD_DEFAULT_KWEAVER_PASSWORD:-eisoo.com}  if you did not change it). After that, this script can create  test  and re-login  kweaver  as  test  for Context Loader / ADP import."
     local _url _defu _go
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         _defu="$(onboard_default_access_base_url 2>/dev/null || true)"

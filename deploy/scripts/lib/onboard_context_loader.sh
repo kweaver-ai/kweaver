@@ -3,10 +3,10 @@
 # Replaces deploy-time curl/port-forward; uses: kweaver call ... -F (multipart), same as manual impex.
 #
 # Who can import (token from  kweaver auth login  , stored under ~/.kweaver):
-#   - Full install (ISF present): use a platform admin. Default console: username admin, password eisoo.com
-#     if still unchanged from install (same as deploy/auto_cofig/README.md: admin / eisoo.com).
-#   - Minimum (no ISF, kweaver-core --minimum): only kweaver-sdk is needed;  kweaver auth login
-#     then  kweaver call  impex; kweaver-admin is not required.
+#   - Full install (ISF): prefer user  test  with all roles from  kweaver-admin role list  (typically
+#     three business admin roles). Console  admin  is often not allowed to add ADP resources (HTTP 403).
+#     This script syncs role list to  test  and re-runs  kweaver auth login  as  test  before impex.
+#   - Minimum (no ISF):  kweaver auth login  only; kweaver-admin is not required.
 # shellcheck source=/dev/null
 
 # Resolve path to default ADP in repo (override: CONTEXT_LOADER_TOOLSET_ADP_PATH).
@@ -22,9 +22,7 @@ onboard_context_loader_import_via_kweaver() {
     ns="${NAMESPACE:-kweaver}"
     adp="$(onboard_context_loader_adp_path)"
     bd="${DEPLOY_BUSINESS_DOMAIN:-bd_public}"
-    if type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null; then
-        log_info "Context Loader: full/ISF — ensure  kweaver auth login  uses a platform admin (default user admin, password eisoo.com if unchanged; see deploy/auto_cofig/README.md)."
-    else
+    if ! (type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null); then
         log_info "Context Loader: minimum (no ISF) —  kweaver auth login  is enough; kweaver-admin not required."
     fi
     if [[ ! -f "${adp}" ]]; then
@@ -37,6 +35,15 @@ onboard_context_loader_import_via_kweaver() {
     fi
     log_info "Context Loader: waiting for agent-operator-integration (up to 120s)…"
     kubectl rollout status deploy/agent-operator-integration -n "${ns}" --timeout=120s &>/dev/null || true
+    if type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null; then
+        if type onboard_ensure_isf_test_for_kweaver_impex &>/dev/null; then
+            if ! onboard_ensure_isf_test_for_kweaver_impex; then
+                return 1
+            fi
+        else
+            log_info "Context Loader: ISF — (onboard_ensure_isf_test_for_kweaver_impex missing) using current kweaver user."
+        fi
+    fi
     log_info "Importing Context Loader toolset via kweaver call (impex upsert)…"
     if kweaver call "/api/agent-operator-integration/v1/impex/import/toolbox" -X POST \
         -F "data=@${adp}" \
@@ -47,7 +54,8 @@ onboard_context_loader_import_via_kweaver() {
     fi
     log_warn "Context Loader: kweaver call failed. Re-login:  kweaver auth login <url> -k"
     if type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null; then
-        log_warn "  (ISF/full) use a platform admin token (e.g. admin / eisoo.com if default password not changed; see deploy/auto_cofig/README.md)."
+        log_warn "  (ISF) ensure user  test  has all  role list  roles and: kweaver auth login <url> -u test -p ... --http-signin -k"
+        log_warn "  (or set ONBOARD_TEST_USER_PASSWORD; built-in  admin  often cannot import this ADP path)"
     else
         log_warn "  (minimum) ensure a valid  kweaver auth login  for this cluster."
     fi
@@ -88,7 +96,7 @@ onboard_offer_context_loader_toolset() {
         return 0
     fi
     echo ""
-    read -r -p "Import Context Loader toolset (ADP) now via kweaver (uses your kweaver login)? [Y/n]: " _clm
+    read -r -p "Import Context Loader (ADP) now (ISF: will re-login  kweaver  as user test for impex) [Y/n]: " _clm
     if [[ "${_clm}" =~ ^[Nn] ]]; then
         log_info "Skipped. Manual: kweaver call '/api/agent-operator-integration/v1/impex/import/toolbox' -X POST -F data=@'${adp}' -F mode=upsert -bd ${DEPLOY_BUSINESS_DOMAIN:-bd_public}"
         return 0

@@ -15,6 +15,11 @@ fields:
     required: false
     default: ""
     description: 前置用例的 name，先执行前置再执行本用例；空表示无前置。若存在同名用例，执行时取 case_list 中首次匹配
+  - name: next_case
+    type: string
+    required: false
+    default: ""
+    description: 后置用例的 name，先执行本用例再执行后置；空表示无后置。若存在同名用例，执行时取 case_list 中首次匹配。后置失败不影响当前用例结果
   - name: prepare_models
     type: string | list
     required: false

@@ -526,7 +526,7 @@ install_core() {
 
     log_info "KWeaver Core services installation completed."
 
-    maybe_import_context_loader_toolset_post_core "${namespace}" || true
+    log_info "Context Loader toolset import: run ./onboard.sh after kweaver auth (uses kweaver call impex), or set IMPORT_CONTEXT_LOADER_TOOLSET=false to skip that step in onboard."
 
     local _host _port _scheme
     _host="$(_read_access_address_field "host" 2>/dev/null || true)"

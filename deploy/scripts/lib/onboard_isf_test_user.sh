@@ -177,12 +177,20 @@ onboard_kweaver_relogin_isf_test() {
 # After kweaver is usable; only when full ISF + kweaver-admin and user chose to run.
 onboard_offer_isf_test_user() {
     if [[ "${ONBOARD_SKIP_ISF_TEST_USER:-false}" == "true" ]]; then
+        ONBOARD_REPORT_ISF_TEST_USER="已跳过: ONBOARD_SKIP_ISF_TEST_USER / --skip-isf-test-user"
         return 0
     fi
-    onboard_isf_full_install || return 0
-    command -v kweaver-admin &>/dev/null || return 0
+    onboard_isf_full_install || {
+        ONBOARD_REPORT_ISF_TEST_USER="不适用: 非 ISF/全量 安装"
+        return 0
+    }
+    command -v kweaver-admin &>/dev/null || {
+        ONBOARD_REPORT_ISF_TEST_USER="已跳过: 无 kweaver-admin (npm i -g @kweaver-ai/kweaver-admin)"
+        return 0
+    }
 
     if ! kweaver-admin --json user list --limit 1 &>/dev/null; then
+        ONBOARD_REPORT_ISF_TEST_USER="已跳过: kweaver-admin 未登录 (auth login 失败或未执行)"
         log_warn "kweaver-admin: cannot list users (run: kweaver-admin auth login <https://access-url> -k). Skipping test user offer."
         return 0
     fi
@@ -190,6 +198,7 @@ onboard_offer_isf_test_user() {
     if onboard_user_test_exists; then
         log_info "User test already exists. Syncing 'role list' roles to test (for ADP / Context Loader impex)…"
         onboard_assign_all_listed_roles_to_user test || true
+        ONBOARD_REPORT_ISF_TEST_USER="已存在 test: 已同步 role list 中全部角色 (kweaver-admin user roles test 可查)"
         log_info "If you reset test's password, export ONBOARD_TEST_USER_PASSWORD for non-interactive kweaver impex, or enter it when asked during Context Loader import."
         return 0
     fi
@@ -197,19 +206,23 @@ onboard_offer_isf_test_user() {
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         log_info "ONBOARD: creating user test, password/roles (-y)…"
         onboard_create_test_user_with_all_roles
+        ONBOARD_REPORT_ISF_TEST_USER="已创建 test 并赋权 ( -y ；需 ONBOARD_TEST_USER_PASSWORD 时见上文)"
         return 0
     fi
     if ! (type onboard_is_bootstrap_tty &>/dev/null && onboard_is_bootstrap_tty); then
+        ONBOARD_REPORT_ISF_TEST_USER="已跳过: 非 TTY (可用 -y 或手动手册)"
         log_info "Not a TTY: skipping interactive offer to create user test. Re-run in a terminal, or use -y, or: kweaver-admin user create --login test && …"
         return 0
     fi
     echo ""
     read -r -p "Create business user [test] (set password) and grant ALL roles from kweaver-admin 'role list' (three admin roles in a typical full install) for ADP import? [Y/n]: " _otu
     if [[ "${_otu}" =~ ^[Nn] ]]; then
+        ONBOARD_REPORT_ISF_TEST_USER="已跳过: 用户未创建 test"
         log_info "Skipped. You can: kweaver-admin user create --login test && kweaver-admin user reset-password -u test --prompt-password -y && (assign all role ids from role list)"
         return 0
     fi
     onboard_create_test_user_with_all_roles
+    ONBOARD_REPORT_ISF_TEST_USER="已创建 test、设密并挂接 role list 中全部业务角色"
 }
 
 # Before kweaver call (ADP impex), ISF: ensure user test + business roles, then kweaver session as test.

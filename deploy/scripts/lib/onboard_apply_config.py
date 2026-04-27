@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from typing import Any, Optional
@@ -51,6 +52,28 @@ def get_json(path: str) -> Any:
     except json.JSONDecodeError:
         print(raw[:500], file=sys.stderr)
         return None
+
+
+def print_completion_report_config_yaml(namespace: str) -> None:
+    """Emit the same summary as deploy/scripts/lib/onboard_report.sh after successful --config run."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    rpt = os.path.join(here, "onboard_report.sh")
+    if not os.path.isfile(rpt):
+        return
+    env = os.environ.copy()
+    env["NAMESPACE"] = namespace
+    env["ONBOARD_REPORT_MAIN_MODE"] = "config-yaml"
+    env["ONBOARD_REPORT_ISF_TEST_USER"] = "未执行: --config 模式无 ISF test 用户向导"
+    env["ONBOARD_REPORT_CONTEXT_LOADER"] = "未执行: 无 probe；可另运行 deploy/onboard.sh 做 ADP 工具集导入"
+    subprocess.run(
+        [
+            "bash",
+            "-c",
+            f"source {shlex.quote(rpt)} && onboard_print_completion_report",
+        ],
+        env=env,
+        check=False,
+    )
 
 
 def find_model_id(payload: Any, name: str) -> str:
@@ -192,9 +215,13 @@ def main() -> int:
         print(
             f"[onboard] skip BKN (skip_bkn={skip_bkn}, default='{bkn_default}')"
         )
+        print_completion_report_config_yaml(namespace)
         return 0
 
-    return patch_bkn_cms_and_rollout(namespace, bkn_default)
+    r = patch_bkn_cms_and_rollout(namespace, bkn_default)
+    if r == 0:
+        print_completion_report_config_yaml(namespace)
+    return r
 
 
 def patch_bkn_cms_and_rollout(namespace: str, dname: str) -> int:

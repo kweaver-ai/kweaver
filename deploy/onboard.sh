@@ -38,6 +38,8 @@ onboard_is_bootstrap_tty() {
 source "${SCRIPT_DIR}/scripts/lib/onboard_isf_test_user.sh"
 # shellcheck source=scripts/lib/onboard_context_loader.sh
 source "${SCRIPT_DIR}/scripts/lib/onboard_context_loader.sh"
+# shellcheck source=scripts/lib/onboard_report.sh
+source "${SCRIPT_DIR}/scripts/lib/onboard_report.sh"
 
 # Primary IPv4 of this host (for default KWeaver access URL). Override: ONBOARD_DEFAULT_ACCESS_IP=...
 onboard_default_local_ipv4() {
@@ -133,6 +135,7 @@ usage() {
     echo "                CONTEXT_LOADER_TOOLSET_ADP_PATH=...  default ADP under repo adp/context-loader/.../context_loader_toolset.adp"
     echo "                ONBOARD_TEST_USER_PASSWORD=...  test  user’s password (ISF: kweaver impex after  kweaver-admin  create; use with -y)"
     echo "                ONBOARD_KWEAVER_IMPEX_NO_RELLOGIN=1  skip  kweaver auth  as  test  before impex (use current kweaver session)"
+    echo "                ONBOARD_NO_COMPLETION_REPORT=1  不在结束时打印  Onboard 完成报告"
     echo "  Default KWeaver access URL (kweaver auth): this host’s primary IPv4, e.g.  https://\$(local-ip)  (set ONBOARD_DEFAULT_ACCESS_BASE=... to override; ONBOARD_DEFAULT_ACCESS_PORT e.g. 8443; ONBOARD_DEFAULT_ACCESS_SCHEME=http)"
     echo "  kweaver auth: you confirm URL. ISF+full: HTTP defaults user=admin pass=eisoo.com (if still default); override with ONBOARD_DEFAULT_KWEAVER_USER / _PASSWORD. Enter keeps defaults. Minimum: default --no-auth; Enter to accept."
     echo "  Node: onboard is not a login shell — it auto-loads nvm/fnm/asdf/Volta and Homebrew paths so an already-configured Node 22+ is found without re-asking. ONBOARD_SKIP_NVM_INIT=true skips that; ONBOARD_NVM_VERSION=22 (default) is used after  nvm.sh  load."
@@ -547,7 +550,9 @@ sys.exit(patch_bkn_cms_and_rollout(os.environ['KWE_POST_NS'], os.environ['KWE_PO
         onboard_log_warn "PyYAML or module missing; using bash path (needs PyYAML in onboard_upsert)"
         onboard_do_bkn_bash "${BKN_NAME}"
     fi
+    ONBOARD_REPORT_MAIN_MODE="bkn-only"
     onboard_log_info "Done (BKN only)."
+    onboard_print_completion_report
     exit 0
 fi
 
@@ -628,7 +633,9 @@ if [[ "${INTERACTIVE}" == "true" ]]; then
     else
         onboard_log_info "No BKN default embedding; skipped ConfigMap."
     fi
+    ONBOARD_REPORT_MAIN_MODE="interactive"
     onboard_log_info "Done."
+    onboard_print_completion_report
     exit 0
 fi
 

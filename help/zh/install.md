@@ -149,6 +149,66 @@ export INGRESS_NGINX_HTTPS_PORT=8443
 
 ---
 
+## Post-install：`onboard.sh`（安装后引导）
+
+在 `deploy.sh kweaver-core install` 之后，可在能访问集群的机器上运行 **`deploy/onboard.sh`**，需 **Node 22+**、**kubectl**、**kweaver**（`npm i -g @kweaver-ai/kweaver-sdk`）。在 **`deploy/`** 目录执行：
+
+```bash
+cd deploy
+bash ./onboard.sh --help
+```
+
+常用参数：
+
+| 参数 | 含义 |
+| --- | --- |
+| 无参数 | 交互：必要时提示装 Node/kweaver，再认证、模型/BKN 等 |
+| `-y` / `--yes` | 自动确认多步；全量 ISF 下仍须满足 **kweaver-admin 已装且已登录** 等前置，见下文 |
+| `--config=xxx.yaml` | 非交互：按 YAML 注册模型与可选 BKN；参考 `deploy/conf/models.yaml.example` |
+| `--enable-bkn-search` | 仅做 BKN ConfigMap 类操作（仍先走 probe） |
+| `--skip-context-loader` | 跳过 ADP Context Loader 工具集导入 |
+
+**全量 ISF（启用 auth + business domain）**：脚本根据 Helm/命名空间判断为 ISF 后，建议按 **顺序** 完成：
+
+1. **`kweaver auth login`** — 会话在 `~/.kweaver`（HTTP 或浏览器；默认访问地址可为本机 IP 对应的 `https://…`）。
+2. **`kweaver-admin` 在 PATH** — 可通过 `npm i -g @kweaver-ai/kweaver-admin` 安装（脚本可提示安装）。
+3. **`kweaver-admin auth login`** — 与 `kweaver` **两套独立登录**；必须能 `user list`，才能创建业务用户 **`test`** 并挂载 **role list 中全部角色**。
+4. **用户 `test`** — 创建、设密（默认可为 `111111`，可用环境变量覆盖）、赋权。
+5. **Context Loader** — ADP 工具箱 **impex** 使用 **以 `test` 登录的 kweaver** 调用；仅用控制台 **admin** 的 kweaver 会话常见 **403**。
+
+**最小化安装**：一般只需 `kweaver`（常为 `--no-auth`），**不需要** `kweaver-admin`。
+
+结束前会打印 **英文** 完成报告（可用 `ONBOARD_NO_COMPLETION_REPORT=1` 关闭）。
+
+### `onboard.sh` 流程（简图）
+
+```mermaid
+flowchart TD
+  start([Start onboard.sh]) --> boot[Ensure Node 22+ and kweaver CLI]
+  boot --> args{CLI mode?}
+  args -->|BKN only| probe1[onboard_probe] --> bkn[BKN ConfigMap patch] --> rep1[Completion report] --> end1([Exit])
+  args -->|config YAML| probe2[onboard_probe] --> py[onboard_apply_config.py] --> rep2[Completion report] --> end2([Exit])
+  args -->|default or -y| probe3[onboard_probe]
+  probe3 --> ka[Ensure kweaver auth until bkn list works]
+  ka --> kc[kubectl namespace check]
+  kc --> npm[Prepend npm global bin to PATH]
+  npm --> isf{ISF full install?}
+  isf -->|no| clm[Context Loader offer if operator + ADP present]
+  isf -->|yes| rec[Log: recommend kweaver-admin]
+  rec --> admN[Install kweaver-admin via npm if missing]
+  admN --> admA[kweaver-admin auth if user list fails]
+  admA --> test[Offer: user test + all role list roles]
+  test --> cl[Context Loader offer gated on test user + admin auth]
+  clm --> inter{Interactive and no config?}
+  cl --> inter
+  inter -->|yes| models[Prompts: LLM / embedding / BKN patch]
+  inter -->|no| rep3[Completion report]
+  models --> rep3
+  rep3 --> end3([Exit])
+```
+
+---
+
 ## 🛡️ 完整安装后的管理员工具（kweaver-admin）
 
 完整安装（启用 `auth.enabled=true` 与 `businessDomain.enabled=true`）后，平台的**用户、组织、角色、模型、审计**等管理操作通过独立的 npm CLI [`@kweaver-ai/kweaver-admin`](https://github.com/kweaver-ai/kweaver-admin) 完成。它与面向终端用户/Agent 的 `kweaver`（kweaver-sdk）互补：

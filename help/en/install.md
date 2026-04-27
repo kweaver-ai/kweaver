@@ -146,6 +146,66 @@ export INGRESS_NGINX_HTTPS_PORT=8443
 
 ---
 
+## Post-install: `onboard.sh`
+
+After `deploy.sh kweaver-core install`, use **`deploy/onboard.sh`** on a machine with **Node 22+**, **`kubectl`** (cluster access), and **`kweaver`** (`npm i -g @kweaver-ai/kweaver-sdk`). Run from the `deploy/` directory:
+
+```bash
+cd deploy
+bash ./onboard.sh --help
+```
+
+Typical flags:
+
+| Flag | Meaning |
+| --- | --- |
+| *(none)* | Interactive: Node/kweaver install prompts (if needed), auth, then model/BKN prompts |
+| `-y` / `--yes` | Auto-accept many prompts; still requires **full ISF** preconditions for test user + Context Loader (see below) |
+| `--config=models.yaml` | Non-interactive: register models (and optional BKN) via YAML; see `deploy/conf/models.yaml.example` |
+| `--enable-bkn-search` | BKN ConfigMap patch only (after probe) |
+| `--skip-context-loader` | Skip ADP Context Loader toolbox import |
+
+**Full ISF install (auth + business domain):** onboarding treats the cluster as “ISF” when related Helm releases or namespaces exist. Then the script expects, **in order**:
+
+1. **`kweaver auth login`** — session in `~/.kweaver` (HTTP sign-in or browser; default access URL can be this host’s IP).
+2. **`kweaver-admin`** on `PATH` — install with `npm i -g @kweaver-ai/kweaver-admin` if missing (script may offer this).
+3. **`kweaver-admin auth login`** — **separate** from `kweaver`; required so `user list` works for creating user **`test`** and assigning **all roles** from `kweaver-admin role list`.
+4. **User `test`** — create + password (default `111111` unless overridden) + role assignment.
+5. **Context Loader** — `kweaver call` impex uses **`kweaver` signed in as `test`** (console `admin` often gets `403` on this API).
+
+**Minimum install** (`--minimum`): only `kweaver auth` (often `--no-auth`); no `kweaver-admin` path.
+
+At the end, an **English completion report** is printed unless `ONBOARD_NO_COMPLETION_REPORT=1`.
+
+### `onboard.sh` flow (simplified)
+
+```mermaid
+flowchart TD
+  start([Start onboard.sh]) --> boot[Ensure Node 22+ and kweaver CLI]
+  boot --> args{CLI mode?}
+  args -->|BKN only| probe1[onboard_probe] --> bkn[BKN ConfigMap patch] --> rep1[Completion report] --> end1([Exit])
+  args -->|config YAML| probe2[onboard_probe] --> py[onboard_apply_config.py] --> rep2[Completion report] --> end2([Exit])
+  args -->|default or -y| probe3[onboard_probe]
+  probe3 --> ka[Ensure kweaver auth until bkn list works]
+  ka --> kc[kubectl namespace check]
+  kc --> npm[Prepend npm global bin to PATH]
+  npm --> isf{ISF full install?}
+  isf -->|no| clm[Context Loader offer if operator + ADP present]
+  isf -->|yes| rec[Log: recommend kweaver-admin]
+  rec --> admN[Install kweaver-admin via npm if missing]
+  admN --> admA[kweaver-admin auth if user list fails]
+  admA --> test[Offer: user test + all role list roles]
+  test --> cl[Context Loader offer gated on test user + admin auth]
+  clm --> inter{Interactive and no config?}
+  cl --> inter
+  inter -->|yes| models[Prompts: LLM / embedding / BKN patch]
+  inter -->|no| rep3[Completion report]
+  models --> rep3
+  rep3 --> end3([Exit])
+```
+
+---
+
 ## 🛡️ Administrator tool after a full install (kweaver-admin)
 
 After a full install (with `auth.enabled=true` and `businessDomain.enabled=true`), platform-level operations — **users, organizations, roles, models, audit** — are managed via the standalone npm CLI [`@kweaver-ai/kweaver-admin`](https://github.com/kweaver-ai/kweaver-admin). It is complementary to the `kweaver` CLI from `kweaver-sdk`:

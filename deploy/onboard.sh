@@ -144,7 +144,7 @@ usage() {
     echo "                ONBOARD_NO_COMPLETION_REPORT=1  do not print the English completion report at the end"
     echo "  Default KWeaver access URL (kweaver auth): this host’s primary IPv4, e.g.  https://\$(local-ip)  (set ONBOARD_DEFAULT_ACCESS_BASE=... to override; ONBOARD_DEFAULT_ACCESS_PORT e.g. 8443; ONBOARD_DEFAULT_ACCESS_SCHEME=http)"
     echo "  kweaver auth: you confirm URL. ISF+full: HTTP defaults user=admin pass=eisoo.com (if still default); override with ONBOARD_DEFAULT_KWEAVER_USER / _PASSWORD. Enter keeps defaults. Minimum: default --no-auth; Enter to accept."
-    echo "  kweaver-admin auth (ISF): same HTTP sign-in as kweaver (admin / eisoo.com defaults); optional browser flow if you answer N. Then kweaver re-logs in as user test for impex and model steps."
+    echo "  kweaver-admin auth (ISF): use  auth login <url> -u admin -p <pass> -k  (no --http-signin; that is kweaver-sdk only) or browser URL-only flow. Then kweaver re-logs in as user test for impex and model steps."
     echo "  Node: onboard is not a login shell — it auto-loads nvm/fnm/asdf/Volta and Homebrew paths so an already-configured Node 22+ is found without re-asking. ONBOARD_SKIP_NVM_INIT=true skips that; ONBOARD_NVM_VERSION=22 (default) is used after  nvm.sh  load."
     echo "  (preflight on the server: sudo preflight --fix still optional; this script can install Node in your *user* account via nvm.)"
 }
@@ -454,7 +454,7 @@ onboard_kweaver_auth_login_for_url() {
     return 0
 }
 
-# kweaver-admin: same HTTP defaults as kweaver (console admin / eisoo.com if unchanged). See ONBOARD_DEFAULT_KWEAVER_*.
+# kweaver-admin: -u/-p use HTTP /oauth2/signin (no --http-signin flag; unlike kweaver-sdk). Same defaults as kweaver. See ONBOARD_DEFAULT_KWEAVER_*.
 onboard_kweaver_admin_auth_login_for_url() {
     local _kurl="$1"
     local _u _p _duser _dpass
@@ -463,7 +463,7 @@ onboard_kweaver_admin_auth_login_for_url() {
 
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         onboard_log_info "kweaver-admin auth: ISF — HTTP sign-in (defaults, -y): ${_duser}"
-        if ! kweaver-admin auth login "${_kurl}" -u "${_duser}" -p "${_dpass}" --http-signin -k; then
+        if ! kweaver-admin auth login "${_kurl}" -u "${_duser}" -p "${_dpass}" -k; then
             return 1
         fi
         return 0
@@ -477,7 +477,7 @@ onboard_kweaver_admin_auth_login_for_url() {
         echo
         _p="${_p:-${_dpass}}"
         onboard_log_info "kweaver-admin: HTTP sign-in…"
-        if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin -k; then
+        if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" -k; then
             return 1
         fi
         return 0
@@ -543,7 +543,7 @@ onboard_ensure_kweaver_admin_for_isf() {
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         onboard_log_info "ISF: installing @kweaver-ai/kweaver-admin (-y)…"
         if ! npm i -g @kweaver-ai/kweaver-admin; then
-            onboard_log_warn "npm i -g @kweaver-ai/kweaver-admin failed; install manually, then: kweaver-admin auth login <url> -u admin -p … --http-signin -k (same as kweaver)"
+            onboard_log_warn "npm i -g @kweaver-ai/kweaver-admin failed; install manually, then: kweaver-admin auth login <url> -u admin -p '<password>' -k  (kweaver-admin: -u/-p is HTTP sign-in, no --http-signin flag)"
         fi
         hash -r 2>/dev/null || true
         onboard_prepend_npm_global_bin_to_path
@@ -617,7 +617,7 @@ onboard_ensure_kweaver_admin_auth_for_isf() {
     echo ""
     read -r -p "Run kweaver-admin auth now (HTTP sign-in recommended; same as kweaver) [Y/n] (Enter = Y): " _go
     if [[ -n "${_go}" && "${_go}" =~ ^[Nn] ]]; then
-        onboard_log_err "ISF: kweaver-admin must be signed in for onboard. When ready: kweaver-admin auth login <url> -u ${ONBOARD_DEFAULT_KWEAVER_USER:-admin} -p '...' --http-signin -k  then: $0  again."
+        onboard_log_err "ISF: kweaver-admin must be signed in for onboard. When ready: kweaver-admin auth login <url> -u ${ONBOARD_DEFAULT_KWEAVER_USER:-admin} -p '...' -k  then: $0  again."
         exit 1
     fi
     read -r -p "kweaver-admin access base URL [Enter = ${_defu}]: " _url
@@ -686,7 +686,7 @@ onboard_recommend_admin_cli() {
         if command -v kweaver-admin &>/dev/null; then
             onboard_log_info "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -n1)"
         else
-            onboard_log_info "kweaver-admin: not on initial PATH; prepended npm global bin. If still missing, the next step may install or show hints. For full install user ops:  kweaver-admin auth login <url> -u admin -p … --http-signin -k  (same defaults as kweaver) ."
+            onboard_log_info "kweaver-admin: not on initial PATH; prepended npm global bin. If still missing, the next step may install or show hints. For full install user ops:  kweaver-admin auth login <url> -u admin -p '<password>' -k  (-u/-p = HTTP sign-in; no --http-signin) ."
         fi
     else
         onboard_log_info "No ISF releases detected — minimum install. kweaver-sdk (this CLI) is enough; kweaver-admin not required."

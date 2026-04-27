@@ -211,7 +211,7 @@ onboard_offer_isf_test_user() {
 
     if ! kweaver-admin --json user list --limit 1 &>/dev/null; then
         ONBOARD_REPORT_ISF_TEST_USER="error: kweaver-admin not authenticated"
-        onboard_log_err "ISF: kweaver-admin cannot list users (not signed in). This should not happen after the auth step. Run: kweaver-admin auth login <https://access-url> -u admin -p '...' --http-signin -k, then: $0"
+        onboard_log_err "ISF: kweaver-admin cannot list users (not signed in). This should not happen after the auth step. Run: kweaver-admin auth login <https://access-url> -u admin -p '...' -k, then: $0"
         exit 1
     fi
 
@@ -269,7 +269,7 @@ onboard_ensure_isf_test_for_kweaver_impex() {
         return 1
     fi
     if ! kweaver-admin --json user list --limit 1 &>/dev/null; then
-        log_warn "ISF+impex: kweaver-admin is not logged in. Run: kweaver-admin auth login <url> -u admin -p … --http-signin -k ; ensure user test exists, then re-run import."
+        log_warn "ISF+impex: kweaver-admin is not logged in. Run: kweaver-admin auth login <url> -u admin -p '...' -k ; ensure user test exists, then re-run import."
         return 1
     fi
     if ! onboard_user_test_exists; then

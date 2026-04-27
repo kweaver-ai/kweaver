@@ -169,7 +169,7 @@ Typical flags:
 
 1. **`kweaver auth login`** — session in `~/.kweaver` (HTTP sign-in or browser; default access URL can be this host’s IP).
 2. **`kweaver-admin`** on `PATH` — install with `npm i -g @kweaver-ai/kweaver-admin` if missing (script may offer this).
-3. **`kweaver-admin auth login`** — **separate token store** from `kweaver`, but the **recommended path is the same HTTP sign-in** as step 1: user **`admin`**, password **`eisoo.com`** if the console is still on defaults (`-u` / `-p` / `--http-signin`); you can still choose a browser/device flow if you prefer. Required so `user list` works for creating user **`test`** and assigning **all roles** from `kweaver-admin role list`.
+3. **`kweaver-admin auth login`** — **separate token store** from `kweaver`, but the **same account** as step 1: user **`admin`**, password **`eisoo.com`** if the console is still on defaults. Use **`-u` / `-p` / `-k`** (HTTP `/oauth2/signin` is selected automatically; **no** `--http-signin` — that flag is **kweaver-sdk only**). You can still use a **browser** flow without `-u`/`-p`. Required so `user list` works for creating user **`test`** and assigning **all roles** from `kweaver-admin role list`.
 4. **User `test`** — create + password (default `111111` unless overridden) + role assignment. The script then runs **`kweaver auth login` as `test`** (HTTP) so the SDK session matches the business user for the next steps.
 5. **Context Loader & model import** — `kweaver call` impex and interactive model registration use **`~/.kweaver` as `test`** (console `admin` often gets `403` on impex).
 

@@ -172,7 +172,7 @@ bash ./onboard.sh --help
 
 1. **`kweaver auth login`** — 会话在 `~/.kweaver`（HTTP 或浏览器；默认访问地址可为本机 IP 对应的 `https://…`）。
 2. **`kweaver-admin` 在 PATH** — 可通过 `npm i -g @kweaver-ai/kweaver-admin` 安装（脚本可提示安装）。
-3. **`kweaver-admin auth login`** — 与 `kweaver` **凭据/会话独立**，但**推荐与第 1 步相同的 HTTP 账密**：**`admin` / `eisoo.com`**（控制台未改密时，对应 `-u`、`-p`、`--http-signin`）；也可选浏览器/设备流。须能 `user list`，再创建业务用户 **`test`** 并挂载 **role list 中全部角色**。
+3. **`kweaver-admin auth login`** — 与 `kweaver` **凭据/会话独立**，但**仍用与第 1 步相同的一套控制台账密**（**`admin` / `eisoo.com`** 未改密时）。在 **`kweaver-admin` 中请写：`-u`、`-p`、`-k`**（带上 `-u`/`-p` 即走 HTTP 登录，**没有** `--http-signin` 参数，该参数仅 **kweaver-sdk** 使用）。也可不用账密、走**浏览器** OAuth。须能 `user list`，再创建 **`test`** 并挂载 **role list** 中角色。
 4. **用户 `test`** — 创建、设密（默认可为 `111111`）、赋权。随后脚本会 **`kweaver auth login` 为 `test`（HTTP）**，使 SDK 会话切到业务用户，供后续步骤使用。
 5. **Context Loader 与模型注册** — ADP **impex** 及交互式模型流程使用 **以 `test` 登录的 `kweaver`（`~/.kweaver`）**；仅 **admin** 的 kweaver 会话对 impex 常见 **403**。
 

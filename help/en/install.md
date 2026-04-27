@@ -169,9 +169,9 @@ Typical flags:
 
 1. **`kweaver auth login`** — session in `~/.kweaver` (HTTP sign-in or browser; default access URL can be this host’s IP).
 2. **`kweaver-admin`** on `PATH` — install with `npm i -g @kweaver-ai/kweaver-admin` if missing (script may offer this).
-3. **`kweaver-admin auth login`** — **separate** from `kweaver`; required so `user list` works for creating user **`test`** and assigning **all roles** from `kweaver-admin role list`.
-4. **User `test`** — create + password (default `111111` unless overridden) + role assignment.
-5. **Context Loader** — `kweaver call` impex uses **`kweaver` signed in as `test`** (console `admin` often gets `403` on this API).
+3. **`kweaver-admin auth login`** — **separate token store** from `kweaver`, but the **recommended path is the same HTTP sign-in** as step 1: user **`admin`**, password **`eisoo.com`** if the console is still on defaults (`-u` / `-p` / `--http-signin`); you can still choose a browser/device flow if you prefer. Required so `user list` works for creating user **`test`** and assigning **all roles** from `kweaver-admin role list`.
+4. **User `test`** — create + password (default `111111` unless overridden) + role assignment. The script then runs **`kweaver auth login` as `test`** (HTTP) so the SDK session matches the business user for the next steps.
+5. **Context Loader & model import** — `kweaver call` impex and interactive model registration use **`~/.kweaver` as `test`** (console `admin` often gets `403` on impex).
 
 **Minimum install** (`--minimum`): only `kweaver auth` (often `--no-auth`); no `kweaver-admin` path.
 
@@ -218,14 +218,14 @@ sequenceDiagram
   participant K as kweaver
   participant A as kweaver-admin
   U->>O: run from deploy/
-  O->>K: kweaver auth login (console user, e.g. admin)
-  O->>A: kweaver-admin on PATH; kweaver-admin auth login
-  A-->>O: user list / user create
-  O->>K: kweaver auth as test (impex session)
-  O->>K: kweaver call … impex (Context Loader)
+  O->>K: kweaver auth login — HTTP (admin / eisoo.com defaults) or browser
+  O->>A: kweaver-admin on PATH; same HTTP sign-in (admin / eisoo.com) or browser
+  A-->>O: user list / create test + roles
+  O->>K: kweaver auth as test — HTTP (password set for test)
+  O->>K: kweaver call … impex (Context Loader) / model registration
 ```
 
-The admin CLI and the SDK use **separate** credential stores; **only `kweaver` as `test`** is appropriate for the impex call that imports the ADP toolset, not the same session as ad‑hoc `admin` when the API is restricted.
+The admin CLI and the SDK use **separate** token files; both **default to the same HTTP account** for ISF. For impex, **`kweaver` must be signed in as `test`**, not the initial console `admin` session when the API returns 403.
 
 ---
 

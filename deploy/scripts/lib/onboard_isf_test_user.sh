@@ -175,6 +175,23 @@ onboard_kweaver_relogin_isf_test() {
     return 0
 }
 
+# After user test is created or synced: sign kweaver SDK in as test (HTTP) for Context Loader and model/BKN steps (ISF).
+onboard_isf_relogin_kweaver_cli_as_test_for_downstream() {
+    type onboard_isf_full_install &>/dev/null || return 0
+    onboard_isf_full_install 2>/dev/null || return 0
+    command -v kweaver &>/dev/null || return 0
+    if ! onboard_user_test_exists 2>/dev/null; then
+        return 0
+    fi
+    local kurl=""
+    type onboard_default_access_base_url &>/dev/null && kurl="$(onboard_default_access_base_url)"
+    log_info "kweaver CLI: re-authenticating as user test (HTTP, same as impex) for Context Loader and model registration — use the password set for test above."
+    if ! onboard_kweaver_relogin_isf_test "${kurl}"; then
+        log_warn "kweaver re-login as test failed; Context Loader will retry. Set ONBOARD_TEST_USER_PASSWORD or: kweaver auth login ${kurl} -u test -p '...' --http-signin -k"
+    fi
+    return 0
+}
+
 # After kweaver is usable; only when full ISF + kweaver-admin and user chose to run.
 onboard_offer_isf_test_user() {
     if [[ "${ONBOARD_SKIP_ISF_TEST_USER:-false}" == "true" ]]; then
@@ -188,13 +205,13 @@ onboard_offer_isf_test_user() {
     command -v kweaver-admin &>/dev/null || {
         ONBOARD_REPORT_ISF_TEST_USER="已跳过: 无 kweaver-admin (需 npm i -g @kweaver-ai/kweaver-admin 后再建 test)"
         log_warn "未检测到 kweaver-admin（可执行  which kweaver-admin ）：已跳过「创建/同步用户 test」。若已  npm -g  装过: 在**当前终端**  export PATH=\"\$(npm config get prefix)/bin:\$PATH\"  后重试本脚本，或:  $0 -y  （ISF 会再装/刷新  PATH ）。"
-        log_warn "  首次使用还需:  kweaver-admin auth login <https://平台地址> -k  （再  ./onboard.sh  建  test ）"
+        log_warn "  首次使用: kweaver-admin auth login <https://平台地址> -u admin -p … --http-signin -k（与 kweaver 相同），再运行 ./onboard.sh 创建 test"
         return 0
     }
 
     if ! kweaver-admin --json user list --limit 1 &>/dev/null; then
         ONBOARD_REPORT_ISF_TEST_USER="skipped: kweaver-admin not logged in (auth login failed or not run)"
-        log_warn "kweaver-admin: cannot list users (run: kweaver-admin auth login <https://access-url> -k). Skipping test user offer."
+        log_warn "kweaver-admin: cannot list users. Run: kweaver-admin auth login <https://access-url> -u admin -p … --http-signin -k (same as kweaver). Skipping test user offer."
         return 0
     fi
 
@@ -203,6 +220,7 @@ onboard_offer_isf_test_user() {
         onboard_assign_all_listed_roles_to_user test || true
         ONBOARD_REPORT_ISF_TEST_USER="user test exists: synced all roles from role list (kweaver-admin user roles test)"
         log_info "If you reset test's password, export ONBOARD_TEST_USER_PASSWORD for non-interactive kweaver impex, or enter it when asked during Context Loader import."
+        onboard_isf_relogin_kweaver_cli_as_test_for_downstream
         return 0
     fi
 
@@ -210,6 +228,7 @@ onboard_offer_isf_test_user() {
         log_info "ONBOARD: creating user test, password/roles (-y)…"
         onboard_create_test_user_with_all_roles
         ONBOARD_REPORT_ISF_TEST_USER="created test with roles (-y: default password ${ONBOARD_DEFAULT_TEST_USER_PASSWORD:-111111}; override ONBOARD_TEST_USER_PASSWORD=...)"
+        onboard_isf_relogin_kweaver_cli_as_test_for_downstream
         return 0
     fi
     if ! (type onboard_is_bootstrap_tty &>/dev/null && onboard_is_bootstrap_tty); then
@@ -226,6 +245,7 @@ onboard_offer_isf_test_user() {
     fi
     onboard_create_test_user_with_all_roles
     ONBOARD_REPORT_ISF_TEST_USER="created test, set password, assigned all business roles from role list"
+    onboard_isf_relogin_kweaver_cli_as_test_for_downstream
 }
 
 # Before kweaver call (ADP impex), ISF: ensure user test + business roles, then kweaver session as test.
@@ -241,7 +261,7 @@ onboard_ensure_isf_test_for_kweaver_impex() {
         return 1
     fi
     if ! kweaver-admin --json user list --limit 1 &>/dev/null; then
-        log_warn "ISF+impex: kweaver-admin is not logged in. Run:  kweaver-admin auth login <url> -k  , ensure user  test  exists, then re-run import."
+        log_warn "ISF+impex: kweaver-admin is not logged in. Run: kweaver-admin auth login <url> -u admin -p … --http-signin -k ; ensure user test exists, then re-run import."
         return 1
     fi
     if ! onboard_user_test_exists; then

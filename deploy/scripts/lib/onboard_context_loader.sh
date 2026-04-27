@@ -114,8 +114,8 @@ onboard_offer_context_loader_toolset() {
                 return 0
             fi
         else
-            ONBOARD_REPORT_CONTEXT_LOADER="skipped: kweaver-admin not authenticated; run: kweaver-admin auth login <url> -k"
-            log_warn "Context Loader: skipped —  kweaver-admin auth login  required before ADP impex on ISF."
+            ONBOARD_REPORT_CONTEXT_LOADER="skipped: kweaver-admin not authenticated; run: kweaver-admin auth login <url> -u admin -p … --http-signin -k (same as kweaver)"
+            log_warn "Context Loader: skipped — kweaver-admin HTTP auth (same as kweaver) required before ADP impex on ISF."
             return 0
         fi
     fi

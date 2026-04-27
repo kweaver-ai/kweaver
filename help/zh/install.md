@@ -172,9 +172,9 @@ bash ./onboard.sh --help
 
 1. **`kweaver auth login`** — 会话在 `~/.kweaver`（HTTP 或浏览器；默认访问地址可为本机 IP 对应的 `https://…`）。
 2. **`kweaver-admin` 在 PATH** — 可通过 `npm i -g @kweaver-ai/kweaver-admin` 安装（脚本可提示安装）。
-3. **`kweaver-admin auth login`** — 与 `kweaver` **两套独立登录**；必须能 `user list`，才能创建业务用户 **`test`** 并挂载 **role list 中全部角色**。
-4. **用户 `test`** — 创建、设密（默认可为 `111111`，可用环境变量覆盖）、赋权。
-5. **Context Loader** — ADP 工具箱 **impex** 使用 **以 `test` 登录的 kweaver** 调用；仅用控制台 **admin** 的 kweaver 会话常见 **403**。
+3. **`kweaver-admin auth login`** — 与 `kweaver` **凭据/会话独立**，但**推荐与第 1 步相同的 HTTP 账密**：**`admin` / `eisoo.com`**（控制台未改密时，对应 `-u`、`-p`、`--http-signin`）；也可选浏览器/设备流。须能 `user list`，再创建业务用户 **`test`** 并挂载 **role list 中全部角色**。
+4. **用户 `test`** — 创建、设密（默认可为 `111111`）、赋权。随后脚本会 **`kweaver auth login` 为 `test`（HTTP）**，使 SDK 会话切到业务用户，供后续步骤使用。
+5. **Context Loader 与模型注册** — ADP **impex** 及交互式模型流程使用 **以 `test` 登录的 `kweaver`（`~/.kweaver`）**；仅 **admin** 的 kweaver 会话对 impex 常见 **403**。
 
 **最小化安装**：一般只需 `kweaver`（常为 `--no-auth`），**不需要** `kweaver-admin`。
 
@@ -221,14 +221,14 @@ sequenceDiagram
   participant K as kweaver
   participant A as kweaver-admin
   U->>O: 在 deploy/ 下执行
-  O->>K: kweaver auth login（如控制台 admin）
-  O->>A: 确保 PATH 有 kweaver-admin；kweaver-admin auth login
-  A-->>O: user list / 创建 test 等
-  O->>K: 以 test 建立 kweaver 会话（impex）
-  O->>K: kweaver call … impex（Context Loader）
+  O->>K: kweaver auth — HTTP（admin / eisoo.com 默认）或浏览器
+  O->>A: 确保 PATH 有 kweaver-admin；同样推荐 HTTP 账密或浏览器
+  A-->>O: user list / 创建 test 与角色
+  O->>K: 以 test 做 kweaver 登录（HTTP，test 的密码）
+  O->>K: kweaver call impex / 后续模型等
 ```
 
-`kweaver` 与 `kweaver-admin` **凭据独立**；ADP **impex** 需 **`kweaver` 以 `test` 登录** 的会话，与仅用控制台 `admin` 的 SDK 会话常见 **403** 场景不同。
+`kweaver` 与 `kweaver-admin` **会话文件独立**；**ISF 下默认仍用与 kweaver 相同的一套 HTTP 控制台账密**。**impex 需 `kweaver` 的 `test` 会话**，与仅 **admin** 的 kweaver 常见 **403** 不同。
 
 ---
 

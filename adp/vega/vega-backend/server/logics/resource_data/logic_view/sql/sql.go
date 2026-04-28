@@ -512,7 +512,14 @@ func (g *logicViewSQLGenerator) buildSqlNodeSQL(ctx context.Context, node *inter
 		return "", nil, fmt.Errorf("failed to execute SQL template for node %s: %w", node.ID, err)
 	}
 
-	return result.String(), allArgs, nil
+	// 去除 SQL 结尾的分号（可能有多个分号或空格）
+	finalSQL := strings.TrimSpace(result.String())
+	for strings.HasSuffix(finalSQL, ";") {
+		finalSQL = strings.TrimSuffix(finalSQL, ";")
+		finalSQL = strings.TrimSpace(finalSQL)
+	}
+
+	return finalSQL, allArgs, nil
 }
 
 // sanitizeAlias 清理节点 ID 生成合法的 SQL 别名

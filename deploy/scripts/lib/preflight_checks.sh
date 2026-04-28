@@ -1228,24 +1228,35 @@ preflight_check_target_tools() {
         preflight_strict_warn_or_fail "kubectl not found (deploy.sh needs it; sudo preflight --fix runs k8s-pkgs-repo then k8s-bins, which apt/dnf/yum installs kubeadm + kubelet + kubectl with apt-mark hold)"
     fi
 
-    if command -v helm &>/dev/null; then
+    # sudo defaults (secure_path) often omit /usr/local/bin — install_helm lands there; fall back explicitly.
+    local helm_bin=""
+    helm_bin="$(command -v helm 2>/dev/null || true)"
+    if [[ -z "${helm_bin}" ]]; then
+        if [[ -x /usr/local/bin/helm ]]; then
+            helm_bin="/usr/local/bin/helm"
+        elif [[ -x /usr/bin/helm ]]; then
+            helm_bin="/usr/bin/helm"
+        fi
+    fi
+
+    if [[ -n "${helm_bin}" ]]; then
         local helm_ver
-        helm_ver="$(helm version --short 2>/dev/null | awk '{print $1}' | cut -d'+' -f1 || true)"
+        helm_ver="$("${helm_bin}" version --short 2>/dev/null | awk '{print $1}' | cut -d'+' -f1 || true)"
         if [[ -z "${helm_ver}" ]]; then
-            helm_ver="$(helm version --short --client 2>/dev/null | awk -F': ' 'NR==1{print $2}' | awk '{print $1}' | cut -d'+' -f1 || true)"
+            helm_ver="$("${helm_bin}" version --short --client 2>/dev/null | awk -F': ' 'NR==1{print $2}' | awk '{print $1}' | cut -d'+' -f1 || true)"
         fi
         case "${helm_ver}" in
             v3.*)
-                preflight_ok "helm: $(command -v helm) (${helm_ver})"
+                preflight_ok "helm: ${helm_bin} (${helm_ver})"
                 ;;
             v2.*)
-                preflight_fail "helm ${helm_ver} at $(command -v helm) is unsupported; deploy requires Helm v3. Use preflight fix helm-v3 or deploy.sh k8s install path."
+                preflight_fail "helm ${helm_ver} at ${helm_bin} is unsupported; deploy requires Helm v3. Use preflight fix helm-v3 or deploy.sh k8s install path."
                 ;;
             "")
-                preflight_warn "helm at $(command -v helm) returned no version string; verify v3"
+                preflight_warn "helm at ${helm_bin} returned no version string; verify v3"
                 ;;
             *)
-                preflight_warn "helm version '${helm_ver}' at $(command -v helm) (expected v3.x); deploy can re-install ${HELM_VERSION:-v3.x}"
+                preflight_warn "helm version '${helm_ver}' at ${helm_bin} (expected v3.x); deploy can re-install ${HELM_VERSION:-v3.x}"
                 ;;
         esac
     else
@@ -1456,14 +1467,28 @@ preflight_check_apt_install_candidates() {
     fi
 }
 
+# RHEL-family (dnf/yum) only — Ubuntu/Debian use preflight_check_apt_install_candidates + pkgs.k8s.io deb.
+# Do not call this when PKG_MANAGER is apt: no kubernetes.repo exclude semantics there.
+#
+# kubernetes.repo from pkgs.k8s.io often sets exclude=kubeadm kubelet kubectl; install uses
+# --disableexcludes=kubernetes — use the same for "list available" probes or dnf reports no candidate.
+_preflight_yumdnf_kubeadm_available() {
+    local pm="$1"
+    command -v "${pm}" &>/dev/null || return 1
+    "${pm}" -q list installed kubeadm >/dev/null 2>&1 && return 0
+    if "${pm}" -q list available --disableexcludes=kubernetes kubeadm >/dev/null 2>&1; then
+        return 0
+    fi
+    "${pm}" -q list available kubeadm >/dev/null 2>&1
+}
+
 # yum/dnf: cheap availability probe for kubeadm + containerd.io / containerd.
 preflight_check_yumdnf_install_candidates() {
     [[ "${PREFLIGHT_STRICT_SOURCES:-true}" == "true" ]] || return 0
     local pm="$1"
     command -v "${pm}" &>/dev/null || return 0
 
-    if "${pm}" -q list available kubeadm >/dev/null 2>&1 \
-        || "${pm}" -q list installed kubeadm >/dev/null 2>&1; then
+    if _preflight_yumdnf_kubeadm_available "${pm}"; then
         preflight_ok "${pm} source can install kubeadm"
     else
         preflight_strict_warn_or_fail "${pm} has no install candidate for kubeadm — Kubernetes yum repo missing or unreachable. Add /etc/yum.repos.d/kubernetes.repo pointing to https://pkgs.k8s.io/core:/stable:/<vX.Y>/rpm/ (mirror .../core:/stable:/${PREFLIGHT_K8S_APT_MINOR:-vX.Y}/rpm/) and re-run."
@@ -1566,8 +1591,7 @@ preflight_fix_kubernetes_yum_source() {
     fi
 
     # Skip if the repo is already configured AND a candidate exists.
-    if "${pm}" -q list available kubeadm >/dev/null 2>&1 \
-        || "${pm}" -q list installed kubeadm >/dev/null 2>&1; then
+    if _preflight_yumdnf_kubeadm_available "${pm}"; then
         return 0
     fi
 
@@ -1588,7 +1612,7 @@ EOF
     else
         yum -q makecache --disablerepo='*' --enablerepo=kubernetes >/dev/null 2>&1 || true
     fi
-    if "${pm}" -q list available kubeadm >/dev/null 2>&1; then
+    if _preflight_yumdnf_kubeadm_available "${pm}"; then
         preflight_fixed "Configured Kubernetes ${pm} repo pkgs.k8s.io (${k8s_minor}); kubeadm/kubelet/kubectl now installable"
     else
         preflight_warn "Wrote /etc/yum.repos.d/kubernetes.repo but ${pm} still cannot find kubeadm; check network access to pkgs.k8s.io"
@@ -2125,8 +2149,7 @@ preflight_apply_safe_fixes() {
         fi
     elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
         local _ypm="dnf"; command -v dnf &>/dev/null || _ypm="yum"
-        if ! "${_ypm}" -q list available kubeadm >/dev/null 2>&1 \
-            && ! "${_ypm}" -q list installed kubeadm >/dev/null 2>&1; then
+        if ! _preflight_yumdnf_kubeadm_available "${_ypm}"; then
             if preflight_confirm_fix "k8s-pkgs-repo" \
                 "Configure Kubernetes ${_ypm} repo pkgs.k8s.io/${k8s_apt_resolved} (none configured yet)" \
                 "Writes /etc/yum.repos.d/kubernetes.repo. Required so '${_ypm} install kubeadm kubelet kubectl' (run by deploy.sh) succeeds. Set PREFLIGHT_K8S_APT_MINOR to override version."; then
@@ -2157,9 +2180,9 @@ preflight_apply_safe_fixes() {
             _kbc="$(apt-cache policy kubeadm 2>/dev/null | awk '/Candidate:/{print $2; exit}' || true)"
             [[ -n "${_kbc}" && "${_kbc}" != "(none)" ]] && _can_install=true
         elif command -v dnf &>/dev/null; then
-            dnf -q list available kubeadm >/dev/null 2>&1 && _can_install=true
+            _preflight_yumdnf_kubeadm_available dnf && _can_install=true
         elif command -v yum &>/dev/null; then
-            yum -q list available kubeadm >/dev/null 2>&1 && _can_install=true
+            _preflight_yumdnf_kubeadm_available yum && _can_install=true
         fi
         if [[ "${_can_install}" == "true" ]]; then
             if preflight_confirm_fix "k8s-bins" \
@@ -2173,12 +2196,16 @@ preflight_apply_safe_fixes() {
     fi
 
     # --- 5) Helm 3 -----------------------------------------------------------
-    local hver=""
-    if command -v helm &>/dev/null; then
-        hver="$(helm version --short 2>/dev/null | awk '{print $1}' | cut -d'+' -f1 || true)"
-        [[ -z "${hver}" ]] && hver="$(helm version --short --client 2>/dev/null | awk -F': ' 'NR==1{print $2}' | awk '{print $1}' | cut -d'+' -f1 || true)"
+    local hver="" helm_for_fix=""
+    helm_for_fix="$(command -v helm 2>/dev/null || true)"
+    if [[ -z "${helm_for_fix}" ]]; then
+        [[ -x /usr/local/bin/helm ]] && helm_for_fix=/usr/local/bin/helm
     fi
-    if ! command -v helm &>/dev/null || [[ "${hver}" == v2.* ]]; then
+    if [[ -n "${helm_for_fix}" ]]; then
+        hver="$("${helm_for_fix}" version --short 2>/dev/null | awk '{print $1}' | cut -d'+' -f1 || true)"
+        [[ -z "${hver}" ]] && hver="$("${helm_for_fix}" version --short --client 2>/dev/null | awk -F': ' 'NR==1{print $2}' | awk '{print $1}' | cut -d'+' -f1 || true)"
+    fi
+    if [[ -z "${helm_for_fix}" ]] || [[ "${hver}" == v2.* ]]; then
         if preflight_confirm_fix "helm-v3" \
             "install_helm (Helm 3 from k8s.sh)" \
             "May replace /usr/local/bin/helm. Required for v3 --timeout duration syntax."; then

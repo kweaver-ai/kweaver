@@ -359,9 +359,20 @@ wait_for_dns() {
     log_info "CoreDNS is ready"
 }
 
+# Many distros configure sudo secure_path without /usr/local/bin while install_helm
+# places the binary under /usr/local/bin — sudo preflight then fails `command -v helm`.
+# Same paths on Ubuntu and CentOS/RHEL (FHS); not package-manager-specific.
+_k8s_ensure_helm_usr_bin_copy() {
+    [[ -x /usr/local/bin/helm ]] || return 0
+    [[ -x /usr/bin/helm ]] && return 0
+    install -m 0755 /usr/local/bin/helm /usr/bin/helm || return 0
+    log_info "Copied /usr/local/bin/helm → /usr/bin (sudo secure_path compatibility)"
+}
+
 # Install Helm 3
 install_helm() {
     log_info "Installing Helm 3..."
+    _k8s_ensure_helm_usr_bin_copy
 
     local desired="${HELM_VERSION}"
     local existing=""
@@ -401,8 +412,9 @@ install_helm() {
     if curl -fsSLo "${tmpdir}/${tarball}" "${url}"; then
         tar -xzf "${tmpdir}/${tarball}" -C "${tmpdir}"
         install -m 0755 "${tmpdir}/linux-${arch}/helm" /usr/local/bin/helm
+        install -m 0755 "${tmpdir}/linux-${arch}/helm" /usr/bin/helm
         rm -rf "${tmpdir}" 2>/dev/null || true
-        log_info "Helm ${desired} installed successfully"
+        log_info "Helm ${desired} installed successfully (/usr/local/bin and /usr/bin)"
         return 0
     fi
     rm -rf "${tmpdir}" 2>/dev/null || true
@@ -413,6 +425,7 @@ install_helm() {
     else
         curl -fsSL "${HELM_INSTALL_SCRIPT_URL}" | bash
     fi
+    _k8s_ensure_helm_usr_bin_copy
 
     # Do not auto-add Helm repos here: modules add repos only when a local chart is not available.
     log_info "Helm 3 installed successfully"
@@ -830,11 +843,13 @@ EOF
     
     if ! command -v kubeadm &> /dev/null || ! command -v kubelet &> /dev/null || ! command -v kubectl &> /dev/null; then
         if [[ "${PKG_MANAGER}" == "dnf" ]] || [[ "${PKG_MANAGER}" == "yum" ]]; then
-            # For RHEL/CentOS/Fedora systems
-            ${PKG_MANAGER_INSTALL} kubeadm kubelet kubectl kubernetes-cni
-            # Only use hold command if it's available (dnf mark install works, yum versionlock may need plugin)
+            # RHEL-family only; Ubuntu/Debian use the apt branch below (no --disableexcludes).
+            # pkgs.k8s.io kubernetes.repo often sets exclude=kubeadm kubelet kubectl — match preflight UX.
             if [[ "${PKG_MANAGER}" == "dnf" ]]; then
+                dnf install -y --disableexcludes=kubernetes kubeadm kubelet kubectl kubernetes-cni
                 ${PKG_MANAGER_HOLD} kubeadm kubelet kubectl kubernetes-cni 2>/dev/null || true
+            else
+                yum install -y --disableexcludes=kubernetes kubeadm kubelet kubectl kubernetes-cni
             fi
         else
             # For Ubuntu/Debian systems

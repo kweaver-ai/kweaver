@@ -1,130 +1,176 @@
-# KWeaver Core — Docker Compose (B1 demo subset)
+# KWeaver Core — Docker Compose
 
-This directory provides a **lean demo** stack: **infrastructure + one-shot DB migrator + 11 KWeaver business services** (ontology/query, data model, model factory, Vega, data-connection). It is **not** the full `deploy.sh kweaver-core --minimum` Helm surface (no agent-*, dataflow, coderunner, doc-convert, sandbox, oss-gateway, or bundled otel/observability).
+This directory mirrors the **`deploy.sh kweaver-core install --minimum`** Helm release set from
+[`deploy/release-manifests/0.7.0/kweaver-core.yaml`](../release-manifests/0.7.0/kweaver-core.yaml)
+on a single Docker host. `--minimum` only adds Helm `--set auth.enabled=false businessDomain.enabled=false`;
+the release set itself is the same. Optional ISF (`enabledIf: auth.enabled`) is **not** installed.
 
-Service definitions, ports, volumes, and `configs/kweaver/**` templates are aligned with charts in **[kweaver-ai/helm-repo](https://github.com/kweaver-ai/helm-repo)**. Re-run `tools/extract-helm-templates.py` after unpacking charts in `/tmp/kc-charts-unpacked` if you refresh templates; then reconcile any **manual** Compose tweaks (e.g. `mf-model-*/cm-kw-yaml.env.tmpl` host wiring).
+The local source of truth for which services run, which charts they map to, and which image
+tag/registry they use is [`compose-manifest.yaml`](./compose-manifest.yaml). `compose.sh`,
+`setup.sh`, and `tools/extract-helm-templates.py` all read from it; **edit the manifest, not
+those scripts**.
 
-The **mandatory** sanity check is **`./setup.sh`** (renders templates + runs `docker compose config`). That does **not** pull images.
+The mandatory sanity check is **`./setup.sh`** (renders templates, validates manifest ↔
+`docker-compose.yml`, runs `docker compose config`). It does **not** pull images.
 
-## What is included (19 `docker compose` services)
+## What is included (32 `docker compose` services)
 
 - **Infra (6):** `mariadb`, `redis`, `zookeeper`, `kafka`, `opensearch`, `minio`.
 - **Job (1):** `kweaver-core-data-migrator` (one-shot; others wait for `service_completed_successfully`).
-- **KWeaver (11):** `bkn-backend`, `ontology-query`, `mdl-data-model`, `mdl-uniquery`, `mdl-data-model-job`, `mf-model-manager`, `mf-model-api`, `vega-backend`, `vega-gateway`, `vega-gateway-pro`, `data-connection`.
-- **Entry (1):** `nginx` starts with the app phase because its upstreams are KWeaver services.
+- **KWeaver app (24):** `bkn-backend`, `mf-model-manager`, `mf-model-api`, `ontology-query`,
+  `vega-backend`, `vega-gateway`, `vega-gateway-pro`, `data-connection`, `mdl-data-model`,
+  `mdl-uniquery`, `mdl-data-model-job`, `agent-operator-integration`, `agent-retrieval`,
+  `agent-backend`, `dataflow`, `flow-stream-data-pipeline`, `coderunner`, `dataflowtools`,
+  `doc-convert-gotenberg`, `doc-convert-tika`, `sandbox`, `oss-gateway-backend`,
+  `otelcol-contrib`, `agent-observability`.
+- **Entry (1):** `nginx` (starts with the app phase; upstreams are KWeaver services).
 
-**Not included:** `agent-backend`, `agent-operator-integration`, `agent-retrieval`, `agent-observability`, `dataflow`, `flow-stream-data-pipeline`, `coderunner`, `dataflowtools`, `doc-convert-*`, `sandbox`, `oss-gateway-backend`, `otelcol-contrib`. Generated configs may still mention these hosts in comments or deps; calls routed to `nginx` for DNS will **502** unless you add those services.
+Notes:
+
+- `dataflow` chart contributes two Compose services (`dataflow` for flow-automation +
+  ecron-management; `flow-stream-data-pipeline` for the SDP container).
+- `doc-convert` is split into `doc-convert-gotenberg` + `doc-convert-tika`
+  (Tika joins gotenberg via `network_mode: service:doc-convert-gotenberg`).
+- `coderunner` chart contributes `coderunner` + `dataflowtools` (sidecar image).
+- `sandbox` runs control-plane only; the chart’s `sandbox-template-python-basic` image is
+  referenced through generated configs (env), not as a Compose service.
+- Some KWeaver services need MongoDB / SASL / IAM that are not provisioned by this Compose
+  stack; they will start but their dataflow paths can fail at runtime. Use this stack for
+  configuration smoke tests and core-line UI/API checks first.
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) and **Docker Compose v2** (`docker compose`). **v2.17+ recommended** (v2.20+ preferred).
-- **~10–12 GB RAM** typical for this subset (OpenSearch + Kafka + MariaDB).
-- **Image registry:** Default images use Huawei SWR under `swr.cn-east-3.myhuaweicloud.com/kweaver-ai/dip`. Keep `.env` as `IMAGE_REGISTRY=swr.cn-east-3.myhuaweicloud.com/kweaver-ai` and `DIP_NAMESPACE=dip`. If pull fails (`You may not login yet`, etc.), run `docker compose config --images`, confirm paths include `/dip/`, then `docker login swr.cn-east-3.myhuaweicloud.com` if your org requires it. **Public** images (MariaDB, Redis, Kafka, Zookeeper, Nginx, OpenSearch, MinIO) do not need SWR.
+- [Docker](https://docs.docker.com/get-docker/) and **Docker Compose v2** (`docker compose`).
+  v2.17+ recommended (v2.20+ preferred).
+- **~16 GB RAM** typical for the full set (OpenSearch + Kafka + MariaDB + 24 app containers).
+- **Image registry:** Default images use Huawei SWR under
+  `swr.cn-east-3.myhuaweicloud.com/kweaver-ai/dip`. Keep `.env` as
+  `IMAGE_REGISTRY=swr.cn-east-3.myhuaweicloud.com/kweaver-ai` and `DIP_NAMESPACE=dip`.
+  `agent-observability` is published at the registry root (no `dip/` segment) — that is
+  recorded in `compose-manifest.yaml` so generated `image:` paths stay correct.
+- **Python 3 + PyYAML** on the host (used by the manifest tool and template renderer).
 
 ## One-time setup
 
 ```bash
 cd deploy/docker-compose
-chmod +x ./setup.sh
-chmod +x ./compose.sh
+chmod +x ./setup.sh ./compose.sh
 ./setup.sh
 ```
 
 `setup.sh` will:
 
 1. Copy `.env.example` → `.env` (gitignored) if `.env` is missing.
-2. Resolve passwords for `MARIADB_ROOT_PASSWORD`, `MARIADB_PASSWORD`, `MINIO_ROOT_PASSWORD` (CLI > env > shared `-p` / `PASSWORD` > `.env` > prompt > error).
-3. Run `tools/render_compose_configs.py`: substitute `configs/kweaver/**/*.tmpl` → `configs/generated/...` (includes `cm-kw-yaml.env.tmpl` → `cm-kw-yaml.env` for `mf-model-*`).
+2. Resolve passwords for `MARIADB_ROOT_PASSWORD`, `MARIADB_PASSWORD`, `MINIO_ROOT_PASSWORD`
+   (CLI > env > shared `-p` / `PASSWORD` > `.env` > prompt > error).
+3. Default `SANDBOX_DATABASE_URL` from `MARIADB_*` when unset (sandbox uses `mariadb` + the
+   `sandbox` schema created by `configs/mariadb/init.sql`).
+4. Run `python3 tools/manifest.py check-compose` to ensure `docker-compose.yml` services
+   match `compose-manifest.yaml`.
+5. Backfill any missing `*_VERSION` (tagEnv) value in `.env` from `compose-manifest.yaml`
+   so version bumps in the manifest flow into `.env` automatically.
+6. Run `tools/render_compose_configs.py`: substitute `configs/kweaver/**/*.tmpl` →
+   `configs/generated/...` and merge per-service env files (`dataflow/flow-automation.env`,
+   `coderunner/coderunner.env`, `coderunner/dataflowtools.env`, `sandbox/sandbox.env`).
+7. Run `docker compose config` to validate the final stack.
 
 ### Password rule
 
-Use only `[A-Za-z0-9_-]` — values are written to `.env` and embedded in generated configs where required.
+Use only `[A-Za-z0-9_-]` — values are written to `.env` and embedded in generated configs
+where required.
 
-## Bringing the stack up (optional)
+### Secret templates
+
+`configs/kweaver/**/secret-*/*.tmpl` use `__KEY__` placeholders (e.g. `__MARIADB_PASSWORD__`,
+`__REDIS_PASSWORD__`, `__KAFKA_PASSWORD__`) that the renderer fills from `.env`. Chart
+fixtures like `xxxxxx` / `root` / `minioadmin` are intentionally **not** present in the
+templates; if they reappear after a re-extract, `tools/extract-helm-templates.py` knows how
+to map known secret keys back to placeholders (see `SECRET_KEY_TO_PLACEHOLDER`).
+
+## Bringing the stack up
 
 ```bash
 ./compose.sh infra up
 ./compose.sh app up
 ```
 
-`infra up` starts only public dependency images (MariaDB, Redis, Zookeeper, Kafka, OpenSearch, MinIO). `app up` then starts `kweaver-core-data-migrator`, the KWeaver services, and nginx. If an SWR application image pull fails, infra can remain running while you fix the image path or registry login.
-
-To pull application images before starting them:
-
-```bash
-./compose.sh app pull
-```
-
-To run both phases in one command:
+`infra up` starts public dependency images. `app up` then starts the migrator, all 24
+KWeaver services from the manifest, and `nginx`. If an SWR application image pull fails,
+infra can stay running while you fix the image path or registry login.
 
 ```bash
-./compose.sh all up
+./compose.sh app pull   # pre-pull application images
+./compose.sh all up     # infra + app
+./compose.sh all down   # stop everything
 ```
 
-Expect `kweaver-core-data-migrator` to **complete once**; application services start after it.
+`kweaver-core-data-migrator` completes once; the rest wait for it.
 
-### Vega only (like `deploy.sh` grouping)
+### Vega only (mirrors `deploy.sh` grouping)
 
-Start **infrastructure**, **migrator**, then **Vega** services only (`vega-backend`, `data-connection`, `vega-gateway`, `vega-gateway-pro`). This does **not** start `nginx`, bkn, mdl, or mf — compose’s `nginx` depends on the full app, so use `./compose.sh app up` or `./compose.sh all up` if you need `http://localhost:8080`.
+Start **infra**, **migrator**, then only the Vega services (`vega-backend`,
+`data-connection`, `vega-gateway`, `vega-gateway-pro`). This does **not** start `nginx` —
+compose `nginx.depends_on` covers the full app set; use `./compose.sh app up` or
+`./compose.sh all up` if you need `http://localhost:8080`.
 
 ```bash
 ./compose.sh vega up
 ```
 
-Direct container ports (same network from host requires published ports; by default these services are internal — use `docker compose exec` or add `ports:` in compose for local debugging):
-
-| Service          | Internal port (typ.) |
-|------------------|----------------------|
-| vega-gateway     | 8099                 |
-| vega-gateway-pro | 8097                 |
-| data-connection  | 8098                 |
-| vega-backend     | 13014                |
-
 Other actions: `./compose.sh vega pull|down|restart|status|logs`.
 
-**Stopping:**
+## Entry points
 
-```bash
-./compose.sh all down
-```
+| What                       | URL / port                                                              |
+|----------------------------|-------------------------------------------------------------------------|
+| APIs via nginx             | `http://<ACCESS_HOST>:<KWEAVER_HTTP_PORT>` (default `http://localhost:8080`) |
+| Health                     | `http://localhost:8080/healthz`                                         |
+| Sandbox control plane (HTTP) | `http://localhost:${SANDBOX_HTTP_PORT:-8001}` (the chart’s ingress is bypassed in Compose) |
+
+`nginx` proxies the standard prefixes (`/api/bkn-backend/`, `/api/agent-factory/`,
+`/api/automation/`, `/api/coderunner/`, `/api/oss-gateway/`,
+`/api/agent-observability/`, `/api/sandbox/`, etc.).
 
 ### Smoke checks (local)
 
 ```bash
-curl -sS http://localhost:8080/healthz    # expect: ok
-curl -sI http://localhost:8080/api/bkn-backend/v1/nonexistent  # routing to bkn-backend (401/404 acceptable)
+curl -sS http://localhost:8080/healthz                                   # ok
+curl -sI http://localhost:8080/api/bkn-backend/v1/nonexistent            # 401/404 = routed
 docker compose logs bkn-backend 2>&1 | head -50
 ```
-
-## Infra-only smoke (no KWeaver images)
-
-```bash
-./compose.sh infra up
-```
-
-(Optional: add `nginx` if you mount only `configs/nginx/default.conf` — run `./setup.sh` first if anything references `configs/generated/`.)
-
-## Entry points
-
-| What           | URL / port                                                                           |
-|----------------|--------------------------------------------------------------------------------------|
-| APIs via nginx | `http://<ACCESS_HOST>:<KWEAVER_HTTP_PORT>` — default `http://localhost:8080`         |
-| Health         | `http://localhost:8080/healthz`                                                      |
 
 ## Limitations vs Kubernetes / Helm
 
 - No ingress TLS, no multi-replica HA, no Helm hooks; migrator is a one-shot Compose service.
-- **Auth / IAM:** charts reference `authorization-private`, `hydra-admin`, etc. Extracted YAML may rewrite hosts to `nginx` so DNS resolves; without real IAM, those calls fail. `AUTH_ENABLED=false` is set where the compose file exposes it.
-- **Redis:** `mf-model-*` env uses a **standalone** Redis (`REDISCLUSTERMODE=false`, port `6379`), not Sentinel as in some charts.
+- **Auth / IAM:** charts reference `authorization-private`, `hydra-admin`, etc. Extracted
+  YAML may rewrite hosts to `nginx` so DNS resolves; without real IAM, those calls fail.
+  Wherever `AUTH_ENABLED` / `BUSINESS_DOMAIN_ENABLED` exist they are forced to `false`.
+- **MongoDB / SASL Kafka:** the dataflow chart expects MongoDB and SASL-authenticated Kafka.
+  Compose runs plaintext Kafka and no MongoDB; flow-automation may degrade or fail at
+  runtime in those code paths.
+- **Redis:** infra ships a single-node Redis; chart configs that ask for Sentinel are
+  rewritten via placeholders — review your service’s rendered config if Sentinel features
+  matter.
 
 ## Developer: refresh templates from Helm
 
 ```bash
-# Unpack charts to /tmp/kc-charts-unpacked (see tools/extract-helm-templates.py header)
+# 1. Unpack charts to /tmp/kc-charts-unpacked (one folder per <chart>-<version>).
+# 2. Re-extract — chart list comes from compose-manifest.yaml, so version bumps propagate.
 python3 deploy/docker-compose/tools/extract-helm-templates.py
 ```
 
-Then reconcile manual edits (especially `mf-model-*/cm-kw-yaml.env.tmpl` and `dm_svc.conf.tmpl` for Compose).
+After extraction, reconcile any manual Compose-only edits (e.g. `mf-model-*/cm-kw-yaml.env.tmpl`,
+`dm_svc.conf.tmpl`, the `__KEY__` placeholders mentioned above).
+
+### Manifest-driven helpers
+
+```bash
+python3 tools/manifest.py services --phase=app    # service list (used by compose.sh)
+python3 tools/manifest.py charts                  # <chart-folder>\t<out_sub> (used by extract)
+python3 tools/manifest.py env-defaults            # tagEnv defaults (used by setup.sh)
+python3 tools/manifest.py check-compose           # diff manifest vs docker-compose.yml
+```
 
 ## Remote lab (e.g. Ubuntu VM)
 
@@ -136,7 +182,7 @@ cd deploy/docker-compose
 sudo docker compose up -d   # if daemon requires sudo
 ```
 
-Verify `curl http://127.0.0.1:8080/healthz` and backend routing as above. (Automated SSH from CI/agents may be blocked by firewall.)
+Verify `curl http://127.0.0.1:8080/healthz` and backend routing as above.
 
 ---
 

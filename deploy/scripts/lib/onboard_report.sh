@@ -68,7 +68,9 @@ onboard_print_completion_report() {
         else
             echo "   • Toolbox: To import: run deploy/onboard.sh or kweaver call impex (see -h and CONTEXT_LOADER_TOOLSET_ADP_PATH)"
         fi
-        echo "   • Docs:    help/en/ or help/zh/  and  deploy/auto_cofig/README.md"
+        echo "   • Docs:    https://github.com/kweaver-ai/kweaver-core/blob/main/help/README.md"
+        echo "              https://github.com/kweaver-ai/kweaver-core/blob/main/help/en/README.md  (EN)"
+        echo "              https://github.com/kweaver-ai/kweaver-core/blob/main/help/zh/README.md  (中文)"
         echo "============================================"
         echo ""
     } 2>/dev/null || {

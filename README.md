@@ -39,12 +39,28 @@ Want to have an intuitive experience of the core functions of KWeaver DIP? Click
 ## 🚀 Quick Start
 
 1. **Prerequisites & planning** — read the [Deployment Guide](deploy/README.md) and satisfy its prerequisites.
-2. **Run installation scripts**:
+2. **Pre-install host check / fix with `preflight.sh`** (recommended)
+
+   On the **target install host**, run a system check before `deploy.sh`. It verifies kernel / sysctl / containerd / `kubectl` / `helm` / Node / `kweaver` CLIs and can fix what's missing (each fix is opt-in unless `-y`):
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
-chmod +x deploy.sh
+chmod +x preflight.sh deploy.sh onboard.sh
+
+sudo bash ./preflight.sh                # check-only (default)
+sudo bash ./preflight.sh --fix          # check + interactive fixes
+sudo bash ./preflight.sh --fix -y       # auto-approve every fix
+sudo bash ./preflight.sh --list-fixes   # preview which fixes would run, no changes
+sudo bash ./preflight.sh --help         # all flags (--role, --skip, --report, --output=json, …)
+```
+
+   Exit codes: **0** OK, **1** any FAIL, **2** only WARN. Use `--report=/tmp/preflight.txt` to keep a full log.
+
+3. **Run installation scripts**:
+
+```bash
+# (Same deploy/ directory as step 2)
 
 # Minimum installation — recommended for first-time experience
 ./deploy.sh kweaver-core install --minimum
@@ -64,7 +80,7 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
-3. **Verify the deployment**:
+4. **Verify the deployment**:
 
 ```bash
 # Check cluster status
@@ -75,7 +91,7 @@ kubectl get pods -A
 ./deploy.sh kweaver-core status
 ```
 
-4. **Post-install bootstrap with `onboard.sh`** (recommended)
+5. **Post-install bootstrap with `onboard.sh`** (recommended)
 
    On the **same host** as the install (where `kubectl` reaches the cluster), run the post-install bootstrap. It (re-runnable) registers an LLM + an embedding, patches the BKN ConfigMaps when the default embedding actually changes, and on a **full install** also creates the business user **`test`**, assigns every role from `kweaver-admin role list`, switches `kweaver` to that user, and imports the Context Loader toolset:
 
@@ -87,7 +103,7 @@ bash ./onboard.sh --help # all flags (--config=models.yaml, --enable-bkn-search,
 
    Re-runs are safe: existing models / BKN defaults are detected and skipped. For the full sequence, the Mermaid flow, and the `kweaver` / `kweaver-admin` two-CLI authentication notes (full ISF), see [help/en/install.md — Post-install: `onboard.sh`](help/en/install.md#post-install-onboardsh).
 
-5. **Verify API access**
+6. **Verify API access**
 
    KWeaver Core is backend-only and does not provide a web console. On the machine you use to reach the cluster (laptop, bastion, etc.), use the `kweaver` CLI from [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk): either `npm install -g @kweaver-ai/kweaver-sdk` or `npx kweaver` (no global install; see [KWeaver SDK](#toc-kweaver-sdk) below). Then run:
 
@@ -103,7 +119,7 @@ kweaver bkn list
 # npx kweaver bkn list
 ```
 
-6. **View help**:
+7. **View help**:
 
 ```bash
 kweaver --help                   # list all commands

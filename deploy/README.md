@@ -35,7 +35,14 @@ dnf install containerd.io
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
 
-# 2. Install KWeaver Core
+# 2. (Recommended) Pre-install host check / fix
+sudo bash ./preflight.sh                # check-only (default)
+sudo bash ./preflight.sh --fix          # check + interactive fixes
+sudo bash ./preflight.sh --fix -y       # auto-approve every fix
+sudo bash ./preflight.sh --list-fixes   # preview which fixes would run, no changes
+sudo bash ./preflight.sh --help         # all flags (--role, --skip, --report, --output=json, …)
+
+# 3. Install KWeaver Core
 # Minimum installation — recommended for first-time experience
 bash ./deploy.sh kweaver-core install --minimum
 # Equivalent to:
@@ -56,7 +63,18 @@ bash ./deploy.sh kweaver-core install \
 # (Optional) Customize ingress ports (default 80/443):
 export INGRESS_NGINX_HTTP_PORT=8080
 export INGRESS_NGINX_HTTPS_PORT=8443
+
+# 4. (Recommended) Post-install bootstrap
+#    Registers an LLM + embedding (skips when already there), patches the BKN ConfigMap
+#    only when the default actually changes, and on a full ISF install creates the business
+#    user `test`, assigns every role from `kweaver-admin role list`, switches `kweaver` to
+#    that user, and imports the Context Loader toolset.
+bash ./onboard.sh        # interactive
+bash ./onboard.sh -y     # non-interactive (uses defaults)
+bash ./onboard.sh --help # all flags (--config=models.yaml, --enable-bkn-search, --skip-context-loader, …)
 ```
+
+> Full preflight / onboard flow, ISF dual-CLI auth and Mermaid diagrams: see [help/en/install.md — Post-install: `onboard.sh`](../help/en/install.md#post-install-onboardsh).
 
 ## 📋 Prerequisites
 

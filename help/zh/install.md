@@ -84,6 +84,39 @@ chmod +x deploy.sh
 
 ---
 
+## 🩺 装机前体检 / 修复：`preflight.sh`
+
+在 `deploy.sh` 之前，建议先在**安装目标主机**上以 `root` / `sudo` 跑一次 **`deploy/preflight.sh`**：内核 / sysctl / containerd / `kubectl` / `helm` / Node / `kweaver` CLI 等一次过；缺什么按需修（每项默认 y/N 询问，`-y` 全自动）。
+
+```bash
+sudo bash deploy/preflight.sh                # 仅检查（默认；仍需 root）
+sudo bash deploy/preflight.sh --fix          # 检查 + 交互修复
+sudo bash deploy/preflight.sh --fix -y       # 全部自动确认修复
+sudo bash deploy/preflight.sh --list-fixes   # 预览将会执行哪些修复，不改任何东西
+sudo bash deploy/preflight.sh --help         # 全部参数
+```
+
+常用参数：
+
+| 参数 | 含义 |
+| --- | --- |
+| `--check-only` | 仅检查，不改系统（默认） |
+| `--fix` | 检查 + 应用修复（K8s / sysctl / containerd / Helm / 防火墙 / SELinux / 系统调优 / sysctl 等）；同时按需提示安装 Node 22+ + `kweaver` / `kweaver-admin` |
+| `-y` / `--yes` | **全部**修复项自动确认 |
+| `-n` / `--no` | 全部修复项自动拒绝（仅查看风险描述，不改东西） |
+| `--fix-allow=LIST` | 仅自动确认指定修复项（其余跳过），如 `containerd-install,helm-v3,nodejs-npm,kweaver-sdk` |
+| `--role=target\|admin\|both` | `target` = 仅 `kubectl`/`helm`；`admin` = `kweaver` / Node / npm；`both`（默认）= 全部 |
+| `--no-recheck` | 修复完不再重新跑一遍完整检查 |
+| `--skip=LIST` | 跳过指定检查项 |
+| `--report=PATH` | 完整日志追加到该文件 |
+| `--output=json` | 以 JSON 输出到 stdout（人类日志到 stderr，需 `python3`） |
+
+退出码：**0** 全 OK；**1** 有 FAIL；**2** 仅有 WARN（无 FAIL）。
+
+> 每台新主机在跑 `deploy.sh kweaver-core install` 前都建议跑一次 preflight；可重复执行——已经满足的项会按 `OK` 报告并跳过。
+
+---
+
 ## 🚀 安装 KWeaver Core
 
 ### ⚡ 最小化安装（首次体验推荐）

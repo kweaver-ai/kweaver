@@ -83,6 +83,39 @@ chmod +x deploy.sh
 
 ---
 
+## 🩺 Pre-install host check / fix: `preflight.sh`
+
+Before `deploy.sh`, run **`deploy/preflight.sh`** on the **target install host** (`root` / `sudo`). It checks kernel / sysctl / containerd / `kubectl` / `helm` / Node / `kweaver` CLIs and can apply the missing pieces (each fix is opt-in unless `-y`):
+
+```bash
+sudo bash deploy/preflight.sh                # check-only (default; still requires root)
+sudo bash deploy/preflight.sh --fix          # check + interactive fixes
+sudo bash deploy/preflight.sh --fix -y       # auto-approve every fix
+sudo bash deploy/preflight.sh --list-fixes   # preview which fixes would run, no changes
+sudo bash deploy/preflight.sh --help         # all flags
+```
+
+Common flags:
+
+| Flag | Meaning |
+| --- | --- |
+| `--check-only` | Only run checks, do not modify the system (default) |
+| `--fix` | Check + apply fixes (K8s / sysctl / containerd / Helm / firewall / SELinux / system tuning / sysctl …); also offers Node 22+ + `kweaver` / `kweaver-admin` |
+| `-y` / `--yes` | Auto-approve **every** fix prompt |
+| `-n` / `--no` | Auto-decline every fix (preview risk text only) |
+| `--fix-allow=LIST` | Comma-separated fix names to auto-approve, others are skipped (e.g. `containerd-install,helm-v3,nodejs-npm,kweaver-sdk`) |
+| `--role=target\|admin\|both` | `target` = `kubectl`/`helm` only, `admin` = `kweaver` / Node / npm, `both` (default) covers all |
+| `--no-recheck` | Do not re-run full checks after fixes |
+| `--skip=LIST` | Comma-separated check names to skip |
+| `--report=PATH` | Append the full log to this file |
+| `--output=json` | Emit JSON summary to stdout (human logs to stderr); requires `python3` |
+
+Exit codes: **0** all OK · **1** any FAIL present · **2** only WARN (no FAIL).
+
+> Run preflight **before** every `deploy.sh kweaver-core install` on a new host. Re-running it is safe — already-satisfied checks are reported as `OK` and skipped.
+
+---
+
 ## 🚀 Install KWeaver Core
 
 ### Minimum install (recommended for first try)

@@ -2,6 +2,8 @@
 
 This walkthrough assumes KWeaver Core is already [installed and deployed](install.md), including the post-install checks on that page.
 
+> Before installing on a new host, run **`sudo bash deploy/preflight.sh`** (check / `--fix`) to validate kernel, sysctl, containerd, kubectl, helm, Node and the `kweaver` CLIs. After `deploy.sh kweaver-core install`, run **`bash deploy/onboard.sh`** to register an LLM + embedding, patch the BKN ConfigMap (only when the default actually changes), and on a full install create the business user **`test`** + import the Context Loader toolset. Both are documented in [Install — Pre-install host check / fix: `preflight.sh`](install.md#-pre-install-host-check--fix-preflightsh) and [Install — Post-install: `onboard.sh`](install.md#post-install-onboardsh).
+
 > **Model configuration note**: **Register at least one LLM and one embedding (vector) small model** when possible: the LLM powers Agent chat and reasoning; the embedding model powers semantic search and vectorization. Semantic search (Step 4) and Agent chat (Step 5) depend on these; after registering an embedding, complete [Enable BKN semantic search](model.md#enable-bkn-semantic-search) in the cluster (ConfigMap / default small-model name). Other registration details are in [Model management](model.md). A `--minimum` install has no bundled models; see also [Install and deploy — Configure models](install.md#configure-models). Data source connection, knowledge network creation, and conditional queries work without models.
 
 ---

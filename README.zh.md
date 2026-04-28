@@ -39,12 +39,28 @@ KWeaver Core 是面向企业决策智能体的治理优先（harness-first）基
 ## 🚀 快速开始
 
 1. **前置与规划** — 阅读 [部署文档](deploy/README.zh.md) 并满足其中前置条件。
-2. **执行安装部署脚本**：
+2. **装机前自检 / 修复：`preflight.sh`**（推荐）
+
+   在**安装目标主机**上，安装前先做一次系统体检：内核 / sysctl / containerd / `kubectl` / `helm` / Node / `kweaver` CLI 等，缺什么可按需修（每项默认 y/N 询问，`-y` 全自动）：
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
-chmod +x deploy.sh
+chmod +x preflight.sh deploy.sh onboard.sh
+
+sudo bash ./preflight.sh                # 仅检查（默认）
+sudo bash ./preflight.sh --fix          # 检查 + 交互修复
+sudo bash ./preflight.sh --fix -y       # 全部自动确认修复
+sudo bash ./preflight.sh --list-fixes   # 预览将会执行哪些修复，不改任何东西
+sudo bash ./preflight.sh --help         # 全部参数（--role、--skip、--report、--output=json 等）
+```
+
+   退出码：**0** 全 OK；**1** 有 FAIL；**2** 仅有 WARN。`--report=/tmp/preflight.txt` 可保存完整日志。
+
+3. **执行安装部署脚本**：
+
+```bash
+# （仍在第 2 步的 deploy/ 目录下）
 
 # 最小化安装 — 首次体验推荐
 ./deploy.sh kweaver-core install --minimum
@@ -63,7 +79,7 @@ chmod +x deploy.sh
 ./deploy.sh --help
 ```
 
-3. **验证部署**：
+4. **验证部署**：
 
 ```bash
 # 检查集群状态
@@ -74,7 +90,7 @@ kubectl get pods -A
 ./deploy.sh kweaver-core status
 ```
 
-4. **安装后引导：`onboard.sh`**（推荐）
+5. **安装后引导：`onboard.sh`**（推荐）
 
    在**同一台机器**（kubectl 能访问集群）上执行安装后引导脚本：注册一个 LLM + 一个 embedding；只有当**默认 embedding 实际变更**时才会 patch BKN ConfigMap 并滚动重启 `bkn-backend` / `ontology-query`；在**完整安装**下还会创建业务用户 **`test`**、把 `kweaver-admin role list` 中的所有角色都挂上、切换 `kweaver` 到该用户身份，并导入 Context Loader 工具集：
 
@@ -86,7 +102,7 @@ bash ./onboard.sh --help # 所有参数（--config=models.yaml、--enable-bkn-se
 
    可重复运行：脚本会先探测平台已有的模型与 ConfigMap 状态，已注册 / 已配置的会自动跳过。完整流程图、ISF 全量下 `kweaver` 与 `kweaver-admin` 双 CLI 的鉴权说明见 [help/zh/install.md — Post-install：`onboard.sh`](help/zh/install.md#post-installonboardsh安装后引导)。
 
-5. **验证 API 访问**
+6. **验证 API 访问**
 
    KWeaver Core 为纯后台，无 Web 控制台。在**访问端**（本机、跳板机等）通过 [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk) 使用 `kweaver` CLI：可全局安装 `npm install -g @kweaver-ai/kweaver-sdk`，或直接用 `npx kweaver`（无需全局安装；详见下文 [KWeaver SDK](#toc-kweaver-sdk)）。再执行：
 
@@ -102,7 +118,7 @@ kweaver bkn list
 # npx kweaver bkn list
 ```
 
-6. **查看帮助**：
+7. **查看帮助**：
 
 ```bash
 kweaver --help                   # 列出所有命令

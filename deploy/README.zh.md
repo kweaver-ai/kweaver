@@ -35,7 +35,14 @@ dnf install containerd.io
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
 
-# 2. 安装 KWeaver Core
+# 2.（推荐）装机前体检 / 修复
+sudo bash ./preflight.sh                # 仅检查（默认）
+sudo bash ./preflight.sh --fix          # 检查 + 交互修复
+sudo bash ./preflight.sh --fix -y       # 全部自动确认修复
+sudo bash ./preflight.sh --list-fixes   # 预览将会执行哪些修复，不改任何东西
+sudo bash ./preflight.sh --help         # 全部参数（--role、--skip、--report、--output=json 等）
+
+# 3. 安装 KWeaver Core
 # 最小化安装 — 首次体验推荐
 bash ./deploy.sh kweaver-core install --minimum
 # 等价于:
@@ -56,7 +63,17 @@ bash ./deploy.sh kweaver-core install \
 # （可选）自定义 ingress 端口（默认 80/443）：
 export INGRESS_NGINX_HTTP_PORT=8080
 export INGRESS_NGINX_HTTPS_PORT=8443
+
+# 4.（推荐）安装后引导
+#    注册 LLM + embedding（已有则跳过）；只有当默认 embedding 实际变更时才会 patch BKN ConfigMap；
+#    在 ISF 全量下还会创建业务用户 `test`、把 `kweaver-admin role list` 中所有角色都挂上、
+#    切换 `kweaver` 到该用户身份，并导入 Context Loader 工具集。
+bash ./onboard.sh        # 交互模式
+bash ./onboard.sh -y     # 非交互模式（按默认）
+bash ./onboard.sh --help # 全部参数（--config=models.yaml、--enable-bkn-search、--skip-context-loader 等）
 ```
+
+> 完整的 preflight / onboard 流程、ISF 双 CLI 鉴权与 Mermaid 流程图见 [help/zh/install.md — Post-install：`onboard.sh`](../help/zh/install.md#post-installonboardsh安装后引导)。
 
 ## 📋 Prerequisites
 

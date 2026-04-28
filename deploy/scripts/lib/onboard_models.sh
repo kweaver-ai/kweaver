@@ -330,15 +330,25 @@ onboard_upsert_cm_embedded_yaml() {
 
     onboard_ensure_yaml_dep || return 1
 
-    local jtmp
+    # Belt-and-suspenders: confirm with THIS python3 that PyYAML imports, or
+    # that mikefarah-style yq is on PATH. (apt's `yq` on Ubuntu is the Python
+    # `python-yq` wrapper around jq — its filter syntax is jq, which is also
+    # accepted by our filter, so either is fine.)
+    if ! python3 -c 'import yaml' 2>/dev/null && ! command -v yq >/dev/null 2>&1; then
+        onboard_log_err "PyYAML still not importable by $(command -v python3) and 'yq' not on PATH after auto-install. python3 -c 'import yaml' must succeed (or install yq). Sometimes pip3 installs into a different python3 than the one on PATH; try: python3 -m pip install --user --break-system-packages pyyaml"
+        return 1
+    fi
+
+    local jtmp errtmp rc
     jtmp="$(mktemp)"
+    errtmp="$(mktemp)"
     kubectl get "cm/${cmname}" -n "${ns}" -o json > "${jtmp}" || {
-        rm -f "${jtmp}"
+        rm -f "${jtmp}" "${errtmp}"
         return 1
     }
 
     if ! OUT_JSON=$(
-        python3 - "${jtmp}" "${dname}" <<'PY'
+        python3 - "${jtmp}" "${dname}" 2> "${errtmp}" <<'PY'
 import json, subprocess, sys
 
 # Try yq first (no Python dep needed). Fall back to PyYAML. If neither is
@@ -439,11 +449,22 @@ if md:
 print(json.dumps(j))
 PY
     ); then
-        rm -f "${jtmp}"
+        rm -f "${jtmp}" "${errtmp}"
     else
-        local rc=$?
-        rm -f "${jtmp}"
-        onboard_log_err "Failed to build patched ConfigMap JSON for ${cmname} (yq or PyYAML required)"
+        rc=$?
+        local err_body=""
+        [[ -s "${errtmp}" ]] && err_body="$(cat "${errtmp}")"
+        rm -f "${jtmp}" "${errtmp}"
+        if [[ "${rc}" -eq 2 ]]; then
+            onboard_log_err "Failed to build patched ConfigMap JSON for ${cmname}: yq or PyYAML required"
+        else
+            onboard_log_err "Failed to build patched ConfigMap JSON for ${cmname} (python exit=${rc})"
+        fi
+        if [[ -n "${err_body}" ]]; then
+            while IFS= read -r _line; do
+                onboard_log_err "  ${_line}"
+            done <<< "${err_body}"
+        fi
         return "${rc}"
     fi
 

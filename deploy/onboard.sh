@@ -469,21 +469,13 @@ onboard_kweaver_admin_auth_login_for_url() {
         return 0
     fi
     echo ""
-    read -r -p "kweaver-admin: HTTP sign-in (same as kweaver: defaults ${_duser} / Enter for password if console unchanged) [Y/n] (Enter = Y): " _htt
-    if [[ -z "${_htt}" || ! "${_htt}" =~ ^[Nn] ]]; then
-        read -r -p "  Username [Enter = ${_duser}]: " _u
-        _u="${_u:-${_duser}}"
-        read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
-        echo
-        _p="${_p:-${_dpass}}"
-        onboard_log_info "kweaver-admin: HTTP sign-in…"
-        if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" -k; then
-            return 1
-        fi
-        return 0
-    fi
-    onboard_log_info "kweaver-admin: device / browser flow: kweaver-admin auth login \"${_kurl}\" -k"
-    if ! kweaver-admin auth login "${_kurl}" -k; then
+    read -r -p "  Username [Enter = ${_duser}]: " _u
+    _u="${_u:-${_duser}}"
+    read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
+    echo
+    _p="${_p:-${_dpass}}"
+    onboard_log_info "kweaver-admin: HTTP sign-in…"
+    if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" -k; then
         return 1
     fi
     return 0

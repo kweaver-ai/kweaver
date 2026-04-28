@@ -273,7 +273,8 @@ async def used_model_openai(request, user_id, language, func_module):
                 stop=request["stop"],
                 model_type=model_data["f_model_type"],
                 tools=request.get("tools", None),
-                tool_choice=request.get("tool_choice", None)
+                tool_choice=request.get("tool_choice", None),
+                model_series=model_series
             )
             if stream:
                 return EventSourceResponse(

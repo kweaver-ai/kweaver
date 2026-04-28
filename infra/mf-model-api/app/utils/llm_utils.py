@@ -1195,7 +1195,7 @@ class BaiduClient:
 class OtherClient:
     def __init__(self, api_url, api_model, api_key, model_id,
                  temperature, top_p, frequency_penalty, presence_penalty, max_tokens, top_k=1, response_format={},
-                 stop=None, model_type="llm", tools=None, tool_choice=None):
+                 stop=None, model_type="llm", tools=None, tool_choice=None, model_series=""):
         self.api_url = api_url
         self.api_model = api_model
         self.temperature = temperature
@@ -1211,6 +1211,7 @@ class OtherClient:
         self.model_type = model_type
         self.tools = tools
         self.tool_choice = tool_choice
+        self.model_series = model_series
 
     async def chat_completion(self, messages, user_id, func_module):
         retry_time = 3
@@ -1234,6 +1235,13 @@ class OtherClient:
                     "max_tokens": self.max_tokens,
                     "top_k": self.top_k
                 }
+                
+                # 阿里云通义千问思考模型关闭思考模式
+                disable_thinking = False
+                if self.model_series.lower() == "qwen" and self.model_type == "rlm":
+                    params["enable_thinking"] = False
+                    disable_thinking = True
+                
                 if self.response_format != {}:
                     params["response_format"] = self.response_format
                 if self.stop is not None:
@@ -1256,8 +1264,8 @@ class OtherClient:
                                 model_id=self.model_id, user_id=user_id, input_tokens=result["usage"]["prompt_tokens"],
                                 output_tokens=result["usage"]["completion_tokens"])
                             await add_llm_model_call_log(log_info)
-                            if self.model_type == "rlm" and not result["choices"][0]["message"].get("reasoning_content",
-                                                                                                    None):
+                            # 只有在非禁用思考模式时才处理reasoning_content
+                            if not disable_thinking and self.model_type == "rlm" and not result["choices"][0]["message"].get("reasoning_content", None):
                                 # 提取thinking标签
                                 pattern = r"<think>(.*?)</think>"
                                 match = re.search(pattern, result["choices"][0]["message"]["content"], re.DOTALL)
@@ -1349,6 +1357,13 @@ class OtherClient:
                     "top_k": self.top_k,
                     "stream_options": {"include_usage": True}
                 }
+                
+                # 阿里云通义千问思考模型关闭思考模式
+                disable_thinking = False
+                if self.model_series.lower() == "qwen" and self.model_type == "rlm":
+                    params["enable_thinking"] = False
+                    disable_thinking = True
+                
                 if self.response_format != {}:
                     params["response_format"] = self.response_format
                 if self.stop is not None:
@@ -1399,7 +1414,8 @@ class OtherClient:
                             if len(chunk) >= 6 and chunk[0:6] != "data: ":
                                 continue
                             if chunk != "data: [DONE]" and chunk != "":
-                                if self.model_type == "rlm":
+                                # 当关闭思考模式时，按照普通模型处理
+                                if self.model_type == "rlm" and not disable_thinking:
                                     if chunk[0:6] == "data: ":
                                         chunk = chunk[6:]
                                     try:

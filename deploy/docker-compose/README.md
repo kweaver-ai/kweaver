@@ -103,6 +103,30 @@ Set `ACCESS_HOST`, `KWEAVER_HTTP_PORT`, and `SANDBOX_HTTP_PORT` in `.env` to avo
 - **Nginx** as a single HTTP entry, proxying path prefixes to backend container ports (derived from Helm defaults in this repo where available).
 - **Optional:** `otelcol-contrib` and observability sidecars as in the manifests; OpenTelemetry collector routes are not fully wired in this minimal compose.
 
+## Rotating credentials after first start
+
+`MARIADB_ROOT_PASSWORD`, `MARIADB_PASSWORD`, and `MINIO_ROOT_PASSWORD` are
+**only consumed when the corresponding data volume is empty** (i.e. the
+**first** `docker compose up`). After that, the password is stored inside the
+container's volume (MariaDB's `mysql.user` table, MinIO's IAM store, etc.) and
+the env var is just what every client uses to log in.
+
+Editing `.env` later and restarting **will not** change the password the
+service has on disk — but it **will** change what KWeaver clients try to
+present, which leads to `Access denied` errors.
+
+To rotate safely, pick one:
+
+- **Wipe and re-init (DESTROYS data)**:
+  ```bash
+  docker compose down -v          # removes mariadb_data / minio_data / ...
+  ./setup.sh -p NEW_PASSWORD -y
+  docker compose up -d
+  ```
+- **Change in place**: `ALTER USER 'adp'@'%' IDENTIFIED BY 'NEW';
+  FLUSH PRIVILEGES;` inside the mariadb container (and `mc admin user …` for
+  MinIO), then sync `.env` and re-run `./setup.sh -y`.
+
 ## Limitations vs Kubernetes / Helm
 
 - No ingress TLS, no multi-replica HA, no Helm hooks — only what Compose can express.

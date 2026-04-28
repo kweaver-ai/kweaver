@@ -251,6 +251,74 @@ onboard_test_small() {
     fi
 }
 
+# Make sure the embedded ConfigMap-patch python script can run: it needs either
+# yq (mikefarah) on PATH, or PyYAML importable. On Ubuntu 24.04 / RHEL 9 /
+# openEuler 23 hosts neither is present out of the box. Try the cheapest
+# install paths in order:
+#   1) pip3 --user (no sudo required)
+#   2) sudo apt-get install python3-yaml
+#   3) sudo dnf/yum install python3-pyyaml
+# If everything fails, return non-zero and let the caller print copy-paste
+# install commands. Idempotent — short-circuits when the deps are already there.
+onboard_ensure_yaml_dep() {
+    if command -v yq >/dev/null 2>&1; then
+        return 0
+    fi
+    if command -v python3 >/dev/null 2>&1 && python3 -c 'import yaml' 2>/dev/null; then
+        return 0
+    fi
+
+    onboard_log_warn "Neither 'yq' nor PyYAML found — the BKN ConfigMap patch needs one of them. Trying to install PyYAML automatically..."
+
+    if command -v pip3 >/dev/null 2>&1; then
+        if pip3 install --user --break-system-packages pyyaml >/dev/null 2>&1 \
+            || pip3 install --user pyyaml >/dev/null 2>&1; then
+            if python3 -c 'import yaml' 2>/dev/null; then
+                onboard_log_info "Installed PyYAML via pip3 --user"
+                return 0
+            fi
+        fi
+    fi
+
+    if command -v sudo >/dev/null 2>&1; then
+        if command -v apt-get >/dev/null 2>&1; then
+            onboard_log_info "Trying: sudo apt-get install -y python3-yaml (may prompt for sudo password)"
+            if sudo -n apt-get install -y python3-yaml >/dev/null 2>&1 \
+                || sudo apt-get install -y python3-yaml; then
+                python3 -c 'import yaml' 2>/dev/null && {
+                    onboard_log_info "Installed python3-yaml via apt"
+                    return 0
+                }
+            fi
+        elif command -v dnf >/dev/null 2>&1; then
+            onboard_log_info "Trying: sudo dnf install -y python3-pyyaml"
+            if sudo -n dnf install -y python3-pyyaml >/dev/null 2>&1 \
+                || sudo dnf install -y python3-pyyaml; then
+                python3 -c 'import yaml' 2>/dev/null && {
+                    onboard_log_info "Installed python3-pyyaml via dnf"
+                    return 0
+                }
+            fi
+        elif command -v yum >/dev/null 2>&1; then
+            onboard_log_info "Trying: sudo yum install -y python3-pyyaml"
+            if sudo -n yum install -y python3-pyyaml >/dev/null 2>&1 \
+                || sudo yum install -y python3-pyyaml; then
+                python3 -c 'import yaml' 2>/dev/null && {
+                    onboard_log_info "Installed python3-pyyaml via yum"
+                    return 0
+                }
+            fi
+        fi
+    fi
+
+    onboard_log_err "Could not auto-install PyYAML or yq. Install one manually and re-run onboard:"
+    onboard_log_err "  sudo apt-get install -y python3-yaml                       # Debian/Ubuntu"
+    onboard_log_err "  sudo dnf install -y python3-pyyaml                         # Fedora/RHEL/openEuler"
+    onboard_log_err "  pip3 install --user --break-system-packages pyyaml         # any host with pip3"
+    onboard_log_err "  sudo curl -fsSL -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq"
+    return 1
+}
+
 # Apply embedded YAML in ConfigMap (bkn-backend-cm, ontology-query-cm); see helm *-config.yaml keys
 onboard_upsert_cm_embedded_yaml() {
     local ns="$1" cmname="$2" dname="$3" # ymlkey optional 4th not needed — auto-detect
@@ -259,6 +327,8 @@ onboard_upsert_cm_embedded_yaml() {
         onboard_log_err "ConfigMap ${cmname} not found in ${ns}"
         return 1
     fi
+
+    onboard_ensure_yaml_dep || return 1
 
     local jtmp
     jtmp="$(mktemp)"
@@ -271,11 +341,13 @@ onboard_upsert_cm_embedded_yaml() {
         python3 - "${jtmp}" "${dname}" <<'PY'
 import json, subprocess, sys
 
+# Try yq first (no Python dep needed). Fall back to PyYAML. If neither is
+# available, exit with an actionable error that lists install commands.
 try:
     import yaml
+    HAVE_YAML = True
 except ImportError:
-    print("python3: pip3 install pyyaml (or install yq for yaml transforms)", file=sys.stderr)
-    sys.exit(2)
+    HAVE_YAML = False
 
 
 def yq_subprocess_ok():
@@ -289,6 +361,20 @@ def yq_subprocess_ok():
         return r.returncode == 0
     except Exception:
         return False
+
+
+HAVE_YQ = yq_subprocess_ok()
+if not HAVE_YAML and not HAVE_YQ:
+    print(
+        "Neither 'yq' nor PyYAML is available. Install one and re-run onboard:\n"
+        "  sudo apt-get install -y python3-yaml                       # Debian/Ubuntu\n"
+        "  sudo dnf install -y python3-pyyaml                         # Fedora/RHEL/openEuler\n"
+        "  pip3 install --user --break-system-packages pyyaml         # any host with pip3\n"
+        "  sudo curl -fsSL -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \\\n"
+        "    && sudo chmod +x /usr/local/bin/yq                       # mikefarah yq",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 
 path, dname = sys.argv[1], sys.argv[2]
@@ -318,7 +404,7 @@ if not str(raw).strip():
     print("empty yaml in key", usekey, file=sys.stderr)
     sys.exit(1)
 
-if yq_subprocess_ok():
+if HAVE_YQ:
     p = subprocess.run(
         [
             "yq",

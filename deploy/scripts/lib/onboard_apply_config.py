@@ -16,7 +16,13 @@ from typing import Any, Optional
 try:
     import yaml
 except ImportError as e:
-    print("pip3 install pyyaml", file=sys.stderr)
+    print(
+        "PyYAML is required for non-interactive onboard config. Install one of:\n"
+        "  sudo apt-get install -y python3-yaml                       # Debian/Ubuntu\n"
+        "  sudo dnf install -y python3-pyyaml                         # Fedora/RHEL/openEuler\n"
+        "  pip3 install --user --break-system-packages pyyaml         # any host with pip3",
+        file=sys.stderr,
+    )
     raise e
 
 

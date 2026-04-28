@@ -347,147 +347,17 @@ onboard_upsert_cm_embedded_yaml() {
         return 1
     }
 
-    if ! OUT_JSON=$(
-        python3 - "${jtmp}" "${dname}" 2> "${errtmp}" <<'PY'
-import json, subprocess, sys, traceback
+    # Resolve the helper next to this library file (BASH_SOURCE = onboard_models.sh)
+    local _lib_dir _patcher
+    _lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    _patcher="${_lib_dir}/onboard_patch_bkn_cm.py"
+    if [[ ! -f "${_patcher}" ]]; then
+        onboard_log_err "missing helper ${_patcher}"
+        rm -f "${jtmp}" "${errtmp}"
+        return 1
+    fi
 
-try:
-    import yaml
-    HAVE_YAML = True
-    YAML_VER = getattr(yaml, "__version__", "?")
-except Exception as e:
-    HAVE_YAML = False
-    YAML_VER = "missing (%s)" % e
-
-
-def yq_subprocess_ok():
-    try:
-        r = subprocess.run(
-            ["yq", "--version"],
-            capture_output=True,
-            check=True,
-            timeout=4,
-        )
-        return r.returncode == 0
-    except Exception:
-        return False
-
-
-HAVE_YQ = yq_subprocess_ok()
-print(
-    "[onboard-cm-debug] python=%s pyyaml=%s yq=%s argv=%r"
-    % (sys.executable, YAML_VER, HAVE_YQ, sys.argv[1:]),
-    file=sys.stderr,
-)
-try:
-    pass
-except Exception:
-    pass
-if not HAVE_YAML and not HAVE_YQ:
-    print(
-        "Neither 'yq' nor PyYAML is available. Install one and re-run onboard:\n"
-        "  sudo apt-get install -y python3-yaml                       # Debian/Ubuntu\n"
-        "  sudo dnf install -y python3-pyyaml                         # Fedora/RHEL/openEuler\n"
-        "  pip3 install --user --break-system-packages pyyaml         # any host with pip3\n"
-        "  sudo curl -fsSL -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \\\n"
-        "    && sudo chmod +x /usr/local/bin/yq                       # mikefarah yq",
-        file=sys.stderr,
-    )
-    sys.exit(2)
-
-
-try:
-    path, dname = sys.argv[1], sys.argv[2]
-    with open(path) as f:
-        j = json.load(f)
-    data = j.get("data") or {}
-    if not data:
-        print("ConfigMap has empty data", file=sys.stderr)
-        sys.exit(1)
-
-    # choose *-config.yaml
-    usekey = None
-    for k in data:
-        if k.endswith("-config.yaml"):
-            usekey = k
-            break
-    if not usekey:
-        for k in data:
-            if k.endswith(".yaml"):
-                usekey = k
-                break
-    if not usekey:
-        usekey = list(data.keys())[0]
-    print("[onboard-cm-debug] using key=%s" % usekey, file=sys.stderr)
-
-    raw = data.get(usekey) or ""
-    if not str(raw).strip():
-        print("empty yaml in key", usekey, file=sys.stderr)
-        sys.exit(1)
-
-    newyml = None
-    if HAVE_YQ:
-        # Detect mikefarah/yq vs python-yq (kislyuk). mikefarah supports
-        # `.foo = "bar"`; python-yq is jq-based and accepts the same filter.
-        # If yq fails for ANY reason, fall through to PyYAML when available.
-        try:
-            p = subprocess.run(
-                [
-                    "yq",
-                    ".server.defaultSmallModelEnabled = true | "
-                    ".server.defaultSmallModelName = \"%s\"" % dname,
-                ],
-                input=raw.encode("utf-8", errors="replace"),
-                capture_output=True,
-            )
-            if p.returncode == 0 and p.stdout.strip():
-                newyml = p.stdout.decode("utf-8", errors="replace")
-            else:
-                print(
-                    "[onboard-cm-debug] yq filter failed rc=%d stderr=%s"
-                    % (p.returncode, p.stderr.decode(errors="replace").strip()),
-                    file=sys.stderr,
-                )
-        except Exception as e:
-            print("[onboard-cm-debug] yq invocation raised: %r" % e, file=sys.stderr)
-
-    if newyml is None:
-        if not HAVE_YAML:
-            print(
-                "yq path failed and PyYAML not available — install python3-yaml or mikefarah yq.",
-                file=sys.stderr,
-            )
-            sys.exit(2)
-        c = yaml.safe_load(raw) or {}
-        c.setdefault("server", {})
-        c["server"]["defaultSmallModelEnabled"] = True
-        c["server"]["defaultSmallModelName"] = dname
-        newyml = yaml.dump(
-            c, default_flow_style=False, allow_unicode=True, sort_keys=False
-        )
-
-    j["data"][usekey] = newyml
-    j.pop("status", None)
-    md = j.get("metadata", {})
-    if md:
-        for k in list(md.keys()):
-            if k in (
-                "uid", "resourceVersion", "selfLink", "managedFields",
-                "creationTimestamp", "generation", "deletionTimestamp",
-            ):
-                try:
-                    del md[k]
-                except KeyError:
-                    pass
-    print(json.dumps(j))
-except SystemExit:
-    raise
-except Exception:
-    print("[onboard-cm-debug] unhandled exception:", file=sys.stderr)
-    traceback.print_exc()
-    sys.exit(1)
-PY
-    ); then
+    if ! OUT_JSON=$(python3 "${_patcher}" "${jtmp}" "${dname}" 2> "${errtmp}"); then
         rm -f "${jtmp}" "${errtmp}"
     else
         rc=$?

@@ -746,7 +746,16 @@ fi
 # Interactive (bash path for registration; BKN uses upsert in models.sh)
 if [[ "${INTERACTIVE}" == "true" ]]; then
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
-        onboard_log_info "Skipping interactive model registration (-y). For non-interactive registration, use --config=models.yaml (see -h) or --enable-bkn-search."
+        _y_llm_count="$(onboard_get_existing_llm_names | grep -c . || true)"
+        _y_sm_count="$(onboard_get_existing_small_model_names | grep -c . || true)"
+        _y_bkn_default="$(onboard_bkn_cm_current_default_name "${NAMESPACE}" 2>/dev/null || true)"
+        if [[ -n "${_y_bkn_default}" ]]; then
+            ONBOARD_REPORT_BKN_CM="skipped — already patched (defaultSmallModelName=${_y_bkn_default})"
+        else
+            ONBOARD_REPORT_BKN_CM="skipped (-y; not applied without explicit --config)"
+        fi
+        ONBOARD_REPORT_MODELS="skipped (-y); on platform: ${_y_llm_count} LLM, ${_y_sm_count} small/embedding"
+        onboard_log_info "Skipping interactive model registration (-y). On platform: ${_y_llm_count} LLM, ${_y_sm_count} small/embedding. For non-interactive registration, use --config=models.yaml (see -h) or --enable-bkn-search."
         ONBOARD_REPORT_MAIN_MODE="interactive"
         onboard_log_info "Done."
         onboard_print_completion_report
@@ -763,35 +772,76 @@ if [[ "${INTERACTIVE}" == "true" ]]; then
         exit 1
     fi
 
-    llm_n=""
-    read -r -p "LLM model_name: " llm_n
-    if [[ -n "${llm_n}" ]]; then
-        read -r -p "LLM model_series (e.g. deepseek) [others]: " llm_s
-        read -r -p "max_model_len [8192]: " llm_ml
-        read -r -p "api_key: " -s llm_key
-        echo
-        read -r -p "api_model: " llm_am
-        read -r -p "api_url: " llm_url
-        _POSTI_EXISTING_LLM="$(onboard_get_existing_llm_names)"
-        _POSTI_EXISTING_SM="$(onboard_get_existing_small_model_names)"
-        onboard_ensure_llm "${llm_n}" "${llm_s:-others}" "${llm_ml:-8192}" "${llm_key}" "${llm_am}" "${llm_url}" "llm"
-    fi
     _POSTI_EXISTING_LLM="$(onboard_get_existing_llm_names)"
     _POSTI_EXISTING_SM="$(onboard_get_existing_small_model_names)"
+    _existing_llm_count="$(printf '%s\n' "${_POSTI_EXISTING_LLM}" | grep -c . || true)"
+    _existing_sm_count="$(printf '%s\n' "${_POSTI_EXISTING_SM}" | grep -c . || true)"
+    _bkn_current_default="$(onboard_bkn_cm_current_default_name "${NAMESPACE}" 2>/dev/null || true)"
 
+    # LLM section: ask whether to add another if any already exist; otherwise prompt directly.
+    llm_n=""
+    _add_llm="true"
+    if [[ "${_existing_llm_count}" -gt 0 ]]; then
+        onboard_log_info "LLM already registered on this platform: ${_existing_llm_count}."
+        read -r -p "Register another LLM now? [y/N]: " _add_llm_ans
+        if [[ ! "${_add_llm_ans}" =~ ^[Yy] ]]; then
+            _add_llm="false"
+        fi
+    fi
+    if [[ "${_add_llm}" == "true" ]]; then
+        read -r -p "LLM model_name (Enter to skip): " llm_n
+        if [[ -n "${llm_n}" ]]; then
+            read -r -p "LLM model_series (e.g. deepseek) [others]: " llm_s
+            read -r -p "max_model_len [8192]: " llm_ml
+            read -r -p "api_key: " -s llm_key
+            echo
+            read -r -p "api_model: " llm_am
+            read -r -p "api_url: " llm_url
+            onboard_ensure_llm "${llm_n}" "${llm_s:-others}" "${llm_ml:-8192}" "${llm_key}" "${llm_am}" "${llm_url}" "llm"
+        fi
+        _POSTI_EXISTING_LLM="$(onboard_get_existing_llm_names)"
+        _POSTI_EXISTING_SM="$(onboard_get_existing_small_model_names)"
+    fi
+
+    # Embedding / small-model section: same pattern. If a new one is added, ask whether to set as BKN default.
     em_n=""
     bkn_default_name=""
-    read -r -p "Embedding model_name: " em_n
-    if [[ -n "${em_n}" ]]; then
-        read -r -p "api_key: " -s em_key
-        echo
-        read -r -p "api_model: " em_am
-        read -r -p "api_url: " em_url
-        read -r -p "embedding_dim [1024]: " em_dim
-        read -r -p "Set as BKN default? [Y/n]: " em_bkn
-        onboard_ensure_small_model "${em_n}" "embedding" "${em_key}" "${em_url}" "${em_am}" 32 512 "${em_dim:-1024}"
-        if [[ ! "${em_bkn}" =~ ^[Nn] ]]; then
-            bkn_default_name="${em_n}"
+    _new_em_set_default="false"
+    _add_em="true"
+    if [[ "${_existing_sm_count}" -gt 0 ]]; then
+        if [[ -n "${_bkn_current_default}" ]]; then
+            onboard_log_info "Embedding / small models already registered: ${_existing_sm_count}. BKN default is currently [${_bkn_current_default}] (defaultSmallModelEnabled=true)."
+        else
+            onboard_log_info "Embedding / small models already registered: ${_existing_sm_count}. BKN default is not set yet."
+        fi
+        read -r -p "Register another embedding / small model now? [y/N]: " _add_em_ans
+        if [[ ! "${_add_em_ans}" =~ ^[Yy] ]]; then
+            _add_em="false"
+        fi
+    fi
+    if [[ "${_add_em}" == "true" ]]; then
+        read -r -p "Embedding model_name (Enter to skip): " em_n
+        if [[ -n "${em_n}" ]]; then
+            read -r -p "api_key: " -s em_key
+            echo
+            read -r -p "api_model: " em_am
+            read -r -p "api_url: " em_url
+            read -r -p "embedding_dim [1024]: " em_dim
+            if [[ -n "${_bkn_current_default}" ]]; then
+                read -r -p "BKN default is currently [${_bkn_current_default}]. Set [${em_n}] as the new BKN default (will patch ConfigMaps and restart bkn-backend / ontology-query)? [y/N]: " em_bkn
+                if [[ "${em_bkn}" =~ ^[Yy] ]]; then
+                    _new_em_set_default="true"
+                fi
+            else
+                read -r -p "Set [${em_n}] as the BKN default (no default is set yet)? [Y/n]: " em_bkn
+                if [[ ! "${em_bkn}" =~ ^[Nn] ]]; then
+                    _new_em_set_default="true"
+                fi
+            fi
+            onboard_ensure_small_model "${em_n}" "embedding" "${em_key}" "${em_url}" "${em_am}" 32 512 "${em_dim:-1024}"
+            if [[ "${_new_em_set_default}" == "true" ]]; then
+                bkn_default_name="${em_n}"
+            fi
         fi
     fi
     if [[ -n "${llm_n:-}" ]]; then
@@ -800,15 +850,52 @@ if [[ "${INTERACTIVE}" == "true" ]]; then
     if [[ -n "${em_n:-}" ]]; then
         onboard_test_small "$(onboard_get_id_for_small "${em_n}")"
     fi
+
+    _models_status_parts=()
+    if [[ -n "${llm_n:-}" ]]; then
+        _models_status_parts+=("registered LLM ${llm_n}")
+    elif [[ "${_existing_llm_count}" -gt 0 ]]; then
+        _models_status_parts+=("LLM unchanged (${_existing_llm_count} on platform)")
+    else
+        _models_status_parts+=("no LLM entered")
+    fi
+    if [[ -n "${em_n:-}" ]]; then
+        if [[ "${_new_em_set_default}" == "true" ]]; then
+            _models_status_parts+=("registered embedding ${em_n} (set as new BKN default)")
+        else
+            _models_status_parts+=("registered embedding ${em_n}")
+        fi
+    elif [[ "${_existing_sm_count}" -gt 0 ]]; then
+        _models_status_parts+=("embedding/small unchanged (${_existing_sm_count} on platform)")
+    else
+        _models_status_parts+=("no embedding entered")
+    fi
+    ONBOARD_REPORT_MODELS=""
+    for _p in "${_models_status_parts[@]}"; do
+        if [[ -z "${ONBOARD_REPORT_MODELS}" ]]; then
+            ONBOARD_REPORT_MODELS="${_p}"
+        else
+            ONBOARD_REPORT_MODELS="${ONBOARD_REPORT_MODELS}; ${_p}"
+        fi
+    done
+
     if [[ "${SKIP_BKN}" == "true" ]]; then
         onboard_log_info "Done (skip BKN not used in interactive; omit model to skip BKN patch)."
+        ONBOARD_REPORT_BKN_CM="skipped (--skip-bkn)"
     elif [[ -n "${bkn_default_name}" ]]; then
-        read -r -p "Patch BKN ConfigMaps and restart bkn-backend / ontology-query? [Y/n]: " do_b
-        if [[ ! "${do_b}" =~ ^[Nn] ]]; then
-            onboard_do_bkn_bash "${bkn_default_name}" || exit 1
+        # User explicitly chose a (new) default — patch and restart, even if CMs were already patched (the name changed).
+        onboard_do_bkn_bash "${bkn_default_name}" || exit 1
+        if [[ -n "${_bkn_current_default}" && "${_bkn_current_default}" != "${bkn_default_name}" ]]; then
+            ONBOARD_REPORT_BKN_CM="re-patched (defaultSmallModelName ${_bkn_current_default} -> ${bkn_default_name}); bkn-backend & ontology-query restarted"
+        else
+            ONBOARD_REPORT_BKN_CM="patched (defaultSmallModelName=${bkn_default_name}); bkn-backend & ontology-query restarted"
         fi
+    elif [[ -n "${_bkn_current_default}" ]]; then
+        onboard_log_info "BKN ConfigMaps unchanged — already patched (defaultSmallModelName=${_bkn_current_default}). No restart needed."
+        ONBOARD_REPORT_BKN_CM="unchanged — already patched (defaultSmallModelName=${_bkn_current_default})"
     else
-        onboard_log_info "No BKN default embedding; skipped ConfigMap."
+        onboard_log_info "No BKN default embedding selected; ConfigMap not patched."
+        ONBOARD_REPORT_BKN_CM="skipped (no default embedding selected)"
     fi
     ONBOARD_REPORT_MAIN_MODE="interactive"
     onboard_log_info "Done."

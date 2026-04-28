@@ -7,6 +7,8 @@
 #   ONBOARD_REPORT_MAIN_MODE   interactive | bkn-only | config-yaml
 #   ONBOARD_REPORT_ISF_TEST_USER  human-readable status
 #   ONBOARD_REPORT_CONTEXT_LOADER  human-readable status
+#   ONBOARD_REPORT_MODELS         human-readable status (e.g. "skipped — N LLM, M small/embedding already registered")
+#   ONBOARD_REPORT_BKN_CM         human-readable status (e.g. "skipped — already patched (defaultSmallModelName=…)")
 
 onboard_print_completion_report() {
     if [[ "${ONBOARD_NO_COMPLETION_REPORT:-}" == "1" || "${ONBOARD_NO_COMPLETION_REPORT:-}" == "true" ]]; then
@@ -59,6 +61,8 @@ onboard_print_completion_report() {
         echo "${_line}"
         echo "  Install type   ${_isf}"
         echo "  User [test]    ${_isfu:-(not run or not recorded)}"
+        echo "  Models         ${ONBOARD_REPORT_MODELS:-(not run or not recorded)}"
+        echo "  BKN ConfigMap  ${ONBOARD_REPORT_BKN_CM:-(not run or not recorded)}"
         echo "  Context Loader ${_ctx:-(not run or not recorded)}"
         echo "${_line}"
         case "${_isfu}" in

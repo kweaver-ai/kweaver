@@ -187,11 +187,18 @@ flowchart TB
   boot --> mode{Mode}
   mode -->|"--enable-bkn-search"| p1[onboard_probe] --> bkn["BKN / ontology ConfigMap patch + rollout"] --> r1[Completion report] --> e1([exit 0])
   mode -->|"--config=…"| p2[onboard_probe] --> py["exec onboard_apply_config.py"] --> e2([exit])
-  mode -->|default: interactive; optional -y| p3[onboard_probe] --> ui["Namespace + LLM + embedding + optional BKN patch"] --> r2[Completion report] --> e3([exit 0])
+  mode -->|default: interactive; optional -y| p3[onboard_probe] --> ui["Namespace + LLM/embedding (skip-if-already-exists) + BKN patch (only when default actually changes)"] --> r2[Completion report] --> e3([exit 0])
 ```
 
 - **`onboard_probe` runs in all three modes** before BKN-only, YAML, or interactive model registration. On **ISF**, it includes **`kweaver-admin` HTTP auth (defaults like kweaver)**, **user `test`**, **`kweaver` relogin as `test`**, then **Context Loader** when applicable.
-- **`-y`** does not set `--config`; it mainly auto-accepts **Node / npm -g** bootstrap and **ISF** `kweaver` / `kweaver-admin` **HTTP** auth defaults where applicable.
+- **`-y`** does not set `--config`; it mainly auto-accepts **Node / npm -g** bootstrap and **ISF** `kweaver` / `kweaver-admin` **HTTP** auth defaults where applicable. Under `-y` the interactive model section is skipped (use `--config=models.yaml` to register non-interactively); the completion report still shows what is already on the platform.
+- **Re-runs are safe.** Interactive model registration **detects what is already there** and only asks to add more:
+  - **LLM** — if any LLM is already registered, the script asks `Register another LLM now? [y/N]` (default **No**).
+  - **Embedding / small model** — same pattern. If you do register a new embedding, the script then asks whether to make it the **BKN default**:
+    - if a default already exists, the prompt is `Set [<new>] as the new BKN default…? [y/N]` (default **No**, since one is set).
+    - if no default is set yet, the prompt is `Set [<new>] as the BKN default…? [Y/n]` (default **Yes**).
+  - The **BKN ConfigMap patch + `bkn-backend` / `ontology-query` rollout restart** runs **only when you actually change the default**. If you keep the existing default, the ConfigMap is left alone and nothing is restarted.
+  - YAML mode (`--config=models.yaml`) follows the same idea: per-model registration is skipped when the model already exists, and the BKN patch+restart is skipped when both ConfigMaps already declare the same `defaultSmallModelEnabled=true` / `defaultSmallModelName`.
 
 **2) What `onboard_probe` does (linear order; non-ISF steps are no-ops or skip quickly)**
 

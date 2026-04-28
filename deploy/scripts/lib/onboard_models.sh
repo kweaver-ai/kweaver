@@ -39,6 +39,66 @@ onboard_get_existing_small_model_names() {
     kweaver call "/api/mf-model-manager/v1/small-model/list?page=1&size=500" 2>/dev/null | onboard_list_model_names
 }
 
+# Read .server.defaultSmallModelName from a *-config.yaml inside the ConfigMap. Empty when not set.
+onboard_bkn_cm_default_small_model_name() {
+    local ns="$1" cmname="$2"
+    if ! kubectl get "cm/${cmname}" -n "${ns}" &>/dev/null; then
+        return 0
+    fi
+    local jtmp
+    jtmp="$(mktemp)"
+    if ! kubectl get "cm/${cmname}" -n "${ns}" -o json > "${jtmp}" 2>/dev/null; then
+        rm -f "${jtmp}"
+        return 0
+    fi
+    python3 - "${jtmp}" <<'PY' 2>/dev/null || true
+import json, sys
+try:
+    import yaml
+except ImportError:
+    sys.exit(0)
+with open(sys.argv[1]) as f:
+    j = json.load(f)
+data = j.get("data") or {}
+key = next((k for k in data if k.endswith("-config.yaml")), None) \
+    or next((k for k in data if k.endswith(".yaml")), None) \
+    or (next(iter(data), None) if data else None)
+if not key:
+    sys.exit(0)
+raw = data.get(key) or ""
+try:
+    cfg = yaml.safe_load(raw) or {}
+except Exception:
+    sys.exit(0)
+srv = (cfg.get("server") or {})
+if srv.get("defaultSmallModelEnabled") is True:
+    name = srv.get("defaultSmallModelName")
+    if isinstance(name, str) and name.strip():
+        print(name.strip())
+PY
+    rm -f "${jtmp}"
+}
+
+# True iff both BKN ConfigMaps in this namespace already have defaultSmallModelEnabled+Name.
+onboard_bkn_cm_already_patched() {
+    local ns="${1:-kweaver}"
+    local n1 n2
+    n1="$(onboard_bkn_cm_default_small_model_name "${ns}" bkn-backend-cm | head -n1)"
+    n2="$(onboard_bkn_cm_default_small_model_name "${ns}" ontology-query-cm | head -n1)"
+    [[ -n "${n1}" && -n "${n2}" ]]
+}
+
+# Print the BKN default small-model name when both ConfigMaps agree; empty otherwise.
+onboard_bkn_cm_current_default_name() {
+    local ns="${1:-kweaver}"
+    local n1 n2
+    n1="$(onboard_bkn_cm_default_small_model_name "${ns}" bkn-backend-cm | head -n1)"
+    n2="$(onboard_bkn_cm_default_small_model_name "${ns}" ontology-query-cm | head -n1)"
+    if [[ -n "${n1}" && "${n1}" == "${n2}" ]]; then
+        echo "${n1}"
+    fi
+}
+
 # Args: model_name, model_series, max_model_len, api_key, api_model, api_url, [model_type]
 onboard_ensure_llm() {
     local name="$1" series="$2" mlen="$3" akey="$4" amodel="$5" aurl="$6"

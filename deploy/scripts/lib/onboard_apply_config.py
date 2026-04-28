@@ -229,7 +229,20 @@ def main() -> int:
 
 
 def patch_bkn_cms_and_rollout(namespace: str, dname: str) -> int:
-    """Set server.defaultSmallModel* in *-config.yaml in bkn-backend-cm and ontology-query-cm."""
+    """Set server.defaultSmallModel* in *-config.yaml in bkn-backend-cm and ontology-query-cm.
+
+    Skips the patch + rollout if both ConfigMaps already declare the same
+    defaultSmallModelName == dname and defaultSmallModelEnabled=True.
+    """
+    cur_a = _read_default_small_model_name(namespace, "bkn-backend-cm")
+    cur_b = _read_default_small_model_name(namespace, "ontology-query-cm")
+    if cur_a and cur_b and cur_a == dname and cur_b == dname:
+        print(
+            f"[onboard] BKN ConfigMaps already patched in ns/{namespace} "
+            f"(defaultSmallModelEnabled=true, defaultSmallModelName={dname}). "
+            "Skipping patch and bkn-backend / ontology-query restart."
+        )
+        return 0
     for cm in ("bkn-backend-cm", "ontology-query-cm"):
         r = _patch_one_cm(namespace, cm, dname)
         if r != 0:
@@ -274,6 +287,41 @@ def patch_bkn_cms_and_rollout(namespace: str, dname: str) -> int:
         ]
     )
     return 0
+
+
+def _read_default_small_model_name(namespace: str, name: str) -> str:
+    """Return server.defaultSmallModelName when defaultSmallModelEnabled is True; '' otherwise."""
+    p = subprocess.run(
+        ["kubectl", "get", f"cm/{name}", "-n", namespace, "-o", "json"],
+        capture_output=True,
+        text=True,
+    )
+    if p.returncode != 0:
+        return ""
+    try:
+        j = json.loads(p.stdout or "{}")
+    except Exception:
+        return ""
+    data = j.get("data") or {}
+    if not data:
+        return ""
+    usekey = next(
+        (k for k in data if k.endswith("-config.yaml")),
+        next((k for k in data if k.endswith(".yaml")), list(data.keys())[0]),
+    )
+    raw = data.get(usekey) or ""
+    if not str(raw).strip():
+        return ""
+    try:
+        c = yaml.safe_load(raw) or {}
+    except Exception:
+        return ""
+    srv = (c.get("server") or {})
+    if srv.get("defaultSmallModelEnabled") is True:
+        nm = srv.get("defaultSmallModelName")
+        if isinstance(nm, str) and nm.strip():
+            return nm.strip()
+    return ""
 
 
 def _patch_one_cm(namespace: str, name: str, dname: str) -> int:

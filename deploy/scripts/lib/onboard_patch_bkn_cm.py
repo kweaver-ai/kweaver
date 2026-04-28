@@ -10,12 +10,15 @@ other error and dumps a full traceback to stderr.
 
 Always emits a [onboard-cm-debug] line on stderr at startup so callers can
 diagnose silent exits even if the script crashes immediately afterward.
+
+Compatible with Python 3.6+ (uses typing.List, no capture_output / PEP 563).
 """
 import json
 import os
 import subprocess
 import sys
 import traceback
+from typing import List
 
 try:
     import yaml  # type: ignore[import-not-found]
@@ -31,7 +34,8 @@ def yq_subprocess_ok() -> bool:
     try:
         r = subprocess.run(
             ["yq", "--version"],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             check=True,
             timeout=4,
         )
@@ -47,7 +51,7 @@ def emit_debug(msg: str) -> None:
     print("[onboard-cm-debug] " + msg, file=sys.stderr, flush=True)
 
 
-def main(argv: list[str]) -> int:
+def main(argv: List[str]) -> int:
     emit_debug(
         "python=%s pyyaml=%s yq=%s argv=%r"
         % (sys.executable, YAML_VER, HAVE_YQ, argv[1:])
@@ -104,7 +108,8 @@ def main(argv: list[str]) -> int:
                     '.server.defaultSmallModelName = "%s"' % dname,
                 ],
                 input=raw.encode("utf-8", errors="replace"),
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             if p.returncode == 0 and p.stdout.strip():
                 newyml = p.stdout.decode("utf-8", errors="replace")

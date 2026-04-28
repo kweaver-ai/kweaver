@@ -2,9 +2,9 @@
 """
 Load deploy/conf models YAML (env ${VAR} expansion), register models via kweaver, optionally BKN.
 Invoked from onboard.sh: python3 onboard_apply_config.py <yaml_path> <namespace> <skip_bkn: true/false>
-"""
-from __future__ import annotations
 
+Supports Python 3.6+ (CentOS 7 / old distros); avoids 3.7-only subprocess APIs.
+"""
 import json
 import os
 import re
@@ -44,8 +44,9 @@ def get_json(path: str) -> Any:
     p = subprocess.run(
         ["kweaver", "call", path],
         check=False,
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     if p.returncode != 0:
         print(p.stderr, file=sys.stderr)
@@ -263,8 +264,9 @@ def patch_bkn_cms_and_rollout(namespace: str, dname: str) -> int:
                 "-n",
                 namespace,
             ],
-            capture_output=True,
-            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
         )
         if p.returncode != 0:
             print(f"[onboard] rollout restart {dep}: {p.stderr}", file=sys.stderr)
@@ -299,8 +301,9 @@ def _read_default_small_model_name(namespace: str, name: str) -> str:
     """Return server.defaultSmallModelName when defaultSmallModelEnabled is True; '' otherwise."""
     p = subprocess.run(
         ["kubectl", "get", f"cm/{name}", "-n", namespace, "-o", "json"],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     if p.returncode != 0:
         return ""
@@ -333,8 +336,9 @@ def _read_default_small_model_name(namespace: str, name: str) -> str:
 def _patch_one_cm(namespace: str, name: str, dname: str) -> int:
     p = subprocess.run(
         ["kubectl", "get", f"cm/{name}", "-n", namespace, "-o", "json"],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     if p.returncode != 0:
         print(p.stderr, file=sys.stderr)
@@ -367,10 +371,14 @@ def _patch_one_cm(namespace: str, name: str, dname: str) -> int:
     pr = subprocess.run(
         ["kubectl", "apply", "-f", "-"],
         input=json.dumps(j, ensure_ascii=False).encode("utf-8"),
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     if pr.returncode != 0:
-        print(pr.stderr.decode(), file=sys.stderr)
+        err = pr.stderr
+        if isinstance(err, bytes):
+            err = err.decode("utf-8", errors="replace")
+        print(err, file=sys.stderr)
     else:
         print(f"[onboard] Patched {name} for defaultSmallModelName={dname}")
     return pr.returncode

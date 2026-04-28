@@ -16,10 +16,20 @@
 
 | 项 | 最低 | 推荐 |
 | --- | --- | --- |
-| 🖥️ 操作系统 | CentOS 8+、openEuler 23+ | CentOS 8+ |
+| 🖥️ 操作系统 | **Ubuntu Server** **22.04 LTS** 及以上，或 **Rocky Linux / AlmaLinux / CentOS Stream** **8** 及以上，**openEuler** **23** 及以上 | **Ubuntu** **22.04 LTS**，或 RPM 系 **8+** |
 | ⚙️ CPU | 16 核 | 16 核 |
 | 🧠 内存 | 48 GB | 64 GB |
 | 💾 磁盘 | 200 GB | 500 GB |
+
+`deploy/preflight.sh` 与 `deploy.sh` **同时支持** **Ubuntu / Debian**（apt）与 **Rocky / Alma / CentOS Stream / openEuler**（dnf/yum），详见 `deploy/README.zh.md`。
+
+### Git、Node.js、Python
+
+| 工具 | 说明 |
+| --- | --- |
+| **Git** | `deploy.sh` / `preflight.sh` **不会**调用 `git`。只有从 **Git 仓库 clone** 开发/更新时才需要本机装 Git；使用**已解压的产品包**或构建产物时，**安装目标机可以不装 Git**。 |
+| **Node.js** | **22+** 与 **`@kweaver-ai/kweaver-sdk`** 的 npm `engines`、`deploy/onboard.sh`、可选的 **`kweaver-admin`** 及 preflight 检查一致（环境变量 **`PREFLIGHT_KWEAVER_MIN_NODE_MAJOR`**，默认 **22**）。**仅起 K8s / Helm** 时，目标机**可以不装 Node**；缺 Node 或版本低于 22 时 preflight 多为 **[WARN]**（非阻塞），也可在**另一台已装 Node 22+ 的机器**上跑 `onboard.sh`，或通过 **`preflight.sh --fix`** 里与 Node 相关的可选项安装。详见下文 **客户端工具**。 |
+| **Python** **3** | 日常跑 **`preflight` / `deploy.sh` 不强制**要求。若使用 **`deploy/preflight.sh --output=json`**（JSON 输出依赖 **`python3`**），则**必须**安装 Python 3；部分与 `kubectl` 相关的辅助解析在存在 `python3` 时也会使用。 |
 
 ### 🛠️ 主机准备（典型 Linux）
 

@@ -16,10 +16,20 @@ Prepare the host, network, and client tooling before you deploy.
 
 | Item | Minimum | Recommended |
 | --- | --- | --- |
-| OS | CentOS 8+, openEuler 23+ | CentOS 8+ |
+| OS | **Ubuntu Server** **22.04 LTS or later**, **Rocky Linux / AlmaLinux / CentOS Stream** 8+, **openEuler** 23+ | Ubuntu **22.04 LTS**, or RPM-based **8+** |
 | CPU | 16 cores | 16 cores |
 | Memory | 48 GB | 64 GB |
 | Disk | 200 GB | 500 GB |
+
+`deploy/preflight.sh` and `deploy.sh` support both **Ubuntu/Debian** (apt) and **Rocky/Alma/CentOS Stream/openEuler** (dnf/yum) as documented in `deploy/README.md`.
+
+### Git, Node.js, Python
+
+| Tool | Expectation |
+| --- | --- |
+| **Git** | `deploy.sh` / `preflight.sh` **do not** call `git`. Install Git only if you are working from **a cloned repository**. Deployments from an **extracted product tarball** or artifact **do not** require Git on the install host. |
+| **Node.js** | **22+** aligns with **`@kweaver-ai/kweaver-sdk`** npm [`engines`](https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk), **`deploy/onboard.sh`**, optional **`kweaver-admin`**, and preflight checks (`PREFLIGHT_KWEAVER_MIN_NODE_MAJOR`, default **22**). Bringing up Kubernetes/Helm on the server **does not** require Node; preflight warns if Node is missing or older than **22** (**[WARN]** only—you can run onboard from another machine or install Node via **`preflight.sh --fix`** opt-ins). See **Client tooling** below. |
+| **Python** **3** | **Optional** for normal `preflight` / `deploy.sh`. **`python3`** is **required** if you pass **`deploy/preflight.sh --output=json`** (stdout JSON is emitted via Python). A few kubectl-related helpers also use Python when available. |
 
 ### Host preparation (typical Linux)
 

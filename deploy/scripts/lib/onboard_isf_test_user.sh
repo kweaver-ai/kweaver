@@ -205,7 +205,7 @@ onboard_offer_isf_test_user() {
         return 0
     fi
     onboard_isf_full_install || {
-        ONBOARD_REPORT_ISF_TEST_USER="不适用: 非 ISF/全量 安装"
+        ONBOARD_REPORT_ISF_TEST_USER="n/a (not an ISF / full install)"
         return 0
     }
     command -v kweaver-admin &>/dev/null || {
@@ -223,7 +223,7 @@ onboard_offer_isf_test_user() {
     if onboard_user_test_exists; then
         log_info "User [test] already exists. Syncing roles from kweaver-admin 'role list'…"
         onboard_assign_all_listed_roles_to_user test || true
-        ONBOARD_REPORT_ISF_TEST_USER="user test exists: synced all roles from role list (kweaver-admin user roles test)"
+        ONBOARD_REPORT_ISF_TEST_USER="ready (existed; all roles re-synced; check: kweaver-admin user roles test)"
         log_info "If you changed test's password, set ONBOARD_TEST_USER_PASSWORD before re-running (or enter it below)."
         onboard_isf_relogin_kweaver_cli_as_test_for_downstream
         return 0
@@ -236,7 +236,7 @@ onboard_offer_isf_test_user() {
             onboard_log_err "ISF: could not create or configure user test. Fix the errors above, then re-run: $0"
             exit 1
         fi
-        ONBOARD_REPORT_ISF_TEST_USER="created test with roles (-y: default password ${ONBOARD_DEFAULT_TEST_USER_PASSWORD:-111111}; override ONBOARD_TEST_USER_PASSWORD=...)"
+        ONBOARD_REPORT_ISF_TEST_USER="created (-y; password = ${ONBOARD_DEFAULT_TEST_USER_PASSWORD:-111111}, override ONBOARD_TEST_USER_PASSWORD; all roles assigned)"
         onboard_isf_relogin_kweaver_cli_as_test_for_downstream
         return 0
     fi
@@ -257,7 +257,7 @@ onboard_offer_isf_test_user() {
         onboard_log_err "ISF: could not create or configure user test. Fix the errors above, then re-run: $0"
         exit 1
     fi
-    ONBOARD_REPORT_ISF_TEST_USER="created test, set password, assigned all business roles from role list"
+    ONBOARD_REPORT_ISF_TEST_USER="created (password set; all roles assigned; kweaver signed in as test)"
     onboard_isf_relogin_kweaver_cli_as_test_for_downstream
 }
 

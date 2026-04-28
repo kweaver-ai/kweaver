@@ -57,20 +57,25 @@ onboard_print_completion_report() {
         echo "  Business -bd  ${_bd}  (DEPLOY_BUSINESS_DOMAIN)"
         echo "  Default base  ${_acurl}"
         echo "${_line}"
-        echo "  Install type  ${_isf}"
-        echo "  ISF test user ${_isfu:-(not run or not recorded)}"
+        echo "  Install type   ${_isf}"
+        echo "  User [test]    ${_isfu:-(not run or not recorded)}"
         echo "  Context Loader ${_ctx:-(not run or not recorded)}"
         echo "${_line}"
         echo "  Next steps"
-        echo "   • Verify:  kweaver bkn list -bd ${_bd} --pretty"
+        case "${_isfu}" in
+            ready*|created*)
+                echo "   • User test:  ready on this platform; default sign-in:  kweaver auth login ${_acurl} -u test -p '<password>' --http-signin -k"
+                ;;
+        esac
+        echo "   • Verify:    kweaver bkn list -bd ${_bd} --pretty"
         if [[ "${_ctx}" == *"imported_ok"* ]]; then
-            echo "   • Toolbox: Context Loader was imported (re-check above for HTTP 2xx and no error in body)."
+            echo "   • Toolbox:   Context Loader was imported (re-check above for HTTP 2xx and no error in body)."
         else
-            echo "   • Toolbox: re-run deploy/onboard.sh to import Context Loader (or import manually with kweaver call impex; see ./onboard.sh -h)."
+            echo "   • Toolbox:   re-run deploy/onboard.sh to import Context Loader (or import manually with kweaver call impex; see ./onboard.sh -h)."
         fi
-        echo "   • Docs:    https://github.com/kweaver-ai/kweaver-core/blob/main/help/README.md"
-        echo "              https://github.com/kweaver-ai/kweaver-core/blob/main/help/en/README.md  (EN)"
-        echo "              https://github.com/kweaver-ai/kweaver-core/blob/main/help/zh/README.md  (中文)"
+        echo "   • Docs:      https://github.com/kweaver-ai/kweaver-core/blob/main/help/README.md"
+        echo "                https://github.com/kweaver-ai/kweaver-core/blob/main/help/en/README.md  (EN)"
+        echo "                https://github.com/kweaver-ai/kweaver-core/blob/main/help/zh/README.md  (中文)"
         echo "============================================"
         echo ""
     } 2>/dev/null || {

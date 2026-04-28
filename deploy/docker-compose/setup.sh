@@ -282,6 +282,21 @@ if [[ -z "$SANDBOX_DB_EXISTING" ]]; then
   set_env_var .env SANDBOX_DATABASE_URL "mysql+aiomysql://${ADP_USER}:${ADP_PW}@${MARIADB_HOST_VAL}:${MARIADB_PORT_VAL}/sandbox"
 fi
 
+if ! python3 "${ROOT}/tools/manifest.py" check-compose; then
+  echo "ERROR: docker-compose.yml is out of sync with compose-manifest.yaml." >&2
+  exit 1
+fi
+
+# Backfill any tagEnv default from compose-manifest.yaml that .env is missing.
+while IFS='=' read -r mkey mval; do
+  [[ -z "$mkey" ]] && continue
+  current="$(read_env_var .env "$mkey" || true)"
+  if [[ -z "$current" ]]; then
+    set_env_var .env "$mkey" "$mval"
+    echo "Set ${mkey}=${mval} from compose-manifest.yaml" >&2
+  fi
+done < <(python3 "${ROOT}/tools/manifest.py" env-defaults)
+
 mkdir -p "${ROOT}/configs/generated"
 
 if ! python3 "${ROOT}/tools/render_compose_configs.py"; then

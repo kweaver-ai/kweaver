@@ -40,32 +40,14 @@ SECRET_KEY_TO_PLACEHOLDER: dict[str, str] = {
 }
 
 # chart folder name (without path) -> logical output subdir
-# Matches deploy/release-manifests/0.7.0/kweaver-core.yaml (kweaver-core --minimum installs
-# the same release set; --minimum only sets auth.enabled=false businessDomain.enabled=false).
-CHART_MAP = [
-    ("kweaver-core-data-migrator-0.7.0", "kweaver-core-data-migrator"),
-    ("mf-model-manager-0.7.0", "mf-model-manager"),
-    ("mf-model-api-0.7.0", "mf-model-api"),
-    ("bkn-backend-0.7.0", "bkn-backend"),
-    ("ontology-query-0.7.0", "ontology-query"),
-    ("vega-backend-0.7.0", "vega-backend"),
-    ("data-connection-0.6.0", "data-connection"),
-    ("vega-gateway-0.6.0", "vega-gateway"),
-    ("vega-gateway-pro-0.6.0", "vega-gateway-pro"),
-    ("mdl-data-model-0.6.0", "mdl-data-model"),
-    ("mdl-uniquery-0.6.0", "mdl-uniquery"),
-    ("mdl-data-model-job-0.6.0", "mdl-data-model-job"),
-    ("agent-operator-integration-0.7.0", "agent-operator-integration"),
-    ("agent-retrieval-0.7.0", "agent-retrieval"),
-    ("agent-backend-0.7.0", "agent-backend"),
-    ("dataflow-0.7.0", "dataflow"),
-    ("coderunner-0.7.0", "coderunner"),
-    ("doc-convert-0.7.0", "doc-convert"),
-    ("sandbox-0.3.3", "sandbox"),
-    ("oss-gateway-backend-0.7.0", "oss-gateway-backend"),
-    ("otelcol-contrib-0.2.3", "otelcol-contrib"),
-    ("agent-observability-0.2.3", "agent-observability"),
-]
+# Sourced from deploy/docker-compose/compose-manifest.yaml so updates flow from a
+# single place. Manifest mirrors release-manifests/<ver>/kweaver-core.yaml; the
+# --minimum flag in deploy.sh only sets auth.enabled=false businessDomain.enabled=false
+# and does not change the release set.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from manifest import chart_map as _manifest_chart_map, load_manifest as _load_manifest  # noqa: E402
+
+CHART_MAP = _manifest_chart_map(_load_manifest())
 
 ENV_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 

@@ -4,43 +4,26 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${ROOT}"
 
-INFRA_SERVICES=(
-  mariadb
-  redis
-  zookeeper
-  kafka
-  opensearch
-  minio
-)
+# Service lists are sourced from compose-manifest.yaml so they stay in sync with
+# release-manifests/<ver>/kweaver-core.yaml. Edit the manifest, not this list.
+load_manifest_services() {
+  # Portable replacement for `mapfile -t` (bash 3.x on macOS lacks it).
+  local _name="$1" _phase="$2"
+  unset "$_name"
+  eval "$_name=()"
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    eval "$_name+=(\"\$line\")"
+  done < <(python3 "${ROOT}/tools/manifest.py" services --phase="$_phase")
+}
 
-APP_SERVICES=(
-  kweaver-core-data-migrator
-  mf-model-manager
-  mf-model-api
-  bkn-backend
-  ontology-query
-  vega-backend
-  data-connection
-  vega-gateway
-  vega-gateway-pro
-  mdl-data-model
-  mdl-uniquery
-  mdl-data-model-job
-  agent-operator-integration
-  agent-retrieval
-  agent-backend
-  dataflow
-  flow-stream-data-pipeline
-  dataflowtools
-  coderunner
-  doc-convert-gotenberg
-  doc-convert-tika
-  sandbox
-  oss-gateway-backend
-  otelcol-contrib
-  agent-observability
-  nginx
-)
+load_manifest_services INFRA_SERVICES infra
+load_manifest_services APP_SERVICES   app
+
+if (( ${#INFRA_SERVICES[@]} == 0 )) || (( ${#APP_SERVICES[@]} == 0 )); then
+  echo "ERROR: failed to load service lists from compose-manifest.yaml" >&2
+  exit 1
+fi
 
 # Vega stack only (aligned with deploy.sh grouping: install_vega vs install_bkn).
 # Does not start nginx — compose nginx depends on the full app; use ./compose.sh app up

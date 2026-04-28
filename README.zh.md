@@ -74,18 +74,35 @@ kubectl get pods -A
 ./deploy.sh kweaver-core status
 ```
 
-4. **验证 API 访问**
+4. **安装后引导：`onboard.sh`**（推荐）
+
+   在**同一台机器**（kubectl 能访问集群）上执行安装后引导脚本：注册一个 LLM + 一个 embedding；只有当**默认 embedding 实际变更**时才会 patch BKN ConfigMap 并滚动重启 `bkn-backend` / `ontology-query`；在**完整安装**下还会创建业务用户 **`test`**、把 `kweaver-admin role list` 中的所有角色都挂上、切换 `kweaver` 到该用户身份，并导入 Context Loader 工具集：
+
+```bash
+cd deploy
+bash ./onboard.sh        # 交互模式；或：bash ./onboard.sh -y
+bash ./onboard.sh --help # 所有参数（--config=models.yaml、--enable-bkn-search、--skip-context-loader 等）
+```
+
+   可重复运行：脚本会先探测平台已有的模型与 ConfigMap 状态，已注册 / 已配置的会自动跳过。完整流程图、ISF 全量下 `kweaver` 与 `kweaver-admin` 双 CLI 的鉴权说明见 [help/zh/install.md — Post-install：`onboard.sh`](help/zh/install.md#post-installonboardsh安装后引导)。
+
+5. **验证 API 访问**
 
    KWeaver Core 为纯后台，无 Web 控制台。在**访问端**（本机、跳板机等）通过 [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk) 使用 `kweaver` CLI：可全局安装 `npm install -g @kweaver-ai/kweaver-sdk`，或直接用 `npx kweaver`（无需全局安装；详见下文 [KWeaver SDK](#toc-kweaver-sdk)）。再执行：
 
 ```bash
+# 最小化安装（未启用鉴权）：
 kweaver auth login https://<节点IP> -k
+# 完整安装：以 onboard.sh 创建的业务用户登录（未自定义时默认密码 111111）：
+kweaver auth login https://<节点IP> -u test -p '<密码>' -k
+
 kweaver bkn list
-# 或使用：npx kweaver auth login https://<节点IP> -k
-#         npx kweaver bkn list
+# 或使用 npx 免全局安装：
+# npx kweaver auth login https://<节点IP> -k
+# npx kweaver bkn list
 ```
 
-5. **查看帮助**：
+6. **查看帮助**：
 
 ```bash
 kweaver --help                   # 列出所有命令

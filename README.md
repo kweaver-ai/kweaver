@@ -75,18 +75,35 @@ kubectl get pods -A
 ./deploy.sh kweaver-core status
 ```
 
-4. **Verify API access**
+4. **Post-install bootstrap with `onboard.sh`** (recommended)
+
+   On the **same host** as the install (where `kubectl` reaches the cluster), run the post-install bootstrap. It (re-runnable) registers an LLM + an embedding, patches the BKN ConfigMaps when the default embedding actually changes, and on a **full install** also creates the business user **`test`**, assigns every role from `kweaver-admin role list`, switches `kweaver` to that user, and imports the Context Loader toolset:
+
+```bash
+cd deploy
+bash ./onboard.sh        # interactive; or:  bash ./onboard.sh -y
+bash ./onboard.sh --help # all flags (--config=models.yaml, --enable-bkn-search, --skip-context-loader, …)
+```
+
+   Re-runs are safe: existing models / BKN defaults are detected and skipped. For the full sequence, the Mermaid flow, and the `kweaver` / `kweaver-admin` two-CLI authentication notes (full ISF), see [help/en/install.md — Post-install: `onboard.sh`](help/en/install.md#post-install-onboardsh).
+
+5. **Verify API access**
 
    KWeaver Core is backend-only and does not provide a web console. On the machine you use to reach the cluster (laptop, bastion, etc.), use the `kweaver` CLI from [**kweaver-sdk**](https://github.com/kweaver-ai/kweaver-sdk): either `npm install -g @kweaver-ai/kweaver-sdk` or `npx kweaver` (no global install; see [KWeaver SDK](#toc-kweaver-sdk) below). Then run:
 
 ```bash
+# Minimum install (no auth):
 kweaver auth login https://<node-ip> -k
+# Full install: sign in as the user onboard.sh created (default password 111111 unless you overrode it):
+kweaver auth login https://<node-ip> -u test -p '<password>' -k
+
 kweaver bkn list
-# or: npx kweaver auth login https://<node-ip> -k
-#     npx kweaver bkn list
+# or with npx instead of a global install:
+# npx kweaver auth login https://<node-ip> -k
+# npx kweaver bkn list
 ```
 
-5. **View help**:
+6. **View help**:
 
 ```bash
 kweaver --help                   # list all commands

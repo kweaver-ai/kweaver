@@ -18,6 +18,8 @@ npm install -g @kweaver-ai/kweaver-sdk
 
 ### 🛡️ 完整安装：先用 kweaver-admin 创建可登录用户
 
+> **已经跑过 `bash deploy/onboard.sh`？** 它已经帮你建好业务用户 **`test`**（未自定义时默认密码 `111111`）、把 `kweaver-admin role list` 中的所有角色都挂上、并把本机 `~/.kweaver` 切到 `test`。你可以**跳过本小节** `kweaver-admin user create / assign-role` 一整段，直接 `kweaver auth login <平台地址> -u test -p '<密码>' -k`（若 `~/.kweaver` 当前已是 `test`，`kweaver auth status` 即可确认）。完整流程见 [安装与部署 — Post-install：`onboard.sh`](install.md#post-installonboardsh安装后引导)。
+
 若你使用 **完整安装**（`./deploy.sh kweaver-core install`，未加 `--minimum`，已启用 `auth` 与 `businessDomain`），平台**必须鉴权**后才能使用业务能力。下文的 `kweaver` 登录需要**可登录的账号**；在多数部署中，**需要先用 `kweaver-admin` 创建业务用户**（并分配组织、角色等），再以该用户身份用 `kweaver` 完成后续「快速开始」。
 
 ```bash

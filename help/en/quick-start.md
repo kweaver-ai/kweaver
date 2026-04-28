@@ -12,6 +12,8 @@ This walkthrough assumes KWeaver Core is already [installed and deployed](instal
 
 ### Step 1: Authenticate
 
+> **Already ran `bash deploy/onboard.sh`?** It already created user **`test`** (default password `111111` unless overridden), assigned every role from `kweaver-admin role list`, and switched the local `~/.kweaver` session to `test`. You can skip the `kweaver-admin user create / assign-role` block below and go straight to `kweaver auth login <platform-url> -u test -p '<password>' -k` (or just `kweaver auth status` if `~/.kweaver` already shows `test`). Full sequence: [Install — Post-install: `onboard.sh`](install.md#post-install-onboardsh).
+
 **Full install (not `--minimum`)** — The platform enforces auth. The `kweaver` login below needs a **user that can sign in** to use product features. In many deployments you must **create that business user with `kweaver-admin` first**, **inspect roles**, then **assign every role** from `role list` in this quick start (or your least-privilege set in production), then use `kweaver` with that user for this quick start.
 
 ```bash

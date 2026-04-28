@@ -39,20 +39,23 @@ print("%s\t%s" % (bid, bname))
 PY
 }
 
-# Returns 0 if the toolbox box_id is already present on the platform, else 1.
+# Returns:
+#   0: toolbox box_id is already present on the platform
+#   1: list query succeeded, box_id not found
+#   2: kweaver list query failed or returned an error body
 # Uses the same -bd as the importer so the check sees the right business domain.
 onboard_context_loader_already_imported() {
     local box_id="$1" bd
     bd="${DEPLOY_BUSINESS_DOMAIN:-bd_public}"
     [[ -z "${box_id}" ]] && return 1
     local out
-    if ! out=$(kweaver call "/api/agent-operator-integration/v1/tool-box/${box_id}" -bd "${bd}" 2>/dev/null); then
-        return 1
+    if ! out=$(kweaver call "/api/agent-operator-integration/v1/tool-box/list?name=contextloader&page=1&page_size=50" -bd "${bd}" 2>/dev/null); then
+        return 2
     fi
-    # success payload contains the box_id; failures look like {"code":"...","message":"..."}
-    # or HTTP 404 wrapped JSON. Be conservative: require the box_id literal AND no "not found" indicator.
-    if printf '%s' "${out}" | grep -Fq "${box_id}" \
-        && ! printf '%s' "${out}" | grep -qiE '"code"[[:space:]]*:[[:space:]]*"?(4[0-9]{2}|5[0-9]{2})|not[[:space:]]*found|不存在|does not exist'; then
+    if printf '%s' "${out}" | grep -qiE '"code"[[:space:]]*:[[:space:]]*"?(4[0-9]{2}|5[0-9]{2})|not[[:space:]]*found|不存在|does not exist'; then
+        return 2
+    fi
+    if printf '%s' "${out}" | grep -Fq "${box_id}"; then
         return 0
     fi
     return 1
@@ -95,7 +98,15 @@ onboard_context_loader_import_via_kweaver() {
     if _adp_meta="$(onboard_context_loader_adp_meta "${adp}")" && [[ -n "${_adp_meta}" ]]; then
         _adp_box_id="${_adp_meta%%	*}"
         _adp_box_name="${_adp_meta#*	}"
-        if onboard_context_loader_already_imported "${_adp_box_id}"; then
+        local _cl_exists_rc=0
+        onboard_context_loader_already_imported "${_adp_box_id}" || _cl_exists_rc=$?
+        if [[ "${_cl_exists_rc}" -eq 2 ]]; then
+            ONBOARD_REPORT_CONTEXT_LOADER="import_failed: could not query existing Context Loader toolboxes via kweaver call"
+            onboard_log_err "Context Loader: failed to query existing toolboxes with kweaver. Fix kweaver auth/network first, then re-run onboard."
+            onboard_log_err "  Tried: kweaver call '/api/agent-operator-integration/v1/tool-box/list?name=contextloader&page=1&page_size=50' -bd ${bd}"
+            return 1
+        fi
+        if [[ "${_cl_exists_rc}" -eq 0 ]]; then
             local _force="${REIMPORT_CONTEXT_LOADER:-false}"
             if [[ "${_force}" != "true" && "${ONBOARD_ASSUME_YES:-false}" == "true" ]]; then
                 ONBOARD_REPORT_CONTEXT_LOADER="skipped: already imported (box_id=${_adp_box_id}${_adp_box_name:+, name=${_adp_box_name}}); set REIMPORT_CONTEXT_LOADER=true to overwrite"

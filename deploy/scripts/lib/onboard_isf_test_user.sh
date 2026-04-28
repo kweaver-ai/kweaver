@@ -224,7 +224,7 @@ onboard_offer_isf_test_user() {
         log_info "User [test] already exists. Syncing roles from kweaver-admin 'role list'…"
         onboard_assign_all_listed_roles_to_user test || true
         ONBOARD_REPORT_ISF_TEST_USER="user test exists: synced all roles from role list (kweaver-admin user roles test)"
-        log_info "If you have changed test's password, set ONBOARD_TEST_USER_PASSWORD before re-running (or enter it when asked below)."
+        log_info "If you changed test's password, set ONBOARD_TEST_USER_PASSWORD before re-running (or enter it below)."
         onboard_isf_relogin_kweaver_cli_as_test_for_downstream
         return 0
     fi
@@ -246,7 +246,7 @@ onboard_offer_isf_test_user() {
         return 0
     fi
     echo ""
-    read -r -p "Create business user [test] (set password) and grant ALL roles from kweaver-admin 'role list' (three admin roles in a typical full install) for ADP import? [Y/n]: " _otu
+    read -r -p "Create user [test] and grant all roles for ADP import? [Y/n] (Enter = Y): " _otu
     if [[ "${_otu}" =~ ^[Nn] ]]; then
         ONBOARD_REPORT_ISF_TEST_USER="skipped: user declined to create test"
         log_info "Skipped. You can: kweaver-admin user create --login test && kweaver-admin user reset-password -u test --prompt-password -y && (assign all role ids from role list)"

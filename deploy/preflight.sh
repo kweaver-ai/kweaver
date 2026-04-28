@@ -292,13 +292,22 @@ if [[ "${PREFLIGHT_OUTPUT_JSON}" != "true" ]]; then
         fi
     else
         if [[ ${exit_code} -eq 0 ]]; then
-            echo "  No KWeaver releases detected. Environment is READY for a fresh install:"
+            echo "  No KWeaver releases detected. Environment looks ready for a first-time install:"
+            echo "    sudo ./deploy.sh kweaver-core install --minimum    # try first / for evaluation"
+            echo "    sudo ./deploy.sh kweaver-core install              # full install (auth + business-domain)"
+            echo ""
+            echo "  After deploy: from this repo's deploy/ directory run ./onboard.sh (needs Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ + kweaver CLI on that host)."
+            echo "  If this host still lacks Node/CLIs: sudo $0 --fix"
         else
-            echo "  No KWeaver releases detected. After resolving the items above, install with:"
+            echo "  No KWeaver releases detected, but preflight above is NOT all clear — fix that before treating deploy as ready."
+            echo "  Typical loop:"
+            echo "    sudo $0 --fix          # applies safe fixes / opt-in tooling (y/N unless -y)"
+            echo "    sudo $0 --check-only   # re-check until blocking [FAIL] items are addressed (or sudo $0 --check-only --lenient if you accept the caveats)"
+            echo "  Only then install:"
+            echo "    sudo ./deploy.sh kweaver-core install --minimum    # try first / for evaluation"
+            echo "    sudo ./deploy.sh kweaver-core install              # full install (auth + business-domain)"
+            echo "  Finally: ./onboard.sh from deploy/ (Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ + kweaver on PATH; sudo $0 --fix helps install tooling on this machine)."
         fi
-        echo "    sudo ./deploy.sh kweaver-core install --minimum    # try first / for evaluation"
-        echo "    sudo ./deploy.sh kweaver-core install              # full install (auth + business-domain)"
-        echo "  Then run ./onboard.sh (after Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ + kweaver on the admin host, or: sudo preflight --fix to install with confirmation)"
     fi
     echo "${_PF_BAR}"
 fi

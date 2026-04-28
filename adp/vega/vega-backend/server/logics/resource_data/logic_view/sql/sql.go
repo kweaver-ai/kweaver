@@ -607,19 +607,40 @@ func (g *logicViewSQLGenerator) buildOutputNodeSQL(ctx context.Context, node *in
 	outputFieldsMap := make(map[string]*interfaces.ViewProperty)
 	if len(node.OutputFields) > 0 {
 		fields = make([]string, 0, len(node.OutputFields))
+
+		// 先构建上游节点的 SQL，以便获取上游节点的输出字段映射
+		upstreamNodeID := node.Inputs[0]
+		_, _, err := g.buildNodeSQL(ctx, upstreamNodeID, depth)
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to build upstream node SQL for output node %s: %w", node.ID, err)
+		}
+
+		// 从上游节点的输出字段映射中获取字段信息
+		upstreamFieldsMap, hasUpstreamFields := g.nodeFieldsMap[upstreamNodeID]
+
 		for _, f := range node.OutputFields {
 			outputFieldsMap[f.Name] = f // 维护状态
 
-			sourceProp, ok := g.viewFieldMap[f.Name]
-			if !ok {
+			// 尝试从上游节点的输出字段中查找
+			var sourceField *interfaces.ViewProperty
+			if hasUpstreamFields {
+				sourceField = upstreamFieldsMap[f.Name]
+			}
+
+			if sourceField == nil {
+				// 如果上游没有字段映射，直接使用字段名
 				fields = append(fields, QuotationMark(f.Name))
 			} else {
-				if sourceProp.OriginalName != "" && sourceProp.OriginalName != f.Name {
-					// 使用 QuotationMark 替代硬编码引号，支持多数据库
+				// 使用上游节点的输出字段名（可能已经被重命名）
+				// sourceField.Name 是上游节点输出的字段名（别名）
+				// f.Name 是当前节点期望的输出字段名
+				if sourceField.Name != f.Name {
+					// 字段名不同，需要别名
 					fields = append(fields, fmt.Sprintf("%s AS %s",
-						QuotationMark(sourceProp.OriginalName),
+						QuotationMark(sourceField.Name),
 						QuotationMark(f.Name)))
 				} else {
+					// 字段名相同，直接使用
 					fields = append(fields, QuotationMark(f.Name))
 				}
 			}

@@ -298,5 +298,6 @@ docker compose config >/dev/null
 ACCESS_HINT="$(read_env_var .env ACCESS_HOST)"; ACCESS_HINT="${ACCESS_HINT:-localhost}"
 PORT_HINT="$(read_env_var .env KWEAVER_HTTP_PORT)"; PORT_HINT="${PORT_HINT:-8080}"
 echo "Wrote configs under ${ROOT}/configs/generated/. docker compose configuration is valid."
-echo "Start stack when ready: docker compose up -d"
+echo "Start infra when ready: ./compose.sh infra up"
+echo "Then start KWeaver services: ./compose.sh app up"
 echo "HTTP entry (nginx): http://${ACCESS_HINT}:${PORT_HINT}/healthz"

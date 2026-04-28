@@ -8,11 +8,10 @@ The **mandatory** sanity check is **`./setup.sh`** (renders templates + runs `do
 
 ## What is included (19 `docker compose` services)
 
-| Layer | Services |
-|-------|----------|
-| **Infra (7)** | `mariadb`, `redis`, `zookeeper`, `kafka`, `opensearch`, `minio`, `nginx` |
-| **Job (1)** | `kweaver-core-data-migrator` (one-shot; others wait for `service_completed_successfully`) |
-| **KWeaver (11)** | `bkn-backend`, `ontology-query`, `mdl-data-model`, `mdl-uniquery`, `mdl-data-model-job`, `mf-model-manager`, `mf-model-api`, `vega-backend`, `vega-gateway`, `vega-gateway-pro`, `data-connection` |
+- **Infra (6):** `mariadb`, `redis`, `zookeeper`, `kafka`, `opensearch`, `minio`.
+- **Job (1):** `kweaver-core-data-migrator` (one-shot; others wait for `service_completed_successfully`).
+- **KWeaver (11):** `bkn-backend`, `ontology-query`, `mdl-data-model`, `mdl-uniquery`, `mdl-data-model-job`, `mf-model-manager`, `mf-model-api`, `vega-backend`, `vega-gateway`, `vega-gateway-pro`, `data-connection`.
+- **Entry (1):** `nginx` starts with the app phase because its upstreams are KWeaver services.
 
 **Not included:** `agent-backend`, `agent-operator-integration`, `agent-retrieval`, `agent-observability`, `dataflow`, `flow-stream-data-pipeline`, `coderunner`, `dataflowtools`, `doc-convert-*`, `sandbox`, `oss-gateway-backend`, `otelcol-contrib`. Generated configs may still mention these hosts in comments or deps; calls routed to `nginx` for DNS will **502** unless you add those services.
 
@@ -27,6 +26,7 @@ The **mandatory** sanity check is **`./setup.sh`** (renders templates + runs `do
 ```bash
 cd deploy/docker-compose
 chmod +x ./setup.sh
+chmod +x ./compose.sh
 ./setup.sh
 ```
 
@@ -43,15 +43,49 @@ Use only `[A-Za-z0-9_-]` — values are written to `.env` and embedded in genera
 ## Bringing the stack up (optional)
 
 ```bash
-docker compose up -d
+./compose.sh infra up
+./compose.sh app up
+```
+
+`infra up` starts only public dependency images (MariaDB, Redis, Zookeeper, Kafka, OpenSearch, MinIO). `app up` then starts `kweaver-core-data-migrator`, the KWeaver services, and nginx. If an SWR application image pull fails, infra can remain running while you fix the image path or registry login.
+
+To pull application images before starting them:
+
+```bash
+./compose.sh app pull
+```
+
+To run both phases in one command:
+
+```bash
+./compose.sh all up
 ```
 
 Expect `kweaver-core-data-migrator` to **complete once**; application services start after it.
 
+### Vega only (like `deploy.sh` grouping)
+
+Start **infrastructure**, **migrator**, then **Vega** services only (`vega-backend`, `data-connection`, `vega-gateway`, `vega-gateway-pro`). This does **not** start `nginx`, bkn, mdl, or mf — compose’s `nginx` depends on the full app, so use `./compose.sh app up` or `./compose.sh all up` if you need `http://localhost:8080`.
+
+```bash
+./compose.sh vega up
+```
+
+Direct container ports (same network from host requires published ports; by default these services are internal — use `docker compose exec` or add `ports:` in compose for local debugging):
+
+| Service          | Internal port (typ.) |
+|------------------|----------------------|
+| vega-gateway     | 8099                 |
+| vega-gateway-pro | 8097                 |
+| data-connection  | 8098                 |
+| vega-backend     | 13014                |
+
+Other actions: `./compose.sh vega pull|down|restart|status|logs`.
+
 **Stopping:**
 
 ```bash
-docker compose down
+./compose.sh all down
 ```
 
 ### Smoke checks (local)
@@ -65,17 +99,17 @@ docker compose logs bkn-backend 2>&1 | head -50
 ## Infra-only smoke (no KWeaver images)
 
 ```bash
-docker compose up -d mariadb redis zookeeper kafka opensearch minio
+./compose.sh infra up
 ```
 
 (Optional: add `nginx` if you mount only `configs/nginx/default.conf` — run `./setup.sh` first if anything references `configs/generated/`.)
 
 ## Entry points
 
-| What | URL / port |
-|------|------------|
-| APIs via nginx | `http://<ACCESS_HOST>:<KWEAVER_HTTP_PORT>` — default `http://localhost:8080` |
-| Health | `http://localhost:8080/healthz` |
+| What           | URL / port                                                                           |
+|----------------|--------------------------------------------------------------------------------------|
+| APIs via nginx | `http://<ACCESS_HOST>:<KWEAVER_HTTP_PORT>` — default `http://localhost:8080`         |
+| Health         | `http://localhost:8080/healthz`                                                      |
 
 ## Limitations vs Kubernetes / Helm
 

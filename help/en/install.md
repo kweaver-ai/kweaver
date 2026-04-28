@@ -123,6 +123,48 @@ Exit codes: **0** all OK · **1** any FAIL present · **2** only WARN (no FAIL).
 
 > Run preflight **before** every `deploy.sh kweaver-core install` on a new host. Re-running it is safe — already-satisfied checks are reported as `OK` and skipped. If you intentionally run on a low-spec lab box (memory / disk below recommendation, no Docker CE repo, etc.), use `--lenient` to keep the report informative without blocking install.
 
+### Reading the report: `Summary` and `Conclusion`
+
+After `--check-only` or `--fix`, preflight prints a **Summary** (counts per status) and a **Conclusion** (whether the host is “ready for deploy”). The shape looks like the following (exact numbers and lines depend on your host):
+
+```text
+================================================================
+  Summary
+================================================================
+  [OK]    …
+  [WARN]  …
+  [FAIL]  …
+  [FIXED] …
+  (initial [FAIL] before fix phase: …)
+
+  Outstanding [FAIL] items:
+    1. … (each line is one check; the text names the suggested fix, e.g. system-tuning, kernel-limits …)
+    …
+
+[INFO] Hint: most install-blocking [FAIL] items are auto-fixable — re-run: sudo ./preflight.sh --fix
+[INFO]       Need to bypass strict severity … ? sudo ./preflight.sh --check-only --lenient
+
+================================================================
+  Conclusion
+================================================================
+  … preflight above is NOT all clear — fix that before treating deploy as ready.
+  Typical loop:
+    sudo ./preflight.sh --fix          # … (per-item y/N unless -y)
+    sudo ./preflight.sh --check-only   # re-check until blocking [FAIL] are gone (or use --lenient)
+  Only then install:
+    sudo ./deploy.sh kweaver-core install --minimum
+    sudo ./deploy.sh kweaver-core install
+  Finally: ./onboard.sh from deploy/ (Node 22+ + kweaver on PATH; sudo ./preflight.sh --fix helps …)
+```
+
+**Notes:**
+
+- **`[FIXED]` stays 0** while there were initial `[FAIL]`s: often means interactive `--fix` was run with **Enter on every prompt** — the default is **no** for each fix. Use **`sudo bash deploy/preflight.sh --fix -y`**, or answer **`y`** where you want a fix applied.
+- **Common Outstanding [FAIL] buckets** (map to fix names): `system-tuning` (forwarding, swap, kernel modules, `overlay`), `kernel-limits` (`vm.max_map_count` / inotify), `nofile-limits` (`ulimit -n`), `k8s-pkgs-repo` + `k8s-bins` (Kubernetes repo and `kubeadm`/`kubectl`), `containerd-install`, `helm-v3`. On **RPM** systems, if **`kubernetes.repo` excludes kube packages**, installs need **`--disableexcludes=kubernetes`**; preflight probes and `install_kubernetes` are aligned with that.
+- After **`--fix`**, run **`--check-only` again** and only then proceed to **`deploy.sh`**.
+
+For more troubleshooting and manual fallbacks, see **`deploy/README.md` → Troubleshooting**.
+
 ---
 
 ## 🚀 Install KWeaver Core

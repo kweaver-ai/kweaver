@@ -920,20 +920,34 @@ configure_system() {
 br_netfilter
 EOF
     
-    # Configure kernel parameters
+    # Separate file for IPv4 forwarding (50-* runs before many 99-* drops).
+    # Some hosts fail bridge keys in sysctl --system first pass; forwarding must never be skipped.
     log_info "Configuring kernel parameters..."
+    mkdir -p /etc/sysctl.d 2>/dev/null || true
+    cat > /etc/sysctl.d/50-kubernetes-ipv4-ipforward.conf <<'EOF'
+# K8s / CNI: pod traffic between interfaces (do not bundle with bridge keys only)
+net.ipv4.ip_forward = 1
+EOF
     cat > /etc/sysctl.d/99-kubernetes.conf <<EOF
 net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-net.ipv4.ip_forward = 1
 EOF
-    
+
+    sysctl -w net.ipv4.ip_forward=1 2>/dev/null || echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
+
     # Apply sysctl settings with timeout to avoid hanging
     timeout 10 sysctl --system 2>/dev/null || log_warn "sysctl configuration may have timed out"
-    
-    # Ensure ip_forward is enabled immediately (in case sysctl didn't apply it)
-    echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
-    
+
+    sysctl -w net.ipv4.ip_forward=1 2>/dev/null || echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
+
+    local _ipf
+    _ipf="$(cat /proc/sys/net/ipv4/ip_forward 2>/dev/null || echo 0)"
+    if [[ "${_ipf}" != "1" ]]; then
+        log_warn "net.ipv4.ip_forward is still ${_ipf} after sysctl; Check /etc/sysctl.d/, firewalld, or cloud network agents overriding routing."
+    else
+        log_info "net.ipv4.ip_forward=1 (runtime confirmed)"
+    fi
+
     log_info "System configured for Kubernetes"
 }
 

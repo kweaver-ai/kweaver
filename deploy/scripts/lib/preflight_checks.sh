@@ -467,7 +467,7 @@ preflight_check_sysctl_modules() {
     if [[ "${ipf}" == "1" ]]; then
         preflight_ok "net.ipv4.ip_forward=1"
     else
-        preflight_strict_warn_or_fail "net.ipv4.ip_forward is ${ipf} (K8s pod networking needs forwarding; sudo preflight --fix → system-tuning will set it)"
+        preflight_strict_warn_or_fail "net.ipv4.ip_forward is ${ipf} (K8s needs forwarding; sudo preflight.sh --fix -y → system-tuning, or: sudo sysctl -w net.ipv4.ip_forward=1 && echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward)"
     fi
 
     for mod in br_netfilter overlay; do
@@ -2272,14 +2272,20 @@ preflight_apply_safe_fixes() {
         if [[ "$(cat /proc/sys/net/ipv4/ip_forward 2>/dev/null || echo 0)" != "1" ]]; then _st_needs=true; fi
         if ! lsmod 2>/dev/null | awk '$1=="br_netfilter"{f=1} END{exit !f}'; then _st_needs=true; fi
         if ! lsmod 2>/dev/null | awk '$1=="overlay"{f=1} END{exit !f}'; then _st_needs=true; fi
-        # Persisted on boot
+        # Persisted sysctl: new layout uses 50-kubernetes-ipv4-ipforward.conf + bridge in 99-kubernetes.conf;
+        # legacy installs may only have 99-kubernetes.conf with net.ipv4.ip_forward — still OK.
         if [[ ! -f /etc/modules-load.d/kubernetes.conf ]]; then _st_needs=true; fi
         if [[ ! -f /etc/sysctl.d/99-kubernetes.conf ]]; then _st_needs=true; fi
+        if [[ ! -f /etc/sysctl.d/50-kubernetes-ipv4-ipforward.conf ]] \
+            && ! grep -qE '^[[:space:]]*net\.ipv4\.ip_forward[[:space:]]*=[[:space:]]*1' /etc/sysctl.d/99-kubernetes.conf 2>/dev/null; then
+            _st_needs=true
+        fi
         if [[ "${_st_needs}" == "true" ]]; then
             if preflight_confirm_fix "system-tuning" \
                 "configure_system() (swap, sysctl, modules from k8s.sh)" \
                 "Disables swap, sets ip_forward, loads modules. Required for Kubernetes."; then
                 configure_system
+                sysctl -w net.ipv4.ip_forward=1 2>/dev/null || echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
                 # configure_system() only persists 'br_netfilter' in
                 # /etc/modules-load.d/kubernetes.conf; without 'overlay' there,
                 # next reboot drops it and preflight will re-prompt forever.
@@ -2291,7 +2297,7 @@ preflight_apply_safe_fixes() {
                 preflight_fixed "Applied configure_system() (swap, sysctl, modules); ensured 'overlay' is persisted in /etc/modules-load.d/kubernetes.conf"
             fi
         else
-            log_info "  -> skipping system-tuning: swap off, ip_forward=1, br_netfilter+overlay loaded, /etc/modules-load.d/kubernetes.conf and /etc/sysctl.d/99-kubernetes.conf in place"
+            log_info "  -> skipping system-tuning: swap off, ip_forward=1, modules + sysctl.d persistence already in place"
         fi
     fi
 

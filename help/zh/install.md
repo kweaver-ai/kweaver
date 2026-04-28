@@ -124,6 +124,48 @@ sudo bash deploy/preflight.sh --help         # 全部参数
 
 > 每台新主机在跑 `deploy.sh kweaver-core install` 前都建议跑一次 preflight；可重复执行——已经满足的项会按 `OK` 报告并跳过。如果你**有意**在低配 lab 机器上跑（内存/磁盘低于推荐、没装 Docker CE 源等），用 `--lenient` 让报告依然能看，但不会因为这些项而阻塞 install。
 
+### Preflight 报告：`Summary` 与 `Conclusion`
+
+检查或修复结束时会打印 **Summary**（各状态计数）和 **Conclusion**（是否可视为「装机就绪」）。示例形态如下（具体数字与条目以你机器为准）：
+
+```text
+================================================================
+  Summary
+================================================================
+  [OK]    …
+  [WARN]  …
+  [FAIL]  …
+  [FIXED] …
+  (initial [FAIL] before fix phase: …)
+
+  Outstanding [FAIL] items:
+    1. …（每条对应一项检查；说明里会写建议的修复名，如 system-tuning、kernel-limits …）
+    …
+
+[INFO] Hint: most install-blocking [FAIL] items are auto-fixable — re-run: sudo ./preflight.sh --fix
+[INFO]       Need to bypass strict severity … ? sudo ./preflight.sh --check-only --lenient
+
+================================================================
+  Conclusion
+================================================================
+  No KWeaver releases detected, but preflight above is NOT all clear — fix that before treating deploy as ready.
+  Typical loop:
+    sudo ./preflight.sh --fix          # …（默认每项 y/N；加 -y 全自动）
+    sudo ./preflight.sh --check-only   # 再检查直到关键 [FAIL] 消失（或配合 --lenient）
+  Only then install:
+    sudo ./deploy.sh kweaver-core install --minimum    # 体验 / 最小化
+    sudo ./deploy.sh kweaver-core install              # 完整安装
+  Finally: ./onboard.sh from deploy/ (Node 22+ + kweaver on PATH; sudo ./preflight.sh --fix helps …)
+```
+
+**说明：**
+
+- **`[FIXED]` 为 0** 但一开始有 `[FAIL]`：常见于交互式 `--fix` 时**全部按了 Enter**，默认选项为 **「不应用该项修复」（N）**；需要 **`sudo bash deploy/preflight.sh --fix -y`**，或在每个提示处输入 **`y`**。
+- **常见 Outstanding [FAIL] 类别**（与修复名大致对应）：`system-tuning`（转发、swap、内核模块、`overlay` 等）、`kernel-limits`（`vm.max_map_count` / inotify）、`nofile-limits`（`ulimit -n`）、`k8s-pkgs-repo` + `k8s-bins`（Kubernetes 源与 `kubeadm`/`kubectl`）、`containerd-install`、`helm-v3`。RPM 系若 **`kubernetes.repo` 对 kube 包设置了 `exclude`**，安装侧需 **`--disableexcludes=kubernetes`**，preflight 与脚本的探测/安装语义已对齐）。
+- **`--fix` 后务必再跑一次 `--check-only`**，确认关键项已为 `[OK]` 再执行 **`deploy.sh`**。
+
+更细的故障条目与手动兜底见 **`deploy/README.zh.md` → Troubleshooting**。
+
 ---
 
 ## 🚀 安装 KWeaver Core

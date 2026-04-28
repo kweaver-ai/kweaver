@@ -20,6 +20,9 @@ declare -a PREFLIGHT_FAIL_SNAPSHOT=()
 # Node major for kweaver / onboard / kweaver-admin in this deploy path (default 22: aligns with
 # @kweaver-ai/kweaver-sdk; we use the same bar for kweaver-admin even if npm lists >=18). Override for experiments.
 PREFLIGHT_KWEAVER_MIN_NODE_MAJOR="${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR:-22}"
+# Minimum CPython for deploy/scripts/lib/onboard_*.py; enforced when python3 is on PATH.
+PREFLIGHT_MIN_PYTHON_MAJOR="${PREFLIGHT_MIN_PYTHON_MAJOR:-3}"
+PREFLIGHT_MIN_PYTHON_MINOR="${PREFLIGHT_MIN_PYTHON_MINOR:-6}"
 # If the user does not install Node 22+ on the server they ran preflight on, they need *some* environment with it.
 PREFLIGHT_OFFHOST_NODE22_HINT="If you do not upgrade Node on this host, run ./onboard.sh and kweaver CLIs from a machine (or job) where Node ${PREFLIGHT_KWEAVER_MIN_NODE_MAJOR}+ is on PATH — e.g. your laptop, a jump box with nvm, a devcontainer, or CI."
 
@@ -1218,7 +1221,7 @@ preflight_check_residue() {
 # --- client tools: target (install host) + admin (optional) -------------------
 preflight_check_target_tools() {
     preflight_skip "tools" && return 0
-    log_info "Checking target host tools (kubectl, helm)..."
+    log_info "Checking target host tools (kubectl, helm, python3 for onboard/script compatibility)..."
     if command -v kubectl &>/dev/null; then
         preflight_ok "kubectl: $(command -v kubectl)"
     else
@@ -1261,6 +1264,17 @@ preflight_check_target_tools() {
         esac
     else
         preflight_strict_warn_or_fail "helm not found (deploy.sh kweaver-core install requires Helm v3; sudo preflight --fix → helm-v3 will install it)"
+    fi
+
+    # deploy/scripts/lib/onboard_*.py target CPython 3.6+ (e.g. CentOS 7); fail if PATH python3 is older.
+    if command -v python3 &>/dev/null; then
+        if python3 -c "import sys; sys.exit(0 if sys.version_info >= (${PREFLIGHT_MIN_PYTHON_MAJOR}, ${PREFLIGHT_MIN_PYTHON_MINOR}) else 1)" 2>/dev/null; then
+            preflight_ok "python3: $(command -v python3) ($(python3 -c 'import sys; print("%d.%d.%d"%sys.version_info[:3])' 2>/dev/null)) — deploy/onboard helpers need >=${PREFLIGHT_MIN_PYTHON_MAJOR}.${PREFLIGHT_MIN_PYTHON_MINOR}"
+        else
+            preflight_strict_warn_or_fail "python3 is $(python3 -V 2>/dev/null); deploy/scripts/lib/onboard_*.py require CPython ${PREFLIGHT_MIN_PYTHON_MAJOR}.${PREFLIGHT_MIN_PYTHON_MINOR}+ — upgrade python3 on this host or run onboard from another machine with Python ${PREFLIGHT_MIN_PYTHON_MAJOR}.${PREFLIGHT_MIN_PYTHON_MINOR}+."
+        fi
+    else
+        preflight_warn "python3 not on PATH — required for sudo preflight --output=json; needed to run deploy/onboard helper scripts locally (Python ${PREFLIGHT_MIN_PYTHON_MAJOR}.${PREFLIGHT_MIN_PYTHON_MINOR}+)."
     fi
 }
 

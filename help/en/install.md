@@ -29,7 +29,9 @@ Prepare the host, network, and client tooling before you deploy.
 | --- | --- |
 | **Git** | `deploy.sh` / `preflight.sh` **do not** call `git`. Install Git only if you are working from **a cloned repository**. Deployments from an **extracted product tarball** or artifact **do not** require Git on the install host. |
 | **Node.js** | **22+** aligns with **`@kweaver-ai/kweaver-sdk`** npm [`engines`](https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk), **`deploy/onboard.sh`**, optional **`kweaver-admin`**, and preflight checks (`PREFLIGHT_KWEAVER_MIN_NODE_MAJOR`, default **22**). Bringing up Kubernetes/Helm on the server **does not** require Node; preflight warns if Node is missing or older than **22** (**[WARN]** only—you can run onboard from another machine or install Node via **`preflight.sh --fix`** opt-ins). See **Client tooling** below. |
-| **Python** **3** | **Optional** for normal `preflight` / `deploy.sh`. **`python3`** is **required** if you pass **`deploy/preflight.sh --output=json`** (stdout JSON is emitted via Python). A few kubectl-related helpers also use Python when available. |
+| **Python** **3** | **Optional** for normal `preflight` / `deploy.sh`. **`python3`** is **required** if you pass **`deploy/preflight.sh --output=json`** (stdout JSON is emitted via Python). When **`python3`** is on PATH, preflight **requires CPython 3.6+** (same bar as `deploy/scripts/lib/onboard_*.py`; override **`PREFLIGHT_MIN_PYTHON_MAJOR`** / **`PREFLIGHT_MIN_PYTHON_MINOR`**, default **3** / **6**). A few kubectl-related helpers also use Python when available. |
+
+**`deploy/scripts/lib/onboard_*.py` (invoked by `onboard.sh`)** are written for **CPython 3.6 through current 3.x** — including **CentOS 7’s 3.6.x** — and avoid 3.7-only `subprocess` flags, **PEP 563** annotations, **`yaml.dump(..., sort_keys=...)`** (needs newer PyYAML), etc. **Python 3.5 and older are not supported** (f-strings, among other things). Maintainer/CI: **`bash deploy/scripts/lib/preflight_checks_test.sh`** includes a `py_compile` pass on these files when `python3` is available; set **`EXTRA_PYTHONS="python3.9 python3.12"`** to repeat with more interpreters.
 
 ### Host preparation (typical Linux)
 
@@ -95,7 +97,7 @@ chmod +x deploy.sh
 
 ## 🩺 Pre-install host check / fix: `preflight.sh`
 
-Before `deploy.sh`, run **`deploy/preflight.sh`** on the **target install host** (`root` / `sudo`). It checks kernel / sysctl / containerd / `kubectl` / `helm` / Node / `kweaver` CLIs and can apply the missing pieces (each fix is opt-in unless `-y`):
+Before `deploy.sh`, run **`deploy/preflight.sh`** on the **target install host** (`root` / `sudo`). It checks kernel / sysctl / containerd / `kubectl` / `helm` / `python3` (requires **3.6+** when interpreter is on PATH) / Node / `kweaver` CLIs and can apply the missing pieces (each fix is opt-in unless `-y`):
 
 ```bash
 sudo bash deploy/preflight.sh                # check-only (default; still requires root)

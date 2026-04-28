@@ -29,6 +29,30 @@ else
   echo "skip: python3 not in PATH"
 fi
 
+# --- Onboard helpers: byte-compile (syntax-only; matches CPython 3.6+ subset) ---
+ONBOARD_PY=(
+  "${SCRIPT_DIR}/scripts/lib/onboard_patch_bkn_cm.py"
+  "${SCRIPT_DIR}/scripts/lib/onboard_apply_config.py"
+)
+_onboard_py_compile() {
+  local py="$1"
+  echo "== onboard py_compile: ${py} ($("${py}" -V 2>&1)) =="
+  "${py}" -m py_compile "${ONBOARD_PY[@]}" || fail "py_compile failed for ${py}"
+}
+if command -v python3 &>/dev/null; then
+  _onboard_py_compile python3
+  for py in ${EXTRA_PYTHONS:-}; do
+    [[ -z "${py}" ]] && continue
+    if command -v "${py}" &>/dev/null; then
+      _onboard_py_compile "${py}"
+    else
+      echo "(skip: ${py} not on PATH)" >&2
+    fi
+  done
+else
+  echo "skip: onboard py_compile (python3 not in PATH)"
+fi
+
 # --- Test confirm: assume yes ---
 PREFLIGHT_ASSUME_YES=true PREFLIGHT_ASSUME_NO=false preflight_confirm_fix "t" "a" "r" && true || fail "expect yes with ASSUME_YES"
 PREFLIGHT_ASSUME_YES=false

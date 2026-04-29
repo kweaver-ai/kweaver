@@ -359,9 +359,20 @@ wait_for_dns() {
     log_info "CoreDNS is ready"
 }
 
+# Many distros configure sudo secure_path without /usr/local/bin while install_helm
+# places the binary under /usr/local/bin — sudo preflight then fails `command -v helm`.
+# Same paths on Ubuntu and CentOS/RHEL (FHS); not package-manager-specific.
+_k8s_ensure_helm_usr_bin_copy() {
+    [[ -x /usr/local/bin/helm ]] || return 0
+    [[ -x /usr/bin/helm ]] && return 0
+    install -m 0755 /usr/local/bin/helm /usr/bin/helm || return 0
+    log_info "Copied /usr/local/bin/helm → /usr/bin (sudo secure_path compatibility)"
+}
+
 # Install Helm 3
 install_helm() {
     log_info "Installing Helm 3..."
+    _k8s_ensure_helm_usr_bin_copy
 
     local desired="${HELM_VERSION}"
     local existing=""
@@ -401,8 +412,9 @@ install_helm() {
     if curl -fsSLo "${tmpdir}/${tarball}" "${url}"; then
         tar -xzf "${tmpdir}/${tarball}" -C "${tmpdir}"
         install -m 0755 "${tmpdir}/linux-${arch}/helm" /usr/local/bin/helm
+        install -m 0755 "${tmpdir}/linux-${arch}/helm" /usr/bin/helm
         rm -rf "${tmpdir}" 2>/dev/null || true
-        log_info "Helm ${desired} installed successfully"
+        log_info "Helm ${desired} installed successfully (/usr/local/bin and /usr/bin)"
         return 0
     fi
     rm -rf "${tmpdir}" 2>/dev/null || true
@@ -413,6 +425,7 @@ install_helm() {
     else
         curl -fsSL "${HELM_INSTALL_SCRIPT_URL}" | bash
     fi
+    _k8s_ensure_helm_usr_bin_copy
 
     # Do not auto-add Helm repos here: modules add repos only when a local chart is not available.
     log_info "Helm 3 installed successfully"
@@ -564,15 +577,15 @@ install_containerd() {
             # Construct correct URL based on OS type
             if [[ "${os_id}" == "rhel" ]] || [[ "${os_id}" == "rocky" ]] || [[ "${os_id}" == "almalinux" ]]; then
                 # RHEL-based systems use /rhel/ path
-                rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/rhel/${rhel_version}/${arch}/stable/Packages/containerd.io-1.6.33-3.1.el${rhel_version}.${arch}.rpm"
+                rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/rhel/${rhel_version}/${arch}/stable/Packages/containerd.io-1.6.32-3.1.el${rhel_version}.${arch}.rpm"
             else
                 # CentOS uses /centos/ path
-                rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/${rhel_version}/${arch}/stable/Packages/containerd.io-1.6.33-3.1.el${rhel_version}.${arch}.rpm"
+                rpm_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/${rhel_version}/${arch}/stable/Packages/containerd.io-1.6.32-3.1.el${rhel_version}.${arch}.rpm"
             fi
             
             local rpm_file="/tmp/containerd.io.rpm"
             
-            log_info "Downloading containerd.io v1.6.33 RPM from Tsinghua mirror..."
+            log_info "Downloading containerd.io v1.6.32 RPM from Tsinghua mirror..."
             log_info "URL: ${rpm_url}"
             
             set +e
@@ -602,7 +615,7 @@ install_containerd() {
             log_error "Please install containerd manually using one of these methods:"
             log_error ""
             log_info "  Option 1: Download and install RPM directly"
-            log_info "    curl -fsSLo /tmp/containerd.io.rpm https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/\$(rpm -E %rhel)/\$(uname -m)/stable/Packages/containerd.io-1.6.33-3.1.el\$(rpm -E %rhel).\$(uname -m).rpm"
+            log_info "    curl -fsSLo /tmp/containerd.io.rpm https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/\$(rpm -E %rhel)/\$(uname -m)/stable/Packages/containerd.io-1.6.32-3.1.el\$(rpm -E %rhel).\$(uname -m).rpm"
             log_info "    dnf install -y /tmp/containerd.io.rpm"
             log_error ""
             log_info "  Option 2: Install from Aliyun mirror"
@@ -830,11 +843,13 @@ EOF
     
     if ! command -v kubeadm &> /dev/null || ! command -v kubelet &> /dev/null || ! command -v kubectl &> /dev/null; then
         if [[ "${PKG_MANAGER}" == "dnf" ]] || [[ "${PKG_MANAGER}" == "yum" ]]; then
-            # For RHEL/CentOS/Fedora systems
-            ${PKG_MANAGER_INSTALL} kubeadm kubelet kubectl kubernetes-cni
-            # Only use hold command if it's available (dnf mark install works, yum versionlock may need plugin)
+            # RHEL-family only; Ubuntu/Debian use the apt branch below (no --disableexcludes).
+            # pkgs.k8s.io kubernetes.repo often sets exclude=kubeadm kubelet kubectl — match preflight UX.
             if [[ "${PKG_MANAGER}" == "dnf" ]]; then
+                dnf install -y --disableexcludes=kubernetes kubeadm kubelet kubectl kubernetes-cni
                 ${PKG_MANAGER_HOLD} kubeadm kubelet kubectl kubernetes-cni 2>/dev/null || true
+            else
+                yum install -y --disableexcludes=kubernetes kubeadm kubelet kubectl kubernetes-cni
             fi
         else
             # For Ubuntu/Debian systems
@@ -905,20 +920,34 @@ configure_system() {
 br_netfilter
 EOF
     
-    # Configure kernel parameters
+    # Separate file for IPv4 forwarding (50-* runs before many 99-* drops).
+    # Some hosts fail bridge keys in sysctl --system first pass; forwarding must never be skipped.
     log_info "Configuring kernel parameters..."
+    mkdir -p /etc/sysctl.d 2>/dev/null || true
+    cat > /etc/sysctl.d/50-kubernetes-ipv4-ipforward.conf <<'EOF'
+# K8s / CNI: pod traffic between interfaces (do not bundle with bridge keys only)
+net.ipv4.ip_forward = 1
+EOF
     cat > /etc/sysctl.d/99-kubernetes.conf <<EOF
 net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-net.ipv4.ip_forward = 1
 EOF
-    
+
+    sysctl -w net.ipv4.ip_forward=1 2>/dev/null || echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
+
     # Apply sysctl settings with timeout to avoid hanging
     timeout 10 sysctl --system 2>/dev/null || log_warn "sysctl configuration may have timed out"
-    
-    # Ensure ip_forward is enabled immediately (in case sysctl didn't apply it)
-    echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
-    
+
+    sysctl -w net.ipv4.ip_forward=1 2>/dev/null || echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
+
+    local _ipf
+    _ipf="$(cat /proc/sys/net/ipv4/ip_forward 2>/dev/null || echo 0)"
+    if [[ "${_ipf}" != "1" ]]; then
+        log_warn "net.ipv4.ip_forward is still ${_ipf} after sysctl; Check /etc/sysctl.d/, firewalld, or cloud network agents overriding routing."
+    else
+        log_info "net.ipv4.ip_forward=1 (runtime confirmed)"
+    fi
+
     log_info "System configured for Kubernetes"
 }
 

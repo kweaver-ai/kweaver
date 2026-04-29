@@ -16,10 +16,22 @@
 
 | 项 | 最低 | 推荐 |
 | --- | --- | --- |
-| 🖥️ 操作系统 | CentOS 8+、openEuler 23+ | CentOS 8+ |
+| 🖥️ 操作系统 | **Ubuntu Server** **22.04 LTS** 及以上，或 **Rocky Linux / AlmaLinux / CentOS Stream** **8** 及以上，**openEuler** **23** 及以上 | **Ubuntu** **22.04 LTS**，或 RPM 系 **8+** |
 | ⚙️ CPU | 16 核 | 16 核 |
 | 🧠 内存 | 48 GB | 64 GB |
 | 💾 磁盘 | 200 GB | 500 GB |
+
+`deploy/preflight.sh` 与 `deploy.sh` **同时支持** **Ubuntu / Debian**（apt）与 **Rocky / Alma / CentOS Stream / openEuler**（dnf/yum），详见 `deploy/README.zh.md`。
+
+### Git、Node.js、Python
+
+| 工具 | 说明 |
+| --- | --- |
+| **Git** | `deploy.sh` / `preflight.sh` **不会**调用 `git`。只有从 **Git 仓库 clone** 开发/更新时才需要本机装 Git；使用**已解压的产品包**或构建产物时，**安装目标机可以不装 Git**。 |
+| **Node.js** | **22+** 与 **`@kweaver-ai/kweaver-sdk`** 的 npm `engines`、`deploy/onboard.sh`、可选的 **`kweaver-admin`** 及 preflight 检查一致（环境变量 **`PREFLIGHT_KWEAVER_MIN_NODE_MAJOR`**，默认 **22**）。**仅起 K8s / Helm** 时，目标机**可以不装 Node**；缺 Node 或版本低于 22 时 preflight 多为 **[WARN]**（非阻塞），也可在**另一台已装 Node 22+ 的机器**上跑 `onboard.sh`，或通过 **`preflight.sh --fix`** 里与 Node 相关的可选项安装。详见下文 **客户端工具**。 |
+| **Python** **3** | 日常跑 **`preflight` / `deploy.sh` 不强制**要求。若使用 **`deploy/preflight.sh --output=json`**（JSON 输出依赖 **`python3`**），则**必须**安装 Python 3。若目标机 **PATH 上已有 `python3`**，preflight 会检查其版本为 **CPython 3.6+**（与 `deploy/scripts/lib/onboard_*.py` 一致；可用 **`PREFLIGHT_MIN_PYTHON_MAJOR`** / **`PREFLIGHT_MIN_PYTHON_MINOR`** 覆盖，默认 **3** / **6**）。部分与 `kubectl` 相关的辅助解析在存在 `python3` 时也会使用。 |
+
+**`deploy/scripts/lib/onboard_*.py`（供 `onboard.sh` 调用）**：实现上约定 **CPython 3.6 起至当前主线 3.x** 可调（兼容 CentOS 7 自带的 **3.6.x**；**3.5 及以下**不适用，因其缺少 f-string 等语法）。不向 **PyYAML 5.1 以后**才有的 `yaml.dump(..., sort_keys=...)` 等参数。维护者或 CI 可执行 **`bash deploy/scripts/lib/preflight_checks_test.sh`**，在存在 **`python3`** 时会对这两个文件做一次 **`py_compile`**；本机若有多个解释器，可 **`EXTRA_PYTHONS="python3.9 python3.12"`** 再跑一遍以覆盖多版本。
 
 ### 🛠️ 主机准备（典型 Linux）
 
@@ -65,6 +77,8 @@ npm install -g @kweaver-ai/kweaver-sdk
 npx kweaver --help
 ```
 
+> 需要 **Node.js 22+**，与 npm 上 [`@kweaver-ai/kweaver-sdk`](https://www.npmjs.com/package/@kweaver-ai/kweaver-sdk) 的 `engines`（`node >= 22`）一致；使用 Node 18 会 `EBADENGINE` 或运行期报错。
+
 - 🌐 **curl** — 直接调用 HTTP API
 
 ---
@@ -79,6 +93,90 @@ chmod +x deploy.sh
 ```
 
 > ℹ️ 若目录名不同，请以实际发布包中的 `deploy` 路径为准。
+
+---
+
+## 🩺 装机前体检 / 修复：`preflight.sh`
+
+在 `deploy.sh` 之前，建议先在**安装目标主机**上以 `root` / `sudo` 跑一次 **`deploy/preflight.sh`**：内核 / sysctl / containerd / `kubectl` / `helm` / `python3`（若在 PATH 上则要求 **≥3.6**）/ Node / `kweaver` CLI 等一次过；缺什么按需修（每项默认 y/N 询问，`-y` 全自动）。
+
+```bash
+sudo bash deploy/preflight.sh                # 仅检查（默认；仍需 root）
+sudo bash deploy/preflight.sh --fix          # 检查 + 交互修复
+sudo bash deploy/preflight.sh --fix -y       # 全部自动确认修复
+sudo bash deploy/preflight.sh --list-fixes   # 预览将会执行哪些修复，不改任何东西
+sudo bash deploy/preflight.sh --help         # 全部参数
+```
+
+常用参数：
+
+| 参数 | 含义 |
+| --- | --- |
+| `--check-only` | 仅检查，不改系统（默认） |
+| `--fix` | 检查 + 应用修复（K8s / sysctl / containerd / Helm / 防火墙 / SELinux / 系统调优 / sysctl 等）；同时按需提示安装 Node 22+ + `kweaver` / `kweaver-admin` |
+| `-y` / `--yes` | **全部**修复项自动确认 |
+| `-n` / `--no` | 全部修复项自动拒绝（仅查看风险描述，不改东西） |
+| `--fix-allow=LIST` | 仅自动确认指定修复项（其余跳过），如 `k8s-pkgs-repo,k8s-bins,containerd-install,helm-v3,nofile-limits,nodejs-npm,kweaver-sdk`（旧名 `k8s-apt-source` 仍可作别名）。可用 `sudo bash deploy/preflight.sh --list-fixes` 查看本机当前可用的全部修复名 |
+| `--role=target\|admin\|both` | `target` = 仅 `kubectl`/`helm`；`admin` = `kweaver` / Node / npm；`both`（默认）= 全部 |
+| `--no-recheck` | 修复完不再重新跑一遍完整检查 |
+| `--lenient` | 把「会阻塞 install + `--fix` 能搞定」的 `[FAIL]` 项（sysctl / 内核模块 / containerd / kubectl / helm / swap / apt 源损坏 / 缺 kubeadm 或 containerd 安装候选 / ulimit / inotify / vm.max_map_count / overlay）降回 `[WARN]`。等同 `PREFLIGHT_STRICT=false PREFLIGHT_STRICT_SOURCES=false`。 |
+| `--skip=LIST` | 跳过指定检查项 |
+| `--report=PATH` | 完整日志追加到该文件 |
+| `--output=json` | 以 JSON 输出到 stdout（人类日志到 stderr，需 `python3`） |
+
+常用环境变量：
+
+| 变量 | 默认 | 作用 |
+| --- | --- | --- |
+| `PREFLIGHT_STRICT` | `true` | 为 `true` 时，`--fix` 能修复的「阻塞 install」项以 `[FAIL]` 报告（让 `--check-only` 退出码为 `1`）；设 `false` 退回 `[WARN]`。 |
+| `PREFLIGHT_STRICT_SOURCES` | `true` | 为 `true` 时，会额外验证 `apt-cache policy kubeadm` / `containerd.io` / `containerd`（以及 `dnf`/`yum` 等价命令）确实有安装候选——光 `apt-get update` 成功不算数。 |
+| `PREFLIGHT_K8S_APT_MINOR` | 自动 | 锁定 `pkgs.k8s.io` minor 版本（如 `v1.28`）。否则从已装的 `kubeadm` 推断，回退 `v1.28`。 |
+
+退出码：**0** 全 OK；**1** 有 FAIL；**2** 仅有 WARN（无 FAIL）。
+
+> 每台新主机在跑 `deploy.sh kweaver-core install` 前都建议跑一次 preflight；可重复执行——已经满足的项会按 `OK` 报告并跳过。如果你**有意**在低配 lab 机器上跑（内存/磁盘低于推荐、没装 Docker CE 源等），用 `--lenient` 让报告依然能看，但不会因为这些项而阻塞 install。
+
+### Preflight 报告：`Summary` 与 `Conclusion`
+
+检查或修复结束时会打印 **Summary**（各状态计数）和 **Conclusion**（是否可视为「装机就绪」）。示例形态如下（具体数字与条目以你机器为准）：
+
+```text
+================================================================
+  Summary
+================================================================
+  [OK]    …
+  [WARN]  …
+  [FAIL]  …
+  [FIXED] …
+  (initial [FAIL] before fix phase: …)
+
+  Outstanding [FAIL] items:
+    1. …（每条对应一项检查；说明里会写建议的修复名，如 system-tuning、kernel-limits …）
+    …
+
+[INFO] Hint: most install-blocking [FAIL] items are auto-fixable — re-run: sudo ./preflight.sh --fix
+[INFO]       Need to bypass strict severity … ? sudo ./preflight.sh --check-only --lenient
+
+================================================================
+  Conclusion
+================================================================
+  No KWeaver releases detected, but preflight above is NOT all clear — fix that before treating deploy as ready.
+  Typical loop:
+    sudo ./preflight.sh --fix          # …（默认每项 y/N；加 -y 全自动）
+    sudo ./preflight.sh --check-only   # 再检查直到关键 [FAIL] 消失（或配合 --lenient）
+  Only then install:
+    sudo ./deploy.sh kweaver-core install --minimum    # 体验 / 最小化
+    sudo ./deploy.sh kweaver-core install              # 完整安装
+  Finally: ./onboard.sh from deploy/ (Node 22+ + kweaver on PATH; sudo ./preflight.sh --fix helps …)
+```
+
+**说明：**
+
+- **`[FIXED]` 为 0** 但一开始有 `[FAIL]`：常见于交互式 `--fix` 时**全部按了 Enter**，默认选项为 **「不应用该项修复」（N）**；需要 **`sudo bash deploy/preflight.sh --fix -y`**，或在每个提示处输入 **`y`**。
+- **常见 Outstanding [FAIL] 类别**（与修复名大致对应）：`system-tuning`（转发、swap、内核模块、`overlay` 等）、`kernel-limits`（`vm.max_map_count` / inotify）、`nofile-limits`（`ulimit -n`）、`k8s-pkgs-repo` + `k8s-bins`（Kubernetes 源与 `kubeadm`/`kubectl`）、`containerd-install`、`helm-v3`。RPM 系若 **`kubernetes.repo` 对 kube 包设置了 `exclude`**，安装侧需 **`--disableexcludes=kubernetes`**，preflight 与脚本的探测/安装语义已对齐）。
+- **`--fix` 后务必再跑一次 `--check-only`**，确认关键项已为 `[OK]` 再执行 **`deploy.sh`**。
+
+更细的故障条目与手动兜底见 **`deploy/README.zh.md` → Troubleshooting**。
 
 ---
 
@@ -147,6 +245,104 @@ export INGRESS_NGINX_HTTPS_PORT=8443
 
 ---
 
+## Post-install：`onboard.sh`（安装后引导）
+
+在 `deploy.sh kweaver-core install` 之后，可在能访问集群的机器上运行 **`deploy/onboard.sh`**，需 **Node 22+**、**kubectl**、**kweaver**（`npm i -g @kweaver-ai/kweaver-sdk`）。在 **`deploy/`** 目录执行：
+
+```bash
+cd deploy
+bash ./onboard.sh --help
+```
+
+常用参数：
+
+| 参数 | 含义 |
+| --- | --- |
+| 无参数 | 交互模式：按需引导安装 Node / `kweaver` / `kweaver-admin`，完成两个 CLI 的认证，再依次走模型 / BKN / Context Loader 提示 |
+| `-y` / `--yes` | 全部自动：bootstrap、ISF 下 `kweaver` + `kweaver-admin` 的 HTTP 默认登录（`admin` / `eisoo.com`）、`test` 用户创建 + 角色同步、`kweaver` 以 `test` 重登、Context Loader 导入。会**跳过交互式模型注册**；如需非交互注册模型，请用 `--config=models.yaml`。 |
+| `--config=xxx.yaml` | 非交互：按 YAML 注册模型与可选 BKN；参考 `deploy/conf/models.yaml.example` |
+| `--enable-bkn-search` | 仅做 BKN ConfigMap 类操作（仍先走 probe） |
+| `--skip-context-loader` | 跳过 ADP Context Loader 工具集导入 |
+
+**全量 ISF（启用 auth + business domain）**：脚本根据 Helm/命名空间判断为 ISF 后，**会自动按以下 5 步执行**（你不需要手工逐条做——这里列出来只是让你知道脚本在干什么，以及某一步失败时该回到哪一步）：
+
+1. **`kweaver auth login`**（`onboard_ensure_kweaver_auth`）— 会话写入 `~/.kweaver`。HTTP 默认 `admin` / `eisoo.com`（TTY 下也可改走浏览器 OAuth）；`-y` 模式直接走 HTTP 默认。
+2. **`kweaver-admin` 在 PATH**（`onboard_ensure_kweaver_admin_for_isf`）— 缺则自动 `npm i -g @kweaver-ai/kweaver-admin`（交互提示，或 `-y` 时自动安装）。
+3. **`kweaver-admin auth login`**（`onboard_ensure_kweaver_admin_auth_for_isf`）— 与 `kweaver` **token 文件独立**，但**用同一组控制台账密**（默认仍是 `admin` / `eisoo.com`）。命令是 `-u` / `-p` / `-k`（带上即走 HTTP `/oauth2/signin`，**没有** `--http-signin` 参数，该参数仅 **kweaver-sdk** 有）。TTY 下也支持浏览器 OAuth。
+4. **业务用户 `test`**（`onboard_offer_isf_test_user`）— 创建 `test`，密码 `111111`（可用 `ONBOARD_TEST_USER_PASSWORD` 覆盖），把 `kweaver-admin role list` 中**所有**角色都挂上，然后 **`kweaver auth login` 为 `test`**，让 SDK 会话切到业务用户，供后续步骤使用。若 `test` 已存在，则只做角色同步。
+5. **Context Loader + 模型注册**（`onboard_offer_context_loader_toolset` → `kweaver call impex`；随后是交互式或 YAML 模型注册）— 都使用**以 `test` 登录的 `kweaver`（`~/.kweaver`）**；仅 **admin** 的 `kweaver` 会话对 impex 常见 **403**。
+
+任何一步失败脚本都会非零退出并打印清楚原因；修好之后重跑 `bash deploy/onboard.sh` 即可——已成功的步骤会被检测并跳过（重复运行幂等）。
+
+**最小化安装**（`--minimum`）：通常只需 `kweaver`（常为 `--no-auth`）；上述 ISF 专属步骤 2–4 会被自动跳过，第 5 步的 Context Loader 仅在集群中确实有 operator deployment 时才执行。
+
+结束前会打印 **英文** 完成报告（可用 `ONBOARD_NO_COMPLETION_REPORT=1` 关闭）。
+
+### `onboard.sh` 流程（Mermaid）
+
+**1）入口：环境检查后三选一**
+
+```mermaid
+flowchart TB
+  s([onboard.sh]) --> boot["引导：Node 22+、kweaver、kubectl、python3"]
+  boot --> mode{模式}
+  mode -->|"--enable-bkn-search"| p1[onboard_probe] --> bkn["BKN / ontology ConfigMap 补丁 + rollout"] --> r1[完成报告] --> e1([exit 0])
+  mode -->|"--config=…"| p2[onboard_probe] --> py["exec onboard_apply_config.py"] --> e2([exit])
+  mode -->|默认交互；可选 -y| p3[onboard_probe] --> ui["命名空间 + LLM/向量（已存在则只问是否新增）+ BKN 补丁（仅在更换默认时执行）"] --> r2[完成报告] --> e3([exit 0])
+```
+
+- **三种模式都会先跑 `onboard_probe`**，再进入「仅 BKN」、YAML 或交互式注册。**全量 ISF** 时 probe 内含：**与 kweaver 同默认的 `kweaver-admin` HTTP 登录**、**用户 `test`**、**`kweaver` 以 `test` 重登**、再 **Context Loader**（条件满足时）。
+- **`-y`** 不会自动等价于 `--config`；主要自动确认 **Node / npm -g**，以及在 **ISF 全量** 下 `kweaver` / `kweaver-admin` 的 **HTTP** 登录默认行为。`-y` 模式下不会跑交互式模型注册（如需非交互注册请使用 `--config=models.yaml`），完成报告里会列出平台上现有模型计数，方便确认。
+- **可重复执行（已注册 / 已配置自动跳过）。** 交互式模型注册会先探测平台现状，再决定是否提问：
+  - **大模型 LLM**：若平台已有任何 LLM，先问 `Register another LLM now? [y/N]`，默认 **否**；选否则跳过 LLM 提示。
+  - **向量 / 小模型**：同样先问是否新增；如果你确实新增了 embedding，再追问是否设为 **BKN 默认**：
+    - 平台已有默认时：`Set [<新模型>] as the new BKN default…? [y/N]`，默认 **否**（保留原默认）。
+    - 平台尚无默认时：`Set [<新模型>] as the BKN default…? [Y/n]`，默认 **是**。
+  - **BKN ConfigMap 补丁 + `bkn-backend` / `ontology-query` 滚动重启** 仅在 **默认 embedding 真的发生变化** 时执行；保持原默认时 ConfigMap 完全不动，也不会重启任何 deployment。
+  - YAML 模式（`--config=models.yaml`）遵循同样的思路：每个模型若已存在则按名称跳过；当两个 ConfigMap 已经声明了相同的 `defaultSmallModelEnabled=true` / `defaultSmallModelName` 时，BKN 补丁与重启也会一并跳过。
+
+**2）`onboard_probe` 执行顺序（非 ISF 时相关步骤会快速跳过或空操作）**
+
+```mermaid
+flowchart TB
+  subgraph probe["onboard_probe"]
+    A["onboard_ensure_kweaver_auth\n（kweaver：HTTP 默认 admin / eisoo 或浏览器）"] --> B["kubectl：命名空间或目标 namespace"]
+    B --> C["onboard_prepend_npm_global_bin_to_path"]
+    C --> D["onboard_recommend_admin_cli（Helm/命名空间 → 是否 ISF）"]
+    D --> E["onboard_ensure_kweaver_admin_for_isf\n（ISF 时按需 npm -g 安装 kweaver-admin）"]
+    E --> F["onboard_ensure_kweaver_admin_auth_for_isf\n（HTTP 与 kweaver 同默认；或 -k 浏览器；-y 自动 HTTP）"]
+    F --> G1["onboard_offer_isf_test_user\n创建或同步 test 与角色"]
+    G1 --> G2["onboard_isf_relogin…\nkweaver 以 test 登录（HTTP）"]
+    G2 --> H["onboard_offer_context_loader_toolset\n（kweaver impex）"]
+  end
+```
+
+**非全量 / 最小化**：通常不需要 `kweaver-admin` 的建用户与 **test 重登** 门禁；若集群仍有 operator，Context Loader 仍可能按条件执行。
+
+**3）ISF 全量：双 CLI 与 impex 会话（序列图）**
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor U as 操作者
+  participant O as onboard.sh
+  participant K as kweaver
+  participant A as kweaver-admin
+  U->>O: 在 deploy/ 下执行
+  O->>K: kweaver auth — HTTP（admin / eisoo）或浏览器
+  O->>A: kweaver-admin auth — HTTP（同默认）或 -k 浏览器
+  A->>A: 创建 user、设密、挂载角色
+  A-->>O: user list 成功
+  O->>K: kweaver 以 test 登录 — HTTP（test 的密码）
+  O->>K: kweaver call impex / 后续 kweaver 操作
+```
+
+**probe 之后**，默认模式会继续 **命名空间 + 模型 + BKN** 交互；在 ISF 上此时 **`~/.kweaver` 宜已为 `test`**，后续注册走业务用户。
+
+`kweaver` 与 `kweaver-admin` **会话文件独立**；**ISF 下 HTTP 控制台默认与 kweaver 相同**。**impex 需 `kweaver` 的 `test` 会话**；仅 **admin** 的 kweaver 对 impex 常见 **403**。
+
+---
+
 ## 🛡️ 完整安装后的管理员工具（kweaver-admin）
 
 完整安装（启用 `auth.enabled=true` 与 `businessDomain.enabled=true`）后，平台的**用户、组织、角色、模型、审计**等管理操作通过独立的 npm CLI [`@kweaver-ai/kweaver-admin`](https://github.com/kweaver-ai/kweaver-admin) 完成。它与面向终端用户/Agent 的 `kweaver`（kweaver-sdk）互补：
@@ -162,7 +358,7 @@ export INGRESS_NGINX_HTTPS_PORT=8443
 
 ### 📥 安装
 
-要求 **Node.js 18+**。凭据保存在 `~/.kweaver-admin/platforms/`，与 `~/.kweaver/` 隔离。
+要求 **Node.js 22+**（与 npm 上 `@kweaver-ai/kweaver-sdk` 的 `engines` 一致）。凭据保存在 `~/.kweaver-admin/platforms/`，与 `~/.kweaver/` 隔离。
 
 ```bash
 npm install -g @kweaver-ai/kweaver-admin
@@ -391,7 +587,23 @@ kweaver call '/api/mf-model-manager/v1/small-model/list?page=1&size=50'
 
 ## 🔧 故障排查
 
-如遇安装或 Pod 异常，请结合 `kubectl` 日志与部署脚本输出排查；详细清单以随产品提供的运维文档为准。
+按症状索引（CoreDNS 不就绪、镜像拉不下来、Kubernetes apt / yum 源缺失或 404、`containerd` 装不上、严格模式 `[FAIL]` 项等）请看 [`deploy/README.zh.md` → Troubleshooting](https://github.com/kweaver-ai/kweaver-core/blob/main/deploy/README.zh.md#-troubleshooting)。
+
+`preflight.sh` 报的 `[FAIL]` 大多数都能自动修：
+
+```bash
+sudo bash deploy/preflight.sh --fix -y                         # 全部自动确认修
+sudo bash deploy/preflight.sh --fix --fix-allow=k8s-pkgs-repo # 只配置 / 迁移 K8s 源（也可用 k8s-apt-source）
+sudo bash deploy/preflight.sh --fix --fix-allow=containerd-install
+sudo bash deploy/preflight.sh --check-only --lenient           # 只看 WARN，不 FAIL（lab 机模式）
+```
+
+定位问题时还可以收集：
+
+```bash
+kubectl logs -n <namespace> <pod-name>
+kubectl get events -A --sort-by=.lastTimestamp | tail -50
+```
 
 ---
 

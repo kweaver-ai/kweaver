@@ -35,7 +35,14 @@ dnf install containerd.io
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
 
-# 2. Install KWeaver Core
+# 2. (Recommended) Pre-install host check / fix
+sudo bash ./preflight.sh                # check-only (default)
+sudo bash ./preflight.sh --fix          # check + interactive fixes
+sudo bash ./preflight.sh --fix -y       # auto-approve every fix
+sudo bash ./preflight.sh --list-fixes   # preview which fixes would run, no changes
+sudo bash ./preflight.sh --help         # all flags (--role, --skip, --report, --output=json, …)
+
+# 3. Install KWeaver Core
 # Minimum installation — recommended for first-time experience
 bash ./deploy.sh kweaver-core install --minimum
 # Equivalent to:
@@ -56,7 +63,18 @@ bash ./deploy.sh kweaver-core install \
 # (Optional) Customize ingress ports (default 80/443):
 export INGRESS_NGINX_HTTP_PORT=8080
 export INGRESS_NGINX_HTTPS_PORT=8443
+
+# 4. (Recommended) Post-install bootstrap
+#    Registers an LLM + embedding (skips when already there), patches the BKN ConfigMap
+#    only when the default actually changes, and on a full ISF install creates the business
+#    user `test`, assigns every role from `kweaver-admin role list`, switches `kweaver` to
+#    that user, and imports the Context Loader toolset.
+bash ./onboard.sh        # interactive
+bash ./onboard.sh -y     # non-interactive (uses defaults)
+bash ./onboard.sh --help # all flags (--config=models.yaml, --enable-bkn-search, --skip-context-loader, …)
 ```
+
+> Full preflight / onboard flow, ISF dual-CLI auth and Mermaid diagrams: see [help/en/install.md — Post-install: `onboard.sh`](../help/en/install.md#post-install-onboardsh).
 
 ## 📋 Prerequisites
 
@@ -163,16 +181,32 @@ curl -I https://swr.cn-east-3.myhuaweicloud.com
 cat /etc/containerd/config.toml
 ```
 
-### Kubernetes apt source 404 (Ubuntu/Debian)
+### Kubernetes apt / yum source missing or 404
 
-If `apt update` fails with a 404 from the legacy `packages.cloud.google.com` repository:
+`preflight.sh --check-only` reports one of these in **strict mode** (default):
 
 ```text
-Err:7 https://packages.cloud.google.com/apt kubernetes-xenial Release
-  404  Not Found
+[FAIL] Deprecated Kubernetes apt source detected (packages.cloud.google.com) ...
+[FAIL] apt has no install candidate for kubeadm — Kubernetes apt source missing or unreachable.
+[FAIL] dnf/yum has no install candidate for kubeadm — Kubernetes yum repo missing or unreachable.
 ```
 
-The old Google-hosted apt repository is deprecated. Migrate to `pkgs.k8s.io`:
+**Recommended fix (one command):**
+
+```bash
+sudo bash deploy/preflight.sh --fix --fix-allow=k8s-pkgs-repo
+# or, to also pre-stage containerd / helm / Node, etc.:
+sudo bash deploy/preflight.sh --fix -y
+```
+
+`preflight --fix → k8s-pkgs-repo` covers **both** scenarios (legacy alias `k8s-apt-source` still works in `--fix-allow`):
+
+- Legacy `packages.cloud.google.com` source present → migrate it to `pkgs.k8s.io`.
+- No K8s source configured at all → write `/etc/apt/sources.list.d/kubernetes.list` (or `/etc/yum.repos.d/kubernetes.repo`) pointing to `pkgs.k8s.io/core:/stable:/<vX.Y>/deb|rpm/`.
+
+Pin a specific minor with `PREFLIGHT_K8S_APT_MINOR=v1.28` (default: detected from installed `kubeadm`, falls back to `v1.28`).
+
+**Manual fallback (Ubuntu/Debian):**
 
 ```bash
 sudo apt-mark unhold kubeadm kubelet kubectl || true
@@ -190,6 +224,55 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 sudo apt update
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+**Manual fallback (RHEL/CentOS/openEuler):**
+
+```bash
+sudo tee /etc/yum.repos.d/kubernetes.repo > /dev/null <<'EOF'
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+sudo dnf install -y --disableexcludes=kubernetes kubeadm kubelet kubectl   # or: yum
+```
+
+### `containerd` cannot be installed (no `containerd.io` candidate)
+
+On stock Ubuntu (no Docker CE repo) `preflight.sh` reports:
+
+```text
+[FAIL] apt has no install candidate for containerd.io OR containerd.
+[FAIL] containerd not found ...
+```
+
+`preflight --fix → containerd-install` now tries `containerd.io` first (Docker CE repo) and falls back to the distro `containerd` package automatically:
+
+```bash
+sudo bash deploy/preflight.sh --fix --fix-allow=containerd-install
+```
+
+If both fail, the apt/yum source itself is broken — fix `apt-get update` / `dnf repolist` first.
+
+### Strict mode and `--lenient`
+
+`preflight.sh` defaults to **strict mode** (`PREFLIGHT_STRICT=true`). Items that block install AND are auto-fixable by `--fix` are reported as `[FAIL]` (so `--check-only` exits `1`), not `[WARN]`:
+
+- `swap`, `net.ipv4.ip_forward`, `br_netfilter` / `overlay` modules, `bridge-nf-call-*`
+- `vm.max_map_count`, `fs.inotify.*`, `ulimit -n soft`
+- `containerd` not found / socket missing, `kubectl`, `helm`, `overlay` fs
+- broken `apt-get update`, `dnf/yum repolist` failures, missing kubeadm/containerd install candidate
+
+To downgrade these back to `[WARN]` (e.g. on a low-spec lab box where you accept the risk):
+
+```bash
+sudo bash deploy/preflight.sh --check-only --lenient
+# equivalent to: PREFLIGHT_STRICT=false PREFLIGHT_STRICT_SOURCES=false sudo bash deploy/preflight.sh
 ```
 
 ### View component logs

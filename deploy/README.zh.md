@@ -35,7 +35,14 @@ dnf install containerd.io
 git clone https://github.com/kweaver-ai/kweaver-core.git
 cd kweaver-core/deploy
 
-# 2. 安装 KWeaver Core
+# 2.（推荐）装机前体检 / 修复
+sudo bash ./preflight.sh                # 仅检查（默认）
+sudo bash ./preflight.sh --fix          # 检查 + 交互修复
+sudo bash ./preflight.sh --fix -y       # 全部自动确认修复
+sudo bash ./preflight.sh --list-fixes   # 预览将会执行哪些修复，不改任何东西
+sudo bash ./preflight.sh --help         # 全部参数（--role、--skip、--report、--output=json 等）
+
+# 3. 安装 KWeaver Core
 # 最小化安装 — 首次体验推荐
 bash ./deploy.sh kweaver-core install --minimum
 # 等价于:
@@ -56,7 +63,17 @@ bash ./deploy.sh kweaver-core install \
 # （可选）自定义 ingress 端口（默认 80/443）：
 export INGRESS_NGINX_HTTP_PORT=8080
 export INGRESS_NGINX_HTTPS_PORT=8443
+
+# 4.（推荐）安装后引导
+#    注册 LLM + embedding（已有则跳过）；只有当默认 embedding 实际变更时才会 patch BKN ConfigMap；
+#    在 ISF 全量下还会创建业务用户 `test`、把 `kweaver-admin role list` 中所有角色都挂上、
+#    切换 `kweaver` 到该用户身份，并导入 Context Loader 工具集。
+bash ./onboard.sh        # 交互模式
+bash ./onboard.sh -y     # 非交互模式（按默认）
+bash ./onboard.sh --help # 全部参数（--config=models.yaml、--enable-bkn-search、--skip-context-loader 等）
 ```
+
+> 完整的 preflight / onboard 流程、ISF 双 CLI 鉴权与 Mermaid 流程图见 [help/zh/install.md — Post-install：`onboard.sh`](../help/zh/install.md#post-installonboardsh安装后引导)。
 
 ## 📋 Prerequisites
 
@@ -165,16 +182,32 @@ curl -I https://swr.cn-east-3.myhuaweicloud.com
 cat /etc/containerd/config.toml
 ```
 
-### Kubernetes apt 源 404（Ubuntu/Debian）
+### Kubernetes apt / yum 源缺失或 404
 
-如果 `apt update` 报错，提示旧的 `packages.cloud.google.com` 仓库 404：
+`preflight.sh --check-only` 在**严格模式**（默认）下会报：
 
 ```text
-Err:7 https://packages.cloud.google.com/apt kubernetes-xenial Release
-  404  Not Found
+[FAIL] Deprecated Kubernetes apt source detected (packages.cloud.google.com) ...
+[FAIL] apt has no install candidate for kubeadm — Kubernetes apt source missing or unreachable.
+[FAIL] dnf/yum has no install candidate for kubeadm — Kubernetes yum repo missing or unreachable.
 ```
 
-旧版 Google 托管 apt 源已废弃，需要迁移到 `pkgs.k8s.io`：
+**推荐修复（一条命令搞定）：**
+
+```bash
+sudo bash deploy/preflight.sh --fix --fix-allow=k8s-pkgs-repo
+# 也可以一次性把 containerd / helm / Node 等全准备好：
+sudo bash deploy/preflight.sh --fix -y
+```
+
+`preflight --fix → k8s-pkgs-repo`（旧文档中的 `k8s-apt-source` 仍为 `--fix-allow` 别名）同时覆盖**两种**情况：
+
+- 检测到旧的 `packages.cloud.google.com` 源 → 自动迁移到 `pkgs.k8s.io`。
+- 完全没配置 K8s 源 → 直接写入 `/etc/apt/sources.list.d/kubernetes.list`（或 `/etc/yum.repos.d/kubernetes.repo`），指向 `pkgs.k8s.io/core:/stable:/<vX.Y>/deb|rpm/`。
+
+可用 `PREFLIGHT_K8S_APT_MINOR=v1.28` 锁定特定 minor 版本（默认从已安装的 `kubeadm` 推断，回退 `v1.28`）。
+
+**手动备选（Ubuntu/Debian）：**
 
 ```bash
 sudo apt-mark unhold kubeadm kubelet kubectl || true
@@ -192,6 +225,55 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 sudo apt update
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+**手动备选（RHEL/CentOS/openEuler）：**
+
+```bash
+sudo tee /etc/yum.repos.d/kubernetes.repo > /dev/null <<'EOF'
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+sudo dnf install -y --disableexcludes=kubernetes kubeadm kubelet kubectl   # 或者 yum
+```
+
+### `containerd` 装不上（没有 `containerd.io` 候选）
+
+原版 Ubuntu 默认不带 Docker CE 源，preflight 会报：
+
+```text
+[FAIL] apt has no install candidate for containerd.io OR containerd.
+[FAIL] containerd not found ...
+```
+
+`preflight --fix → containerd-install` 现在会先试 `containerd.io`（Docker CE 源），失败时**自动回退**到发行版自带的 `containerd` 包：
+
+```bash
+sudo bash deploy/preflight.sh --fix --fix-allow=containerd-install
+```
+
+如果两者都失败，说明 apt/yum 源本身有问题——先把 `apt-get update` / `dnf repolist` 修好。
+
+### 严格模式与 `--lenient`
+
+`preflight.sh` 默认开启**严格模式**（`PREFLIGHT_STRICT=true`）。下面这些「会阻塞 install 且 `--fix` 能搞定」的项会报 `[FAIL]`（导致 `--check-only` 以退出码 `1` 退出），不再是 `[WARN]`：
+
+- `swap`、`net.ipv4.ip_forward`、`br_netfilter` / `overlay` 内核模块、`bridge-nf-call-*`
+- `vm.max_map_count`、`fs.inotify.*`、`ulimit -n soft`
+- `containerd` 未安装 / socket 缺失、`kubectl`、`helm`、`overlay` 文件系统
+- `apt-get update` 失败、`dnf/yum repolist` 失败、kubeadm / containerd 没有安装候选
+
+如果你**确实**接受风险（比如只是 lab 上的小机器跑个体验），可以临时降回 `[WARN]`：
+
+```bash
+sudo bash deploy/preflight.sh --check-only --lenient
+# 等价于 PREFLIGHT_STRICT=false PREFLIGHT_STRICT_SOURCES=false sudo bash deploy/preflight.sh
 ```
 
 ### 查看组件日志

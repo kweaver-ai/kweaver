@@ -4,6 +4,7 @@ switch: y
 cases:
 - name: 通过模型id测试连接大模型成功
   url: modelmanager_llm_test
+  prepare_models: llm
   body_params: "{
   \"model_id\": \"${llm_config_id}\"
 }"

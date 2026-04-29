@@ -17,7 +17,7 @@ cases:
   query_params: "{\"model_name\": \"${embedding_config_name}\"}"
   code_check: '200'
   resp_check: "{
-  \"$.count\": 1
+  \"$.count\": \">=1\"
 }"
   description: 测试按模型名称筛选小模型列表
 

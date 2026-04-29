@@ -131,7 +131,7 @@ cases:
 
 - name: 新增小模型失败--model_name重复
   url: modelmanager_small_model_add
-  prev_case: 新增小模型成功--embedding类型
+  prepare_models: embedding
   body_params: "{
   \"model_name\": \"${embedding_config_name}\",
   \"model_type\": \"embedding\",

@@ -53,6 +53,7 @@ usage() {
     echo "  redis uninstall               Uninstall Redis (PVCs will be deleted by default)"
     echo "  kafka install                 Install single-node Kafka"
     echo "  kafka uninstall               Uninstall Kafka (PVCs will be deleted by default)"
+    echo "  data-services install         Install MariaDB, Redis, Kafka, Zookeeper, OpenSearch (cluster must exist)"
     echo "  opensearch install            Install single-node OpenSearch"
     echo "  opensearch uninstall          Uninstall OpenSearch (optionally purge PVC)"
     echo "  zookeeper install             Install single-node Zookeeper"
@@ -96,6 +97,7 @@ usage() {
     echo "  $0 kafka install              # Install Kafka"
     echo "  $0 kafka uninstall                         # Uninstall Kafka (PVCs deleted by default)"
     echo "  KAFKA_PURGE_PVC=false $0 kafka uninstall   # Uninstall Kafka but keep PVCs"
+    echo "  AUTO_INSTALL_INGRESS_NGINX=false $0 data-services install  # After kind/kubeadm + ingress already exist"
     echo "  $0 opensearch install         # Install OpenSearch"
     echo "  $0 opensearch uninstall       # Uninstall OpenSearch"
     echo "  OPENSEARCH_PURGE_PVC=true $0 opensearch uninstall  # Uninstall OpenSearch and delete PVC (data loss!)"
@@ -376,6 +378,19 @@ confirm_access_address_before_install() {
     log_info "accessAddress written to ${CONFIG_YAML_PATH}: ${scheme}://${host}:${port}${path}"
 }
 
+# Pure Helm/kubectl data-layer installs (MariaDB, Redis, …): host root is not required on macOS
+# or when using an existing cluster (kind, BYOK). Linux "full platform" installs still use root.
+require_root_for_helm_cluster_addons_only() {
+    local os
+    os="$(uname -s 2>/dev/null || true)"
+    if [[ "${os}" == "Darwin" ]]; then
+        return 0
+    fi
+    if [[ "${KWEAVER_BYOK_CLUSTER:-false}" == "true" ]] || [[ "${KWEAVER_SKIP_PLATFORM_BOOTSTRAP:-false}" == "true" ]]; then
+        return 0
+    fi
+    check_root
+}
 
 # Main function
 main() {
@@ -532,16 +547,32 @@ main() {
         esac
         return 0
     fi
+
+    # Bundle: platform data services only (for bring-your-own kube, e.g. kind on macOS).
+    if [[ "${module}" == "data-services" ]]; then
+        case "${action}" in
+            install|init)
+                require_root_for_helm_cluster_addons_only
+                ensure_data_services || exit 1
+                ;;
+            *)
+                log_error "Unknown data-services action: ${action}"
+                usage
+                exit 1
+                ;;
+        esac
+        return 0
+    fi
     
     # Handle mariadb module
     if [[ "${module}" == "mariadb" ]]; then
         case "${action}" in
             install|init)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 install_mariadb
                 ;;
             uninstall)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 shift 2
                 uninstall_mariadb "$@"
                 ;;
@@ -558,11 +589,11 @@ main() {
     if [[ "${module}" == "redis" ]]; then
         case "${action}" in
             install|init)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 install_redis
                 ;;
             uninstall)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 uninstall_redis
                 ;;
             *)
@@ -578,11 +609,11 @@ main() {
     if [[ "${module}" == "opensearch" ]]; then
         case "${action}" in
             install|init)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 install_opensearch
                 ;;
             uninstall)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 uninstall_opensearch
                 ;;
             *)
@@ -618,11 +649,11 @@ main() {
     if [[ "${module}" == "zookeeper" ]]; then
         case "${action}" in
             install|init)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 install_zookeeper
                 ;;
             uninstall)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 uninstall_zookeeper
                 ;;
             *)
@@ -638,11 +669,11 @@ main() {
     if [[ "${module}" == "kafka" ]]; then
         case "${action}" in
             install|init)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 install_kafka
                 ;;
             uninstall)
-                check_root
+                require_root_for_helm_cluster_addons_only
                 uninstall_kafka
                 ;;
             *)

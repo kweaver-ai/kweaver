@@ -5,10 +5,11 @@
 #   1. doctor                 — optional; check docker / kind / kubectl / helm / node
 #   2. doctor --fix           — optional; install missing CLIs via Homebrew (prompts; -y skips)
 #   3. cluster up             — kind + ingress-nginx; context becomes kind-<KIND_CLUSTER_NAME>
-#   4. kweaver-core download  — optional; cache charts locally (mac.sh defaults --minimum unless --full)
-#   5. kweaver-core install   — Helm install Core (mac.sh adds --minimum unless you pass --full)
-#   6. isf / etrino (vega)    — optional; same Helm path as Linux when cluster + config are ready
-#   7. onboard                — optional; needs kweaver CLI + Core up (add -y for non-interactive)
+#   4. data-services install  — MariaDB / Redis / Kafka / Zookeeper / OpenSearch (required before Core on mac)
+#   5. kweaver-core download  — optional; cache charts locally (mac.sh defaults --minimum unless --full)
+#   6. kweaver-core install   — Helm install Core (mac.sh adds --minimum unless you pass --full)
+#   7. isf / etrino (vega)    — optional; same Helm path as Linux when cluster + config are ready
+#   8. onboard                — optional; needs kweaver CLI + Core up (add -y for non-interactive)
 #   Teardown: cluster down
 #   Full write-up: deploy/dev/README.md
 #
@@ -18,6 +19,7 @@
 #   bash deploy/dev/mac.sh cluster up
 #   bash deploy/dev/mac.sh cluster down
 #   bash deploy/dev/mac.sh cluster status
+#   bash deploy/dev/mac.sh data-services install
 #   bash deploy/dev/mac.sh kweaver-core install
 #   bash deploy/dev/mac.sh kweaver-core download
 #   bash deploy/dev/mac.sh isf install
@@ -27,9 +29,9 @@
 # Global flags (same as deploy.sh; must come first):
 #   -y, --yes | --force-upgrade | --distro=k3s|k8s|kubeadm
 #
-# For kweaver-core|core|isf|etrino|vega: if CONFIG_YAML_PATH is unset, default is
-#   deploy/dev/conf/mac-config.yaml. Those paths call deploy.sh in Helm-only mode on mac
-#   (no host k3s / data-service bootstrap). vega is an alias for etrino in mac.sh.
+# Commands that delegate to deploy.sh run Helm chart logic only on mac
+# (no host k3s / bundled data-service bootstrap) unless you run **data-services install**
+# (or individual mariadb/redis/… via deploy.sh). See deploy/dev/README.md.
 #
 # doctor --fix prompts before running brew unless you pass -y / --yes (globally before doctor, or after --fix).
 #
@@ -45,19 +47,21 @@ usage() {
     cat <<'EOF'
 KWeaver mac dev (kind) — thin wrapper around deploy/onboard.
 
-Typical order (shortest path: doctor? → cluster up → kweaver-core install):
+Typical order (shortest path: doctor? → cluster up → **data-services install** → kweaver-core install):
   1) doctor                     optional toolchain check
   2) cluster up                 kind + ingress; kubectl context kind-<name>
-  3) kweaver-core download      optional; charts cache only (minimum profile by default)
-  4) kweaver-core install ...   Helm install (--minimum implied by mac.sh; use --full to opt out)
-  5) isf / etrino|vega          optional; deploy.sh modules (cluster + config must be ready)
-  6) onboard                    optional; after Core is up
+  3) data-services install      MariaDB, Redis, Kafka, Zookeeper, OpenSearch (mac default skips second ingress)
+  4) kweaver-core download      optional; charts cache only (minimum profile by default)
+  5) kweaver-core install ...   Helm install (--minimum implied by mac.sh; use --full to opt out)
+  6) isf / etrino|vega          optional; deploy.sh modules (cluster + config must be ready)
+  7) onboard                    optional; after Core is up
   cluster down                  delete kind cluster
   See deploy/dev/README.md
 
 Commands:
   doctor [--fix] [-y|--yes]        Check toolchain; --fix runs brew after confirm (use -y to skip prompt)
   cluster up|down|status          kind cluster + ingress-nginx (kind manifest)
+  data-services install            Platform data layer into cluster (same as deploy.sh); run before kweaver-core on mac
   kweaver-core|core <action> ...   Delegates to deploy.sh (see deploy.sh help)
   isf <action> ...                 ISF via deploy.sh (install|download|uninstall|status)
   etrino|vega <action> ...         Vega charts (vega-hdfs/calculate/metadata) via deploy.sh; vega = alias of etrino
@@ -69,6 +73,7 @@ Examples:
   bash deploy/dev/mac.sh -y doctor --fix           # no prompt (same as deploy.sh global -y)
   bash deploy/dev/mac.sh doctor --fix -y
   bash deploy/dev/mac.sh cluster up
+  bash deploy/dev/mac.sh data-services install
   bash deploy/dev/mac.sh kweaver-core install --full   # full manifest / ISF when manifest says so
   bash deploy/dev/mac.sh kweaver-core install
   bash deploy/dev/mac.sh kweaver-core download
@@ -80,9 +85,9 @@ Not wired on mac.sh: kweaver-dip|dip (use Linux deploy.sh).
 
 Environment:
   KIND_CLUSTER_NAME       Default: kweaver-dev
-  CONFIG_YAML_PATH        Default: deploy/dev/conf/mac-config.yaml when unset (kweaver-core|core|isf|etrino|vega)
+  CONFIG_YAML_PATH        Default: deploy/dev/conf/mac-config.yaml when unset (kweaver-core|core|isf|etrino|vega|data-services)
 
-Note: Commands that delegate to deploy.sh run Helm chart logic only on mac (no host k3s / bundled data-service bootstrap). See deploy/dev/README.md.
+Note: data-services install runs deploy.sh **data-services** (Helm charts into the current kube context). Other deploy.sh modules on mac still skip host k3s bootstrap unless you install infra yourself. See deploy/dev/README.md.
 
 Mac default: **kweaver-core** / **core** add **--minimum** unless you pass **--minimum** / **--min** already or opt out with **--full**.
 
@@ -188,6 +193,25 @@ main() {
             # shellcheck source=lib/mac_cluster.sh
             source "${SELF_DIR}/lib/mac_cluster.sh"
             mac_cluster_dispatch "$@"
+            ;;
+        data-services)
+            mac_require_darwin
+            if ! mac_doctor; then
+                exit 1
+            fi
+            if ! mac_kube_context_guard; then
+                exit 1
+            fi
+            if [[ -z "${CONFIG_YAML_PATH:-}" ]]; then
+                export CONFIG_YAML_PATH="${MAC_DEV_ROOT}/conf/mac-config.yaml"
+            fi
+            # kind path already installs ingress-nginx; avoid a second controller from ensure_data_services.
+            export AUTO_INSTALL_INGRESS_NGINX="${AUTO_INSTALL_INGRESS_NGINX:-false}"
+            export AUTO_INSTALL_LOCALPV="${AUTO_INSTALL_LOCALPV:-true}"
+            if [[ ${#global_flags[@]} -gt 0 ]]; then
+                exec bash "${DEPLOY_ROOT}/deploy.sh" "${global_flags[@]}" data-services "$@"
+            fi
+            exec bash "${DEPLOY_ROOT}/deploy.sh" data-services "$@"
             ;;
         kweaver-core | core)
             mac_require_darwin

@@ -8,12 +8,12 @@ Local Kubernetes with **kind** plus the same Helm charts as Linux `deploy.sh`. N
 
 ### Architecture (Apple Silicon / arm64)
 
-On **Apple Silicon** Macs, kind nodes are **linux/arm64** by default. Charts pull from `image.registry` in [`dev/conf/mac-config.yaml`](conf/mac-config.yaml); those images must be **arm64-capable** (multi-arch manifest or an arm64 tag). If a registry only ships **amd64**, pods often fail with *exec format error*. Intel Macs still get **amd64** kind nodes unless you force another platform.
+On **Apple Silicon** Macs, kind nodes are **linux/arm64** by default. Charts pull from `image.registry` in your [`dev/conf/mac-config.yaml`](conf/mac-config.yaml) (copy from [`mac-config.yaml.example`](conf/mac-config.yaml.example)); those images must be **arm64-capable** (multi-arch manifest or an arm64 tag). If a registry only ships **amd64**, pods often fail with *exec format error*. Intel Macs still get **amd64** kind nodes unless you force another platform.
 
 ### Access URL (HTTP and automatic host)
 
 - **HTTP vs HTTPS:** HTTPS uses TLS to encrypt traffic and verify the server identity; HTTP is unencrypted. On a trusted LAN, HTTP avoids dealing with local TLS certs and is typical for dev. Browsers may still show “Not secure” for HTTP — expected.
-- **Automatic IP:** [`mac-config.yaml`](conf/mac-config.yaml) uses `accessAddress.scheme: http` and **omits** `host`. On `kweaver-core install`, the flow detects your LAN IP (on macOS, usually the default-route interface) and writes it into values so other devices on the network can open the UI. Set `accessAddress.host` yourself (for example `localhost`) if you want same-machine-only URLs.
+- **Automatic IP:** Your `mac-config.yaml` uses `accessAddress.scheme: http` and may **omit** `host` (see the example file). On `kweaver-core install`, the flow detects your LAN IP (on macOS, usually the default-route interface) and writes it into values so other devices on the network can open the UI. Set `accessAddress.host` yourself (for example `localhost`) if you want same-machine-only URLs.
 
 ## Order of operations
 
@@ -35,7 +35,7 @@ Optional (same `deploy.sh` Helm paths as Linux; you need a working cluster + val
 
 **Teardown:** `bash ./dev/mac.sh cluster down`.
 
-Default values file: [`dev/conf/mac-config.yaml`](conf/mac-config.yaml).  
+Config: copy [`dev/conf/mac-config.yaml.example`](conf/mac-config.yaml.example) to **`dev/conf/mac-config.yaml`** (one-time). The real **`mac-config.yaml` is gitignored** so generated passwords are not committed; adjust `accessAddress` and registry as needed.  
 `kweaver-dip` is not wired in `mac.sh` (use Linux `deploy.sh`).
 
 See also: top-of-file comments in [`mac.sh`](mac.sh), `bash ./dev/mac.sh -h`.
@@ -67,8 +67,9 @@ See also: top-of-file comments in [`mac.sh`](mac.sh), `bash ./dev/mac.sh -h`.
 **最短路径：**`cluster up` → **`data-services install`** → `kweaver-core install`（mac 封装默认带 **`--minimum`**）。若跳过数据层，集群里没有 MySQL 等，**`kweaver-core-data-migrator`** 的 pre-install Job 常会失败（如 `BackoffLimitExceeded`）。  
 **删除本机 kind：**`bash ./dev/mac.sh cluster down`。
 
-**架构：**Apple Silicon 上 kind 节点一般为 **linux/arm64**，镜像需支持 arm64/多架构（见上节及 `dev/conf/mac-config.yaml` 中的 `image.registry`）。仅 amd64 的镜像在 arm64 节点上常会 *exec format error*。
+**架构：**Apple Silicon 上 kind 节点一般为 **linux/arm64**，镜像需支持 arm64/多架构（见上节及本地 `dev/conf/mac-config.yaml` / 示例中的 `image.registry`）。仅 amd64 的镜像在 arm64 节点上常会 *exec format error*。
 
+**配置：**将 [`dev/conf/mac-config.yaml.example`](conf/mac-config.yaml.example) 复制为 **`dev/conf/mac-config.yaml`**。**`mac-config.yaml` 已加入 .gitignore**，避免把 `data-services install` 生成的口令提交进仓库。  
 **访问地址：**默认 **HTTP**（`accessAddress.scheme: http`，端口与 `mac-config` 一致）。**不写 `host`** 时，安装流程会**自动探测本机局域网 IP**（macOS 上多为默认路由网卡），便于同网段其它机器访问；若只要本机访问，可在 `mac-config` 里显式设 `accessAddress.host: localhost`。**HTTPS** 需 TLS 证书，适合生产或需要加密/校验域名的场景；本地开发常用 HTTP 以减少证书折腾。
 
 **故障：**若 **`kweaver-core-data-migrator` / pre-install Job 失败**：请先执行 `bash ./dev/mac.sh data-services install`；必要时 `helm uninstall kweaver-core-data-migrator -n <namespace>` 后重试 `kweaver-core install`。若 `cluster up` 报错无法连接 `docker.sock`，请先**打开 Docker Desktop** 并等其启动完成，执行 `docker info` 确认后再试；`doctor` 会检查 Docker 引擎是否可用。**`doctor --fix` 不会启动 Docker 守护进程**（只能按需用 Homebrew 装 CLI）；若其它工具已齐，只需启动 Desktop 后再执行 `doctor`。

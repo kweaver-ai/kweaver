@@ -1,4 +1,4 @@
-# 04 · Skill Routing Loop — 业务知识网络驱动的 Skill 治理
+# 05 · Skill Routing Loop — 业务知识网络驱动的 Skill 治理
 
 > [English](./README.md)
 
@@ -34,6 +34,14 @@
 - 平台模型工厂里注册的 LLM 模型（用
   `kweaver call /api/mf-model-manager/v1/llm/list` 拿 model_id）
 
+简单自检平台组件是否就绪：
+
+```bash
+kweaver auth whoami                                      # 是否登录
+kweaver call /api/mf-model-manager/v1/llm/list | head    # 模型工厂可达？
+kweaver call /api/agent-operator-integration/v1/mcp/     # execution-factory 可达？
+```
+
 ## 快速开始
 
 ```bash
@@ -46,7 +54,9 @@ pip install -r tool_backend/requirements.txt
 ```
 
 > **并发注意：** 请不要同时运行两个 `./run.sh` 实例。脚本使用固定的 `KN_ID`
-> （`ex05_skill_routing`），第二个实例的清理逻辑会把第一个实例的 KN 一起删掉。
+> （`ex05_skill_routing`）以及固定的 Skill 名（`standard_replenish` /
+> `substitute_swap` / `supplier_expedite`）；第二个实例会在 Skill 注册阶段
+> 直接撞上，并且任一实例的清理逻辑会把另一个实例的 KN 一起删掉。
 
 ## 你会看到什么
 

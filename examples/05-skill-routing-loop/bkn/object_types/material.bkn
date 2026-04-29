@@ -15,8 +15,8 @@ Inventory item. The `bound_skill_id` FK points at the applicable Skill.
 |------|--------------|------|-------------|--------------|
 | sku | SKU | string | Material code (PK) | sku |
 | name | Name | string | Display name | name |
-| current_stock | Current Stock | string | Live inventory | current_stock |
-| safety_stock | Safety Stock | string | Reorder threshold | safety_stock |
+| current_stock | Current Stock | int | Live inventory | current_stock |
+| safety_stock | Safety Stock | int | Reorder threshold | safety_stock |
 | material_risk | Risk | string | Risk tier (critical/normal) | material_risk |
 | supplier_id | Supplier | string | FK to supplier | supplier_id |
 | bound_skill_id | Bound Skill | string | FK to skills (applicable_skill) | bound_skill_id |

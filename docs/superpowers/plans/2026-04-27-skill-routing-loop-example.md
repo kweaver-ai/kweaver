@@ -59,7 +59,7 @@ examples/04-skill-routing-loop/
 
 ## Test Strategy
 
-This is **example code**, not library code. Tests = end-to-end runs against a live KWeaver platform (the user has 62 env: `https://192.168.40.62`, no-auth, with MySQL on `192.168.40.105`, LLM `deepseek-v3.2` model_id `2048590843744489472`).
+This is **example code**, not library code. Tests = end-to-end runs against a live KWeaver platform (target a self-hosted instance with reachable MySQL and a registered LLM model; concrete host/IP/model_id come from the developer's local `.env`).
 
 **Per-task verification**: each task ends with a concrete command that exercises the slice and prints visible success/failure. No unit tests.
 
@@ -104,7 +104,7 @@ cat > examples/04-skill-routing-loop/env.sample <<'EOF'
 # ── Platform ─────────────────────────────────────────────────────────────────
 # KWeaver platform host (without trailing slash). Use https for self-signed
 # (the CLI is configured with --insecure via `kweaver auth login`).
-# example: https://192.168.40.62
+# example: https://platform.example.com
 PLATFORM_HOST=https://your-platform-host
 
 # LLM model ID from kweaver model factory.
@@ -574,8 +574,8 @@ chmod +x examples/04-skill-routing-loop/tool_backend/server.py
 
 ```bash
 cd examples/04-skill-routing-loop
-DB_HOST=192.168.40.105 DB_PORT=3306 DB_NAME=supply_chain DB_USER=root \
-  DB_PASS='eisoo.com123' TOOL_BACKEND_PORT=8765 \
+DB_HOST=db.example.com DB_PORT=3306 DB_NAME=supply_chain DB_USER=root \
+  DB_PASS='<your-db-password>' TOOL_BACKEND_PORT=8765 \
   python3 tool_backend/server.py &
 sleep 2
 curl -s http://localhost:8765/healthz
@@ -997,17 +997,17 @@ EOF
 chmod +x examples/04-skill-routing-loop/run.sh
 ```
 
-- [ ] **Step 2: Run partial — only Steps 0-2** (smoke test against 62)
+- [ ] **Step 2: Run partial — only Steps 0-2** (smoke test)
 
 ```bash
 cd examples/04-skill-routing-loop
 cp env.sample .env
-# Fill .env with 62 values:
-sed -i.bak 's|PLATFORM_HOST=.*|PLATFORM_HOST=https://192.168.40.62|;
-            s|LLM_ID=.*|LLM_ID=2048590843744489472|;
-            s|DB_HOST=.*|DB_HOST=192.168.40.105|;
+# Fill .env with your platform/db values (placeholders below):
+sed -i.bak 's|PLATFORM_HOST=.*|PLATFORM_HOST=https://platform.example.com|;
+            s|LLM_ID=.*|LLM_ID=<your-llm-id>|;
+            s|DB_HOST=.*|DB_HOST=db.example.com|;
             s|DB_NAME=.*|DB_NAME=supply_chain|;
-            s|DB_PASS=.*|DB_PASS=eisoo.com123|' .env
+            s|DB_PASS=.*|DB_PASS=<your-db-password>|' .env
 
 bash run.sh 2>&1 | head -30
 # expect: Steps 0-2 print success; cleanup runs at exit (script ends after Step 2)

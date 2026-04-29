@@ -1,4 +1,4 @@
-# 04 · Skill Routing Loop — KN-driven Skill Governance
+# 05 · Skill Routing Loop — KN-driven Skill Governance
 
 > [中文版](./README.zh.md)
 
@@ -37,6 +37,14 @@ Five components co-operate in a single end-to-end loop:
 - An LLM model registered in the platform's model factory (find its ID via
   `kweaver call /api/mf-model-manager/v1/llm/list`)
 
+Quick self-check that platform components are reachable:
+
+```bash
+kweaver auth whoami                                      # logged in?
+kweaver call /api/mf-model-manager/v1/llm/list | head    # LLM factory reachable?
+kweaver call /api/agent-operator-integration/v1/mcp/     # execution-factory reachable?
+```
+
 ## Quick Start
 
 ```bash
@@ -49,8 +57,10 @@ pip install -r tool_backend/requirements.txt
 ```
 
 > **Concurrency caveat:** Do not run two instances of `./run.sh` concurrently.
-> The script uses a fixed `KN_ID` (`ex05_skill_routing`); a second run's cleanup
-> would delete the first run's KN.
+> The script uses a fixed `KN_ID` (`ex05_skill_routing`) AND fixed Skill names
+> (`standard_replenish` / `substitute_swap` / `supplier_expedite`); a second
+> run will collide on Skill registration and the cleanup of either run will
+> delete the other run's KN.
 
 ## What you will see
 

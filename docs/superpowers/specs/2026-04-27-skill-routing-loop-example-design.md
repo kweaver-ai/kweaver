@@ -448,7 +448,7 @@ A、B 已在 spike B 中关闭。剩余：
 |---|---|---|---|
 | C | Skill 内 Python 脚本能否调 MCP 反查 KN（pick_substitute.py 找替代料） | 中 | 备选：DA 在调 Skill 前先 query，把候选传进来 |
 | D | Vega logic view 是否真在 BKN 读路径上"实时"（业务库改了下一秒生效） | 低 | plan 阶段验一次；如果有缓存延迟，README 注明 |
-| E | LLM 凭证（llm-id）从哪拿？现 .env 中提供 | ✅ | 已确认 62 上有 deepseek-v3.2 / model_id `2048590843744489472` |
+| E | LLM 凭证（llm-id）从哪拿？现 .env 中提供 | ✅ | 已确认目标平台上有 deepseek-v3.2，model_id 由开发者填到本地 `.env` 中 |
 | F | `kweaver skill register --content-file` vs `--zip-file` | ✅ | 只用 --zip-file，run.sh 自动打包 |
 | G | skills.csv 里 skill_id 怎么和 execution-factory 注册的 skill 包对齐 | 中 | run.sh 先注册 skill 包（拿到平台 UUID），再用 UUID 写 skills.csv 后再 import |
 

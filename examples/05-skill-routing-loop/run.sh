@@ -317,7 +317,7 @@ echo "=== Step 10: Create + publish Decision Agent ==="
 AGENT_NAME="ex05_skill_routing_${TIMESTAMP}"
 CREATE_RAW=$(kweaver agent create \
     --name "$AGENT_NAME" \
-    --profile "Example 04 — KN-driven skill routing" \
+    --profile "Example 05 — KN-driven skill routing" \
     --config "$RENDERED_AGENT" 2>&1)
 AGENT_ID=$(echo "$CREATE_RAW" | python3 -c "
 import sys, json

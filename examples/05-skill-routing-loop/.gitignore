@@ -2,3 +2,4 @@
 *.log
 *.zip
 __pycache__/
+.rendered-*

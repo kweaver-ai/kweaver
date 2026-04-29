@@ -13,6 +13,9 @@ lib64/
 !deploy/scripts/lib/
 !deploy/scripts/lib/**
 deploy/scripts/lib/__pycache__/
+# Track example shell helpers
+!examples/*/lib/
+!examples/*/lib/**
 parts/
 sdist/
 var/

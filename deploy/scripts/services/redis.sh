@@ -50,6 +50,9 @@ install_redis_sentinel_local() {
     fi
     REDIS_PASSWORD="${redis_password}"
 
+    local redis_sc
+    redis_sc="$(kweaver_resolve_redis_storage_class)"
+
     # Prepare Helm values according to user's specification
     local -a helm_args
     helm_args=(
@@ -70,7 +73,7 @@ install_redis_sentinel_local() {
         --set replicaCount="${REDIS_REPLICA_COUNT:-1}"
         --set service.enableDualStack=false
         --set service.sentinel.port=26379
-        --set storage.storageClassName=local-path
+        --set storage.storageClassName="${redis_sc}"
         --wait --timeout=600s
     )
 
@@ -93,7 +96,7 @@ install_redis_sentinel_local() {
     log_info "  Image Registry: ${image_registry}"
     log_info "  Replica Count: ${REDIS_REPLICA_COUNT:-1}"
     log_info "  Master Group: ${REDIS_MASTER_GROUP_NAME:-mymaster}"
-    log_info "  Storage Class: local-path"
+    log_info "  Storage Class: ${redis_sc}"
 
     helm "${helm_args[@]}"
     

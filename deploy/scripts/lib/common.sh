@@ -805,6 +805,34 @@ get_existing_password() {
     fi
 }
 
+# Name of the StorageClass marked default (storageclass.kubernetes.io/is-default-class=true), or empty.
+kweaver_kubectl_default_storage_class() {
+    if ! command -v kubectl >/dev/null 2>&1; then
+        return 0
+    fi
+    kubectl get storageclass -o jsonpath='{range .items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")]}{.metadata.name}{end}' 2>/dev/null || true
+}
+
+# proton-redis: honor REDIS_STORAGE_CLASS; otherwise prefer cluster default SC (matches kind/docker-desktop),
+# then "local-path" only if that StorageClass exists (rancher/k3s-style).
+kweaver_resolve_redis_storage_class() {
+    if [[ -n "${REDIS_STORAGE_CLASS:-}" ]]; then
+        printf '%s' "${REDIS_STORAGE_CLASS}"
+        return 0
+    fi
+    local def
+    def="$(kweaver_kubectl_default_storage_class)"
+    if [[ -n "${def}" ]]; then
+        printf '%s' "${def}"
+        return 0
+    fi
+    if kubectl get storageclass local-path &>/dev/null 2>&1; then
+        printf '%s' 'local-path'
+        return 0
+    fi
+    printf '%s' 'local-path'
+}
+
 resolve_sql_version() {
     local requested_version="${1:-}"
     if [[ -n "${requested_version}" ]]; then
@@ -982,6 +1010,7 @@ REDIS_IMAGE_REGISTRY="${REDIS_IMAGE_REGISTRY:-}"
 REDIS_IMAGE_REPOSITORY="${REDIS_IMAGE_REPOSITORY:-proton/proton-redis}"
 REDIS_IMAGE_TAG="${REDIS_IMAGE_TAG:-1.11.2-20251029.2.169ac3c0}"
 REDIS_PERSISTENCE_ENABLED="${REDIS_PERSISTENCE_ENABLED:-true}"
+# Empty: pick cluster default StorageClass (e.g. kind "standard"); else local-path if that SC exists; else local-path.
 REDIS_STORAGE_CLASS="${REDIS_STORAGE_CLASS:-}"
 REDIS_PURGE_PVC="${REDIS_PURGE_PVC:-true}"
 REDIS_PASSWORD="${REDIS_PASSWORD:-}"

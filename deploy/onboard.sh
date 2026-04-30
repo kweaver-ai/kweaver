@@ -112,6 +112,26 @@ onboard_default_access_base_url() {
     fi
 }
 
+# kweaver / kweaver-admin: append --insecure/-k only for HTTPS URLs (self-signed dev certs).
+# For plain http:// bases, unconditional -k has been observed to break some login flows (--no-auth)
+# against HTTP-only ingress backends (404 Not Found).
+# Override: ONBOARD_FORCE_INSECURE_LOGIN=true forces -k even for HTTP (rare; debugging only).
+onboard_kweaver_tls_insecure_args() {
+    local _base="$1"
+    if [[ "${ONBOARD_FORCE_INSECURE_LOGIN:-false}" == "true" ]]; then
+        printf '%s' "-k "
+        return
+    fi
+    case "${_base}" in
+        https://*|HTTPS://*)
+            printf '%s' "-k "
+            ;;
+        *)
+            return
+            ;;
+    esac
+}
+
 usage() {
     echo "Usage: $0 [options]"
     echo "  Requires: Node 22+ (see @kweaver-ai/kweaver-sdk on npm), kweaver, kubectl, python3; run from deploy/"
@@ -142,9 +162,10 @@ usage() {
     echo "                ONBOARD_DEFAULT_TEST_USER_PASSWORD=...  first-user  test  password (default 111111;  -y  non-interactive)"
     echo "                ONBOARD_KWEAVER_IMPEX_NO_RELLOGIN=1  skip  kweaver auth  as  test  before impex (use current kweaver session)"
     echo "                ONBOARD_NO_COMPLETION_REPORT=1  do not print the English completion report at the end"
+    echo "                ONBOARD_FORCE_INSECURE_LOGIN=true  always pass -k (--insecure) to kweaver/kweaver-admin auth login (even for http:// bases; default false)"
     echo "  Default KWeaver access URL (kweaver auth): this host’s primary IPv4, e.g.  https://\$(local-ip)  (set ONBOARD_DEFAULT_ACCESS_BASE=... to override; ONBOARD_DEFAULT_ACCESS_PORT e.g. 8443; ONBOARD_DEFAULT_ACCESS_SCHEME=http)"
     echo "  kweaver auth: you confirm URL. ISF+full: HTTP defaults user=admin pass=eisoo.com (if still default); override with ONBOARD_DEFAULT_KWEAVER_USER / _PASSWORD. Enter keeps defaults. Minimum: default --no-auth; Enter to accept."
-    echo "  kweaver-admin auth (ISF): use  auth login <url> -u admin -p <pass> -k  (no --http-signin; that is kweaver-sdk only) or browser URL-only flow. Then kweaver re-logs in as user test for impex and model steps."
+    echo "  kweaver-admin auth (ISF): use  auth login <url> -u admin -p <pass>  (append -k for https:// + self-signed) or browser-only flow; kweaver-admin has no --http-signin flag. Then kweaver re-logs in as user test for impex and model steps."
     echo "  Node: onboard is not a login shell — it auto-loads nvm/fnm/asdf/Volta and Homebrew paths so an already-configured Node 22+ is found without re-asking. ONBOARD_SKIP_NVM_INIT=true skips that; ONBOARD_NVM_VERSION=22 (default) is used after  nvm.sh  load."
     echo "  (preflight on the server: sudo preflight --fix still optional; this script can install Node in your *user* account via nvm.)"
 }
@@ -408,7 +429,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# After access URL is chosen: ISF → HTTP sign-in (defaults admin / eisoo.com if unchanged) or browser -k; no ISF → --no-auth (Enter) or HTTP.
+# After access URL is chosen: ISF → HTTP sign-in (defaults admin / eisoo.com if unchanged) or browser; no ISF → --no-auth (Enter) or HTTP.
 # Env: ONBOARD_DEFAULT_KWEAVER_USER, ONBOARD_DEFAULT_KWEAVER_PASSWORD, ONBOARD_ASSUME_YES (non-interactive: ISF=HTTP+defaults, min=--no-auth).
 onboard_kweaver_auth_login_for_url() {
     local _kurl="$1"
@@ -419,7 +440,7 @@ onboard_kweaver_auth_login_for_url() {
     if type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null; then
         if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
             onboard_log_info "kweaver auth: ISF detected — HTTP sign-in (defaults, -y): ${_duser}"
-            if ! kweaver auth login "${_kurl}" -u "${_duser}" -p "${_dpass}" --http-signin -k; then
+            if ! kweaver auth login "${_kurl}" -u "${_duser}" -p "${_dpass}" --http-signin $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
                 return 1
             fi
             return 0
@@ -432,13 +453,13 @@ onboard_kweaver_auth_login_for_url() {
             read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
             echo
             _p="${_p:-${_dpass}}"
-            if ! kweaver auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin -k; then
+            if ! kweaver auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
                 return 1
             fi
             return 0
         fi
-        onboard_log_info "Using browser / device flow: kweaver auth login \"${_kurl}\" -k"
-        if ! kweaver auth login "${_kurl}" -k; then
+        onboard_log_info "Using browser / device flow: kweaver auth login \"${_kurl}\" $(onboard_kweaver_tls_insecure_args "${_kurl}")"
+        if ! kweaver auth login "${_kurl}" $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
             return 1
         fi
         return 0
@@ -446,7 +467,7 @@ onboard_kweaver_auth_login_for_url() {
 
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         onboard_log_info "kweaver auth: no ISF — --no-auth (default, -y)"
-        if ! kweaver auth login "${_kurl}" --no-auth -k; then
+        if ! kweaver auth login "${_kurl}" --no-auth $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
             return 1
         fi
         return 0
@@ -454,7 +475,7 @@ onboard_kweaver_auth_login_for_url() {
     echo ""
     read -r -p "No ISF (minimum install): use --no-auth (typical) [Y/n] (Enter = Y): " _mna
     if [[ -z "${_mna}" || ! "${_mna}" =~ ^[Nn] ]]; then
-        if ! kweaver auth login "${_kurl}" --no-auth -k; then
+        if ! kweaver auth login "${_kurl}" --no-auth $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
             return 1
         fi
         return 0
@@ -464,7 +485,7 @@ onboard_kweaver_auth_login_for_url() {
     read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
     echo
     _p="${_p:-${_dpass}}"
-    if ! kweaver auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin -k; then
+    if ! kweaver auth login "${_kurl}" -u "${_u}" -p "${_p}" --http-signin $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
         return 1
     fi
     return 0
@@ -479,7 +500,7 @@ onboard_kweaver_admin_auth_login_for_url() {
 
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         onboard_log_info "kweaver-admin auth: ISF — HTTP sign-in (defaults, -y): ${_duser}"
-        if ! kweaver-admin auth login "${_kurl}" -u "${_duser}" -p "${_dpass}" -k; then
+        if ! kweaver-admin auth login "${_kurl}" -u "${_duser}" -p "${_dpass}" $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
             return 1
         fi
         return 0
@@ -491,7 +512,7 @@ onboard_kweaver_admin_auth_login_for_url() {
     echo
     _p="${_p:-${_dpass}}"
     onboard_log_info "kweaver-admin: HTTP sign-in…"
-    if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" -k; then
+    if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" $(onboard_kweaver_tls_insecure_args "${_kurl}") ; then
         return 1
     fi
     return 0
@@ -505,7 +526,7 @@ onboard_ensure_kweaver_auth() {
         fi
         if [[ "${INTERACTIVE}" != "true" ]]; then
             _durl="$(onboard_default_access_base_url)"
-            onboard_log_err "kweaver bkn list failed. Run: kweaver auth login ${_durl} -k  (or set ONBOARD_DEFAULT_ACCESS_BASE=...)"
+            onboard_log_err "kweaver bkn list failed. Run: kweaver auth login ${_durl} $(onboard_kweaver_tls_insecure_args "${_durl}") (or set ONBOARD_DEFAULT_ACCESS_BASE=...)"
             exit 1
         fi
         if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
@@ -564,7 +585,7 @@ onboard_ensure_kweaver_admin_for_isf() {
     if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then
         onboard_log_info "ISF: installing @kweaver-ai/kweaver-admin (-y)…"
         if ! npm i -g @kweaver-ai/kweaver-admin; then
-            onboard_log_warn "npm i -g @kweaver-ai/kweaver-admin failed; install manually, then: kweaver-admin auth login <url> -u admin -p '<password>' -k  (kweaver-admin: -u/-p is HTTP sign-in, no --http-signin flag)"
+            onboard_log_warn "npm i -g @kweaver-ai/kweaver-admin failed; install manually, then: kweaver-admin auth login <url> -u admin -p '<password>'  (-k only for https:// + self-signed; kweaver-admin: HTTP sign-in, no --http-signin flag)"
         fi
         hash -r 2>/dev/null || true
         onboard_prepend_npm_global_bin_to_path
@@ -702,7 +723,7 @@ onboard_recommend_admin_cli() {
         if command -v kweaver-admin &>/dev/null; then
             onboard_log_info "kweaver-admin: $(kweaver-admin --version 2>/dev/null | head -n1)"
         else
-            onboard_log_info "kweaver-admin: not on initial PATH; prepended npm global bin. If still missing, the next step may install or show hints. For full install user ops:  kweaver-admin auth login <url> -u admin -p '<password>' -k  (-u/-p = HTTP sign-in; no --http-signin) ."
+            onboard_log_info "kweaver-admin: not on initial PATH; prepended npm global bin. If still missing, the next step may install or show hints. For full install user ops:  kweaver-admin auth login <url> -u admin -p '<password>' (-k only for https:// self-signed)."
         fi
     else
         onboard_log_info "No ISF releases detected — minimum install. kweaver-sdk (this CLI) is enough; kweaver-admin not required."

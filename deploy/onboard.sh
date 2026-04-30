@@ -583,18 +583,23 @@ onboard_kweaver_admin_auth_login_for_url() {
         fi
         return 0
     fi
-    echo ""
-    read -r -p "  Username [Enter = ${_duser}]: " _u
-    _u="${_u:-${_duser}}"
-    read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
-    echo
-    _p="${_p:-${_dpass}}"
-    onboard_log_info "kweaver-admin: HTTP sign-in…"
-    onboard_log_info "Running: $(printf '%q ' kweaver-admin auth login "${_kurl}" -u "${_u}" -p "***" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}")"
-    if ! kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}" ; then
-        return 1
-    fi
-    return 0
+    # Interactive: try up to 3 times; on failure re-prompt user/password (URL stays).
+    local _attempt
+    for _attempt in 1 2 3; do
+        echo ""
+        read -r -p "  Username [Enter = ${_duser}]: " _u
+        _u="${_u:-${_duser}}"
+        read -r -s -p "  Password [Enter = ${_dpass} if default unchanged on console] " _p
+        echo
+        _p="${_p:-${_dpass}}"
+        onboard_log_info "kweaver-admin: HTTP sign-in (attempt ${_attempt}/3)…"
+        onboard_log_info "Running: $(printf '%q ' kweaver-admin auth login "${_kurl}" -u "${_u}" -p "***" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}")"
+        if kweaver-admin auth login "${_kurl}" -u "${_u}" -p "${_p}" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}" ; then
+            return 0
+        fi
+        onboard_log_warn "kweaver-admin sign-in failed (attempt ${_attempt}/3). If the console password was changed from '${_dpass}', enter the new one. To reset: log into the web console as admin → 用户管理 → 改密码; or run 'kweaver-admin user reset-password -u admin --prompt-password -y' after one successful login."
+    done
+    return 1
 }
 
 # When kweaver bkn list fails, interactively let the user log in or retry; non-interactive (or -y) exits.

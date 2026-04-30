@@ -349,7 +349,7 @@ mac_doctor() {
 # Mac-only: prepare HTTPS for ISF install.
 #   1. flip mac-config.yaml accessAddress to scheme=https / port=443
 #   2. generate a self-signed TLS cert (CN/SAN = accessAddress.host) and
-#      apply it as Secret kweaver-ingress-tls in the kweaver-ai namespace
+#      apply it as Secret kweaver-ingress-tls in the kweaver namespace
 # Idempotent: re-running just rotates the cert and re-applies the Secret.
 # After ISF install completes, run mac_isf_patch_ingress_tls to wire it in.
 mac_prepare_isf_https() {
@@ -358,7 +358,8 @@ mac_prepare_isf_https() {
     local host
     host="$(awk '/^accessAddress:/{f=1;next} f&&/^  host:/{print $2;exit}' "${cfg}" | tr -d "'\"")"
     host="${host:-localhost}"
-    local ns="${MAC_ISF_NAMESPACE:-kweaver-ai}"
+    local ns="${MAC_ISF_NAMESPACE:-$(awk '/^namespace:/{print $2;exit}' "${cfg}" | tr -d "'\"")}"
+    ns="${ns:-kweaver}"
     local secret="${MAC_ISF_TLS_SECRET:-kweaver-ingress-tls}"
 
     mac_log_info "Switching ${cfg} accessAddress to https/443 (host=${host})"
@@ -393,7 +394,9 @@ mac_prepare_isf_https() {
 
 # Patch the ISF ingress to attach the TLS Secret. Run AFTER `deploy.sh isf install`.
 mac_isf_patch_ingress_tls() {
-    local ns="${MAC_ISF_NAMESPACE:-kweaver-ai}"
+    local cfg="${CONFIG_YAML_PATH:-${MAC_DEV_ROOT}/conf/mac-config.yaml}"
+    local ns="${MAC_ISF_NAMESPACE:-$(awk '/^namespace:/{print $2;exit}' "${cfg}" | tr -d "'\"")}"
+    ns="${ns:-kweaver}"
     local secret="${MAC_ISF_TLS_SECRET:-kweaver-ingress-tls}"
     local ing
     ing="$(kubectl get ingress -n "${ns}" -o jsonpath='{.items[?(@.metadata.name=="ingress-informationsecurityfabric")].metadata.name}' 2>/dev/null)"

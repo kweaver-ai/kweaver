@@ -16,7 +16,7 @@ This `deploy` directory provides scripts to install KWeaver Core along with its 
 
 ### kubeadm / `KUBE_DISTRO=k8s` (default)
 
-Single-node kubeadm flow is **`bash ./deploy.sh k8s install`** (`deploy/scripts/services/k8s.sh`). Product modules reuse an existing cluster when `kubectl` already works (`ensure_k8s` skips reinstall), then **`ensure_platform_prerequisites`** installs the bundled **data-services** layer (MariaDB, Redis, Kafka, ZooKeeper, OpenSearch, …) before Core unless you are on mac bring-your-own-cluster (see below). Legacy **`kubeadm`** is still accepted as an alias for **`k8s`**.
+Single-node kubeadm flow is **`bash ./deploy.sh k8s install`** (`deploy/scripts/services/k8s.sh`). Product modules reuse an existing cluster when `kubectl` already works (`ensure_k8s` skips reinstall), then **`ensure_platform_prerequisites`** installs the bundled **data-services** layer (MariaDB, Redis, Kafka, ZooKeeper, OpenSearch, …) before Core. **macOS kind** skips host kubeadm but **`kweaver-core install` still runs `ensure_data_services` first** (see macOS section). Legacy **`kubeadm`** is still accepted as an alias for **`k8s`**.
 
 **`deploy.sh` global flags** (`--distro`, `-y`, `--force-upgrade`, `--config`, …) must appear **before** the module name. Correct: `bash ./deploy.sh --distro=k3s kweaver-core install --minimum`. Wrong: `bash ./deploy.sh kweaver-core install --minimum --distro=k3s` (that `--distro` is not read as a global option). Equivalent without moving flags: `export KUBE_DISTRO=k3s` then `bash ./deploy.sh kweaver-core install --minimum`.
 
@@ -43,15 +43,15 @@ Check status: `bash ./deploy.sh k3s status` — remove: `bash ./deploy.sh k3s un
 
 ### macOS (optional — local dev with kind)
 
-**Use this only for Mac validation; for real installs use Linux above.** Local Kubernetes via **kind** — no `preflight.sh` / `k3s` on the Mac host. **`mac.sh` sets `KWEAVER_SKIP_PLATFORM_BOOTSTRAP`**, so `deploy.sh` skips host/platform bootstrap and does not run the bundled `data-services` Helm layer there. **`bash ./dev/mac.sh kweaver-core install` does not run `data-services install`** — run `bash ./dev/mac.sh data-services install` first (Core needs MariaDB, Redis, Kafka, … in the cluster). On Linux, **`deploy.sh kweaver-core install`** normally installs data services via `ensure_platform_prerequisites` unless bootstrap is skipped. **Apple Silicon:** kind nodes are **arm64**; use arm64/multi-arch images (see `dev/conf/mac-config.yaml`). **Step order:** [dev/README.md](dev/README.md).
+**Use this only for Mac validation; for real installs use Linux above.** Local Kubernetes via **kind** — no `preflight.sh` / `k3s` on the Mac host. **`mac.sh` sets `KWEAVER_SKIP_PLATFORM_BOOTSTRAP`** (no host k3s/kubeadm bootstrap). **`kweaver-core install` now runs `ensure_data_services` first** — same Helm layer as **`data-services install`** (MariaDB, Redis, Kafka, ZooKeeper, OpenSearch); **`mac.sh` defaults `AUTO_INSTALL_INGRESS_NGINX=false`** so kind’s existing ingress is not duplicated. Set **`KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true`** to skip bundled data installs (advanced / external infra). **`data-services install`** alone remains useful to pre-stage or refresh the data layer. **Apple Silicon:** kind nodes are **arm64**; use arm64/multi-arch images (see `dev/conf/mac-config.yaml`). **Step order:** [dev/README.md](dev/README.md).
 
 ```bash
 cd deploy   # repository deploy/ directory
 bash ./dev/mac.sh doctor
 # optional: install missing tools via Homebrew — bash ./dev/mac.sh doctor --fix (or -y doctor --fix to skip confirm)
 bash ./dev/mac.sh cluster up
-bash ./dev/mac.sh data-services install   # required before Core (MariaDB / Redis / Kafka / etc.)
-bash ./dev/mac.sh kweaver-core install --minimum   # implies --minimum; does not bundle data-services
+bash ./dev/mac.sh kweaver-core install --minimum   # implies --minimum; bundled data-services first (same as data-services install)
+# optional: bash ./dev/mac.sh data-services install   # only if you want the data layer without Core, or to refresh it
 # optional: bash ./dev/mac.sh kweaver-core download
 # optional: bash ./dev/mac.sh onboard
 # add leading -y for non-interactive (deploy.sh / onboard)

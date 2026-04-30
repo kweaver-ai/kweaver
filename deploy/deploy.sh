@@ -62,6 +62,7 @@ usage() {
     echo "  ingress-nginx install         Install ingress-nginx-controller"
     echo "  ingress-nginx uninstall       Uninstall ingress-nginx-controller"
     echo "  kweaver-core install          Install KWeaver Core services; auto-installs K8s/data services if missing"
+    echo "  kweaver-core install          On BYOK (KWEAVER_SKIP_PLATFORM_BOOTSTRAP=true), runs ensure_data_services first unless KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true"
     echo "  kweaver-core install --minimum  Minimum install (skip auth & business-domain modules)"
     echo "  kweaver-core download         Download/update KWeaver Core charts into deploy/.tmp/charts"
     echo "  kweaver-core uninstall        Uninstall KWeaver Core services"

@@ -461,6 +461,16 @@ install_core() {
         return 1
     fi
 
+    # macOS kind / BYOK: platform bootstrap is skipped, so ensure_data_services is not run above.
+    # Install the same bundled data layer as `deploy.sh data-services install` unless opted out.
+    if [[ "${KWEAVER_SKIP_PLATFORM_BOOTSTRAP:-false}" == "true" ]] && [[ "${KWEAVER_SKIP_DATA_SERVICES_BUNDLE:-false}" != "true" ]]; then
+        log_info "Bring-your-own cluster: ensuring bundled data services before Core (skip with KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true)"
+        if ! ensure_data_services; then
+            log_error "Failed to ensure data services before KWeaver Core"
+            return 1
+        fi
+    fi
+
     local namespace
     namespace="$(_core_resolve_target_namespace)"
 

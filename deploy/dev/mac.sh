@@ -61,12 +61,12 @@ usage() {
     cat <<EOF
 KWeaver mac dev (kind) — thin wrapper around deploy/onboard.
 
-Typical order (shortest path: doctor? → cluster up → data-services install → kweaver-core install):
+Typical order (shortest path: doctor? → cluster up → kweaver-core install [--minimum]):
   1) doctor                     optional toolchain check
   2) cluster up                 kind + ingress; kubectl context kind-<name>
-  3) data-services install      MariaDB, Redis, Kafka, Zookeeper, OpenSearch (mac default skips second ingress)
+  3) data-services install      optional if you use kweaver-core install (it runs the same bundled data layer first); run alone to pre-stage or refresh only
   4) kweaver-core download      optional; charts cache only (minimum profile by default)
-  5) kweaver-core install ...   Helm install (--minimum implied by mac.sh; use --full to opt out)
+  5) kweaver-core install ...   Helm install (--minimum implied; bundled data-services first unless KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true)
   6) isf / etrino|vega          optional; deploy.sh modules (cluster + config must be ready)
   7) onboard                    optional; after Core is up
   cluster down                  delete kind cluster
@@ -75,7 +75,7 @@ Typical order (shortest path: doctor? → cluster up → data-services install �
 Commands:
   doctor [--fix] [-y|--yes]        Check toolchain; --fix runs brew after confirm (use -y to skip prompt)
   cluster up|down|status           kind cluster + ingress-nginx (kind manifest)
-  data-services install|uninstall  Platform data layer (install before Core on mac); uninstall tears down bundled charts
+  data-services install|uninstall  Platform data layer (optional before Core: kweaver-core install runs it automatically on mac); uninstall tears down bundled charts
   kweaver-core|core <action> ...   Delegates to deploy.sh (see deploy.sh help)
   isf <action> ...                 ISF via deploy.sh (install|download|uninstall|status)
   etrino|vega <action> ...         Vega charts (vega-hdfs/calculate/metadata) via deploy.sh; vega = alias of etrino
@@ -239,7 +239,9 @@ main() {
                 export CONFIG_YAML_PATH="${MAC_DEV_ROOT}/conf/mac-config.yaml"
             fi
             export KWEAVER_SKIP_PLATFORM_BOOTSTRAP="${KWEAVER_SKIP_PLATFORM_BOOTSTRAP:-true}"
-            # Default --minimum for Mac dev (skips ISF chart download/install when manifest ties ISF to auth).
+            # kind already has ingress-nginx; ensure_data_services (pulled in by kweaver-core install) must not add a second controller.
+            export AUTO_INSTALL_INGRESS_NGINX="${AUTO_INSTALL_INGRESS_NGINX:-false}"
+            export AUTO_INSTALL_LOCALPV="${AUTO_INSTALL_LOCALPV:-true}"
             # IMPORTANT: deploy.sh parses argv as  module  action  [flags...]  — never put --minimum before
             # the action (e.g. download|install), or action becomes --minimum and flags are never parsed.
             local -a _kw_pos=()

@@ -16,7 +16,7 @@
 
 ### kubeadm / `KUBE_DISTRO=k8s`（默认）
 
-单节点 kubeadm 流程为 **`bash ./deploy.sh k8s install`**（`deploy/scripts/services/k8s.sh`）。若 `kubectl` 已可用，`ensure_k8s` 会跳过重复安装；随后 **`ensure_platform_prerequisites`** 会安装随平台一起交付的 **data-services**（MariaDB、Redis、Kafka、ZooKeeper、OpenSearch 等），再装 Core（**本机 kind + `mac.sh` 跳过 bootstrap 的情况除外**，见下文）。历史写法 **`kubeadm`** 仍可作为 **`k8s`** 的别名。
+单节点 kubeadm 流程为 **`bash ./deploy.sh k8s install`**（`deploy/scripts/services/k8s.sh`）。若 `kubectl` 已可用，`ensure_k8s` 会跳过重复安装；随后 **`ensure_platform_prerequisites`** 会安装随平台一起交付的 **data-services**（MariaDB、Redis、Kafka、ZooKeeper、OpenSearch 等），再装 Core。**macOS kind** 不写宿主机 kubeadm：**`KWEAVER_SKIP_PLATFORM_BOOTSTRAP` 下，`kweaver-core install` 会先跑与 `data-services install` 相同的 Helm 数据层**，见下文 macOS。历史写法 **`kubeadm`** 仍可作为 **`k8s`** 的别名。
 
 **`deploy.sh` 全局参数**（`--distro`、`-y`、`--force-upgrade`、`--config` 等）必须写在**子模块名之前**。正确：`bash ./deploy.sh --distro=k3s kweaver-core install --minimum`。错误：`bash ./deploy.sh kweaver-core install --minimum --distro=k3s`（末尾的 `--distro` 不会按全局参数解析）。不想改命令顺序时可用：`export KUBE_DISTRO=k3s` 再执行 `bash ./deploy.sh kweaver-core install --minimum`。
 
@@ -43,15 +43,16 @@ bash ./deploy.sh --distro=k3s kweaver-core install --minimum
 
 ### macOS（可选 — 本机 kind 开发）
 
-**仅供 Mac 上做验证；正式安装请以本文 Linux 章节为准。** 本机用 **kind** 起 Kubernetes，不在 Mac 上跑 `preflight.sh` / `k3s install`。**`mac.sh` 会设置 `KWEAVER_SKIP_PLATFORM_BOOTSTRAP`**，因此在该路径下 `deploy.sh` 会跳过宿主机/平台引导，也不会自动执行随平台交付的 `data-services` Helm 层。**`bash ./dev/mac.sh kweaver-core install` 不会代为执行 `data-services install`**，须先运行 `bash ./dev/mac.sh data-services install`（Core 依赖集群内 MariaDB、Redis、Kafka 等）。在 Linux 上，**`deploy.sh kweaver-core install`** 一般会通过 `ensure_platform_prerequisites` 自动装上 data-services（除非同样跳过 bootstrap）。**Apple Silicon：** kind 节点为 **arm64**，`dev/conf/mac-config.yaml` 里的镜像需支持 arm64/多架构。**步骤顺序与限制见 [dev/README.md](dev/README.md)。**
+**仅供 Mac 上做验证；正式安装请以本文 Linux 章节为准。** 本机用 **kind** 起 Kubernetes，不在 Mac 上跑 `preflight.sh` / `k3s install`。**`mac.sh` 设置 `KWEAVER_SKIP_PLATFORM_BOOTSTRAP`**。**`kweaver-core install` 会先执行 `ensure_data_services`**（与单独跑 `data-services install` 一致：MariaDB、Redis、Kafka、Zookeeper、OpenSearch）；**`mac.sh` 默认 `AUTO_INSTALL_INGRESS_NGINX=false`**，避免重复装 ingress。需要跳过自带数据层时使用 **`KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true`**（高级用法 / 外接中间件）。仍可单独执行 **`data-services install`** 只做数据层或刷新。**Apple Silicon：** kind 节点为 **arm64**；**步骤见 [dev/README.md](dev/README.md)。**
+
 ```bash
 cd deploy   # 仓库的 deploy/ 目录
 bash ./dev/mac.sh doctor
 # 可选：用 Homebrew 补全缺失工具 — bash ./dev/mac.sh doctor --fix（或 -y doctor --fix 跳过确认）
 bash ./dev/mac.sh cluster up
-bash ./dev/mac.sh data-services install   # 装 Core 前必需（MariaDB / Redis / Kafka 等）
-bash ./dev/mac.sh kweaver-core install --minimum   # 默认带 --minimum；不包含 data-services
-# 可选：bash ./dev/mac.sh kweaver-core download   # 仅下载 chart
+bash ./dev/mac.sh kweaver-core install --minimum   # 默认带 --minimum；前置自动装 data-services（与 data-services install 相同）
+# 可选：bash ./dev/mac.sh data-services install   # 仅数据层 / 刷新
+# 可选：bash ./dev/mac.sh kweaver-core download
 # 可选：bash ./dev/mac.sh onboard；需非交互时在命令前加 -y
 ```
 

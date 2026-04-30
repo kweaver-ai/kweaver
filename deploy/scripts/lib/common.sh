@@ -1415,6 +1415,16 @@ get_access_address_base_url() {
     fi
 
     scheme="${scheme:-https}"
+
+    # Omit default ports in the canonical base URL — some ingress backends and CLI
+    # flows treat ":80"/":443" differently from implicit defaults (routing / probes).
+    if [[ -n "${port}" ]] && [[ "${scheme}" =~ ^[Hh][Tt][Tt][Pp]$ ]] && [[ "${port}" == "80" ]]; then
+        port=""
+    fi
+    if [[ -n "${port}" ]] && [[ "${scheme}" =~ ^[Hh][Tt][Tt][Pp][Ss]$ ]] && [[ "${port}" == "443" ]]; then
+        port=""
+    fi
+
     path="${path:-/}"
     if [[ "${path}" != /* ]]; then
         path="/${path}"

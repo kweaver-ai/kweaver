@@ -130,6 +130,12 @@ onboard_default_access_base_url() {
     ip="$(onboard_default_local_ipv4)"
     _scheme="${ONBOARD_DEFAULT_ACCESS_SCHEME:-https}"
     _port="${ONBOARD_DEFAULT_ACCESS_PORT:-}"
+    if [[ -n "${_port}" ]] && [[ "${_scheme}" =~ ^[Hh][Tt][Tt][Pp]$ ]] && [[ "${_port}" == "80" ]]; then
+        _port=""
+    fi
+    if [[ -n "${_port}" ]] && [[ "${_scheme}" =~ ^[Hh][Tt][Tt][Pp][Ss]$ ]] && [[ "${_port}" == "443" ]]; then
+        _port=""
+    fi
     if [[ -n "${_port}" ]]; then
         echo "${_scheme}://${ip}:${_port}"
     else
@@ -475,7 +481,10 @@ onboard_kweaver_auth_login_for_url() {
     _duser="${ONBOARD_DEFAULT_KWEAVER_USER:-admin}"
     _dpass="${ONBOARD_DEFAULT_KWEAVER_PASSWORD:-eisoo.com}"
     onboard_kweaver_tls_insecure_args_to_array "${_kurl}"
-    onboard_log_info "kweaver CLI: $(command -v kweaver 2>/dev/null || echo missing) ($(kweaver --version 2>/dev/null || echo '?')) CONFIG_YAML_PATH=${CONFIG_YAML_PATH:-unset}"
+    local _kv
+    _kv="$(kweaver --version 2>/dev/null | grep -Eo '[vV]?[0-9]+\.[0-9]+\.[0-9]+' | tail -1 || true)"
+    [[ -z "${_kv}" ]] && _kv="?"
+    onboard_log_info "kweaver CLI: $(command -v kweaver 2>/dev/null || echo missing) (${_kv}) CONFIG_YAML_PATH=${CONFIG_YAML_PATH:-unset}"
 
     if type onboard_isf_full_install &>/dev/null && onboard_isf_full_install 2>/dev/null; then
         if [[ "${ONBOARD_ASSUME_YES}" == "true" ]]; then

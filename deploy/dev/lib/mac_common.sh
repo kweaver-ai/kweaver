@@ -28,6 +28,38 @@ mac_common_init() {
 
     export KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kweaver-dev}"
     export KWEAVER_SKIP_PLATFORM_BOOTSTRAP="${KWEAVER_SKIP_PLATFORM_BOOTSTRAP:-true}"
+
+    # Mac dev (kind on Docker Desktop) is memory-tight; cap data-services to small footprints
+    # so the whole stack fits in the default Docker memory budget. Chart defaults are kept for
+    # k8s/kubeadm. Users can still override any of these via env before invoking mac.sh.
+    # redis (chart default 4GB / 512Mi req)
+    export REDIS_MAXMEMORY="${REDIS_MAXMEMORY:-512mb}"
+    export REDIS_MEMORY_REQUEST="${REDIS_MEMORY_REQUEST:-128Mi}"
+    export REDIS_MEMORY_LIMIT="${REDIS_MEMORY_LIMIT:-512Mi}"
+    export REDIS_CPU_REQUEST="${REDIS_CPU_REQUEST:-50m}"
+    # opensearch (k8s default: req=512Mi, lim=2048Mi)
+    export OPENSEARCH_MEMORY_REQUEST="${OPENSEARCH_MEMORY_REQUEST:-512Mi}"
+    export OPENSEARCH_MEMORY_LIMIT="${OPENSEARCH_MEMORY_LIMIT:-1024Mi}"
+    # zookeeper (k8s default: req cpu=500m mem=1Gi, lim cpu=1 mem=2Gi, jvm 500m)
+    # Note: chart hard-codes a zookeeper-exporter sidecar at req/lim 100m/100Mi (no knob).
+    export ZOOKEEPER_RESOURCES_REQUESTS_CPU="${ZOOKEEPER_RESOURCES_REQUESTS_CPU:-50m}"
+    export ZOOKEEPER_RESOURCES_REQUESTS_MEMORY="${ZOOKEEPER_RESOURCES_REQUESTS_MEMORY:-64Mi}"
+    export ZOOKEEPER_RESOURCES_LIMITS_CPU="${ZOOKEEPER_RESOURCES_LIMITS_CPU:-300m}"
+    export ZOOKEEPER_RESOURCES_LIMITS_MEMORY="${ZOOKEEPER_RESOURCES_LIMITS_MEMORY:-256Mi}"
+    export ZOOKEEPER_JVMFLAGS="${ZOOKEEPER_JVMFLAGS:--Xms64m -Xmx128m}"
+    # kweaver-core app services (chart defaults: limits=4-8Gi, mostly request=0).
+    # Tiny request keeps QoS=Burstable (not BestEffort) without hogging scheduling budget;
+    # generous 2Gi limit so heavier services (agent-retrieval, ontology-query) don't OOM
+    # during normal dev exercises.
+    export KWEAVER_CORE_REQ_CPU="${KWEAVER_CORE_REQ_CPU:-50m}"
+    export KWEAVER_CORE_REQ_MEM="${KWEAVER_CORE_REQ_MEM:-64Mi}"
+    export KWEAVER_CORE_LIM_CPU="${KWEAVER_CORE_LIM_CPU:-2}"
+    export KWEAVER_CORE_LIM_MEM="${KWEAVER_CORE_LIM_MEM:-2Gi}"
+    # ISF (chart defaults: limits 1-8Gi). Symmetric with core; only used when --auth.enabled=true.
+    export KWEAVER_ISF_REQ_CPU="${KWEAVER_ISF_REQ_CPU:-50m}"
+    export KWEAVER_ISF_REQ_MEM="${KWEAVER_ISF_REQ_MEM:-64Mi}"
+    export KWEAVER_ISF_LIM_CPU="${KWEAVER_ISF_LIM_CPU:-2}"
+    export KWEAVER_ISF_LIM_MEM="${KWEAVER_ISF_LIM_MEM:-2Gi}"
 }
 
 mac_require_darwin() {
@@ -312,6 +344,66 @@ mac_doctor() {
         printf '  %bGuide:%b deploy/dev/README.md\n' "${MAC_D_DIM}" "${MAC_D_RESET}"
     fi
     return 0
+}
+
+# Mac-only: prepare HTTPS for ISF install.
+#   1. flip mac-config.yaml accessAddress to scheme=https / port=443
+#   2. generate a self-signed TLS cert (CN/SAN = accessAddress.host) and
+#      apply it as Secret kweaver-ingress-tls in the kweaver-ai namespace
+# Idempotent: re-running just rotates the cert and re-applies the Secret.
+# After ISF install completes, run mac_isf_patch_ingress_tls to wire it in.
+mac_prepare_isf_https() {
+    local cfg="${CONFIG_YAML_PATH:-${MAC_DEV_ROOT}/conf/mac-config.yaml}"
+    [[ -f "${cfg}" ]] || { mac_log_error "mac-config not found: ${cfg}"; return 1; }
+    local host
+    host="$(awk '/^accessAddress:/{f=1;next} f&&/^  host:/{print $2;exit}' "${cfg}" | tr -d "'\"")"
+    host="${host:-localhost}"
+    local ns="${MAC_ISF_NAMESPACE:-kweaver-ai}"
+    local secret="${MAC_ISF_TLS_SECRET:-kweaver-ingress-tls}"
+
+    mac_log_info "Switching ${cfg} accessAddress to https/443 (host=${host})"
+    awk '
+        /^accessAddress:/ {in_a=1; print; next}
+        in_a && /^[a-zA-Z]/ {in_a=0}
+        in_a && /^[[:space:]]*scheme:/ {sub(/scheme:.*/, "scheme: https"); print; next}
+        in_a && /^[[:space:]]*port:/   {sub(/port:.*/,   "port: 443");     print; next}
+        {print}
+    ' "${cfg}" > "${cfg}.tmp" && mv "${cfg}.tmp" "${cfg}"
+
+    mac_log_info "Generating self-signed TLS cert for ${host}"
+    local tmp; tmp="$(mktemp -d)"
+    openssl req -x509 -nodes -newkey rsa:2048 -days 825 \
+        -keyout "${tmp}/tls.key" -out "${tmp}/tls.crt" \
+        -subj "/CN=${host}" -addext "subjectAltName=DNS:${host},DNS:localhost,IP:127.0.0.1" \
+        >/dev/null 2>&1 || { mac_log_error "openssl failed (install via brew install openssl)"; return 1; }
+    kubectl create namespace "${ns}" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+    kubectl create secret tls "${secret}" --cert="${tmp}/tls.crt" --key="${tmp}/tls.key" \
+        -n "${ns}" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+    rm -rf "${tmp}"
+    mac_log_info "TLS Secret ${ns}/${secret} ready (cert valid 825 days, CN=${host})"
+
+    # If kweaver-core releases already exist they were rendered with the old http
+    # accessAddress; refresh them so the in-cluster URLs/issuers match the new https.
+    if helm list -n "${ns}" -q 2>/dev/null | grep -qE '.'; then
+        mac_log_info "kweaver-core releases already in ${ns}; running 'kweaver-core install --minimum' to refresh accessAddress (https/443)"
+        bash "${DEPLOY_ROOT}/deploy.sh" kweaver-core install --minimum || \
+            mac_log_warn "kweaver-core refresh failed; you may need to re-run 'mac.sh kweaver-core install --minimum' manually"
+    fi
+}
+
+# Patch the ISF ingress to attach the TLS Secret. Run AFTER `deploy.sh isf install`.
+mac_isf_patch_ingress_tls() {
+    local ns="${MAC_ISF_NAMESPACE:-kweaver-ai}"
+    local secret="${MAC_ISF_TLS_SECRET:-kweaver-ingress-tls}"
+    local ing
+    ing="$(kubectl get ingress -n "${ns}" -o jsonpath='{.items[?(@.metadata.name=="ingress-informationsecurityfabric")].metadata.name}' 2>/dev/null)"
+    [[ -n "${ing}" ]] || { mac_log_warn "ISF ingress not found in ${ns}; skip TLS patch"; return 0; }
+    local host
+    host="$(awk '/^accessAddress:/{f=1;next} f&&/^  host:/{print $2;exit}' "${CONFIG_YAML_PATH:-${MAC_DEV_ROOT}/conf/mac-config.yaml}" | tr -d "'\"")"
+    host="${host:-localhost}"
+    kubectl patch ingress "${ing}" -n "${ns}" --type=merge -p \
+        "{\"spec\":{\"tls\":[{\"hosts\":[\"${host}\"],\"secretName\":\"${secret}\"}]}}" >/dev/null \
+        && mac_log_info "✓ ISF ingress patched with TLS (host=${host}, secret=${secret})"
 }
 
 mac_kube_context_guard() {

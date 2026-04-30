@@ -275,6 +275,18 @@ main() {
             else
                 _kw_final=("${_kw_pos[@]}")
             fi
+            # --full pulls ISF as a manifest dependency; ISF needs https → reuse the
+            # same prep/patch helpers as `mac.sh isf install` so it actually works.
+            if [[ "${_kw_saw_full}" == "true" ]] && [[ "${_kw_pos[0]:-}" == "install" ]]; then
+                mac_prepare_isf_https || exit 1
+                if [[ ${#global_flags[@]} -gt 0 ]]; then
+                    bash "${DEPLOY_ROOT}/deploy.sh" "${global_flags[@]}" "${cmd}" "${_kw_final[@]}" || exit $?
+                else
+                    bash "${DEPLOY_ROOT}/deploy.sh" "${cmd}" "${_kw_final[@]}" || exit $?
+                fi
+                mac_isf_patch_ingress_tls
+                exit 0
+            fi
             if [[ ${#global_flags[@]} -gt 0 ]]; then
                 exec bash "${DEPLOY_ROOT}/deploy.sh" "${global_flags[@]}" "${cmd}" "${_kw_final[@]}"
             fi
@@ -292,10 +304,19 @@ main() {
                 export CONFIG_YAML_PATH="${MAC_DEV_ROOT}/conf/mac-config.yaml"
             fi
             export KWEAVER_SKIP_PLATFORM_BOOTSTRAP="${KWEAVER_SKIP_PLATFORM_BOOTSTRAP:-true}"
-            if [[ ${#global_flags[@]} -gt 0 ]]; then
-                exec bash "${DEPLOY_ROOT}/deploy.sh" "${global_flags[@]}" isf "$@"
+            # Mac dev needs HTTPS for ISF (hydra/oauth2 issuer must be https).
+            # Auto-prepare TLS secret + flip mac-config before install; patch ingress after.
+            if [[ "${1:-}" == "install" ]]; then
+                mac_prepare_isf_https || exit 1
+                if [[ ${#global_flags[@]} -gt 0 ]]; then
+                    bash "${DEPLOY_ROOT}/deploy.sh" "${global_flags[@]}" isf "$@" || exit $?
+                else
+                    bash "${DEPLOY_ROOT}/deploy.sh" isf "$@" || exit $?
+                fi
+                mac_isf_patch_ingress_tls
+                exit 0
             fi
-            exec bash "${DEPLOY_ROOT}/deploy.sh" isf "$@"
+            exec bash "${DEPLOY_ROOT}/deploy.sh" "${global_flags[@]}" isf "$@"
             ;;
         etrino | vega)
             mac_require_darwin

@@ -448,6 +448,36 @@ _core_apply_default_set_values() {
         CORE_SET_VALUES+=("businessDomain.enabled=false")
         log_info "Default applied: --set businessDomain.enabled=false (override with --set businessDomain.enabled=true)"
     fi
+
+    # Lightweight resource overrides for resource-constrained environments (mac kind / k3s).
+    # All four envs are empty by default → k8s/kubeadm path stays at chart defaults
+    # (most app charts ship limits=4-8Gi which is over-provisioned for dev).
+    # Defaults are layered upstream:
+    #   - mac dev: see deploy/dev/lib/mac_common.sh (mac_common_init)
+    #   - k3s    : see kweaver_apply_k3s_lightweight_defaults in common.sh
+    # Apply uniformly to every Core release; per-release tuning (e.g. larger limit for
+    # ontology-query) can be added later if a service consistently OOMs at install time.
+    local _core_resource_set
+    _core_resource_set=0
+    if [[ -n "${KWEAVER_CORE_REQ_CPU:-}" ]]; then
+        CORE_SET_VALUES+=("resources.requests.cpu=${KWEAVER_CORE_REQ_CPU}")
+        _core_resource_set=1
+    fi
+    if [[ -n "${KWEAVER_CORE_REQ_MEM:-}" ]]; then
+        CORE_SET_VALUES+=("resources.requests.memory=${KWEAVER_CORE_REQ_MEM}")
+        _core_resource_set=1
+    fi
+    if [[ -n "${KWEAVER_CORE_LIM_CPU:-}" ]]; then
+        CORE_SET_VALUES+=("resources.limits.cpu=${KWEAVER_CORE_LIM_CPU}")
+        _core_resource_set=1
+    fi
+    if [[ -n "${KWEAVER_CORE_LIM_MEM:-}" ]]; then
+        CORE_SET_VALUES+=("resources.limits.memory=${KWEAVER_CORE_LIM_MEM}")
+        _core_resource_set=1
+    fi
+    if [[ "${_core_resource_set}" == "1" ]]; then
+        log_info "Core resource overrides applied (uniform): req cpu=${KWEAVER_CORE_REQ_CPU:-<chart>} mem=${KWEAVER_CORE_REQ_MEM:-<chart>} / lim cpu=${KWEAVER_CORE_LIM_CPU:-<chart>} mem=${KWEAVER_CORE_LIM_MEM:-<chart>}"
+    fi
 }
 
 # Install KWeaver Core services via Helm

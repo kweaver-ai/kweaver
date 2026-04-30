@@ -1076,6 +1076,61 @@ REDIS_STORAGE_SIZE="${REDIS_STORAGE_SIZE:-5Gi}"
 REDIS_MASTER_GROUP_NAME="${REDIS_MASTER_GROUP_NAME:-mymaster}"
 REDIS_REPLICA_COUNT="${REDIS_REPLICA_COUNT:-1}"
 REDIS_SENTINEL_QUORUM="${REDIS_SENTINEL_QUORUM:-1}"
+# Auto-patch StatefulSet to self-heal ACL drift on Pod restart; set false to opt out.
+REDIS_AUTO_PATCH_ACL="${REDIS_AUTO_PATCH_ACL:-true}"
+# Resource overrides for the proton-redis chart. Empty = don't pass --set, keep chart defaults
+# (chart default: redis.maxmemory=4GB, resources.requests=cpu 100m/memory 512Mi, no limits).
+# Lower defaults for resource-constrained environments are layered on top:
+#   - mac dev: see deploy/dev/lib/mac_common.sh (mac_common_init)
+#   - k3s    : see kweaver_apply_k3s_lightweight_defaults below (KUBE_DISTRO=k3s)
+# Note: only the `redis` container gets these resources; the chart template does not wire
+# `resources` into the sentinel/exporter sidecars.
+REDIS_MAXMEMORY="${REDIS_MAXMEMORY:-}"
+REDIS_MEMORY_REQUEST="${REDIS_MEMORY_REQUEST:-}"
+REDIS_MEMORY_LIMIT="${REDIS_MEMORY_LIMIT:-}"
+REDIS_CPU_REQUEST="${REDIS_CPU_REQUEST:-}"
+REDIS_CPU_LIMIT="${REDIS_CPU_LIMIT:-}"
+
+# Apply lightweight defaults for single-node k3s (only fills values the user has not set).
+# Called once below so k8s/kubeadm path is untouched.
+kweaver_apply_k3s_lightweight_defaults() {
+    [[ "${KUBE_DISTRO}" == "k3s" ]] || return 0
+    # redis (chart default 4GB / 512Mi req)
+    : "${REDIS_MAXMEMORY:=1gb}"
+    : "${REDIS_MEMORY_REQUEST:=256Mi}"
+    : "${REDIS_MEMORY_LIMIT:=512Mi}"
+    : "${REDIS_CPU_REQUEST:=50m}"
+    # opensearch (k8s default below: req=512Mi, lim=2048Mi)
+    : "${OPENSEARCH_MEMORY_REQUEST:=512Mi}"
+    : "${OPENSEARCH_MEMORY_LIMIT:=1024Mi}"
+    # zookeeper (k8s default below: req cpu=500m mem=1Gi, lim cpu=1 mem=2Gi, jvm 500m)
+    # Note: chart hard-codes a zookeeper-exporter sidecar at req/lim 100m/100Mi (no knob).
+    : "${ZOOKEEPER_RESOURCES_REQUESTS_CPU:=50m}"
+    : "${ZOOKEEPER_RESOURCES_REQUESTS_MEMORY:=128Mi}"
+    : "${ZOOKEEPER_RESOURCES_LIMITS_CPU:=500m}"
+    : "${ZOOKEEPER_RESOURCES_LIMITS_MEMORY:=384Mi}"
+    : "${ZOOKEEPER_JVMFLAGS:=-Xms128m -Xmx192m}"
+    # kweaver-core app services (chart defaults: limits=4-8Gi, mostly request=0)
+    # Loose ceiling so heavier services (agent-retrieval, ontology-query) still have headroom.
+    : "${KWEAVER_CORE_REQ_CPU:=100m}"
+    : "${KWEAVER_CORE_REQ_MEM:=128Mi}"
+    : "${KWEAVER_CORE_LIM_CPU:=2}"
+    : "${KWEAVER_CORE_LIM_MEM:=2Gi}"
+    # ISF (Information Security Fabric) charts (chart defaults: limits 1-8Gi, some unset).
+    # Same uniform ceiling as core; auth-heavy services rarely need more in dev.
+    : "${KWEAVER_ISF_REQ_CPU:=100m}"
+    : "${KWEAVER_ISF_REQ_MEM:=128Mi}"
+    : "${KWEAVER_ISF_LIM_CPU:=2}"
+    : "${KWEAVER_ISF_LIM_MEM:=2Gi}"
+    export REDIS_MAXMEMORY REDIS_MEMORY_REQUEST REDIS_MEMORY_LIMIT REDIS_CPU_REQUEST \
+           OPENSEARCH_MEMORY_REQUEST OPENSEARCH_MEMORY_LIMIT \
+           ZOOKEEPER_RESOURCES_REQUESTS_CPU ZOOKEEPER_RESOURCES_REQUESTS_MEMORY \
+           ZOOKEEPER_RESOURCES_LIMITS_CPU ZOOKEEPER_RESOURCES_LIMITS_MEMORY \
+           ZOOKEEPER_JVMFLAGS \
+           KWEAVER_CORE_REQ_CPU KWEAVER_CORE_REQ_MEM KWEAVER_CORE_LIM_CPU KWEAVER_CORE_LIM_MEM \
+           KWEAVER_ISF_REQ_CPU KWEAVER_ISF_REQ_MEM KWEAVER_ISF_LIM_CPU KWEAVER_ISF_LIM_MEM
+}
+kweaver_apply_k3s_lightweight_defaults
 
 # Kafka Configuration
 KAFKA_NAMESPACE="${KAFKA_NAMESPACE:-${RESOURCE_NAMESPACE}}"

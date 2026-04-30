@@ -64,15 +64,26 @@ See also: top-of-file comments in [`mac.sh`](mac.sh), `bash ./dev/mac.sh -h`.
   ```
   When verifying ingress later, also pass `--noproxy '*'` to curl as a belt-and-braces.
 
-- **Redis pod stuck in `CrashLoopBackOff` with `WRONGPASS invalid username-password pair`** (typically after a VM/node restart): the `proton-redis` image's `/config-init.sh` hard-codes the `monitor-user` password hash and only `sed`-replaces existing ACL lines, so stale ACL files on the PVC never self-heal. Workaround:
+- **Redis pod stuck in `CrashLoopBackOff` with `WRONGPASS invalid username-password pair`** (typically after a VM/node restart, or after a Redis `helm upgrade`): the `proton-redis` image's `/config-init.sh` hard-codes the `monitor-user` password hash and only `sed`-replaces existing ACL lines, while the `sentinel`/`exporter` sidecars run `ACL SETUSER` + `ACL SAVE` at runtime and overwrite the on-disk ACL with hashes that no longer match the Secret. The on-disk file does not self-heal. Recover with:
+  ```bash
+  bash ./deploy.sh redis fix-acl
+  ```
+  This deletes `/data/conf/{users,sentinel-users}.acl` from the PVC and the Pod, so the init container re-enters its "if file does not exist" branch and copies fresh ACL files (with correct hashes) from the ConfigMap. Pods that crashed waiting on Redis (e.g. `agent-operator-integration`, `coderunner`) recover on their next backoff, or `kubectl delete pod` them to speed up. Equivalent manual recipe if you cannot use `deploy.sh`:
   ```bash
   kubectl exec -n resource redis-proton-redis-0 -c redis -- \
     rm -f /data/conf/users.acl /data/conf/sentinel-users.acl
   kubectl delete pod -n resource redis-proton-redis-0
   ```
-  This forces the init container's "if file does not exist" branch, which copies fresh ACL files from the ConfigMap with the correct hashes. Pods that crashed (e.g. `agent-operator-integration`, `coderunner`) recover on their next backoff retry, or `kubectl delete pod` them to speed up.
 
 - **`onboard --config` requires `=`**: use `bash ./dev/mac.sh -y onboard --config=conf/models.yaml`. The space form `--config conf/models.yaml` is rejected by the wrapped `onboard.sh` and produces `Unknown: --config`.
+
+- **kind images don't show up in Docker Desktop's "Images" tab**: kind nodes run their own `containerd` inside the node container, separate from the host Docker engine. Kweaver application images live there, not in Docker Desktop's image store. They still consume Docker Desktop's disk budget (~15–25 GB for the full stack). Inspect / preload via:
+  ```bash
+  docker exec kweaver-dev-control-plane crictl images        # list images inside the kind node
+  kind load docker-image <img:tag> --name kweaver-dev        # push a host-built image into kind
+  ```
+
+- **`mac.sh isf install` switches the stack to HTTPS automatically**: ISF (hydra/oauth2) requires HTTPS issuers, so the install path will (1) flip `mac-config.yaml` `accessAddress` to `https/443`, (2) generate a self-signed TLS cert + Secret `kweaver-ingress-tls`, (3) `helm upgrade` any already-installed `kweaver-core` releases so they pick up the new https `accessAddress`, then (4) install ISF and patch its ingress with TLS. Total time ~10 min on a fresh install. Browsers will warn on the self-signed cert — accept once. To stay on HTTP, just don't install ISF (`--minimum` already disables `auth.enabled`).
 
 - **Quick verify after install** (proxy unset, Core pods Ready):
   ```bash
@@ -154,15 +165,26 @@ cd kweaver-core/deploy   # 在此目录执行 bash ./dev/mac.sh ...（与 deploy
   ```
   后面验证 ingress 时也建议加 `--noproxy '*'` 给 curl 兜底。
 
-- **Redis pod `CrashLoopBackOff` 且报 `WRONGPASS invalid username-password pair`**（通常发生在 VM/节点重启后）：`proton-redis` 镜像内的 `/config-init.sh` 给 `monitor-user` 写死了一个固定 SHA256，且 else 分支只 `sed` 替换不补行；PVC 上的 ACL 文件残缺时无法自愈。临时修法：
+- **Redis pod `CrashLoopBackOff` 且报 `WRONGPASS invalid username-password pair`**（通常发生在 VM/节点重启后，或 Redis `helm upgrade` 之后）：`proton-redis` 镜像内的 `/config-init.sh` 给 `monitor-user` 写死了一个固定 SHA256 且 else 分支只 `sed` 替换不补行；同时 `sentinel`/`exporter` sidecar 在运行期会跑 `ACL SETUSER` + `ACL SAVE`，把盘上 ACL 写成跟 Secret 不一致的 hash。盘上文件不会自愈，用一条命令修复：
+  ```bash
+  bash ./deploy.sh redis fix-acl
+  ```
+  脚本会删掉 PVC 上的 `/data/conf/{users,sentinel-users}.acl` 并删 Pod，让 init 容器走 "if not exists" 分支从 ConfigMap 重新拷正确 hash 的 ACL。依赖 Redis 的应用（`agent-operator-integration`、`coderunner` 等）会在下一次 backoff 后自愈，或 `kubectl delete pod` 加速。如果不方便用 `deploy.sh`，对应的手动等价命令：
   ```bash
   kubectl exec -n resource redis-proton-redis-0 -c redis -- \
     rm -f /data/conf/users.acl /data/conf/sentinel-users.acl
   kubectl delete pod -n resource redis-proton-redis-0
   ```
-  这会让 init 容器走 "if not exists" 分支，从 ConfigMap 重新拷贝带正确哈希的 ACL。依赖 Redis 的应用（如 `agent-operator-integration`、`coderunner`）会在下一次 backoff 后自愈，或 `kubectl delete pod` 加速。
 
 - **`onboard --config` 必须用 `=`**：`bash ./dev/mac.sh -y onboard --config=conf/models.yaml`。空格形式 `--config conf/...` 会被底层 `onboard.sh` 拒绝并报 `Unknown: --config`。
+
+- **kind 镜像在 Docker Desktop 的 "Images" 面板看不到**：kind 节点在节点容器内独立跑了一份 `containerd`，跟宿主 Docker 不共享存储。kweaver 应用镜像都在那里，不在 Docker Desktop 的镜像列表里——但仍然占 Docker Desktop 的磁盘配额（全栈 ~15–25 GB）。查看 / 预加载：
+  ```bash
+  docker exec kweaver-dev-control-plane crictl images        # 列出 kind 节点内的镜像
+  kind load docker-image <img:tag> --name kweaver-dev        # 把宿主已有镜像推进 kind
+  ```
+
+- **`mac.sh isf install` 会自动把整套切到 HTTPS**：ISF（hydra/oauth2）的 issuer 必须是 https，所以 install 流程会自动：(1) 把 `mac-config.yaml` 的 `accessAddress` 改成 `https/443`，(2) 用 openssl 生 self-signed 证书并落到 Secret `kweaver-ingress-tls`，(3) 对已装的 `kweaver-core` release 做 `helm upgrade` 让它们读到新 https `accessAddress`，(4) 装 ISF 并给 ingress patch TLS。全新场景大约 10 min。浏览器会提示自签证书风险，确认一次即可。**不装 ISF 的话不用动**——`--minimum` 默认就关了 `auth.enabled`。
 
 - **装完后的快速验证**（代理已 unset、Core pod 全 Ready 后）：
   ```bash

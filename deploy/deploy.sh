@@ -604,6 +604,9 @@ main() {
                 require_root_for_helm_cluster_addons_only
                 uninstall_redis
                 ;;
+            fix-acl)
+                fix_redis_acl
+                ;;
             *)
                 log_error "Unknown redis action: ${action}"
                 usage

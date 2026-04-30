@@ -10,49 +10,13 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](../LICENSE.txt)
 
-## Linux：k3s 快速上手（推荐）与 kubeadm（旧路径）
+## Linux：默认 `k8s`（kubeadm）与可选 k3s
 
-两条路径都会得到可用的单节点 Kubernetes，下游命令一致（例如 `bash ./deploy.sh kweaver-core install --minimum`）。
+**`KUBE_DISTRO` 默认为 `k8s`**（包管理安装 Kubernetes + 单节点 **kubeadm**）。**k3s** 为可选的更轻的单节点栈。若已用 `deploy.sh k3s install` 装好集群，后续的 **`preflight.sh`** / **`kweaver-core`** 请保持 distro 一致：在子模块名前加 **`--distro=k3s`**，或 **`export KUBE_DISTRO=k3s`**，否则 `preflight` 可能报 k3s 与 kubeadm 路径不一致，bootstrap 行为也容易对不上。
 
-### k3s（Linux 上推荐）
+### kubeadm / `KUBE_DISTRO=k8s`（默认）
 
-使用官方 k3s 安装脚本（禁用 Traefik；仍会安装 **ingress-nginx** 以保持与现有 chart/accessAddress 一致）。可通过 `K3S_INSTALL_URL`、`INSTALL_K3S_VERSION`、`INSTALL_K3S_MIRROR` 等环境变量切换镜像或版本。
-
-```bash
-cd kweaver-core/deploy
-
-# 安装 k3s + Helm + ingress-nginx
-bash ./deploy.sh k3s install
-
-# 产品模块自动装集群（默认 distro 为 k8s/kubeadm；如需 k3s 加 --distro=k3s）：
-bash ./deploy.sh kweaver-core install --minimum
-# 若需 kubeadm/包管理栈：
-# bash ./deploy.sh --distro=k8s kweaver-core install --minimum
-# KUBE_DISTRO=k8s bash ./deploy.sh kweaver-core install --minimum
-```
-
-查看状态：`bash ./deploy.sh k3s status`；卸载：`bash ./deploy.sh k3s uninstall`。
-
-### macOS（可选 — 本机 kind 开发）
-
-**仅供 Mac 上做验证；正式安装请以本文 Linux 章节为准。** 本机用 **kind** 起 Kubernetes，不在 Mac 上跑 `preflight.sh` / `k3s install`。通过 `KWEAVER_SKIP_PLATFORM_BOOTSTRAP` 让 `deploy.sh` 只执行 Helm 安装（与 Linux 使用同一套 chart）。**Apple Silicon：** kind 节点为 **arm64**，`dev/conf/mac-config.yaml` 里的镜像需支持 arm64/多架构。**步骤顺序与限制说明见 [dev/README.md](dev/README.md)。**
-
-```bash
-cd deploy   # 仓库的 deploy/ 目录
-bash ./dev/mac.sh doctor
-# 可选：用 Homebrew 补全缺失工具 — bash ./dev/mac.sh doctor --fix（或 -y doctor --fix 跳过确认）
-bash ./dev/mac.sh cluster up
-bash ./dev/mac.sh data-services install   # 装 Core 前必需（MariaDB / Redis / Kafka 等）
-bash ./dev/mac.sh kweaver-core install --minimum
-# 可选：bash ./dev/mac.sh kweaver-core download   # 仅下载 chart
-# 可选：bash ./dev/mac.sh onboard；需非交互时在命令前加 -y
-```
-
-默认配置：`dev/conf/mac-config.yaml`。`kweaver-dip` 未在 `mac.sh` 接入（请用 Linux `deploy.sh`）；`isf` / `etrino`（`vega`）会转调 `deploy.sh` —— 见 [dev/README.md](dev/README.md)。
-
-### kubeadm（默认路径）
-
-单节点 kubeadm 流程是 **`bash ./deploy.sh k8s install`**（`deploy/scripts/services/k8s.sh`）。**`KUBE_DISTRO` 默认为 `k8s`**（即 kubeadm；模块自动装集群时走 kubeadm）。需要单节点轻量 k3s 路径时用 **`--distro=k3s`** 或 **`KUBE_DISTRO=k3s`**；历史写法 **`kubeadm`** 仍可作为 **`k8s`** 的别名。
+单节点 kubeadm 流程为 **`bash ./deploy.sh k8s install`**（`deploy/scripts/services/k8s.sh`）。若 `kubectl` 已可用，`ensure_k8s` 会跳过重复安装；随后 **`ensure_platform_prerequisites`** 会安装随平台一起交付的 **data-services**（MariaDB、Redis、Kafka、ZooKeeper、OpenSearch 等），再装 Core（**本机 kind + `mac.sh` 跳过 bootstrap 的情况除外**，见下文）。历史写法 **`kubeadm`** 仍可作为 **`k8s`** 的别名。
 
 **`deploy.sh` 全局参数**（`--distro`、`-y`、`--force-upgrade`、`--config` 等）必须写在**子模块名之前**。正确：`bash ./deploy.sh --distro=k3s kweaver-core install --minimum`。错误：`bash ./deploy.sh kweaver-core install --minimum --distro=k3s`（末尾的 `--distro` 不会按全局参数解析）。不想改命令顺序时可用：`export KUBE_DISTRO=k3s` 再执行 `bash ./deploy.sh kweaver-core install --minimum`。
 
@@ -60,6 +24,38 @@ bash ./dev/mac.sh kweaver-core install --minimum
 bash ./deploy.sh k8s install
 bash ./deploy.sh kweaver-core install --minimum
 ```
+
+### k3s（可选 — 轻量单节点）
+
+使用官方 k3s 安装脚本（禁用 Traefik；仍会安装 **ingress-nginx** 以保持与现有 chart/accessAddress 一致）。可通过 `K3S_INSTALL_URL`、`INSTALL_K3S_VERSION`、`INSTALL_K3S_MIRROR` 等环境变量切换镜像或版本。
+
+```bash
+cd kweaver-core/deploy
+
+bash ./deploy.sh k3s install
+
+# 与 k3s 对齐 distro，供 preflight 与平台 bootstrap 使用：
+bash ./deploy.sh --distro=k3s kweaver-core install --minimum
+# 或：export KUBE_DISTRO=k3s && bash ./deploy.sh kweaver-core install --minimum
+```
+
+查看状态：`bash ./deploy.sh k3s status`；卸载：`bash ./deploy.sh k3s uninstall`。
+
+### macOS（可选 — 本机 kind 开发）
+
+**仅供 Mac 上做验证；正式安装请以本文 Linux 章节为准。** 本机用 **kind** 起 Kubernetes，不在 Mac 上跑 `preflight.sh` / `k3s install`。**`mac.sh` 会设置 `KWEAVER_SKIP_PLATFORM_BOOTSTRAP`**，因此在该路径下 `deploy.sh` 会跳过宿主机/平台引导，也不会自动执行随平台交付的 `data-services` Helm 层。**`bash ./dev/mac.sh kweaver-core install` 不会代为执行 `data-services install`**，须先运行 `bash ./dev/mac.sh data-services install`（Core 依赖集群内 MariaDB、Redis、Kafka 等）。在 Linux 上，**`deploy.sh kweaver-core install`** 一般会通过 `ensure_platform_prerequisites` 自动装上 data-services（除非同样跳过 bootstrap）。**Apple Silicon：** kind 节点为 **arm64**，`dev/conf/mac-config.yaml` 里的镜像需支持 arm64/多架构。**步骤顺序与限制见 [dev/README.md](dev/README.md)。**
+```bash
+cd deploy   # 仓库的 deploy/ 目录
+bash ./dev/mac.sh doctor
+# 可选：用 Homebrew 补全缺失工具 — bash ./dev/mac.sh doctor --fix（或 -y doctor --fix 跳过确认）
+bash ./dev/mac.sh cluster up
+bash ./dev/mac.sh data-services install   # 装 Core 前必需（MariaDB / Redis / Kafka 等）
+bash ./dev/mac.sh kweaver-core install --minimum   # 默认带 --minimum；不包含 data-services
+# 可选：bash ./dev/mac.sh kweaver-core download   # 仅下载 chart
+# 可选：bash ./dev/mac.sh onboard；需非交互时在命令前加 -y
+```
+
+默认配置：`dev/conf/mac-config.yaml`。`kweaver-dip` 未在 `mac.sh` 接入（请用 Linux `deploy.sh`）；`isf` / `etrino`（`vega`）会转调 `deploy.sh` —— 见 [dev/README.md](dev/README.md)。
 
 ## 🚀 Quick Start
 

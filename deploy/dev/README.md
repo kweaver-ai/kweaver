@@ -51,6 +51,36 @@ Config: copy [`dev/conf/mac-config.yaml.example`](conf/mac-config.yaml.example) 
 
 See also: top-of-file comments in [`mac.sh`](mac.sh), `bash ./dev/mac.sh -h`.
 
+### Recommended sizing & known gotchas
+
+- **Resources (Docker Desktop / colima)**: give the VM **≥ 10 CPU**, **≥ 14 GB**, **60 GB disk** for a comfortable `--minimum` install. Less is risky:
+  - `doc-convert` alone requests 1.5 CPU; 6 CPU schedulers fail with `Insufficient cpu` on 7+ Pending pods, 8 CPU still leaves no headroom.
+  - `--memory 12` (GB) actually allocates **11.66 GiB** to the VM (GB→GiB conversion), which is **below the 12 GiB doctor threshold** — set `--memory 14` to clear it. Example: `colima start --cpu 10 --memory 14 --disk 60`.
+  - **Avoid resizing mid-install.** Stopping/starting the VM after Helm releases are deployed has triggered the Redis ACL bug below.
+
+- **Proxy env pollution before `cluster up`**: kind containers inherit `HTTP_PROXY` / `HTTPS_PROXY` from your shell. If they point at `127.0.0.1:<port>` or at a proxy that is not actually running, image pulls inside the kind node fail with `proxyconnect tcp: connect: connection refused`, and `curl http://localhost/...` from the host returns 502 (curl goes through the dead proxy). Always run before any `mac.sh` step:
+  ```bash
+  unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY
+  ```
+  When verifying ingress later, also pass `--noproxy '*'` to curl as a belt-and-braces.
+
+- **Redis pod stuck in `CrashLoopBackOff` with `WRONGPASS invalid username-password pair`** (typically after a VM/node restart): the `proton-redis` image's `/config-init.sh` hard-codes the `monitor-user` password hash and only `sed`-replaces existing ACL lines, so stale ACL files on the PVC never self-heal. Workaround:
+  ```bash
+  kubectl exec -n resource redis-proton-redis-0 -c redis -- \
+    rm -f /data/conf/users.acl /data/conf/sentinel-users.acl
+  kubectl delete pod -n resource redis-proton-redis-0
+  ```
+  This forces the init container's "if file does not exist" branch, which copies fresh ACL files from the ConfigMap with the correct hashes. Pods that crashed (e.g. `agent-operator-integration`, `coderunner`) recover on their next backoff retry, or `kubectl delete pod` them to speed up.
+
+- **`onboard --config` requires `=`**: use `bash ./dev/mac.sh -y onboard --config=conf/models.yaml`. The space form `--config conf/models.yaml` is rejected by the wrapped `onboard.sh` and produces `Unknown: --config`.
+
+- **Quick verify after install** (proxy unset, Core pods Ready):
+  ```bash
+  curl --noproxy '*' http://localhost/                       # → 200, Sandbox Control Plane JSON
+  curl --noproxy '*' http://localhost/api/bkn-backend/v1     # → 404 (path exists, not a handler)
+  ```
+  The historical `curl http://<lan-ip>/api/v1/health` printed by the installer does not match any ingress route — use the paths above (or any documented service path under `/api/...`) instead.
+
 ### Troubleshooting
 
 - **`failed to connect to the docker API` / `docker.sock: no such file` when running `cluster up`:** the Docker **CLI** is installed but the **engine** is not running. Open **Docker Desktop**, wait until it is fully started, run `docker info` to confirm, then retry `cluster up`. `doctor` also checks engine reachability. **`doctor --fix` does not start Docker** (Homebrew only installs the CLI/cask); if everything else is already installed, just start Desktop and re-run `doctor`.
@@ -110,6 +140,36 @@ cd kweaver-core/deploy   # 在此目录执行 bash ./dev/mac.sh ...（与 deploy
 **配置：**[`mac-config.yaml.example`](conf/mac-config.yaml.example) → **`mac-config.yaml`**；**已被 .gitignore**，避免口令入库；按需调整 **`accessAddress`**、**`image.registry`**。
 
 另见：[`mac.sh`](mac.sh) 顶部注释、`bash ./dev/mac.sh -h`。
+
+### 推荐资源 & 已知坑
+
+- **资源（Docker Desktop / colima）**：建议给虚拟机 **≥ 10 CPU**、**≥ 14 GB 内存**、**60 GB 磁盘**才能稳跑 `--minimum`。给少了的风险：
+  - 仅 `doc-convert` 一个 pod 就 request 1.5 CPU；6 CPU 时 7+ 个 pod `Insufficient cpu` 调度失败，8 CPU 也几乎打满。
+  - `--memory 12`（GB）实际分配 **11.66 GiB**（GB→GiB 换算损失），**低于 doctor 的 12 GiB 阈值**会报内存不足；建议直接 `--memory 14`。例：`colima start --cpu 10 --memory 14 --disk 60`。
+  - **不要安装中途 resize**：Helm 部署完后停/起 VM 会触发下面的 Redis ACL bug。
+
+- **代理污染**（`cluster up` 之前）：kind 容器会继承宿主 `HTTP_PROXY` / `HTTPS_PROXY`。若代理地址是 `127.0.0.1:<port>` 或实际未启动，kind 节点拉镜像会报 `proxyconnect tcp: connect: connection refused`，宿主上 `curl http://localhost/...` 也会返 502（curl 走了死代理）。每次 `mac.sh` 之前先：
+  ```bash
+  unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY
+  ```
+  后面验证 ingress 时也建议加 `--noproxy '*'` 给 curl 兜底。
+
+- **Redis pod `CrashLoopBackOff` 且报 `WRONGPASS invalid username-password pair`**（通常发生在 VM/节点重启后）：`proton-redis` 镜像内的 `/config-init.sh` 给 `monitor-user` 写死了一个固定 SHA256，且 else 分支只 `sed` 替换不补行；PVC 上的 ACL 文件残缺时无法自愈。临时修法：
+  ```bash
+  kubectl exec -n resource redis-proton-redis-0 -c redis -- \
+    rm -f /data/conf/users.acl /data/conf/sentinel-users.acl
+  kubectl delete pod -n resource redis-proton-redis-0
+  ```
+  这会让 init 容器走 "if not exists" 分支，从 ConfigMap 重新拷贝带正确哈希的 ACL。依赖 Redis 的应用（如 `agent-operator-integration`、`coderunner`）会在下一次 backoff 后自愈，或 `kubectl delete pod` 加速。
+
+- **`onboard --config` 必须用 `=`**：`bash ./dev/mac.sh -y onboard --config=conf/models.yaml`。空格形式 `--config conf/...` 会被底层 `onboard.sh` 拒绝并报 `Unknown: --config`。
+
+- **装完后的快速验证**（代理已 unset、Core pod 全 Ready 后）：
+  ```bash
+  curl --noproxy '*' http://localhost/                       # → 200，Sandbox Control Plane JSON
+  curl --noproxy '*' http://localhost/api/bkn-backend/v1     # → 404（路径在，无对应处理函数）
+  ```
+  安装器历史输出里的 `curl http://<局域网 IP>/api/v1/health` 没有任何 ingress 路由匹配，请改用上面这些路径或文档化的 `/api/...` 业务路径。
 
 ### 故障排除
 

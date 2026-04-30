@@ -6,6 +6,17 @@ English | [中文](#中文说明)
 
 Local Kubernetes with **kind** plus the same Helm charts as Linux `deploy.sh`. No host `preflight` / k3s / kubeadm.
 
+### Repository (clone first)
+
+Scripts and vendored manifests live in the repo tree — **`mac.sh` is not a standalone installer.** Clone **[kweaver-ai/kweaver-core](https://github.com/kweaver-ai/kweaver-core)** (check out the branch you deploy from, e.g. `feature/deploy/k3s-module`), then **`cd`** into **`deploy/`** before any command below:
+
+```bash
+git clone https://github.com/kweaver-ai/kweaver-core.git
+cd kweaver-core/deploy   # always run bash ./dev/mac.sh ... from this directory
+```
+
+Same layout applies if your product tarball extracts to a **`kweaver-core/`** root with a **`deploy/`** subdirectory.
+
 ### Architecture (Apple Silicon / arm64)
 
 On **Apple Silicon** Macs, kind nodes are **linux/arm64** by default. Charts pull from `image.registry` in your [`dev/conf/mac-config.yaml`](conf/mac-config.yaml) (copy from [`mac-config.yaml.example`](conf/mac-config.yaml.example)); those images must be **arm64-capable** (multi-arch manifest or an arm64 tag). If a registry only ships **amd64**, pods often fail with *exec format error*. Intel Macs still get **amd64** kind nodes unless you force another platform.
@@ -44,11 +55,22 @@ See also: top-of-file comments in [`mac.sh`](mac.sh), `bash ./dev/mac.sh -h`.
 
 - **`failed to connect to the docker API` / `docker.sock: no such file` when running `cluster up`:** the Docker **CLI** is installed but the **engine** is not running. Open **Docker Desktop**, wait until it is fully started, run `docker info` to confirm, then retry `cluster up`. `doctor` also checks engine reachability. **`doctor --fix` does not start Docker** (Homebrew only installs the CLI/cask); if everything else is already installed, just start Desktop and re-run `doctor`.
 
-- **`kweaver-core-data-migrator` / pre-install job `BackoffLimitExceeded`:** install platform data services first (`bash ./dev/mac.sh data-services install`). Ensure `depServices.rds` points at in-cluster MariaDB after install (the MariaDB install step updates loopback placeholders in `mac-config` when needed). Remove a failed release if Helm left it pending: `helm uninstall kweaver-core-data-migrator -n <namespace>` then re-run `kweaver-core install`.
+- **`kweaver-core-data-migrator` / pre-install job `BackoffLimitExceeded`:** ensure the **data layer** is up (normally automatic with **`kweaver-core install`**; otherwise run **`bash ./dev/mac.sh data-services install`**). Ensure **`depServices.rds`** points at in-cluster MariaDB after install (`mac-config` loopback placeholders may be updated when MariaDB is installed). Remove a failed release if Helm left it pending: `helm uninstall kweaver-core-data-migrator -n <namespace>` then re-run `kweaver-core install`.
 
 ---
 
 ## 中文说明
+
+### 克隆仓库（先做好）
+
+脚本与内置清单都在仓库目录里 **`mac.sh` 不能脱离仓库单独用。**请先 **clone [kweaver-ai/kweaver-core](https://github.com/kweaver-ai/kweaver-core)**（切换到你要部署的分支，例如 `feature/deploy/k3s-module`），再进入 **`deploy/`**，后续命令都在该目录执行：
+
+```bash
+git clone https://github.com/kweaver-ai/kweaver-core.git
+cd kweaver-core/deploy   # 必须在含有 deploy.sh 的这一层执行 bash ./dev/mac.sh ...
+```
+
+若使用发布包解压后的目录结构，只要存在 **`deploy/`** 且路径与上文一致即可。
 
 在 **`deploy/`** 目录下执行（例如 `cd deploy`）。请用 **bash** 调用：`bash ./dev/mac.sh ...`。**`kweaver-core` / `core`** 默认会加上 **`--minimum`**（精简 chart、按 manifest 跳过 ISF）；需要完整依赖时用 **`--full`**。
 

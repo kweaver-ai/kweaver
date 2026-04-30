@@ -2,7 +2,7 @@
 
 本页说明 KWeaver Core 的**环境要求**、**部署步骤**与**安装后检查**。
 
-> **平台：** **Linux** 是完整安装（`preflight.sh`、k3s/kubeadm、数据服务等）的**推荐**目标环境。**macOS** 仅适合用 Docker + **kind** 做**本机开发/验证** — 见 **`deploy/dev/README.md`** 与 `deploy/dev/mac.sh`（Mac 上不跑 `preflight.sh`，也与生产环境不对齐）。
+> **平台：** **Linux** 是完整安装（`preflight.sh`、k3s/kubeadm、数据服务等）的**推荐**目标环境。**macOS** 仅适合用 Docker + **kind** 做**本机开发/验证** —— 见 **`deploy/dev/README.md`** 与 `deploy/dev/mac.sh`（Mac 上不跑 `preflight.sh`，也与生产环境不对齐）。常见顺序：先起 **Docker Desktop**（或任意提供 Docker API 的引擎），再 **`bash ./dev/mac.sh cluster up`**，然后 **`bash ./dev/mac.sh kweaver-core install`**；当前 **`kweaver-core install` 会先执行 `ensure_data_services`**（与单独 **`data-services install`** 一致），除非设置 **`KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true`**。
 
 > 📌 安装通过产品包或源码中的 `deploy/` 目录下的 `deploy.sh` 脚本完成。
 

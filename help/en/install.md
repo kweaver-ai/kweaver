@@ -2,7 +2,7 @@
 
 This page covers **prerequisites**, **install steps**, and **post-install checks** for KWeaver Core.
 
-> **Platform:** **Linux** is the recommended install target for full stacks (`preflight.sh`, k3s/kubeadm, data services). **macOS** is supported only for **local dev validation** with Docker + kind — see **`deploy/dev/README.md`** and `deploy/dev/mac.sh` (no `preflight.sh` / production parity on the Mac host).
+> **Platform:** **Linux** is the recommended install target for full stacks (`preflight.sh`, k3s/kubeadm, data services). **macOS** is supported only for **local dev validation** with Docker + **kind** — see **`deploy/dev/README.md`** and `deploy/dev/mac.sh` (no `preflight.sh` / production parity on the Mac host). Typical flow: start **Docker Desktop** (or any engine that exposes the Docker API), **`bash ./dev/mac.sh cluster up`**, then **`bash ./dev/mac.sh kweaver-core install`** — `install_core` runs **`ensure_data_services`** first (same Helm bundle as `data-services install`) unless **`KWEAVER_SKIP_DATA_SERVICES_BUNDLE=true`**.
 
 > Use the `deploy.sh` script under the `deploy/` directory from your product bundle or build tree.
 

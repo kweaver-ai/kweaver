@@ -224,7 +224,7 @@ usage() {
     echo "                Else host primary IPv4 + ONBOARD_DEFAULT_ACCESS_SCHEME (https by default)."
     echo "                Set ONBOARD_DEFAULT_ACCESS_BASE to force a URL; ONBOARD_DEFAULT_ACCESS_PORT / SCHEME override fallback IP path."
     echo "  kweaver auth: you confirm URL. ISF+full: HTTP defaults user=admin pass=eisoo.com (if still default); override with ONBOARD_DEFAULT_KWEAVER_USER / _PASSWORD. Enter keeps defaults. Minimum: default --no-auth; Enter to accept."
-    echo "  kweaver-admin auth (ISF): use  auth login <url> -u admin -p <pass>  (append -k for https:// + self-signed) or browser-only flow; kweaver-admin has no --http-signin flag. Then kweaver re-logs in as user test for impex and model steps."
+    echo "  kweaver-admin auth (ISF): use  auth login <url> -u admin -p <pass>  (append -k for https:// + self-signed); or  auth login <url> -k  without -u/-p for browser OAuth. If sign-in returns 401001017 (initial password), use the same URL with OAuth login, or  auth change-password <url> …, or  login … --new-password. Then kweaver re-logs in as user test for impex and model steps."
     echo "  Node: onboard is not a login shell — it auto-loads nvm/fnm/asdf/Volta and Homebrew paths so an already-configured Node 22+ is found without re-asking. ONBOARD_SKIP_NVM_INIT=true skips that; ONBOARD_NVM_VERSION=22 (default) is used after  nvm.sh  load."
     echo "  (preflight on the server: sudo preflight --fix still optional; this script can install Node in your *user* account via nvm.)"
 }
@@ -574,11 +574,14 @@ onboard_kweaver_admin_output_is_blocked_initial_password() {
     grep -qE '401001017|401,001,017|无法使用初始密码|密码是初始密码' "${_f}" 2>/dev/null
 }
 
-# Same EACP flow as docs: change-password works without OAuth; login accepts --new-password for non-interactive first-time set.
+# 401001017: HTTP /oauth2/signin + 初始口令会被拒；可走浏览器 OAuth login，或用 change-password / login --new-password。
 onboard_kweaver_admin_hint_auth_change_password_cli() {
     local _url="$1" _user="${2:-admin}"
-    onboard_log_warn "首登不可用初始密码直接 login（401001017）：请先改密—— $(printf '%q ' kweaver-admin auth change-password "${_url}" -u "${_user}" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}")（TTY 可交互输入；-o/-n 见 ISF / install 文档）。"
-    onboard_log_warn "须保留命令中的访问地址；若省略 URL，CLI 会用当前激活平台（可用  kweaver-admin auth list  查看），可能连错环境。"
+    onboard_log_warn "初始密码无法用「HTTP 用户名密码登录」直连（401001017）。任选其一后继续 onboard："
+    onboard_log_warn "  • OAuth/浏览器：$(printf '%q ' kweaver-admin auth login "${_url}" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}")（不传 -u/-p，按提示在浏览器完成登录与首登改密）。"
+    onboard_log_warn "  • kweaver-admin HTTP：$(printf '%q ' kweaver-admin auth change-password "${_url}" -u "${_user}" "${ONBOARD_TLS_INSECURE_ARGS[@]+"${ONBOARD_TLS_INSECURE_ARGS[@]}"}")（EACP 改密；须带 URL）。"
+    onboard_log_warn "  • 或非交互一次完成 login：同上 URL/-k，追加 -u … -p '<初始密码>' --new-password '<新密码>'（onboard -y 时成功后再 export ONBOARD_DEFAULT_KWEAVER_PASSWORD）。"
+    onboard_log_warn "勿省略命令中的访问地址，否则会误用  kweaver-admin auth list  里当前激活平台。"
 }
 
 # kweaver-admin: -u/-p use HTTP /oauth2/signin (no --http-signin flag; unlike kweaver-sdk). Same defaults as kweaver. See ONBOARD_DEFAULT_KWEAVER_*.
@@ -599,7 +602,6 @@ onboard_kweaver_admin_auth_login_for_url() {
         fi
         if onboard_kweaver_admin_output_is_blocked_initial_password "${_kad_out}"; then
             onboard_kweaver_admin_hint_auth_change_password_cli "${_kurl}" "${_duser}"
-            onboard_log_warn "或保持 -y：在同一 login 命令追加 -p '<初始密码>' --new-password '<新密码>'，成功后 export ONBOARD_DEFAULT_KWEAVER_PASSWORD='<新密码>' 再重跑。"
         fi
         rm -f "${_kad_out}"
         return 1

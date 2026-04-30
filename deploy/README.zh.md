@@ -42,6 +42,7 @@ cd deploy   # 仓库的 deploy/ 目录
 bash ./dev/mac.sh doctor
 # 可选：用 Homebrew 补全缺失工具 — bash ./dev/mac.sh doctor --fix（或 -y doctor --fix 跳过确认）
 bash ./dev/mac.sh cluster up
+bash ./dev/mac.sh data-services install   # 装 Core 前必需（MariaDB / Redis / Kafka 等）
 bash ./dev/mac.sh kweaver-core install --minimum
 # 可选：bash ./dev/mac.sh kweaver-core download   # 仅下载 chart
 # 可选：bash ./dev/mac.sh onboard；需非交互时在命令前加 -y

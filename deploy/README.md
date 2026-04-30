@@ -42,6 +42,7 @@ cd deploy   # repository deploy/ directory
 bash ./dev/mac.sh doctor
 # optional: install missing tools via Homebrew — bash ./dev/mac.sh doctor --fix (or -y doctor --fix to skip confirm)
 bash ./dev/mac.sh cluster up
+bash ./dev/mac.sh data-services install   # required before Core (MariaDB / Redis / Kafka / etc.)
 bash ./dev/mac.sh kweaver-core install --minimum
 # optional: bash ./dev/mac.sh kweaver-core download
 # optional: bash ./dev/mac.sh onboard

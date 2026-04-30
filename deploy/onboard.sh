@@ -19,6 +19,20 @@ fi
 # shellcheck source=scripts/lib/common.sh
 source "${SCRIPT_DIR}/scripts/lib/common.sh"
 
+# Linux: when deploy.sh ran via sudo, accessAddress lives at /root/.kweaver-ai/config.yaml. Hint operator
+# to re-run with sudo so onboard reads the same yaml as deploy (skipped on macOS dev / kind path).
+if [[ "$(uname -s 2>/dev/null || true)" != "Darwin" ]] \
+        && [[ "${EUID:-$(id -u)}" -ne 0 ]] \
+        && [[ -z "${ONBOARD_SUDO_HINT_DISABLED:-}" ]] \
+        && [[ -f /root/.kweaver-ai/config.yaml ]] \
+        && [[ "${CONFIG_YAML_PATH:-}" != "/root/.kweaver-ai/config.yaml" ]]; then
+    printf '\033[0;33m[onboard][hint] /root/.kweaver-ai/config.yaml exists (sudo deploy.sh wrote it).\n' >&2
+    printf '              Run onboard with sudo so it reads the same accessAddress / depServices:\n' >&2
+    printf '                  sudo bash ./onboard.sh %s\n' "$*" >&2
+    printf '              Or pin: CONFIG_YAML_PATH=/root/.kweaver-ai/config.yaml bash ./onboard.sh\n' >&2
+    printf '              Set ONBOARD_SUDO_HINT_DISABLED=1 to silence this notice.\033[0m\n' >&2
+fi
+
 # macOS kind dev: vendored deploy/conf lacks accessAddress; switch to mac-config when still using defaults.
 _onboard_default_conf="${SCRIPT_DIR}/conf/config.yaml"
 _onboard_default_home="${HOME}/.kweaver-ai/config.yaml"

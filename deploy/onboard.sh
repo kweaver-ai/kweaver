@@ -20,10 +20,31 @@ if [[ "$(uname -s 2>/dev/null || true)" == "Darwin" ]] && [[ -f "${_onboard_mac_
     fi
 fi
 
+# Top-level "namespace:" from CONFIG_YAML_PATH (Helm values); default NAMESPACE=kweaver unless set in env or yaml.
+onboard_namespace_from_config_yaml() {
+    local cfg="${CONFIG_YAML_PATH:-}"
+    if [[ -z "${cfg}" ]] || [[ ! -f "${cfg}" ]]; then
+        return 0
+    fi
+    awk '$1=="namespace:" {gsub(/['\''"]/,"",$2); print $2; exit}' "${cfg}" 2>/dev/null
+}
+
+# Apply helm values namespace unless NAMESPACE was set in the parent environment.
+if [[ -z "${NAMESPACE+x}" ]] || [[ "${NAMESPACE}" == "kweaver" ]]; then
+    _ns_cfg="$(onboard_namespace_from_config_yaml || true)"
+    if [[ -n "${_ns_cfg}" ]]; then
+        export NAMESPACE="${_ns_cfg}"
+    else
+        export NAMESPACE="${NAMESPACE:-kweaver}"
+    fi
+else
+    export NAMESPACE="${NAMESPACE}"
+fi
+unset _ns_cfg
+
 # shellcheck source=scripts/lib/onboard_models.sh
 source "${SCRIPT_DIR}/scripts/lib/onboard_models.sh"
 
-NAMESPACE="${NAMESPACE:-kweaver}"
 CONFIG_FILE=""
 BKN_NAME=""
 ENABLE_BKN_ONLY="false"
@@ -178,7 +199,7 @@ usage() {
     echo "    - ISF (full):  kweaver-admin  / console  admin  for user ops. ADP impex uses user  test  with all  role list"
     echo "      roles (typically three business admins), then  kweaver auth  as  test .  -y  uses password  ${ONBOARD_DEFAULT_TEST_USER_PASSWORD:-111111}  (override: ONBOARD_TEST_USER_PASSWORD) ."
     echo "    - Minimum (no ISF):  kweaver auth login  only; kweaver-admin is not required."
-    echo "  --namespace=NS           (default: kweaver; or key 'namespace' in yaml)"
+    echo "  --namespace=NS           Override K8s namespace (default: NAMESPACE env, else namespace: in CONFIG_YAML_PATH, else kweaver)"
     echo "  --enable-bkn-search      Only patch bkn/ontology ConfigMaps and rollout"
     echo "  --bkn-embedding-name=X   Required with --enable-bkn-search (registered model_name)"
     echo "  --skip-bkn               With --config: register models but skip BKN + rollout"

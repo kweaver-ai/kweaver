@@ -100,7 +100,7 @@ See also: top-of-file comments in [`mac.sh`](mac.sh), `bash ./dev/mac.sh -h`.
 
 ### Onboard and `kweaver-admin` (full ISF)
 
-`bash ./dev/mac.sh onboard` runs **`onboard.sh`** with **`CONFIG_YAML_PATH`** (usually `dev/conf/mac-config.yaml`). On a **full** install with ISF, the script calls **`kweaver-admin auth login`** with HTTP `-u`/`-p`. **401001017** means the factory default cannot complete that sign-in until the password is changed — **`onboard.sh` prints recovery hints in English**. Options:
+`bash ./dev/mac.sh onboard` runs **`onboard.sh`** with **`CONFIG_YAML_PATH`** (usually `dev/conf/mac-config.yaml`). On a **full** install with ISF, the script calls **`kweaver-admin auth login`** with HTTP `-u`/`-p`. When the backend returns **401001017** (factory-default password blocked for HTTP `/oauth2/signin`), **`onboard.sh` automatically invokes browser OAuth**: `kweaver-admin auth login https://<access-address> -k` without `-u`/`-p` whenever **stdin and stdout are both a terminal**. If OAuth does not succeed or onboarding has no TTY (e.g. full CI piping), **`onboard.sh` prints English fallback hints** for the scripted paths below (**all other onboard runtime hints are English**).
 
 | Approach | Typical command |
 |----------|-----------------|
@@ -213,7 +213,7 @@ cd kweaver-core/deploy   # 在此目录执行 bash ./dev/mac.sh ...（与 deploy
 
 ### Onboard 与 `kweaver-admin`（全量 ISF）
 
-**`bash ./dev/mac.sh onboard`** 调用 **`onboard.sh`**（`CONFIG_YAML_PATH` 多为 **`dev/conf/mac-config.yaml`**）。**全量 + ISF** 时会用 HTTP **`-u`/`-p`** 执行 **`kweaver-admin auth login`**。返回 **401001017** 表示初始密码无法走该 HTTP 登录路径，须先完成改密——**脚本在终端里的提示语言为英文**；可选做法与上文英文 **Onboard and kweaver-admin** 小节一致：
+**`bash ./dev/mac.sh onboard`** 调用 **`onboard.sh`**（`CONFIG_YAML_PATH` 多为 **`dev/conf/mac-config.yaml`**）。**全量 + ISF** 时会用 HTTP **`-u`/`-p`** 执行 **`kweaver-admin auth login`**。若服务端返回 **401001017**，在 **标准输入与标准输出均为终端（交互 TTY）** 时，**脚本会直接再执行无 `-u`/`-p` 的 `kweaver-admin auth login <URL> -k`** 拉起浏览器 OAuth。若无 TTY（纯自动化）或 OAuth 未成功，**脚本再以英文打出备选说明**，下表的手工命令与上文英文一致。
 
 | 方式 | 命令要点 |
 |------|----------|

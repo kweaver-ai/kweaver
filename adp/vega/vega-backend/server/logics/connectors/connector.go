@@ -70,12 +70,8 @@ type FilesetConnector interface {
 	Connector
 	// ListFilesets lists file and folder objects for discovery (typically one level per parent).
 	ListFilesets(ctx context.Context) ([]*interfaces.FilesetMeta, error)
-	// SearchFiles searches files based on query parameters.
-	// docID is the source object id (e.g. AnyShare gns id).
-	// keyword is the search keyword for fuzzy search.
-	// rows is the number of results to return.
-	// start is the starting index for pagination.
-	SearchFiles(ctx context.Context, docID, keyword string, rows, start int) ([]map[string]any, int64, error)
+	// ExecuteQuery executes a query on the fileset
+	ExecuteQuery(ctx context.Context, resource *interfaces.Resource, params *interfaces.ResourceDataQueryParams) (*interfaces.QueryResult, error)
 }
 
 // TopicConnector defines the interface for message queue connectors.
@@ -109,9 +105,8 @@ type IndexConnector interface {
 	CheckExist(ctx context.Context, name string) (bool, error)
 	CreateDocuments(ctx context.Context, name string, documents []map[string]any) ([]string, error)
 	GetDocument(ctx context.Context, name string, docID string) (map[string]any, error)
-	UpdateDocument(ctx context.Context, name string, docID string, document map[string]any) error
 	DeleteDocument(ctx context.Context, name string, docID string) error
-	UpdateDocuments(ctx context.Context, name string, updateRequests []map[string]any) error
+	UpsertDocuments(ctx context.Context, name string, updateRequests []map[string]any) ([]string, error)
 	DeleteDocuments(ctx context.Context, name string, docIDs string) error
 	DeleteDocumentsByQuery(ctx context.Context, name string, params *interfaces.ResourceDataQueryParams, schemaDefinition []*interfaces.Property) error
 }

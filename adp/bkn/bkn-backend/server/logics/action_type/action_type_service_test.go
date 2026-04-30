@@ -1423,7 +1423,7 @@ func Test_actionTypeService_SearchActionTypes(t *testing.T) {
 					Operation: cond.OperationAnd,
 					SubConds: []*cond.CondCfg{
 						{
-							Name:      "name",
+							Field:     "name",
 							Operation: cond.OperationEq,
 							ValueOptCfg: cond.ValueOptCfg{
 								ValueFrom: "const",

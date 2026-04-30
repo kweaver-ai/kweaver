@@ -945,11 +945,15 @@ reset_k8s() {
     echo ""
     echo "WARNING: This will completely reset Kubernetes and clean up all certificates, containers, and configurations."
     echo "This action cannot be undone."
-    read -p "Type 'Y' or 'y' to confirm: " -r confirm
-    
-    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-        log_info "Reset cancelled by user"
-        return 0
+
+    if [[ "${ASSUME_YES}" != "true" ]]; then
+        read -p "Type 'Y' or 'y' to confirm: " -r confirm
+        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+            log_info "Reset cancelled by user"
+            return 0
+        fi
+    else
+        log_info "Auto-confirmed (-y)."
     fi
     
     systemctl stop kubelet 2>/dev/null || true

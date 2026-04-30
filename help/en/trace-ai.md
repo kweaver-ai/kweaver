@@ -1,6 +1,6 @@
-# Trace AI
+# 🔭 Trace AI
 
-## Overview
+## 📖 Overview
 
 **Trace AI** provides **full-chain observability**: ingest OTLP traces, export to search backends, and query spans linked to agent and platform activity via the **agent-observability** service.
 
@@ -14,7 +14,7 @@ Typical ingress prefix:
 
 **Related modules:** [Decision Agent](decision-agent.md), platform-wide logging and metrics pipelines (feed-ingester integration).
 
-## CLI
+## 💻 CLI
 
 `kweaver agent trace` takes **agent id** first, then **conversation id** (from chat output or `kweaver agent sessions <agent_id>`).
 
@@ -144,7 +144,7 @@ Key attributes to look for in each span type:
 
 ---
 
-## Python SDK
+## 🐍 Python SDK
 
 ```python
 from kweaver_sdk import KWeaverClient
@@ -190,7 +190,7 @@ for ts in tool_spans:
 
 ---
 
-## TypeScript SDK
+## 📘 TypeScript SDK
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';
@@ -242,7 +242,7 @@ toolSpans.forEach((ts) => {
 
 ---
 
-## curl
+## 🌐 curl
 
 ```bash
 # Get trace for a conversation

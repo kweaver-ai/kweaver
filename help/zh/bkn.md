@@ -1,8 +1,8 @@
-# BKN 引擎
+# 🕸️ BKN 引擎
 
-## 概述
+## 📖 概述
 
-**业务知识网络（BKN）** 是 KWeaver Core 的语义层，用**对象类型**、**关系类型**、**动作类型**描述领域，并存储**实例**与**关系**，为智能体与分析提供统一本体。
+**业务知识网络（BKN）** 是 KWeaver Core 的语义层，用**对象类**、**关系类**、**行动类**描述领域，并存储**实例**与**关系**，为智能体与分析提供统一本体。
 
 **相关模块：** [VEGA 引擎](vega.md)（视图背后的数据）、[Context Loader](context-loader.md)（基于本体的上下文）、[Decision Agent](decision-agent.md)（运行时消费 BKN）。
 
@@ -10,22 +10,22 @@
 
 ---
 
-## BKN 语言
+## 📝 BKN 语言
 
-**BKN (Business Knowledge Network)** 是一种基于 Markdown 的声明式建模语言，用于定义业务知识网络中的对象、关系和行动。BKN 只负责描述模型结构与语义，不包含执行逻辑。
+**BKN (Business Knowledge Network)** 是一种基于 Markdown 的声明式建模语言，用于定义业务知识网络中的对象类、关系类和行动类。BKN 只负责描述模型结构与语义，不包含执行逻辑。
 
-完整语言规范见 [bkn-specification](https://github.com/kweaver-ai/bkn-specification)。
+> ℹ️ 完整 BKN 语言规范以产品附带文档为准。
 
 ### 核心概念
 
 | 概念 | 说明 |
 |------|------|
 | **knowledge_network** | 业务知识网络的整体集合，是顶层容器 |
-| **object_type** | 业务对象类型（如 Pod、客户、订单），定义属性与数据来源 |
-| **relation_type** | 连接两个对象类型的关系（如 "Pod 属于 Node"、"客户下单"） |
+| **object_type** | 业务对象类（如 Pod、客户、订单），定义属性与数据来源 |
+| **relation_type** | 连接两个对象类的关系（如 "Pod 属于 Node"、"客户下单"） |
 | **action_type** | 对对象执行的操作定义，可绑定 tool 或 MCP |
 | **risk_type** | 对行动和对象的执行风险进行结构化建模 |
-| **concept_group** | 将相关对象类型组织在一起的分组 |
+| **concept_group** | 将相关对象类组织在一起的分组 |
 
 ### 文件格式
 
@@ -105,19 +105,17 @@ BKN 采用**无 patch 的更新模型**：
 |------|-----|------|
 | Python | [PyPI](https://pypi.org/project/kweaver-bkn/) | `pip install kweaver-bkn` |
 | TypeScript | [npm](https://www.npmjs.com/package/@kweaver-ai/bkn) | `npm install @kweaver-ai/bkn` |
-| Golang | — | `go get github.com/kweaver-ai/bkn-specification/sdk/golang` |
+| Golang | 见企业发布说明 | 按随产品分发的 BKN SDK 文档安装 |
 
 ---
 
-## 用 Agent 创建 BKN
+## 🤖 用 Agent 创建 BKN
 
-AI 编码 Agent（如 Cursor、Claude Code、Codex）可以通过 [create-bkn](https://github.com/kweaver-ai/bkn-specification/tree/main/.cursor/skills/create-bkn) 技能自动生成符合规范的 BKN 目录。
+AI 编码 Agent（如 Cursor、Claude Code、Codex）可在已安装 **create-bkn** 与 **kweaver-core** 技能的前提下，自动生成符合规范的 BKN 目录。
 
-### 安装 Skill
+### 📥 安装 Skill
 
-Cursor 用户将 `create-bkn` Skill 目录放到 `~/.cursor/skills/` 或项目 `.cursor/skills/` 下。其他 Agent 环境参照各自的 Skill 加载方式。
-
-同时需安装 [kweaver-core](https://github.com/kweaver-ai/kweaver-sdk) Skill 以获得 CLI 验证和推送能力。
+> 💡 **create-bkn** 与 **kweaver-core** 技能由企业内部分发。Cursor 用户可将 Skill 目录放到 `~/.cursor/skills/` 或项目 `.cursor/skills/` 下；其他 Agent 环境参照各自的 Skill 加载方式。
 
 ### 用自然语言描述业务域
 
@@ -171,7 +169,7 @@ kweaver bkn search <kn_id> "库存不足的物料"
 
 ---
 
-## 从数据源创建
+## 🔌 从数据源创建
 
 除了用 Agent 编写 BKN 文件，也可以直接从已有数据源自动生成知识网络：
 
@@ -191,7 +189,7 @@ kweaver bkn create-from-csv <ds_id> \
 
 ---
 
-## CLI
+## 💻 CLI
 
 ### 知识网络管理
 
@@ -210,7 +208,7 @@ kweaver bkn validate ./my-network
 kweaver bkn push ./my-network --branch main
 ```
 
-### 对象类型 CRUD
+### 对象类 CRUD
 
 ```bash
 kweaver bkn object-type list kn_abc123
@@ -231,7 +229,7 @@ kweaver bkn object-type update kn_abc123 ot_customer \
 kweaver bkn object-type delete kn_abc123 ot_customer
 ```
 
-### 对象类型实例查询
+### 对象类实例查询
 
 ```bash
 # 等值查询
@@ -255,7 +253,7 @@ kweaver bkn object-type query kn_abc123 ot_customer \
   '{"conditions":[],"limit":20,"search_after":["2024-01-15T10:30:00Z","cust_500"]}'
 ```
 
-### 关系类型
+### 关系类
 
 ```bash
 kweaver bkn relation-type list kn_abc123
@@ -273,7 +271,7 @@ kweaver bkn relation-type delete kn_abc123 rt_purchase
 kweaver bkn search kn_abc123 "近三个月高价值客户"
 ```
 
-### 动作类型与执行
+### 行动类与执行
 
 ```bash
 kweaver bkn action-type list kn_abc123
@@ -299,7 +297,7 @@ kweaver ds connect --type postgresql \
 # 2. 从数据源创建知识网络
 kweaver bkn create-from-ds ds_001 --name "销售网络" --build --timeout 300
 
-# 3. 查看生成的对象类型
+# 3. 查看生成的对象类
 kweaver bkn object-type list kn_abc123
 
 # 4. 查询客户实例
@@ -312,7 +310,7 @@ kweaver bkn search kn_abc123 "近一年采购额超过100万的客户"
 
 ---
 
-## Python SDK
+## 🐍 Python SDK
 
 ```python
 from kweaver_sdk import KWeaverClient
@@ -324,7 +322,7 @@ for kn in networks["data"]:
     print(kn["id"], kn["name"])
 
 kn = client.bkn.get("kn_abc123", stats=True)
-print(f"对象类型数: {kn['stats']['object_type_count']}")
+print(f"对象类数: {kn['stats']['object_type_count']}")
 
 ot_list = client.bkn.object_type.list("kn_abc123")
 for ot in ot_list["data"]:
@@ -344,9 +342,9 @@ for item in search_results["data"]:
 
 ---
 
-## TypeScript SDK
+## 📘 TypeScript SDK
 
-> 完整可运行示例见 [kweaver-sdk/examples](https://github.com/kweaver-ai/kweaver-sdk/tree/main/examples)
+> 💡 更多可运行示例见随 `@kweaver-ai/kweaver-sdk` 包发布的示例目录。
 
 ```typescript
 import { KWeaverClient } from '@kweaver-ai/kweaver-sdk';
@@ -412,7 +410,7 @@ const buildStatus = await client.knowledgeNetworks.buildAndWait(knId, {
 
 ---
 
-## curl
+## 🌐 curl
 
 ```bash
 # 列出知识网络
@@ -423,11 +421,11 @@ curl -sk "https://<访问地址>/api/ontology-manager/v1/knowledge-networks?name
 curl -sk "https://<访问地址>/api/ontology-manager/v1/knowledge-networks/kn_abc123" \
   -H "Authorization: Bearer $(kweaver token)"
 
-# 列出对象类型
+# 列出对象类
 curl -sk "https://<访问地址>/api/ontology-manager/v1/knowledge-networks/kn_abc123/object-types" \
   -H "Authorization: Bearer $(kweaver token)"
 
-# 查询对象类型实例
+# 查询对象类实例
 curl -sk -X POST "https://<访问地址>/api/ontology-query/v1/query" \
   -H "Authorization: Bearer $(kweaver token)" \
   -H "Content-Type: application/json" \
@@ -452,7 +450,7 @@ curl -sk -X POST "https://<访问地址>/api/ontology-query/v1/search" \
     "limit": 10
   }'
 
-# 创建对象类型
+# 创建对象类
 curl -sk -X POST "https://<访问地址>/api/ontology-manager/v1/knowledge-networks/kn_abc123/object-types" \
   -H "Authorization: Bearer $(kweaver token)" \
   -H "Content-Type: application/json" \

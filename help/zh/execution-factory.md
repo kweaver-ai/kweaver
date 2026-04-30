@@ -1,6 +1,6 @@
-# Execution Factory
+# 🛠️ Execution Factory
 
-## 概述
+## 📖 概述
 
 **Execution Factory** 负责注册与执行智能体可调用的**算子**、**工具**与**技能（Skill）**，在策略控制下将 LLM 规划落地为具体业务动作（HTTP 工具、代码执行、MCP 等）。
 

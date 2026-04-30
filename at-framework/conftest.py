@@ -2,11 +2,10 @@ import os
 
 import allure
 import pytest
-from anyio.abc import _tasks
 
 from common import at_env
-from common.func import load_sys_config, load_case, get_cases, _resolve_scope_to_tags
-from common.hooks import load_session_clean_up
+from common.func import load_sys_config, load_case, get_cases
+from common.hooks import load_session_clean_up, load_session_setup
 
 config = load_sys_config("./config/config.ini")
 
@@ -34,44 +33,26 @@ def compute_case_list():
     global _case_list_cache
     if _case_list_cache is not None:
         return _case_list_cache
-
-    _case_names = os.environ.get("CASE_NAMES", "").strip()
     _scope = os.environ.get("SCOPE", "").strip()
     _tags = os.environ.get("TAGS", "").strip()
-    _suite = os.environ.get("SUITE", "").strip()
     _api_name = os.environ.get("API_NAME", "").strip()
     _api_path = os.environ.get("API_PATH", "").strip()
-
-    _case_list_cache = load_case(_case_file)
-
-    name_condition = [x.strip() for x in _case_names.split(",")] if _case_names else []
-    api_name_condition = [x.strip() for x in _api_name.split(",")] if _api_name else []
-    api_path_condition = [x.strip() for x in _api_path.split(",")] if _api_path else []
-    tag_condition = [x.strip() for x in _tags.split(",")] if _tags else []
-    tag_condition.extend(_resolve_scope_to_tags(os.path.abspath(_case_file), _scope) if _scope else [])
-    suite_condition = [
-        x.strip().replace(".yaml", "").replace(".yml", "")
-        for x in _suite.split(",")
-    ] if _suite else []
-
-    filtered_cases = []
-    for case_item in _case_list_cache:
-        if len(name_condition) > 0 and case_item["name"] not in name_condition:
-            continue
-        if len(tag_condition) > 0 and not (set(case_item["tags"]) & set(tag_condition)):
-            continue
-        if len(suite_condition) > 0:
-            suite_file = case_item["_suite_file"].replace(".yaml", "").replace(".yml", "")
-            if case_item["story"] not in suite_condition and suite_file not in suite_condition:
-                continue
-        if len(api_name_condition) > 0 and case_item["api_name"] not in api_name_condition:
-            continue
-        if len(api_path_condition) > 0 and case_item["url"] not in api_path_condition:
-            continue
-
-        filtered_cases.append(case_item)
-
-    _case_list_cache = filtered_cases
+    _case_names = os.environ.get("CASE_NAMES", "").strip()
+    _suite = os.environ.get("SUITE", "").strip()
+    if _case_names:
+        names_list = [x.strip() for x in _case_names.split(",") if x.strip()]
+        _case_list_cache = get_cases(_case_file, names=names_list) if names_list else load_case(_case_file)
+    elif _scope or _tags or _api_name or _api_path or _suite:
+        _case_list_cache = get_cases(
+            _case_file,
+            scope=_scope or None,
+            tags=_tags or None,
+            suite=_suite or None,
+            api_name=_api_name or None,
+            api_path=_api_path or None,
+        )
+    else:
+        _case_list_cache = load_case(_case_file)
     return _case_list_cache
 
 
@@ -116,18 +97,63 @@ def pytest_configure(config):
         os.environ["AT_ISF"] = str(opt_isf).strip()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def clean_up(request):
-    print("\n========== CLEANUP FIXTURE STARTED ==========\n")
-    # 仅当本会话实际收集到 test_run 中的 API 用例时才执行（避免只跑 tests/ 时误连环境）
+def _should_run_hooks(request):
+    """判断是否应该运行会话级钩子：仅当收集到 test_run 中的 API 用例时才执行。"""
     try:
         items = request.session.items or []
-        if not any("test_run.py::" in getattr(i, "nodeid", "") or i.nodeid.startswith("test_run.py") for i in items):
-            print("No test_run items, skipping cleanup")
-            yield
-            return
+        has_test_run = any(
+            "test_run.py::" in getattr(i, "nodeid", "") or i.nodeid.startswith("test_run.py")
+            for i in items
+        )
+        if not has_test_run:
+            print("No test_run items, skipping session hooks")
+            return False
     except Exception as e:
         print(f"Error checking items: {e}")
+        return False
+    return True
+
+
+@pytest.fixture(scope="session", autouse=True)
+def session_setup_fixture(request):
+    """会话级前置钩子：在测试开始前执行 framework_hooks.session_setup。"""
+    if not _should_run_hooks(request):
+        yield
+        return
+
+    if not at_env.clean_up_enabled(config):
+        print("Session hooks disabled")
+        yield
+        return
+
+    clean_up_module = at_env.clean_up_module_name(config)
+    print(f"Module: {_module_name}, clean_up_module: {clean_up_module}")
+    if clean_up_module and clean_up_module != _module_name:
+        print("Module mismatch, skipping session hooks")
+        yield
+        return
+
+    import uuid
+    case_dir = os.path.abspath(_case_file)
+    session_id = str(uuid.uuid4())
+
+    setup_fn = load_session_setup(case_dir)
+    if setup_fn is not None:
+        print(f"Calling session_setup for: {_module_name}, session_id: {session_id}")
+        try:
+            setup_fn(session_id, config)
+        except Exception as e:
+            print(f"session_setup 异常: {e}")
+    else:
+        print(f"未注册 session_setup：模块 {_module_name} 无 framework_hooks.session_setup")
+
+    yield
+
+
+@pytest.fixture(scope="session", autouse=True)
+def clean_up(request):
+    """会话级清理钩子：在测试结束后执行 framework_hooks.session_clean_up。"""
+    if not _should_run_hooks(request):
         yield
         return
 
@@ -143,9 +169,7 @@ def clean_up(request):
         yield
         return
 
-    print("Tests will run now, cleanup after...\n")
     yield
-    print("\n========== TESTS FINISHED, STARTING CLEANUP ==========\n")
 
     case_dir = os.path.abspath(_case_file)
     fn = load_session_clean_up(case_dir)
@@ -157,8 +181,3 @@ def clean_up(request):
         return
     print(f"Calling session_clean_up for: {_module_name}")
     fn(config, allure)
-    print("\n========== CLEANUP FIXTURE COMPLETED ==========\n")
-
-
-if __name__ == "__main__":
-    compute_case_list()

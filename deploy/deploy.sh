@@ -5,6 +5,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONF_DIR="${CONF_DIR:-${HOME}/.kweaver-ai}"
 CONFIG_YAML_PATH="${CONFIG_YAML_PATH:-${CONF_DIR}/config.yaml}"
 
+# Global flag: skip all interactive prompts and use defaults
+ASSUME_YES="${ASSUME_YES:-false}"
+
+# Global flag: bypass "skip when chart version unchanged" optimization so that
+# helm upgrade re-renders templates with the latest values.yaml. Use this after
+# editing config.yaml on a previously-installed cluster.
+FORCE_UPGRADE="${FORCE_UPGRADE:-false}"
+
 # Fix paths to use script's conf directory, not user home
 FLANNEL_MANIFEST_PATH="${SCRIPT_DIR}/conf/kube-flannel.yml"
 LOCALPV_MANIFEST_PATH="${SCRIPT_DIR}/conf/local-path-storage.yaml"
@@ -12,6 +20,7 @@ HELM_INSTALL_SCRIPT_PATH="${SCRIPT_DIR}/conf/get-helm-3"
 
 # Source all service libraries
 source "${SCRIPT_DIR}/scripts/lib/common.sh"
+source "${SCRIPT_DIR}/scripts/lib/context_loader_toolset_import.sh"
 source "${SCRIPT_DIR}/scripts/services/config.sh"
 source "${SCRIPT_DIR}/scripts/services/k8s.sh"
 source "${SCRIPT_DIR}/scripts/services/storage.sh"
@@ -108,6 +117,9 @@ usage() {
     echo "  $0 all install                # Full initialization with all components"
     echo ""
     echo "Global Options:"
+    echo "  -y, --yes                     Skip all interactive prompts and use defaults"
+    echo "  --force-upgrade               Always run helm upgrade even if installed chart version equals target."
+    echo "                                Use this after editing config.yaml on a previously-installed cluster."
     echo "  --config=<path>               Specify config.yaml path (values file for helm installs)"
     echo "                                (default: ~/.kweaver-ai/config.yaml or \$CONFIG_YAML_PATH env var)"
     echo "  --charts_dir=<path>           Use a specific local chart directory for download/install"
@@ -125,6 +137,14 @@ usage() {
     echo "                                Equivalent to: --set auth.enabled=false --set businessDomain.enabled=false"
     echo "  --set <key>=<value>           Pass custom values to helm charts (can be used multiple times)"
     echo "                                Example: --set auth.enabled=false --set image.tag=latest"
+    echo ""
+    echo "Environment (optional, kweaver-core install):"
+    echo "  DEPLOY_PLATFORM_ACCESS_TOKEN  Optional Bearer for Context Loader toolset impex through accessAddress (ISF / OAuth on)."
+    echo "  IMPORT_CONTEXT_LOADER_TOOLSET Set to false to skip that import (default: run after Core install)."
+    echo "  DEPLOY_BUSINESS_DOMAIN        x-business-domain header (default: bd_public)."
+    echo "  CONTEXT_LOADER_TOOLSET_ADP_PATH  Override path to context_loader_toolset.adp."
+    echo "  CONTEXT_LOADER_PF_LOCAL_PORT  Local port for kubectl port-forward (default random 37100-37999)."
+    echo "  CONTEXT_LOADER_REMOTE_PORT     Pod containerPort for port-forward (default: read deploy public-port, else 9000)."
     echo ""
     echo "  $0 kweaver-core install --minimum                 # Minimum install (skip auth & business-domain)"
     echo "  $0 kweaver-core install --set auth.enabled=false  # Install KWeaver Core without ISF"
@@ -293,19 +313,21 @@ confirm_access_address_before_install() {
     echo "  Current detected values:"
     echo "    Host     : ${host}"
     echo "    Port     : ${port}"
-    echo "    Path     : ${path}"
+    echo "    URL Root : ${path}"
     echo "    Protocol : ${scheme}  (http or https)"
     echo "    URL      : ${url}"
     echo "============================================"
-    echo ""
-    echo "Press Enter to keep the default, or type a new value."
-    echo ""
 
-    if [[ -t 0 ]]; then
+    if [[ "${ASSUME_YES}" == "true" ]]; then
+        log_info "Using defaults (-y)."
+    elif [[ -t 0 ]]; then
+        echo ""
+        echo "Press Enter to keep the default, or type a new value."
+        echo ""
         local input_host input_port input_path input_scheme
         read -r -p "  Host     [${host}]: " input_host
         read -r -p "  Port     [${port}]: " input_port
-        read -r -p "  Path     [${path}]: " input_path
+        read -r -p "  URL Root [${path}]: " input_path
         read -r -p "  Protocol [${scheme}]: " input_scheme
 
         host="${input_host:-${host}}"
@@ -330,6 +352,15 @@ confirm_access_address_before_install() {
 
 # Main function
 main() {
+    # Parse global flags before module/action
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -y|--yes) ASSUME_YES="true"; shift ;;
+            --force-upgrade) FORCE_UPGRADE="true"; shift ;;
+            *) break ;;
+        esac
+    done
+
     local module="${1:-}"
     local action="${2:-}"
     shift 2 2>/dev/null || true
@@ -377,8 +408,10 @@ main() {
             case "$1" in
                 --api_server_address=*) API_SERVER_ADVERTISE_ADDRESS="${1#*=}"; shift ;;
                 --api_server_address)   API_SERVER_ADVERTISE_ADDRESS="$2"; shift 2 ;;
+                --force-upgrade)        FORCE_UPGRADE="true"; shift ;;
                 --access_address=*)     KWEAVER_ACCESS_ADDRESS="${1#*=}"; shift ;;
                 --access_address)       KWEAVER_ACCESS_ADDRESS="$2"; shift 2 ;;
+                -y|--yes)               ASSUME_YES="true"; shift ;;
                 *) shift ;;
             esac
         done

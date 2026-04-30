@@ -1,14 +1,34 @@
-# Info Security Fabric (ISF)
+# 🔐 Info Security Fabric (ISF)
 
-## Overview
+## 📖 Overview
 
 The **Info Security Fabric** is the **cross-cutting security layer**: unified **identity**, **permissions**, **policies**, and **audit** across data access, model output, and tool invocation. In full installs it may integrate with OAuth2/OIDC stacks (e.g. Hydra) and business-domain services.
 
-With **`--minimum` install**, many auth components are disabled for a simpler lab setup — APIs may not require tokens. For production, enable the full auth profile per [deploy/README.md](../../deploy/README.md).
+With **`--minimum` install**, many auth components are disabled for a simpler lab setup — APIs may not require tokens. For production, enable the full auth profile per the deployment and security guide bundled with your release.
 
 **Related modules:** All subsystems that accept `Authorization` headers; [Decision Agent](decision-agent.md) and [VEGA Engine](vega.md) are primary consumers.
 
-## CLI
+## 🛡️ Administrator tool: kweaver-admin
+
+In a **full install** (with `auth.enabled=true` and `businessDomain.enabled=true`), ISF's day-to-day **management surface** — users, organizations, roles, models, audit — is handled via the standalone CLI [`@kweaver-ai/kweaver-admin`](https://github.com/kweaver-ai/kweaver-admin), complementary to the end-user `kweaver` CLI shown below on this page.
+
+```bash
+npm install -g @kweaver-ai/kweaver-admin           # Node.js 18+
+kweaver-admin auth login https://<access-address> -k
+
+kweaver-admin org tree                              # list departments
+kweaver-admin user create --login alice             # default password 123456, forced change at first sign-in
+kweaver-admin user assign-role <userId> <roleId>
+kweaver-admin user reset-password -u alice          # admin reset
+kweaver-admin role list
+kweaver-admin audit list --user alice --start 2026-04-01 --end 2026-04-30
+```
+
+> Full command list, token isolation (`~/.kweaver-admin/`), and `--minimum` install caveats: see [Install — Administrator tool after a full install (kweaver-admin)](install.md#-administrator-tool-after-a-full-install-kweaver-admin).
+>
+> Respect the **separation-of-duties** built-in accounts (`system`, `admin`, `security`, `audit`) — operators should use individual accounts, not the shared `admin`, for traceable audit logs.
+
+## 💻 CLI
 
 ### Authentication — Login
 
@@ -26,16 +46,14 @@ kweaver auth login https://<access-address> --alias prod -k
 kweaver auth login https://<access-address> --no-auth
 
 # Login with username/password directly (non-interactive)
-kweaver auth login https://<access-address> -u admin -p secretpass -k
+kweaver auth login https://<access-address> -u <username> -p <password> -k
 
-# Login via Playwright browser automation (headless OAuth flow)
-kweaver auth login https://<access-address> --playwright -k
+# Login via HTTP sign-in explicitly (no browser, no Node/Chromium needed)
+kweaver auth login https://<access-address> -u <username> -p <password> --http-signin -k
 
-# Custom OAuth redirect port (useful when default 8400 is taken)
-kweaver auth login https://<access-address> --port 9090
-
-# Custom OAuth redirect URI
-kweaver auth login https://<access-address> --redirect-uri http://localhost:9090/callback
+# Headless interactive login: CLI prints an OAuth URL — open it on any
+# device with a browser, then paste the full callback URL (or auth code) back
+kweaver auth login https://<access-address> --no-browser -k
 ```
 
 ### Session Management
@@ -79,7 +97,7 @@ kweaver auth delete <alias>
 # 1. Login to multiple environments
 kweaver auth login https://dev.kweaver.example.com --alias dev -k
 kweaver auth login https://staging.kweaver.example.com --alias staging -k
-kweaver auth login https://prod.kweaver.example.com --alias prod -k -u admin -p secretpass
+kweaver auth login https://prod.kweaver.example.com --alias prod -k -u <username> -p <password>
 
 # 2. List all connections
 kweaver auth list

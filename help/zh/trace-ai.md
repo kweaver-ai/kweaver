@@ -1,6 +1,6 @@
-# Trace AI
+# 🔭 Trace AI
 
-## 概述
+## 📖 概述
 
 **Trace AI** 提供**全链路可观测**：接收 OTLP 链路、导出到检索后端，并通过 **agent-observability** 服务查询与智能体及平台活动关联的 Span。每一次智能体对话都会生成完整的执行链路，记录从用户输入到最终回复的每一步决策与操作。
 
@@ -12,7 +12,7 @@
 
 **相关模块：** [Decision Agent](decision-agent.md)，以及平台日志、指标管道（如 feed-ingester）。
 
-## Trace 数据结构
+## 🧱 Trace 数据结构
 
 一次智能体对话产生的 Trace 由多个 **Span** 组成，形成父子树形结构：
 

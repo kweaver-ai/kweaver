@@ -1,6 +1,6 @@
-# VEGA Engine
+# 🗄️ VEGA Engine
 
-## Overview
+## 📖 Overview
 
 **VEGA** provides **data virtualization** over heterogeneous sources: **data connections**, **models**, and **views** (including atomic and composite views). Agents and applications query through a unified SQL-oriented surface instead of wiring each source by hand.
 
@@ -12,11 +12,11 @@ Ingress prefix (typical):
 
 **Related modules:** [BKN Engine](bkn.md) (semantic layer on top of data), [Context Loader](context-loader.md), [Dataflow](dataflow.md) (pipelines that land or transform data).
 
-The **[curl](#curl)** section at the end is **optional** — use it only if you need raw HTTP or shell scripts. If you rely on the **`kweaver` CLI** or language SDKs, you can skip it.
+The **curl** section at the end of this page is **optional** — use it only if you need raw HTTP or shell scripts. If you rely on the **`kweaver` CLI** or language SDKs, you can skip it.
 
 ---
 
-## CLI
+## 💻 CLI
 
 Common flags for all `kweaver vega` subcommands: `-bd` / `--biz-domain <s>` (default from `kweaver config`), `--pretty` (pretty-print JSON, default on). Run `kweaver vega --help` for the full command tree.
 
@@ -206,7 +206,7 @@ kweaver dataview query <dataview_id> --sql "SELECT order_id, amount FROM mysql_d
 kweaver dataview query <dataview_id> --sql "SELECT COUNT(*) AS total FROM mysql_demo.\"sales\".\"orders\""
 ```
 
-**Custom SQL (`--sql`) and Etrino**: Without `--sql`, `dataview query` uses the view’s stored definition and talks to the data source directly. With `--sql`, traffic goes through **`vega-calculate-coordinator`** (Hetu/Presto–style engine), which is **not** in the default KWeaver Core manifest. Install the **Etrino** charts: `vega-hdfs`, `vega-calculate` (includes the coordinator), and `vega-metadata`. Run `./deploy.sh etrino install` from the `deploy` directory to install Etrino only. **Use fully-qualified `catalog."schema"."table"` names for ad-hoc SQL.** See **Optional: Etrino** in [Deploy](installation/deploy.md).
+**Custom SQL (`--sql`) and Etrino**: Without `--sql`, `dataview query` uses the view’s stored definition and talks to the data source directly. With `--sql`, traffic goes through **`vega-calculate-coordinator`** (Hetu/Presto–style engine), which is **not** in the default KWeaver Core manifest. Install the **Etrino** charts: `vega-hdfs`, `vega-calculate` (includes the coordinator), and `vega-metadata`. Run `./deploy.sh etrino install` from the `deploy` directory to install Etrino only. **Use fully-qualified `catalog."schema"."table"` names for ad-hoc SQL.** See **Optional: Etrino** in [Install and deploy](install.md).
 
 **`dataview get` response fields (for custom `--sql`)**: The JSON from `kweaver dataview get <view_id> --pretty` includes the following; names match REST and the TypeScript / Python SDK.
 
@@ -242,7 +242,7 @@ kweaver dataview query <dataview_id> --sql "SELECT customer_id, SUM(amount) AS t
 
 ---
 
-## Python SDK
+## 🐍 Python SDK
 
 Use **`client.vega.*`** for vega-backend (nested resources: `catalogs`, `resources`, `query`, `connector_types`, etc.). **Catalog/resource CRUD and dataset build APIs** are not yet on the Python `VegaCatalogsResource` / `VegaResourcesResource`; use the **CLI** or **TypeScript** client below, or call the REST paths in the curl section.
 
@@ -297,7 +297,7 @@ result = client.dataviews.query(
 
 ---
 
-## TypeScript SDK
+## 📘 TypeScript SDK
 
 `client.vega` uses a **flat** method surface (`listCatalogs`, `createCatalog`, …). JSON bodies for `executeQuery`, `sqlQuery`, `createResource`, `updateCatalog`, etc. are **strings** (`JSON.stringify(...)`).
 
@@ -362,7 +362,7 @@ const dvResult = await client.dataviews.query('dv-001', {
 
 ---
 
-## curl
+## 🌐 curl
 
 After `kweaver auth login`, use **`Authorization: Bearer $(kweaver token)`** for protected calls. Replace **`https://<access-address>`** with your deployment URL.
 
@@ -465,4 +465,4 @@ curl -sk -X POST "https://<access-address>/api/vega-backend/v1/connector-types/m
 
 Dataview HTTP paths are defined by **mdl-uniquery**, not vega-backend; use `kweaver dataview` or the `client.dataviews` SDK.
 
-Full details: [kweaver-sdk](https://github.com/kweaver-ai/kweaver-sdk) and `kweaver vega --help` / `kweaver vega <subcommand> --help`.
+Full details: npm package `@kweaver-ai/kweaver-sdk` and `kweaver vega --help` / `kweaver vega <subcommand> --help`.

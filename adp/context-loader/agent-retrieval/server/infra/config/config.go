@@ -41,12 +41,11 @@ type Config struct {
 	Logger              interfaces.Logger     `yaml:"-"`
 	DeployAgent         DeployAgentConfig     `yaml:"deploy_agent"`          // Dependent agent configuration
 	ConceptSearchConfig KnConceptSearchConfig `yaml:"concept_search_config"` // Knowledge network concept search configuration
-	DataRetrieval       PrivateBaseConfig     `yaml:"data_retrieval"`        // Data retrieval configuration
 	Observability       ObservabilityConfig   `yaml:"-"`
 	// 新增配置 - 知识重排和检索相关
 	MFModelAPI PrivateBaseConfig `yaml:"mf_model_api"` // MF-Model API统一服务配置
 	RerankLLM  RerankLLMConfig   `yaml:"rerank_llm"`   // Rerank用的LLM参数配置
-	FindSkills FindSkillsConfig  `yaml:"find_skills"`   // find_skills Skill 召回配置
+	FindSkills FindSkillsConfig  `yaml:"find_skills"`  // find_skills Skill 召回配置
 }
 
 // ObservabilityConfig trace configuration

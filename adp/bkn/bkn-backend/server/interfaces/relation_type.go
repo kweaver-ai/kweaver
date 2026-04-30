@@ -53,17 +53,17 @@ type RelationType struct {
 	Score  *float64  `json:"_score,omitempty"` // opensearch检索的得分，在概念搜索时使用
 }
 
+// 直接映射的一个mapping
+type Mapping struct {
+	SourceProp SimpleProperty `json:"source_property" mapstructure:"source_property"`
+	TargetProp SimpleProperty `json:"target_property" mapstructure:"target_property"`
+}
+
 // 非直接映射
 type InDirectMapping struct {
 	BackingDataSource  *ResourceInfo `json:"backing_data_source" mapstructure:"backing_data_source"`
 	SourceMappingRules []Mapping     `json:"source_mapping_rules" mapstructure:"source_mapping_rules"`
 	TargetMappingRules []Mapping     `json:"target_mapping_rules" mapstructure:"target_mapping_rules"`
-}
-
-// 直接映射的一个mapping
-type Mapping struct {
-	SourceProp SimpleProperty `json:"source_property" mapstructure:"source_property"`
-	TargetProp SimpleProperty `json:"target_property" mapstructure:"target_property"`
 }
 
 // FilteredCrossJoinMapping rules for relation type filtered_cross_join (per-side conditions, no key mapping).

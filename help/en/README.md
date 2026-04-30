@@ -1,12 +1,17 @@
-# KWeaver Core Documentation
+# KWeaver Core documentation
 
 KWeaver Core is a **backend-only** platform. Use the CLI, SDKs, or HTTP APIs to operate each subsystem.
 
+---
+
 ## Getting started
 
-- [Prerequisites](installation/prerequisites.md) — hardware, OS, network, and tooling
-- [Deploy](installation/deploy.md) — one-click install with `deploy.sh`, including post-install checks
-- [Quick start](quick-start.md) — end-to-end path from deploy to first BKN and agent actions
+| Doc | Description |
+| --- | --- |
+| [Install and deploy](install.md) | Prerequisites, `deploy.sh` install, and post-install checks |
+| [Quick start](quick-start.md) | End-to-end path from deploy to first BKN and agent actions |
+
+---
 
 ## Modules
 
@@ -22,9 +27,12 @@ KWeaver Core is a **backend-only** platform. Use the CLI, SDKs, or HTTP APIs to 
 | [Decision Agent](decision-agent.md) | Goal-oriented agents, runtime, and observability |
 | [Trace AI](trace-ai.md) | Traces, metrics, and evidence-chain style observability |
 | [Info Security Fabric](isf.md) | Identity, permissions, policies, and audit (when enabled) |
+| [Platform admin tool](install.md#-administrator-tool-after-a-full-install-kweaver-admin) | `kweaver-admin` — users / orgs / roles / models / audit (after a full install) |
+
+---
 
 ## Community
 
 <img src="../qrcode.png" width="200" alt="KWeaver community QR code" />
 
-For deployment details beyond this help set, see the [Deployment guide](../../deploy/README.md). For the `kweaver` CLI and language SDKs, see [kweaver-sdk](https://github.com/kweaver-ai/kweaver-sdk).
+> End users install the CLI with `npm install -g @kweaver-ai/kweaver-sdk`; platform administrators additionally install `npm install -g @kweaver-ai/kweaver-admin`. For cluster operations beyond this help set, follow the deployment guide bundled with your release.

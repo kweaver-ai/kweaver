@@ -31,19 +31,19 @@ SHARED_CHARTS_DIR="${SHARED_CHARTS_DIR:-${SCRIPT_DIR}/.tmp/charts}"
 # Default namespace for infrastructure components (MariaDB/Redis/Kafka/OpenSearch, etc.)
 RESOURCE_NAMESPACE="${RESOURCE_NAMESPACE:-resource}"
 
-# Cluster bootstrap for ensure_platform_prerequisites (internal: k3s | kubeadm).
-# User-facing env/flags use k3s (default) or k8s (= kubeadm packages + k8s module).
+# Cluster bootstrap for ensure_platform_prerequisites (internal: kubeadm | k3s).
+# User-facing env/flags use k8s (default, = kubeadm packages + k8s module) or k3s (single-node lightweight).
 # Legacy: KUBE_DISTRO=kubeadm is still accepted and normalized to kubeadm.
 kweaver_normalize_kube_distro() {
-    local d="${1:-k3s}"
+    local d="${1:-k8s}"
     case "${d}" in
         k3s|K3S) printf '%s' "k3s" ;;
         k8s|K8S|kubeadm|kubernetes|KUBEADM) printf '%s' "kubeadm" ;;
-        *) printf '%s' "k3s" ;;
+        *) printf '%s' "kubeadm" ;;
     esac
 }
 
-KUBE_DISTRO="$(kweaver_normalize_kube_distro "${KUBE_DISTRO:-k3s}")"
+KUBE_DISTRO="$(kweaver_normalize_kube_distro "${KUBE_DISTRO:-k8s}")"
 export KUBE_DISTRO
 
 # Generate a random password (alphanumeric). Uses openssl when available; avoids macOS/BSD
@@ -1370,7 +1370,7 @@ ensure_platform_prerequisites() {
         return 0
     fi
 
-    case "${KUBE_DISTRO:-k3s}" in
+    case "${KUBE_DISTRO:-kubeadm}" in
         k3s)
             ensure_k3s || return 1
             ;;
@@ -1378,7 +1378,7 @@ ensure_platform_prerequisites() {
             ensure_k8s || return 1
             ;;
         *)
-            log_error "Unknown KUBE_DISTRO='${KUBE_DISTRO}' after normalization. Expected internal 'k3s' or 'kubeadm' (set KUBE_DISTRO=k3s or k8s)."
+            log_error "Unknown KUBE_DISTRO='${KUBE_DISTRO}' after normalization. Expected internal 'kubeadm' (default) or 'k3s' (set KUBE_DISTRO=k8s or k3s)."
             return 1
             ;;
     esac

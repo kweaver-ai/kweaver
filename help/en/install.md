@@ -126,7 +126,7 @@ Common flags:
 | `--skip=LIST` | Comma-separated check names to skip |
 | `--report=PATH` | Append the full log to this file |
 | `--output=json` | Emit JSON summary to stdout (human logs to stderr); requires `python3` |
-| `--distro=k3s\|k8s` | Match `deploy.sh`: **k3s** (default) skips kubeadm-repo/containerd package assumptions; **k8s** runs the stricter kubeadm-oriented checks. Same as `KUBE_DISTRO`. On **`deploy.sh`**, `--distro` must come **before** the module (see the note at the top of this page). |
+| `--distro=k8s\|k3s` | Match `deploy.sh`: **k8s** (default, kubeadm stack) runs the stricter kubeadm-oriented checks; **k3s** skips kubeadm-repo/containerd package assumptions. Same as `KUBE_DISTRO`. On **`deploy.sh`**, `--distro` must come **before** the module (see the note at the top of this page). |
 
 Common environment variables:
 

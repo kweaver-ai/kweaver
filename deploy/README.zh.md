@@ -24,7 +24,7 @@ cd kweaver-core/deploy
 # 安装 k3s + Helm + ingress-nginx
 bash ./deploy.sh k3s install
 
-# 产品模块自动装集群（默认 distro 为 k3s）：
+# 产品模块自动装集群（默认 distro 为 k8s/kubeadm；如需 k3s 加 --distro=k3s）：
 bash ./deploy.sh kweaver-core install --minimum
 # 若需 kubeadm/包管理栈：
 # bash ./deploy.sh --distro=k8s kweaver-core install --minimum
@@ -49,11 +49,11 @@ bash ./dev/mac.sh kweaver-core install --minimum
 
 默认配置：`dev/conf/mac-config.yaml`。`kweaver-dip` 未在 `mac.sh` 接入（请用 Linux `deploy.sh`）；`isf` / `etrino`（`vega`）会转调 `deploy.sh` —— 见 [dev/README.md](dev/README.md)。
 
-### kubeadm（旧路径，行为不变）
+### kubeadm（默认路径）
 
-单节点 kubeadm 流程仍是 **`bash ./deploy.sh k8s install`**（`deploy/scripts/services/k8s.sh` 不变）。**`KUBE_DISTRO` 默认为 `k3s`**（模块自动装集群时走单节点 k3s）。需要 kubeadm 路径时用 **`--distro=k8s`** 或 **`KUBE_DISTRO=k8s`**；历史写法 **`kubeadm`** 仍可作为 **`k8s`** 的别名。
+单节点 kubeadm 流程是 **`bash ./deploy.sh k8s install`**（`deploy/scripts/services/k8s.sh`）。**`KUBE_DISTRO` 默认为 `k8s`**（即 kubeadm；模块自动装集群时走 kubeadm）。需要单节点轻量 k3s 路径时用 **`--distro=k3s`** 或 **`KUBE_DISTRO=k3s`**；历史写法 **`kubeadm`** 仍可作为 **`k8s`** 的别名。
 
-**`deploy.sh` 全局参数**（`--distro`、`-y`、`--force-upgrade`、`--config` 等）必须写在**子模块名之前**。正确：`bash ./deploy.sh --distro=k8s kweaver-core install --minimum`。错误：`bash ./deploy.sh kweaver-core install --minimum --distro=k8s`（末尾的 `--distro` 不会按全局参数解析）。不想改命令顺序时可用：`export KUBE_DISTRO=k8s` 再执行 `bash ./deploy.sh kweaver-core install --minimum`。
+**`deploy.sh` 全局参数**（`--distro`、`-y`、`--force-upgrade`、`--config` 等）必须写在**子模块名之前**。正确：`bash ./deploy.sh --distro=k3s kweaver-core install --minimum`。错误：`bash ./deploy.sh kweaver-core install --minimum --distro=k3s`（末尾的 `--distro` 不会按全局参数解析）。不想改命令顺序时可用：`export KUBE_DISTRO=k3s` 再执行 `bash ./deploy.sh kweaver-core install --minimum`。
 
 ```bash
 bash ./deploy.sh k8s install
@@ -93,15 +93,15 @@ sudo bash ./preflight.sh --fix          # 检查 + 交互修复
 sudo bash ./preflight.sh --fix -y       # 全部自动确认修复
 sudo bash ./preflight.sh --list-fixes   # 预览将会执行哪些修复，不改任何东西
 sudo bash ./preflight.sh --help         # 全部参数（--role、--skip、--report、--output=json 等）
-# 默认体检对齐 k3s；走 kubeadm/包管理栈时用：sudo bash ./preflight.sh --distro=k8s
-#（与 deploy 共用环境变量 KUBE_DISTRO=k8s）
+# 默认体检对齐 k8s/kubeadm；走单节点 k3s 时用：sudo bash ./preflight.sh --distro=k3s
+#（与 deploy 共用环境变量 KUBE_DISTRO=k3s）
 
 # 3. 安装 KWeaver Core
 # 最小化安装 — 首次体验推荐
 bash ./deploy.sh kweaver-core install --minimum
-# 若需 kubeadm 栈而非默认 k3s（--distro 须写在 kweaver-core 之前）：
-# bash ./deploy.sh --distro=k8s kweaver-core install --minimum
-# 或：export KUBE_DISTRO=k8s && bash ./deploy.sh kweaver-core install --minimum
+# 默认走 kubeadm（k8s）。若改用单节点 k3s（--distro 须写在 kweaver-core 之前）：
+# bash ./deploy.sh --distro=k3s kweaver-core install --minimum
+# 或：export KUBE_DISTRO=k3s && bash ./deploy.sh kweaver-core install --minimum
 # 等价于:
 # bash ./deploy.sh kweaver-core install --set auth.enabled=false --set businessDomain.enabled=false
 

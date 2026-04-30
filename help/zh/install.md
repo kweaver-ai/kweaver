@@ -127,7 +127,7 @@ sudo bash deploy/preflight.sh --help         # 全部参数
 | `--skip=LIST` | 跳过指定检查项 |
 | `--report=PATH` | 完整日志追加到该文件 |
 | `--output=json` | 以 JSON 输出到 stdout（人类日志到 stderr，需 `python3`） |
-| `--distro=k3s\|k8s` | 与 `deploy.sh` 对齐：**k3s**（默认）放宽 kubeadm 源/系统 containerd 等假设；**k8s** 走 kubeadm 向的严格检查。等同 `KUBE_DISTRO`。在 **`deploy.sh`** 上 `--distro` 须写在**模块名之前**（见本页开头说明）。 |
+| `--distro=k8s\|k3s` | 与 `deploy.sh` 对齐：**k8s**（默认，kubeadm 栈）走 kubeadm 向的严格检查；**k3s** 放宽 kubeadm 源/系统 containerd 等假设。等同 `KUBE_DISTRO`。在 **`deploy.sh`** 上 `--distro` 须写在**模块名之前**（见本页开头说明）。 |
 
 常用环境变量：
 

@@ -24,7 +24,7 @@ cd kweaver-core/deploy
 # Install k3s + Helm + ingress-nginx
 bash ./deploy.sh k3s install
 
-# Product modules auto-install cluster (default distro is k3s):
+# Product modules auto-install cluster (default distro is k8s/kubeadm; pass --distro=k3s for k3s):
 bash ./deploy.sh kweaver-core install --minimum
 # For kubeadm/package stack instead:
 # bash ./deploy.sh --distro=k8s kweaver-core install --minimum
@@ -52,7 +52,7 @@ Config defaults: `dev/conf/mac-config.yaml`. `kweaver-dip` is not wired in `mac.
 
 ### kubeadm (legacy, unchanged)
 
-Existing single-node kubeadm flow is still **`bash ./deploy.sh k8s install`** (`deploy/scripts/services/k8s.sh` is unchanged). **`KUBE_DISTRO` defaults to `k3s`** (single-node k3s when modules auto-install the cluster). Use **`--distro=k8s`** or **`KUBE_DISTRO=k8s`** for the kubeadm path; legacy **`kubeadm`** is accepted as an alias for **`k8s`**.
+Single-node kubeadm flow is **`bash ./deploy.sh k8s install`** (`deploy/scripts/services/k8s.sh`). **`KUBE_DISTRO` defaults to `k8s`** (kubeadm; modules auto-install the cluster via kubeadm). Use **`--distro=k3s`** or **`KUBE_DISTRO=k3s`** for the single-node lightweight k3s path; legacy **`kubeadm`** is accepted as an alias for **`k8s`**.
 
 **`deploy.sh` global flags** (`--distro`, `-y`, `--force-upgrade`, `--config`, …) must appear **before** the module name. Correct: `bash ./deploy.sh --distro=k8s kweaver-core install --minimum`. Wrong: `bash ./deploy.sh kweaver-core install --minimum --distro=k8s` (that `--distro` is not read as a global option). Equivalent without moving flags: `export KUBE_DISTRO=k8s` then `bash ./deploy.sh kweaver-core install --minimum`.
 
@@ -94,15 +94,15 @@ sudo bash ./preflight.sh --fix          # check + interactive fixes
 sudo bash ./preflight.sh --fix -y       # auto-approve every fix
 sudo bash ./preflight.sh --list-fixes   # preview which fixes would run, no changes
 sudo bash ./preflight.sh --help         # all flags (--role, --skip, --report, --output=json, …)
-# Default checks match k3s; for kubeadm/package stack use: sudo bash ./preflight.sh --distro=k8s
-# (same as env KUBE_DISTRO=k8s — shared with deploy.sh)
+# Default checks match k8s/kubeadm; for single-node k3s use: sudo bash ./preflight.sh --distro=k3s
+# (same as env KUBE_DISTRO=k3s — shared with deploy.sh)
 
 # 3. Install KWeaver Core
 # Minimum installation — recommended for first-time experience
 bash ./deploy.sh kweaver-core install --minimum
-# kubeadm stack instead of default k3s (--distro must be BEFORE kweaver-core):
-# bash ./deploy.sh --distro=k8s kweaver-core install --minimum
-# or: export KUBE_DISTRO=k8s && bash ./deploy.sh kweaver-core install --minimum
+# Default is kubeadm (k8s). For single-node k3s instead (--distro must be BEFORE kweaver-core):
+# bash ./deploy.sh --distro=k3s kweaver-core install --minimum
+# or: export KUBE_DISTRO=k3s && bash ./deploy.sh kweaver-core install --minimum
 # Equivalent to:
 # bash ./deploy.sh kweaver-core install --set auth.enabled=false --set businessDomain.enabled=false
 

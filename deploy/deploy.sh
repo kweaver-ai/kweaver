@@ -84,7 +84,7 @@ usage() {
     echo "  $0 k8s reset                  # Reset cluster state before re-install"
     echo "  $0 k8s status                 # Show cluster status"
     echo "  $0 k3s install                # Install single-node k3s + ingress-nginx (Linux)"
-    echo "  $0 --distro=k8s kweaver-core install --minimum  # kubeadm path; default is k3s (omit flag or KUBE_DISTRO=k3s)"
+    echo "  $0 --distro=k3s kweaver-core install --minimum  # k3s path; default is k8s/kubeadm (omit flag or KUBE_DISTRO=k8s)"
     echo "  POD_CIDR=10.0.0.0/16 $0 k8s install  # Initialize with custom POD_CIDR"
     echo "  $0 mariadb install            # Install MariaDB"
     echo "  $0 mariadb uninstall          # Uninstall MariaDB"
@@ -129,8 +129,8 @@ usage() {
     echo "  -y, --yes                     Skip all interactive prompts and use defaults"
     echo "  --force-upgrade               Always run helm upgrade even if installed chart version equals target."
     echo "                                Use this after editing config.yaml on a previously-installed cluster."
-    echo "  --distro=k3s|k8s              Cluster bootstrap when modules auto-ensure K8s (default: k3s)."
-    echo "                                Same as env KUBE_DISTRO=k3s|k8s (legacy: kubeadm means k8s). k8s = kubeadm stack."
+    echo "  --distro=k8s|k3s              Cluster bootstrap when modules auto-ensure K8s (default: k8s = kubeadm stack)."
+    echo "                                Same as env KUBE_DISTRO=k8s|k3s (legacy: kubeadm means k8s). Use k3s for single-node lightweight."
     echo "  --config=<path>               Specify config.yaml path (values file for helm installs)"
     echo "                                (default: ~/.kweaver-ai/config.yaml or \$CONFIG_YAML_PATH env var)"
     echo "  --charts_dir=<path>           Use a specific local chart directory for download/install"
@@ -411,7 +411,7 @@ main() {
         esac
     done
 
-    export KUBE_DISTRO="$(kweaver_normalize_kube_distro "${KUBE_DISTRO:-k3s}")"
+    export KUBE_DISTRO="$(kweaver_normalize_kube_distro "${KUBE_DISTRO:-k8s}")"
 
     local module="${1:-}"
     local action="${2:-}"

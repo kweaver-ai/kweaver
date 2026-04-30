@@ -53,7 +53,7 @@ usage() {
     echo "                       Same as PREFLIGHT_FORGET_DECISIONS=true."
     echo "  --report=PATH        Append full log to a file"
     echo "  --skip=LIST          Comma-separated check names to skip (see source: preflight_checks.sh preflight_skip)"
-    echo "  --distro=k3s|k8s     Same as deploy.sh (default: k3s). k8s = kubeadm/package stack."
+    echo "  --distro=k8s|k3s     Same as deploy.sh (default: k8s = kubeadm/package stack). Use k3s for single-node lightweight."
     echo "                       Exported as KUBE_DISTRO (and PREFLIGHT_KUBE_DISTRO); legacy kubeadm = k8s."
     echo "  deploy.sh note:      For deploy.sh, --distro must appear BEFORE the module (e.g. deploy.sh --distro=k8s"
     echo "                       kweaver-core install --minimum). Trailing ... install --minimum --distro=k8s is ignored;"
@@ -61,7 +61,7 @@ usage() {
     echo ""
     echo "Environment:"
     echo "  PREFLIGHT_ROOT=path/to/deploy            override deploy root (defaults to script dir)"
-    echo "  KUBE_DISTRO=k3s|k8s                      same as deploy.sh (default k3s; legacy kubeadm = k8s)"
+    echo "  KUBE_DISTRO=k8s|k3s                      same as deploy.sh (default k8s = kubeadm; legacy kubeadm = k8s)"
     echo "  PREFLIGHT_KUBE_DISTRO=k3s|k8s          optional override; usually same as KUBE_DISTRO"
     echo "  PREFLIGHT_CONFIG_YAML=path/to/config     override config.yaml"
     echo "  PREFLIGHT_K8S_APT_MINOR=vX.YY            pin pkgs.k8s.io minor (default v1.28 / detected from kubeadm)"
@@ -170,7 +170,7 @@ export PREFLIGHT_ASSUME_YES PREFLIGHT_ASSUME_NO PREFLIGHT_FIX_ALLOW
 export PREFLIGHT_OUTPUT_JSON PREFLIGHT_ROLE PREFLIGHT_LIST_FIXES_ONLY PREFLIGHT_NO_RECHECK PREFLIGHT_ROOT
 export PREFLIGHT_STRICT PREFLIGHT_STRICT_SOURCES
 export PREFLIGHT_REMEMBER_DECISIONS PREFLIGHT_FORGET_DECISIONS PREFLIGHT_DECISION_DIR
-export KUBE_DISTRO="$(kweaver_normalize_kube_distro "${KUBE_DISTRO:-k3s}")"
+export KUBE_DISTRO="$(kweaver_normalize_kube_distro "${KUBE_DISTRO:-k8s}")"
 export PREFLIGHT_KUBE_DISTRO="$(kweaver_normalize_kube_distro "${PREFLIGHT_KUBE_DISTRO:-${KUBE_DISTRO}}")"
 
 # Wipe remembered "no" answers (onboard-tooling / node-22) before the run.

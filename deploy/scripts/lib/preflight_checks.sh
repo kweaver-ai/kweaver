@@ -38,7 +38,7 @@ PREFLIGHT_STRICT_SOURCES="${PREFLIGHT_STRICT_SOURCES:-true}"
 
 # k3s vs kubeadm: read at call time so deploy/preflight.sh can export after argv parse.
 _preflight_kube_distro_is_k3s() {
-    local d="${PREFLIGHT_KUBE_DISTRO:-${KUBE_DISTRO:-k3s}}"
+    local d="${PREFLIGHT_KUBE_DISTRO:-${KUBE_DISTRO:-k8s}}"
     case "${d}" in k3s|K3S) return 0 ;; *) return 1 ;; esac
 }
 
@@ -1236,7 +1236,7 @@ preflight_check_residue() {
         fi
     else
         if [[ -x /usr/local/bin/k3s ]] || command -v k3s &>/dev/null; then
-            preflight_fail "K3s binary found while preflight is aligned for k8s/kubeadm (KUBE_DISTRO=k8s). Remove k3s for that path (sudo preflight --fix → k3s-uninstall), or use default k3s: omit --distro or set KUBE_DISTRO=k3s."
+            preflight_fail "K3s binary found while preflight is aligned for k8s/kubeadm (KUBE_DISTRO=k8s, the default). Remove k3s for the default path (sudo preflight --fix → k3s-uninstall), or opt into k3s explicitly: --distro=k3s or KUBE_DISTRO=k3s."
         else
             preflight_ok "No K3s binary in PATH or /usr/local/bin/k3s"
         fi
@@ -1315,7 +1315,7 @@ preflight_check_target_tools() {
             if type k3s_is_running &>/dev/null && k3s_is_running 2>/dev/null; then
                 preflight_strict_warn_or_fail "helm not found (k3s cluster is Ready but Helm v3 is required for chart deploy — sudo preflight --fix → helm-v3)"
             else
-                preflight_ok "helm not on PATH yet (normal before bootstrap). deploy.sh ensure_k3s runs install_helm before k3s — no manual install required for the default k3s path."
+                preflight_ok "helm not on PATH yet (normal before bootstrap). deploy.sh ensure_k3s runs install_helm before k3s — no manual install required for the k3s path."
             fi
         else
             preflight_strict_warn_or_fail "helm not found (deploy.sh kweaver-core install requires Helm v3; sudo preflight --fix → helm-v3 will install it)"
@@ -2074,7 +2074,7 @@ preflight_print_fix_preview() {
     for line in "${PREFLIGHT_FAIL_SNAPSHOT[@]}"; do
         log_info "  * ${line}"
     done
-    log_info "  Suggested fix names: k3s-uninstall (k8s/kubeadm path only), kubeadm-reset, k8s-pkgs-repo (writes apt OR yum/dnf pkgs.k8s.io repo; legacy name k8s-apt-source still works in --fix-allow), k8s-bins, containerd-install, helm-v3, docker-disable (stop/disable docker.service + docker.socket — CRI conflict with k3s or containerd), chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, nofile-limits (writes /etc/security/limits.d + systemd LimitNOFILE drop-ins), iptables-legacy, etc-hosts, onboard-tooling, nodejs-npm, node-22, kweaver-sdk, kweaver-admin (opt-in; bundle onboard-tooling asks if this host will run ./onboard.sh). Default distro is k3s; use --distro=k8s or KUBE_DISTRO=k8s for kubeadm-style checks/fixes."
+    log_info "  Suggested fix names: k3s-uninstall (k8s/kubeadm path only), kubeadm-reset, k8s-pkgs-repo (writes apt OR yum/dnf pkgs.k8s.io repo; legacy name k8s-apt-source still works in --fix-allow), k8s-bins, containerd-install, helm-v3, docker-disable (stop/disable docker.service + docker.socket — CRI conflict with k3s or containerd), chrony, firewalld, ufw, selinux, system-tuning, bridge-sysctl, kernel-limits, nofile-limits (writes /etc/security/limits.d + systemd LimitNOFILE drop-ins), iptables-legacy, etc-hosts, onboard-tooling, nodejs-npm, node-22, kweaver-sdk, kweaver-admin (opt-in; bundle onboard-tooling asks if this host will run ./onboard.sh). Default distro is k8s (kubeadm); use --distro=k3s or KUBE_DISTRO=k3s for single-node k3s checks/fixes."
     log_info "------------------------------------------------------------------"
 }
 

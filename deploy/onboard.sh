@@ -96,9 +96,20 @@ if __name__ == '__main__':
 
 # Default access base for  kweaver auth login  (this machine, HTTPS + primary IPv4 unless overridden).
 # Set ONBOARD_DEFAULT_ACCESS_BASE to a full URL to skip auto IP.
+# Otherwise, when ONBOARD_SKIP_CONFIG_ACCESS_URL!=true, prefers accessAddress.host|port|scheme|path
+# from CONFIG_YAML_PATH (same file as deploy.sh / Helm values; mac.sh sets CONFIG_YAML_PATH to
+# deploy/dev/conf/mac-config.yaml).
 onboard_default_access_base_url() {
     if [[ -n "${ONBOARD_DEFAULT_ACCESS_BASE:-}" ]]; then
         echo "${ONBOARD_DEFAULT_ACCESS_BASE%/}"
+        return
+    fi
+    local _from_cfg=""
+    if [[ "${ONBOARD_SKIP_CONFIG_ACCESS_URL:-false}" != "true" ]] && type get_access_address_base_url &>/dev/null; then
+        _from_cfg="$(get_access_address_base_url 2>/dev/null || true)"
+    fi
+    if [[ -n "${_from_cfg}" ]]; then
+        echo "${_from_cfg%/}"
         return
     fi
     local ip _scheme _port
@@ -163,7 +174,9 @@ usage() {
     echo "                ONBOARD_KWEAVER_IMPEX_NO_RELLOGIN=1  skip  kweaver auth  as  test  before impex (use current kweaver session)"
     echo "                ONBOARD_NO_COMPLETION_REPORT=1  do not print the English completion report at the end"
     echo "                ONBOARD_FORCE_INSECURE_LOGIN=true  always pass -k (--insecure) to kweaver/kweaver-admin auth login (even for http:// bases; default false)"
-    echo "  Default KWeaver access URL (kweaver auth): this host’s primary IPv4, e.g.  https://\$(local-ip)  (set ONBOARD_DEFAULT_ACCESS_BASE=... to override; ONBOARD_DEFAULT_ACCESS_PORT e.g. 8443; ONBOARD_DEFAULT_ACCESS_SCHEME=http)"
+    echo "                ONBOARD_SKIP_CONFIG_ACCESS_URL=true  do not derive default URL from CONFIG_YAML_PATH accessAddress"
+    echo "  Default KWeaver access URL (kweaver auth): accessAddress in CONFIG_YAML_PATH when present; else host primary IPv4 (ONBOARD_DEFAULT_ACCESS_SCHEME=https by default)"
+    echo "                Set ONBOARD_DEFAULT_ACCESS_BASE to force a URL; CONFIG_YAML_PATH / ONBOARD_DEFAULT_ACCESS_PORT override same as deploy.sh"
     echo "  kweaver auth: you confirm URL. ISF+full: HTTP defaults user=admin pass=eisoo.com (if still default); override with ONBOARD_DEFAULT_KWEAVER_USER / _PASSWORD. Enter keeps defaults. Minimum: default --no-auth; Enter to accept."
     echo "  kweaver-admin auth (ISF): use  auth login <url> -u admin -p <pass>  (append -k for https:// + self-signed) or browser-only flow; kweaver-admin has no --http-signin flag. Then kweaver re-logs in as user test for impex and model steps."
     echo "  Node: onboard is not a login shell — it auto-loads nvm/fnm/asdf/Volta and Homebrew paths so an already-configured Node 22+ is found without re-asking. ONBOARD_SKIP_NVM_INIT=true skips that; ONBOARD_NVM_VERSION=22 (default) is used after  nvm.sh  load."

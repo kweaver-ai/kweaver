@@ -182,7 +182,6 @@
       <div class="stat"><div class="v">27</div><div class="l">ObjectTypes 对象类</div></div>
       <div class="stat"><div class="v">29</div><div class="l">RelationTypes 关系类</div></div>
       <div class="stat"><div class="v">4</div><div class="l">ConceptGroups 概念组</div></div>
-      <div class="stat"><div class="v">minimal</div><div class="l">骨架模式</div></div>
     </div>
   </header>
 
@@ -238,23 +237,22 @@
       <!-- Participants internal -->
       <!-- teams → confederations -->
       <path class="edge" d="M 775 122 L 822 122" marker-end="url(#arrow)"/>
-      <!-- Row 3 (qualified_teams · team_appearances · squads · *_appearances) → teams / players
-           Drawn as 2 simple vertical-ish arrows to keep the area readable -->
-      <path class="edge" d="M 735 232 L 728 142" marker-end="url(#arrow)"/>
-      <path class="edge" d="M 970 232 L 880 188" marker-end="url(#arrow)"/>
-      <rect x="752" y="200" width="200" height="14" fill="var(--surface)"/>
-      <text class="edge-label" x="852" y="210" text-anchor="middle">appearance · squad · qualification</text>
+      <!-- Row 3 (qualified_teams · team_appearances · squads · *_appearances) all hold FKs
+           up to teams / players / tournaments — omitted from the diagram to keep the
+           Participants area readable; see the relation table below. -->
 
       <!-- Cross-group: matches → teams (home / away) -->
       <path class="edge edge-strong" d="M 334 210 C 480 210, 600 130, 678 122" marker-end="url(#arrow-strong)"/>
       <rect x="478" y="153" width="122" height="16" fill="var(--surface)"/>
       <text class="edge-label" x="539" y="165" text-anchor="middle">主/客队 home/away</text>
 
-      <!-- Cross-group: events → matches (bundled, vertical) -->
-      <path class="edge edge-strong" d="M 250 460 L 250 240" marker-end="url(#arrow-strong)"/>
-      <rect x="260" y="346" width="220" height="32" fill="var(--surface)"/>
-      <text class="edge-label" x="370" y="360" text-anchor="middle">goals · bookings · player_appear.</text>
-      <text class="edge-label" x="370" y="372" text-anchor="middle">team_appear. → matches</text>
+      <!-- Cross-group: events → matches (bundled) — curve up from the dead space between
+           penalty_kicks and substitutions so it doesn't look like it originates from any
+           single event node. -->
+      <path class="edge edge-strong" d="M 387 390 Q 387 300, 290 240" marker-end="url(#arrow-strong)"/>
+      <rect x="90" y="348" width="220" height="28" fill="var(--surface)"/>
+      <text class="edge-label" x="200" y="360" text-anchor="middle">goals · bookings · player_appear.</text>
+      <text class="edge-label" x="200" y="372" text-anchor="middle">team_appear. → matches</text>
 
       <!-- Cross-group: events → players (subtle curve into participants) -->
       <path class="edge" d="M 480 470 C 700 470, 830 250, 880 145" marker-end="url(#arrow)" opacity="0.55"/>

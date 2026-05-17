@@ -72,11 +72,31 @@
     overflow-x: auto;
   }
   .diagram svg { display: block; width: 100%; height: auto; min-width: 880px; }
+  .diagram-legend {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    font-size: 12px; color: var(--ink-500);
+    display: flex; flex-wrap: wrap; gap: 18px;
+  }
+  .diagram-legend .swatch {
+    display: inline-block; width: 24px; height: 12px;
+    border: 1.5px solid var(--ink-400); border-radius: 3px;
+    vertical-align: middle; margin-right: 6px;
+  }
+  .diagram-legend .swatch.dashed {
+    border-style: dashed; opacity: 0.55;
+  }
+  .diagram-legend .swatch.hub {
+    border-width: 2px; border-color: var(--ink-900);
+  }
 
   /* SVG token styling */
   .node-bg { fill: var(--surface); stroke-width: 1.5; }
+  .node-bg.isolated { stroke-dasharray: 3 3; opacity: 0.55; }
   .node-title { font: 600 12px -apple-system, "Segoe UI", "PingFang SC", sans-serif; }
+  .node-title.isolated { opacity: 0.7; }
   .node-sub { font: 11px -apple-system, "Segoe UI", "PingFang SC", sans-serif; fill: var(--ink-500); }
+  .node-sub.isolated { opacity: 0.7; }
   .edge { fill: none; stroke: var(--ink-400); stroke-width: 1.25; }
   .edge-strong { stroke: var(--ink-700); stroke-width: 1.5; }
   .edge-label {
@@ -275,9 +295,9 @@
       <!-- ◾ COMPETITION ◾ -->
       <!-- Row 1: host_countries · tournaments(HUB) · stages -->
       <g transform="translate(102,102)">
-        <rect class="node-bg" width="100" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="50" y="14" text-anchor="middle" fill="var(--c-comp)">host_countries</text>
-        <text class="node-sub" x="50" y="26" text-anchor="middle">东道主</text>
+        <rect class="node-bg isolated" width="100" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title isolated" x="50" y="14" text-anchor="middle" fill="var(--c-comp)">host_countries</text>
+        <text class="node-sub isolated" x="50" y="26" text-anchor="middle">东道主</text>
       </g>
       <g transform="translate(246,98)">
         <rect class="node-bg" width="88" height="44" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)" stroke-width="2"/>
@@ -285,9 +305,9 @@
         <text class="node-sub" x="44" y="34" text-anchor="middle">届次</text>
       </g>
       <g transform="translate(380,102)">
-        <rect class="node-bg" width="64" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="32" y="14" text-anchor="middle" fill="var(--c-comp)">stages</text>
-        <text class="node-sub" x="32" y="26" text-anchor="middle">阶段</text>
+        <rect class="node-bg isolated" width="64" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title isolated" x="32" y="14" text-anchor="middle" fill="var(--c-comp)">stages</text>
+        <text class="node-sub isolated" x="32" y="26" text-anchor="middle">阶段</text>
       </g>
 
       <!-- Row 2: stadiums · matches(HUB) -->
@@ -314,9 +334,9 @@
         <text class="node-sub" x="65" y="27" text-anchor="middle">小组榜</text>
       </g>
       <g transform="translate(500,280)">
-        <rect class="node-bg" width="80" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="40" y="15" text-anchor="middle" fill="var(--c-comp)">standings</text>
-        <text class="node-sub" x="40" y="27" text-anchor="middle">总积分</text>
+        <rect class="node-bg isolated" width="80" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title isolated" x="40" y="15" text-anchor="middle" fill="var(--c-comp)">standings</text>
+        <text class="node-sub isolated" x="40" y="27" text-anchor="middle">总积分</text>
       </g>
 
       <!-- ◾ PARTICIPANTS ◾ -->
@@ -338,14 +358,14 @@
         <text class="node-sub" x="40" y="31" text-anchor="middle">球员</text>
       </g>
       <g transform="translate(950,150)">
-        <rect class="node-bg" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="40" y="15" text-anchor="middle" fill="var(--c-part)">managers</text>
-        <text class="node-sub" x="40" y="28" text-anchor="middle">主教练</text>
+        <rect class="node-bg isolated" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title isolated" x="40" y="15" text-anchor="middle" fill="var(--c-part)">managers</text>
+        <text class="node-sub isolated" x="40" y="28" text-anchor="middle">主教练</text>
       </g>
       <g transform="translate(1060,150)">
-        <rect class="node-bg" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="40" y="15" text-anchor="middle" fill="var(--c-part)">referees</text>
-        <text class="node-sub" x="40" y="28" text-anchor="middle">裁判</text>
+        <rect class="node-bg isolated" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title isolated" x="40" y="15" text-anchor="middle" fill="var(--c-part)">referees</text>
+        <text class="node-sub isolated" x="40" y="28" text-anchor="middle">裁判</text>
       </g>
 
       <!-- Row 3: qualified_teams · team_appearances · squads · *_appearances -->
@@ -383,14 +403,14 @@
         <text class="node-sub" x="42" y="31" text-anchor="middle">黄红牌</text>
       </g>
       <g transform="translate(280,460)">
-        <rect class="node-bg" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
-        <text class="node-title" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">penalty_kicks</text>
-        <text class="node-sub" x="49" y="31" text-anchor="middle">点球</text>
+        <rect class="node-bg isolated" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title isolated" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">penalty_kicks</text>
+        <text class="node-sub isolated" x="49" y="31" text-anchor="middle">点球</text>
       </g>
       <g transform="translate(396,460)">
-        <rect class="node-bg" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
-        <text class="node-title" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">substitutions</text>
-        <text class="node-sub" x="49" y="31" text-anchor="middle">换人</text>
+        <rect class="node-bg isolated" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title isolated" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">substitutions</text>
+        <text class="node-sub isolated" x="49" y="31" text-anchor="middle">换人</text>
       </g>
 
       <!-- ◾ HONORS ◾ -->
@@ -405,6 +425,13 @@
         <text class="node-sub" x="43" y="31" text-anchor="middle">奖项</text>
       </g>
     </svg>
+    <div class="diagram-legend">
+      <span><span class="swatch hub"></span>枢纽 hub</span>
+      <span><span class="swatch"></span>有 FK 关系</span>
+      <span><span class="swatch dashed"></span>minimal 模式无 FK 边</span>
+      <span style="color: var(--ink-400);">·</span>
+      <span>骨架边只画到 row 1（teams · players · tournaments · matches）；row 3 与 honors 的 FK 见下方关系表</span>
+    </div>
   </div>
 
   <!-- ═══════ CONCEPT GROUPS ═══════════════════════════════════════ -->

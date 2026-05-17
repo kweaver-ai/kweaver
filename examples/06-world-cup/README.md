@@ -33,6 +33,7 @@ Checked-in assets in this directory:
 - **`worldcup-bkn.tar`** — offline BKN tree (27 object types, 29 `rel_*` edges) packaged as a tar archive; each OT ends with **`resource | {{*_RES_ID}}`** placeholders. `network.bkn` pins id `worldcup_vega_catalog_bkn`. `run.sh` extracts to `.tmp/worldcup-bkn/` before rendering.
 - **`agent-worldcup.config.json`** — Agent template (Context Loader toolbox + system prompt). `run.sh` injects `data_source.knowledge_network[0].knowledge_network_id` and the `vega_sql_execute` tool/box ids at runtime.
 - **`vega_sql_execute.openapi.json`** — OpenAPI 3.0 spec for the SQL-execute tool. Step 6 uploads it via `kweaver tool upload` (the OpenAPI parser path; sidesteps the 0.7.0 `kweaver toolbox import` bug that stored `api_spec` as null).
+- **`bkn-network-structure.html`** — single-file visual overview of the BKN: the 4 concept groups, all 27 OTs (dashed = no FK in minimal mode), the matches/tournaments hubs, and the full 29-row relation table. Open in any browser; no build step.
 
 ## Data source and license
 

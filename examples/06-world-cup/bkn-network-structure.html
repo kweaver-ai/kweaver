@@ -368,27 +368,34 @@
         <text class="node-sub isolated" x="40" y="28" text-anchor="middle">裁判</text>
       </g>
 
-      <!-- Row 3: qualified_teams · team_appearances · squads · *_appearances -->
+      <!-- Row 3: qualified_teams · team_appearances · player_appearances · squads · *_appearances
+           (player_appearances is split out as its own solid node since it has 3 rels;
+           the dashed *_appearances box now holds only the 4 truly-isolated OTs.) -->
       <g transform="translate(680,232)">
-        <rect class="node-bg" width="106" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="53" y="15" text-anchor="middle" fill="var(--c-part)">qualified_teams</text>
-        <text class="node-sub" x="53" y="28" text-anchor="middle">出线资格</text>
+        <rect class="node-bg" width="100" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="50" y="15" text-anchor="middle" fill="var(--c-part)">qualified_teams</text>
+        <text class="node-sub" x="50" y="28" text-anchor="middle">出线资格</text>
       </g>
-      <g transform="translate(802,232)">
-        <rect class="node-bg" width="116" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="58" y="15" text-anchor="middle" fill="var(--c-part)">team_appearances</text>
-        <text class="node-sub" x="58" y="28" text-anchor="middle">球队参赛</text>
+      <g transform="translate(788,232)">
+        <rect class="node-bg" width="110" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="55" y="15" text-anchor="middle" fill="var(--c-part)">team_appearances</text>
+        <text class="node-sub" x="55" y="28" text-anchor="middle">球队参赛</text>
       </g>
-      <g transform="translate(940,232)">
-        <rect class="node-bg" width="72" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="36" y="15" text-anchor="middle" fill="var(--c-part)">squads</text>
-        <text class="node-sub" x="36" y="28" text-anchor="middle">阵容</text>
+      <g transform="translate(906,232)">
+        <rect class="node-bg" width="120" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="60" y="15" text-anchor="middle" fill="var(--c-part)">player_appearances</text>
+        <text class="node-sub" x="60" y="28" text-anchor="middle">球员出场</text>
       </g>
-      <g transform="translate(1030,225)">
-        <rect class="node-bg" width="210" height="52" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-dasharray="3,3"/>
-        <text class="node-title" x="105" y="17" text-anchor="middle" fill="var(--c-part)">*_appearances</text>
-        <text class="node-sub" x="105" y="30" text-anchor="middle">player / manager / referee</text>
-        <text class="node-sub" x="105" y="43" text-anchor="middle">+ *_appointments</text>
+      <g transform="translate(1034,232)">
+        <rect class="node-bg" width="64" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="32" y="15" text-anchor="middle" fill="var(--c-part)">squads</text>
+        <text class="node-sub" x="32" y="28" text-anchor="middle">阵容</text>
+      </g>
+      <g transform="translate(1106,225)">
+        <rect class="node-bg isolated" width="140" height="52" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title isolated" x="70" y="17" text-anchor="middle" fill="var(--c-part)">*_appearances</text>
+        <text class="node-sub isolated" x="70" y="30" text-anchor="middle">manager / referee</text>
+        <text class="node-sub isolated" x="70" y="43" text-anchor="middle">+ *_appointments</text>
       </g>
 
       <!-- ◾ EVENTS ◾ -->

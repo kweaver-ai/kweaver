@@ -33,6 +33,7 @@
 - **`worldcup-bkn.tar`** — 离线 BKN 模板（27 个对象类、29 条 `rel_*` 关系）打包成 tar；每个 OT 末行带 **`resource | {{*_RES_ID}}`** 占位；`network.bkn` 的 `id` 为 **`worldcup_vega_catalog_bkn`**。`run.sh` 渲染前会解包到 `.tmp/worldcup-bkn/`。
 - **`agent-worldcup.config.json`** — Agent 配置模板（Context Loader 工具箱 + system prompt）；`run.sh` 运行时把 `data_source.knowledge_network[0].knowledge_network_id` 和 `vega_sql_execute` 的 tool/box id 注入进去。
 - **`vega_sql_execute.openapi.json`** — SQL-execute 工具的 OpenAPI 3.0 描述。step 6 通过 `kweaver tool upload`（OpenAPI 解析器路径）注册，避开 0.7.0 `kweaver toolbox import` 把 `api_spec` 写为 null 的 bug。
+- **`bkn-network-structure.html`** — BKN 网络结构的单文件可视化：4 个概念组、全部 27 个对象类（虚线 = minimal 模式下无 FK 关系）、`matches` / `tournaments` 双枢纽，以及完整的 29 条关系类表。浏览器直接打开，无需构建。
 
 ## 数据来源与许可
 

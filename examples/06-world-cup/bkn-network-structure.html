@@ -192,219 +192,225 @@
     <span class="hint">以 <code>tournaments</code> 与 <code>matches</code> 为枢纽的主要外键路径</span>
   </div>
   <div class="diagram">
-    <svg viewBox="0 0 1200 620" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
                 markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
         </marker>
         <marker id="arrow-strong" viewBox="0 0 10 10" refX="9" refY="5"
-                markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
         </marker>
       </defs>
 
-      <!-- Group frames ─────────────────────────────────────────────── -->
-      <rect class="group-frame" x="20"  y="40"  width="540" height="270" rx="10" stroke="var(--c-comp)" opacity="0.5"/>
-      <text class="group-label" x="40" y="62" fill="var(--c-comp)">赛会与赛程 · COMPETITION</text>
+      <!-- ───── Group frames ───── -->
+      <rect class="group-frame" x="20"  y="40"  width="580" height="320" rx="10" stroke="var(--c-comp)" opacity="0.55"/>
+      <text class="group-label" x="40" y="64" fill="var(--c-comp)">赛会与赛程 · COMPETITION</text>
 
-      <rect class="group-frame" x="640" y="40"  width="540" height="270" rx="10" stroke="var(--c-part)" opacity="0.5"/>
-      <text class="group-label" x="660" y="62" fill="var(--c-part)">球队与人员 · PARTICIPANTS</text>
+      <rect class="group-frame" x="660" y="40"  width="600" height="320" rx="10" stroke="var(--c-part)" opacity="0.55"/>
+      <text class="group-label" x="680" y="64" fill="var(--c-part)">球队与人员 · PARTICIPANTS</text>
 
-      <rect class="group-frame" x="20"  y="340" width="540" height="260" rx="10" stroke="var(--c-evt)" opacity="0.5"/>
-      <text class="group-label" x="40" y="362" fill="var(--c-evt)">场上事件 · EVENTS</text>
+      <rect class="group-frame" x="20"  y="390" width="580" height="290" rx="10" stroke="var(--c-evt)" opacity="0.55"/>
+      <text class="group-label" x="40" y="414" fill="var(--c-evt)">场上事件 · EVENTS</text>
 
-      <rect class="group-frame" x="640" y="340" width="540" height="260" rx="10" stroke="var(--c-hon)" opacity="0.5"/>
-      <text class="group-label" x="660" y="362" fill="var(--c-hon)">奖项与荣誉 · HONORS</text>
+      <rect class="group-frame" x="660" y="390" width="600" height="290" rx="10" stroke="var(--c-hon)" opacity="0.55"/>
+      <text class="group-label" x="680" y="414" fill="var(--c-hon)">奖项与荣誉 · HONORS</text>
 
-      <!-- ── Edges (drawn before nodes so nodes sit on top) ──────── -->
-      <!-- HUB: matches → tournaments -->
-      <path class="edge edge-strong" d="M 200 175 C 200 130, 220 110, 260 100" marker-end="url(#arrow-strong)"/>
-      <!-- matches → home_team / away_team -->
-      <path class="edge edge-strong" d="M 285 195 C 450 195, 600 175, 700 145" marker-end="url(#arrow-strong)"/>
-      <text class="edge-label" x="430" y="178">home / away team</text>
-      <!-- matches → stadium -->
-      <path class="edge" d="M 200 220 C 200 245, 110 245, 110 245" marker-end="url(#arrow)"/>
-      <text class="edge-label" x="115" y="270">stadium</text>
-      <!-- tournaments → tournament_stages -->
-      <path class="edge" d="M 320 100 L 400 100" marker-end="url(#arrow)"/>
+      <!-- ───── Edges (drawn first so nodes sit on top) ───── -->
+
+      <!-- Competition internal -->
+      <!-- matches → tournaments (vertical, central spine) -->
+      <path class="edge edge-strong" d="M 290 195 L 290 145" marker-end="url(#arrow-strong)"/>
+      <!-- matches → stadiums -->
+      <path class="edge" d="M 246 218 L 196 218" marker-end="url(#arrow)"/>
+      <!-- tournaments → stages -->
+      <path class="edge" d="M 334 122 L 380 122" marker-end="url(#arrow)"/>
       <!-- tournaments → host_countries -->
-      <path class="edge" d="M 320 130 C 380 145, 420 165, 460 165" marker-end="url(#arrow)"/>
-      <!-- tournaments → groups → group_standings -->
-      <path class="edge" d="M 280 130 L 280 245" marker-end="url(#arrow)"/>
-      <path class="edge" d="M 340 268 L 405 268" marker-end="url(#arrow)"/>
+      <path class="edge" d="M 246 122 L 202 122" marker-end="url(#arrow)"/>
+      <!-- groups → tournaments -->
+      <path class="edge" d="M 290 280 L 290 145" marker-end="url(#arrow)"/>
+      <!-- group_standings → tournaments  (curve up-left) -->
+      <path class="edge" d="M 420 280 C 420 220, 360 170, 332 142" marker-end="url(#arrow)"/>
+      <!-- tournament_standings → tournaments  (curve up-left) -->
+      <path class="edge" d="M 540 280 C 540 220, 420 160, 340 130" marker-end="url(#arrow)"/>
 
-      <!-- EVENTS → matches (multiple bundled) -->
-      <path class="edge edge-strong" d="M 200 410 L 200 235" marker-end="url(#arrow-strong)"/>
-      <text class="edge-label-bg" x="208" y="338" width="120" height="14"><tspan>．</tspan></text>
-      <rect x="208" y="320" width="160" height="16" fill="var(--surface)" />
-      <text class="edge-label" x="214" y="332">goals / bookings / appearances</text>
-      <text class="edge-label" x="214" y="348">→ matches</text>
-
-      <!-- EVENTS → players (right) -->
-      <path class="edge" d="M 320 480 C 600 480, 700 350, 760 240" marker-end="url(#arrow)"/>
-      <text class="edge-label" x="500" y="468">scorer / cardholder / appearance → players</text>
-
-      <!-- EVENTS → teams -->
-      <path class="edge" d="M 350 425 C 600 425, 680 220, 740 195" marker-end="url(#arrow)"/>
-
-      <!-- HONORS → tournaments -->
-      <path class="edge" d="M 750 390 C 600 390, 400 200, 320 145" marker-end="url(#arrow)"/>
-      <text class="edge-label" x="600" y="310">winner of tournament</text>
-      <!-- HONORS → players / teams -->
-      <path class="edge" d="M 870 390 C 870 300, 870 250, 870 240" marker-end="url(#arrow)"/>
-      <text class="edge-label" x="880" y="318">winner = player / team</text>
-      <!-- HONORS → awards (within) -->
-      <path class="edge" d="M 990 460 L 990 405" marker-end="url(#arrow)"/>
-
-      <!-- squads → players, teams, tournaments -->
-      <path class="edge" d="M 830 290 L 830 245" marker-end="url(#arrow)"/>
-      <text class="edge-label" x="838" y="275">squads</text>
+      <!-- Participants internal -->
       <!-- teams → confederations -->
-      <path class="edge" d="M 800 160 L 870 130" marker-end="url(#arrow)"/>
-      <text class="edge-label" x="810" y="148">confederation</text>
-      <!-- qualified_teams etc. (implied, omit for clarity) -->
+      <path class="edge" d="M 775 122 L 822 122" marker-end="url(#arrow)"/>
+      <!-- squads → players -->
+      <path class="edge" d="M 1010 235 C 970 200, 920 170, 905 148" marker-end="url(#arrow)"/>
+      <!-- squads → teams -->
+      <path class="edge" d="M 1015 235 C 870 220, 770 170, 745 148" marker-end="url(#arrow)"/>
+      <!-- qualified_teams → teams -->
+      <path class="edge" d="M 730 235 C 730 200, 715 170, 712 148" marker-end="url(#arrow)"/>
+      <!-- *_appearances → players (subtle) -->
+      <path class="edge" d="M 1180 235 C 1100 200, 980 170, 905 145" marker-end="url(#arrow)" opacity="0.55"/>
 
-      <!-- ── Nodes ───────────────────────────────────────────────── -->
+      <!-- Cross-group: matches → teams (home / away) -->
+      <path class="edge edge-strong" d="M 334 210 C 480 210, 600 130, 678 122" marker-end="url(#arrow-strong)"/>
+      <rect x="478" y="153" width="122" height="16" fill="var(--surface)"/>
+      <text class="edge-label" x="539" y="165" text-anchor="middle">主/客队 home/away</text>
+
+      <!-- Cross-group: events → matches (bundled, vertical) -->
+      <path class="edge edge-strong" d="M 250 460 L 250 240" marker-end="url(#arrow-strong)"/>
+      <rect x="260" y="346" width="220" height="32" fill="var(--surface)"/>
+      <text class="edge-label" x="370" y="360" text-anchor="middle">goals · bookings · player_appear.</text>
+      <text class="edge-label" x="370" y="372" text-anchor="middle">team_appear. → matches</text>
+
+      <!-- Cross-group: events → players (subtle curve into participants) -->
+      <path class="edge" d="M 480 470 C 700 470, 830 250, 880 145" marker-end="url(#arrow)" opacity="0.55"/>
+      <!-- Cross-group: events → teams (subtle) -->
+      <path class="edge" d="M 480 490 C 700 490, 700 160, 712 138" marker-end="url(#arrow)" opacity="0.4"/>
+      <rect x="540" y="478" width="200" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="640" y="488" text-anchor="middle">事件 → players / teams</text>
+
+      <!-- Honors internal: award_winners → awards -->
+      <path class="edge" d="M 850 510 L 902 510" marker-end="url(#arrow)"/>
+      <!-- Honors → tournaments (long up-left) -->
+      <path class="edge" d="M 735 488 C 600 400, 380 200, 310 142" marker-end="url(#arrow)"/>
+      <rect x="430" y="306" width="118" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="489" y="316" text-anchor="middle">颁奖届次 tournament</text>
+      <!-- Honors → players (up) -->
+      <path class="edge" d="M 800 488 C 870 360, 880 200, 880 148" marker-end="url(#arrow)"/>
+      <!-- Honors → teams (up-left) -->
+      <path class="edge" d="M 760 488 C 780 360, 740 200, 720 148" marker-end="url(#arrow)"/>
+      <rect x="800" y="362" width="104" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="852" y="372" text-anchor="middle">winner · player/team</text>
+
+      <!-- ───── Nodes ───── -->
+
       <!-- ◾ COMPETITION ◾ -->
-      <!-- tournaments (HUB) -->
-      <g transform="translate(260,82)">
-        <rect class="node-bg" width="62" height="36" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="31" y="16" text-anchor="middle" fill="var(--c-comp)">tournaments</text>
-        <text class="node-sub" x="31" y="29" text-anchor="middle">届次</text>
+      <!-- Row 1: host_countries · tournaments(HUB) · stages -->
+      <g transform="translate(102,102)">
+        <rect class="node-bg" width="100" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="50" y="14" text-anchor="middle" fill="var(--c-comp)">host_countries</text>
+        <text class="node-sub" x="50" y="26" text-anchor="middle">东道主</text>
       </g>
-      <!-- tournament_stages -->
-      <g transform="translate(400,82)">
-        <rect class="node-bg" width="62" height="36" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="31" y="16" text-anchor="middle" fill="var(--c-comp)">stages</text>
-        <text class="node-sub" x="31" y="29" text-anchor="middle">阶段</text>
+      <g transform="translate(246,98)">
+        <rect class="node-bg" width="88" height="44" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)" stroke-width="2"/>
+        <text class="node-title" x="44" y="20" text-anchor="middle" fill="var(--c-comp)">tournaments</text>
+        <text class="node-sub" x="44" y="34" text-anchor="middle">届次</text>
       </g>
-      <!-- host_countries -->
-      <g transform="translate(460,148)">
-        <rect class="node-bg" width="80" height="36" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="40" y="16" text-anchor="middle" fill="var(--c-comp)">host_countries</text>
-        <text class="node-sub" x="40" y="29" text-anchor="middle">东道主</text>
+      <g transform="translate(380,102)">
+        <rect class="node-bg" width="64" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="32" y="14" text-anchor="middle" fill="var(--c-comp)">stages</text>
+        <text class="node-sub" x="32" y="26" text-anchor="middle">阶段</text>
       </g>
-      <!-- matches (HUB) -->
-      <g transform="translate(170,178)">
-        <rect class="node-bg" width="60" height="44" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)" stroke-width="2"/>
-        <text class="node-title" x="30" y="20" text-anchor="middle" fill="var(--c-comp)">matches</text>
-        <text class="node-sub" x="30" y="34" text-anchor="middle">场次</text>
+
+      <!-- Row 2: stadiums · matches(HUB) -->
+      <g transform="translate(116,198)">
+        <rect class="node-bg" width="80" height="40" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="40" y="18" text-anchor="middle" fill="var(--c-comp)">stadiums</text>
+        <text class="node-sub" x="40" y="31" text-anchor="middle">球场</text>
       </g>
-      <!-- stadiums -->
-      <g transform="translate(70,224)">
-        <rect class="node-bg" width="62" height="36" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="31" y="16" text-anchor="middle" fill="var(--c-comp)">stadiums</text>
-        <text class="node-sub" x="31" y="29" text-anchor="middle">球场</text>
+      <g transform="translate(246,196)">
+        <rect class="node-bg" width="88" height="44" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)" stroke-width="2"/>
+        <text class="node-title" x="44" y="20" text-anchor="middle" fill="var(--c-comp)">matches</text>
+        <text class="node-sub" x="44" y="34" text-anchor="middle">场次</text>
       </g>
-      <!-- groups -->
-      <g transform="translate(245,250)">
-        <rect class="node-bg" width="62" height="36" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="31" y="16" text-anchor="middle" fill="var(--c-comp)">groups</text>
-        <text class="node-sub" x="31" y="29" text-anchor="middle">小组</text>
+
+      <!-- Row 3: groups · group_standings · tournament_standings -->
+      <g transform="translate(252,280)">
+        <rect class="node-bg" width="76" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="38" y="15" text-anchor="middle" fill="var(--c-comp)">groups</text>
+        <text class="node-sub" x="38" y="27" text-anchor="middle">小组</text>
       </g>
-      <!-- group_standings -->
-      <g transform="translate(395,250)">
-        <rect class="node-bg" width="90" height="36" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="45" y="16" text-anchor="middle" fill="var(--c-comp)">group_standings</text>
-        <text class="node-sub" x="45" y="29" text-anchor="middle">小组榜</text>
+      <g transform="translate(355,280)">
+        <rect class="node-bg" width="130" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="65" y="15" text-anchor="middle" fill="var(--c-comp)">group_standings</text>
+        <text class="node-sub" x="65" y="27" text-anchor="middle">小组榜</text>
       </g>
-      <!-- tournament_standings -->
-      <g transform="translate(70,275)">
-        <rect class="node-bg" width="90" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
-        <text class="node-title" x="45" y="16" text-anchor="middle" fill="var(--c-comp)">standings</text>
-        <text class="node-sub" x="45" y="28" text-anchor="middle">总积分</text>
+      <g transform="translate(500,280)">
+        <rect class="node-bg" width="80" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="40" y="15" text-anchor="middle" fill="var(--c-comp)">standings</text>
+        <text class="node-sub" x="40" y="27" text-anchor="middle">总积分</text>
       </g>
 
       <!-- ◾ PARTICIPANTS ◾ -->
-      <!-- confederations -->
-      <g transform="translate(870,98)">
-        <rect class="node-bg" width="86" height="32" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="43" y="14" text-anchor="middle" fill="var(--c-part)">confederations</text>
-        <text class="node-sub" x="43" y="26" text-anchor="middle">足联</text>
+      <!-- Row 1: teams(HUB) · confederations · players(HUB) · managers · referees -->
+      <g transform="translate(680,98)">
+        <rect class="node-bg" width="95" height="44" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-width="2"/>
+        <text class="node-title" x="47" y="20" text-anchor="middle" fill="var(--c-part)">teams</text>
+        <text class="node-sub" x="47" y="34" text-anchor="middle">国家队</text>
       </g>
-      <!-- teams -->
-      <g transform="translate(700,140)">
-        <rect class="node-bg" width="56" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-width="2"/>
-        <text class="node-title" x="28" y="16" text-anchor="middle" fill="var(--c-part)">teams</text>
-        <text class="node-sub" x="28" y="29" text-anchor="middle">国家队</text>
+      <g transform="translate(822,102)">
+        <rect class="node-bg" width="105" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="52" y="15" text-anchor="middle" fill="var(--c-part)">confederations</text>
+        <text class="node-sub" x="52" y="28" text-anchor="middle">足联</text>
       </g>
-      <!-- players -->
-      <g transform="translate(780,200)">
-        <rect class="node-bg" width="56" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-width="2"/>
-        <text class="node-title" x="28" y="16" text-anchor="middle" fill="var(--c-part)">players</text>
-        <text class="node-sub" x="28" y="29" text-anchor="middle">球员</text>
+      <!-- Row 2: players(HUB) · managers · referees -->
+      <g transform="translate(840,148)">
+        <rect class="node-bg" width="80" height="40" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-width="2"/>
+        <text class="node-title" x="40" y="18" text-anchor="middle" fill="var(--c-part)">players</text>
+        <text class="node-sub" x="40" y="31" text-anchor="middle">球员</text>
       </g>
-      <!-- managers -->
-      <g transform="translate(870,200)">
-        <rect class="node-bg" width="62" height="32" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="31" y="14" text-anchor="middle" fill="var(--c-part)">managers</text>
-        <text class="node-sub" x="31" y="26" text-anchor="middle">主教练</text>
+      <g transform="translate(950,150)">
+        <rect class="node-bg" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="40" y="15" text-anchor="middle" fill="var(--c-part)">managers</text>
+        <text class="node-sub" x="40" y="28" text-anchor="middle">主教练</text>
       </g>
-      <!-- referees -->
-      <g transform="translate(960,200)">
-        <rect class="node-bg" width="62" height="32" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="31" y="14" text-anchor="middle" fill="var(--c-part)">referees</text>
-        <text class="node-sub" x="31" y="26" text-anchor="middle">裁判</text>
+      <g transform="translate(1060,150)">
+        <rect class="node-bg" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="40" y="15" text-anchor="middle" fill="var(--c-part)">referees</text>
+        <text class="node-sub" x="40" y="28" text-anchor="middle">裁判</text>
       </g>
-      <!-- squads -->
-      <g transform="translate(795,290)">
-        <rect class="node-bg" width="58" height="32" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="29" y="14" text-anchor="middle" fill="var(--c-part)">squads</text>
-        <text class="node-sub" x="29" y="26" text-anchor="middle">阵容</text>
+
+      <!-- Row 3: qualified_teams · team_appearances · squads · *_appearances -->
+      <g transform="translate(680,232)">
+        <rect class="node-bg" width="106" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="53" y="15" text-anchor="middle" fill="var(--c-part)">qualified_teams</text>
+        <text class="node-sub" x="53" y="28" text-anchor="middle">出线资格</text>
       </g>
-      <!-- qualified_teams -->
-      <g transform="translate(660,250)">
-        <rect class="node-bg" width="88" height="30" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="44" y="13" text-anchor="middle" fill="var(--c-part)">qualified_teams</text>
-        <text class="node-sub" x="44" y="24" text-anchor="middle">出线资格</text>
+      <g transform="translate(802,232)">
+        <rect class="node-bg" width="116" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="58" y="15" text-anchor="middle" fill="var(--c-part)">team_appearances</text>
+        <text class="node-sub" x="58" y="28" text-anchor="middle">球队参赛</text>
       </g>
-      <!-- team_appearances -->
-      <g transform="translate(660,288)">
-        <rect class="node-bg" width="88" height="30" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
-        <text class="node-title" x="44" y="13" text-anchor="middle" fill="var(--c-part)">team_appear.</text>
-        <text class="node-sub" x="44" y="24" text-anchor="middle">球队参赛</text>
+      <g transform="translate(940,232)">
+        <rect class="node-bg" width="72" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="36" y="15" text-anchor="middle" fill="var(--c-part)">squads</text>
+        <text class="node-sub" x="36" y="28" text-anchor="middle">阵容</text>
       </g>
-      <!-- player/manager/referee appearances appointment群组 collapsed -->
-      <g transform="translate(870,250)">
-        <rect class="node-bg" width="160" height="50" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-dasharray="2,2"/>
-        <text class="node-title" x="80" y="16" text-anchor="middle" fill="var(--c-part)">*_appearances</text>
-        <text class="node-sub" x="80" y="29" text-anchor="middle">player / manager / referee</text>
-        <text class="node-sub" x="80" y="42" text-anchor="middle">+ appointments</text>
+      <g transform="translate(1030,225)">
+        <rect class="node-bg" width="210" height="52" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-dasharray="3,3"/>
+        <text class="node-title" x="105" y="17" text-anchor="middle" fill="var(--c-part)">*_appearances</text>
+        <text class="node-sub" x="105" y="30" text-anchor="middle">player / manager / referee</text>
+        <text class="node-sub" x="105" y="43" text-anchor="middle">+ *_appointments</text>
       </g>
 
       <!-- ◾ EVENTS ◾ -->
-      <g transform="translate(80,410)">
-        <rect class="node-bg" width="60" height="36" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
-        <text class="node-title" x="30" y="16" text-anchor="middle" fill="var(--c-evt)">goals</text>
-        <text class="node-sub" x="30" y="29" text-anchor="middle">进球</text>
+      <g transform="translate(58,460)">
+        <rect class="node-bg" width="84" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title" x="42" y="18" text-anchor="middle" fill="var(--c-evt)">goals</text>
+        <text class="node-sub" x="42" y="31" text-anchor="middle">进球</text>
       </g>
-      <g transform="translate(170,410)">
-        <rect class="node-bg" width="60" height="36" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
-        <text class="node-title" x="30" y="16" text-anchor="middle" fill="var(--c-evt)">bookings</text>
-        <text class="node-sub" x="30" y="29" text-anchor="middle">黄红牌</text>
+      <g transform="translate(162,460)">
+        <rect class="node-bg" width="84" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title" x="42" y="18" text-anchor="middle" fill="var(--c-evt)">bookings</text>
+        <text class="node-sub" x="42" y="31" text-anchor="middle">黄红牌</text>
       </g>
-      <g transform="translate(260,410)">
-        <rect class="node-bg" width="82" height="36" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
-        <text class="node-title" x="41" y="16" text-anchor="middle" fill="var(--c-evt)">penalty_kicks</text>
-        <text class="node-sub" x="41" y="29" text-anchor="middle">点球</text>
+      <g transform="translate(280,460)">
+        <rect class="node-bg" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">penalty_kicks</text>
+        <text class="node-sub" x="49" y="31" text-anchor="middle">点球</text>
       </g>
-      <g transform="translate(362,410)">
-        <rect class="node-bg" width="82" height="36" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
-        <text class="node-title" x="41" y="16" text-anchor="middle" fill="var(--c-evt)">substitutions</text>
-        <text class="node-sub" x="41" y="29" text-anchor="middle">换人</text>
+      <g transform="translate(396,460)">
+        <rect class="node-bg" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">substitutions</text>
+        <text class="node-sub" x="49" y="31" text-anchor="middle">换人</text>
       </g>
 
       <!-- ◾ HONORS ◾ -->
-      <g transform="translate(950,460)">
-        <rect class="node-bg" width="76" height="36" rx="6" fill="var(--c-hon-bg)" stroke="var(--c-hon)"/>
-        <text class="node-title" x="38" y="16" text-anchor="middle" fill="var(--c-hon)">awards</text>
-        <text class="node-sub" x="38" y="29" text-anchor="middle">奖项</text>
+      <g transform="translate(690,488)">
+        <rect class="node-bg" width="160" height="50" rx="6" fill="var(--c-hon-bg)" stroke="var(--c-hon)" stroke-width="2"/>
+        <text class="node-title" x="80" y="20" text-anchor="middle" fill="var(--c-hon)">award_winners</text>
+        <text class="node-sub" x="80" y="36" text-anchor="middle">获奖记录（FK → 4 表）</text>
       </g>
-      <g transform="translate(750,400)">
-        <rect class="node-bg" width="120" height="40" rx="6" fill="var(--c-hon-bg)" stroke="var(--c-hon)" stroke-width="2"/>
-        <text class="node-title" x="60" y="18" text-anchor="middle" fill="var(--c-hon)">award_winners</text>
-        <text class="node-sub" x="60" y="32" text-anchor="middle">获奖记录（FK→4 表）</text>
+      <g transform="translate(902,494)">
+        <rect class="node-bg" width="86" height="40" rx="6" fill="var(--c-hon-bg)" stroke="var(--c-hon)"/>
+        <text class="node-title" x="43" y="18" text-anchor="middle" fill="var(--c-hon)">awards</text>
+        <text class="node-sub" x="43" y="31" text-anchor="middle">奖项</text>
       </g>
     </svg>
   </div>

@@ -238,14 +238,12 @@
       <!-- Participants internal -->
       <!-- teams → confederations -->
       <path class="edge" d="M 775 122 L 822 122" marker-end="url(#arrow)"/>
-      <!-- squads → players -->
-      <path class="edge" d="M 1010 235 C 970 200, 920 170, 905 148" marker-end="url(#arrow)"/>
-      <!-- squads → teams -->
-      <path class="edge" d="M 1015 235 C 870 220, 770 170, 745 148" marker-end="url(#arrow)"/>
-      <!-- qualified_teams → teams -->
-      <path class="edge" d="M 730 235 C 730 200, 715 170, 712 148" marker-end="url(#arrow)"/>
-      <!-- *_appearances → players (subtle) -->
-      <path class="edge" d="M 1180 235 C 1100 200, 980 170, 905 145" marker-end="url(#arrow)" opacity="0.55"/>
+      <!-- Row 3 (qualified_teams · team_appearances · squads · *_appearances) → teams / players
+           Drawn as 2 simple vertical-ish arrows to keep the area readable -->
+      <path class="edge" d="M 735 232 L 728 142" marker-end="url(#arrow)"/>
+      <path class="edge" d="M 970 232 L 880 188" marker-end="url(#arrow)"/>
+      <rect x="752" y="200" width="200" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="852" y="210" text-anchor="middle">appearance · squad · qualification</text>
 
       <!-- Cross-group: matches → teams (home / away) -->
       <path class="edge edge-strong" d="M 334 210 C 480 210, 600 130, 678 122" marker-end="url(#arrow-strong)"/>
@@ -267,16 +265,11 @@
 
       <!-- Honors internal: award_winners → awards -->
       <path class="edge" d="M 850 510 L 902 510" marker-end="url(#arrow)"/>
-      <!-- Honors → tournaments (long up-left) -->
-      <path class="edge" d="M 735 488 C 600 400, 380 200, 310 142" marker-end="url(#arrow)"/>
-      <rect x="430" y="306" width="118" height="14" fill="var(--surface)"/>
-      <text class="edge-label" x="489" y="316" text-anchor="middle">颁奖届次 tournament</text>
-      <!-- Honors → players (up) -->
-      <path class="edge" d="M 800 488 C 870 360, 880 200, 880 148" marker-end="url(#arrow)"/>
-      <!-- Honors → teams (up-left) -->
-      <path class="edge" d="M 760 488 C 780 360, 740 200, 720 148" marker-end="url(#arrow)"/>
-      <rect x="800" y="362" width="104" height="14" fill="var(--surface)"/>
-      <text class="edge-label" x="852" y="372" text-anchor="middle">winner · player/team</text>
+      <!-- Honors → players / teams (single bundled curve into participants) -->
+      <path class="edge" d="M 770 488 C 770 360, 790 220, 800 188" marker-end="url(#arrow)"/>
+      <rect x="730" y="358" width="104" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="782" y="368" text-anchor="middle">winner · player/team</text>
+      <!-- award_winners → tournaments is shown in the relation table; omit here to keep diagram readable -->
 
       <!-- ───── Nodes ───── -->
 

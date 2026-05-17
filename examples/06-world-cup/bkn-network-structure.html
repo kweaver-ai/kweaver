@@ -263,11 +263,12 @@
 
       <!-- Honors internal: award_winners → awards -->
       <path class="edge" d="M 850 510 L 902 510" marker-end="url(#arrow)"/>
-      <!-- Honors → players / teams (single bundled curve into participants) -->
-      <path class="edge" d="M 770 488 C 770 360, 790 220, 800 188" marker-end="url(#arrow)"/>
-      <rect x="730" y="358" width="104" height="14" fill="var(--surface)"/>
-      <text class="edge-label" x="782" y="368" text-anchor="middle">winner · player/team</text>
-      <!-- award_winners → tournaments is shown in the relation table; omit here to keep diagram readable -->
+      <!-- Honors → teams (clean left-side route around team_appearances; lands on teams).
+           award_winners→players and award_winners→tournaments are documented in the
+           relation table below so we don't crowd this area with more lines. -->
+      <path class="edge" d="M 770 488 C 770 320, 727 220, 727 142" marker-end="url(#arrow)"/>
+      <rect x="704" y="322" width="72" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="740" y="332" text-anchor="middle">winner · team</text>
 
       <!-- ───── Nodes ───── -->
 

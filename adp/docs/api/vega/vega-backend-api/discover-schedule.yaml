@@ -76,6 +76,40 @@ paths:
           in: query
           schema:
             type: boolean
+        - name: offset
+          description: 分页偏移量，>=0，默认 0
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            default: 0
+        - name: limit
+          description: 每页数量，1-1000，-1 表示不分页，默认 20
+          in: query
+          schema:
+            type: integer
+            format: int64
+            default: 20
+        - name: sort
+          description: 排序字段
+          in: query
+          schema:
+            type: string
+            enum:
+              - create_time
+              - update_time
+              - next_run
+            default: update_time
+        - name: direction
+          description: 排序方向
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
       responses:
         "200":
           description: ok

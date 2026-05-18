@@ -49,8 +49,6 @@ const (
 	MaxLength_ViewPropertyFeatureName        = 255
 	MaxLength_ViewPropertyDescription        = 1000
 	MaxLength_ViewPropertyFeatureDescription = 1000
-
-	RegexPattern_NonBuiltin_ViewID = "^[a-z0-9][a-z0-9_-]{0,39}$"
 )
 
 var (

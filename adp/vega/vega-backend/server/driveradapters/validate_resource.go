@@ -22,7 +22,6 @@ func ValidateResourceRequest(ctx context.Context, req *interfaces.ResourceReques
 	if err := validateID(ctx, req.ID); err != nil {
 		return err
 	}
-
 	if err := validateName(ctx, req.Name); err != nil {
 		return err
 	}
@@ -32,7 +31,6 @@ func ValidateResourceRequest(ctx context.Context, req *interfaces.ResourceReques
 	if err := validateDescription(ctx, req.Description); err != nil {
 		return err
 	}
-
 	if req.Extensions != nil {
 		if err := extensions.ValidateEntityExtensionsMap(ctx, *req.Extensions); err != nil {
 			return err

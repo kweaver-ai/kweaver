@@ -56,6 +56,86 @@ func Test_Validate_Name(t *testing.T) {
 	})
 }
 
+func Test_Validate_ID(t *testing.T) {
+	Convey("Test validateID\n", t, func() {
+		Convey("Empty ID\n", func() {
+			err := validateID(context.Background(), "")
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Valid ID\n", func() {
+			err := validateID(context.Background(), "test-id_123")
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Max length ID\n", func() {
+			id := strings.Repeat("a", 40)
+			err := validateID(context.Background(), id)
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Exceeds max length\n", func() {
+			id := strings.Repeat("a", 41)
+			err := validateID(context.Background(), id)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Invalid character\n", func() {
+			err := validateID(context.Background(), "test.id")
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Starts with underscore\n", func() {
+			err := validateID(context.Background(), "_test_id")
+			So(err, ShouldNotBeNil)
+		})
+	})
+}
+
+func Test_Validate_CatalogRequest_ID(t *testing.T) {
+	Convey("Test ValidateCatalogRequest ID\n", t, func() {
+		Convey("Invalid ID\n", func() {
+			req := &interfaces.CatalogRequest{
+				ID:   strings.Repeat("a", 41),
+				Name: "test-catalog",
+			}
+			err := ValidateCatalogRequest(context.Background(), req)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Valid ID\n", func() {
+			req := &interfaces.CatalogRequest{
+				ID:   "test-catalog_1",
+				Name: "test-catalog",
+			}
+			err := ValidateCatalogRequest(context.Background(), req)
+			So(err, ShouldBeNil)
+		})
+	})
+}
+
+func Test_Validate_ResourceRequest_ID(t *testing.T) {
+	Convey("Test ValidateResourceRequest ID\n", t, func() {
+		Convey("Invalid ID\n", func() {
+			req := &interfaces.ResourceRequest{
+				ID:   "test.resource",
+				Name: "test-resource",
+			}
+			err := ValidateResourceRequest(context.Background(), req)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("Valid ID\n", func() {
+			req := &interfaces.ResourceRequest{
+				ID:   "test-resource_1",
+				Name: "test-resource",
+			}
+			err := ValidateResourceRequest(context.Background(), req)
+			So(err, ShouldBeNil)
+		})
+	})
+}
+
 func Test_Validate_Tags(t *testing.T) {
 	Convey("Test ValidateTags\n", t, func() {
 		Convey("Valid tags\n", func() {

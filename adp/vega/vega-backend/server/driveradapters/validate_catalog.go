@@ -18,6 +18,9 @@ import (
 )
 
 func ValidateCatalogRequest(ctx context.Context, req *interfaces.CatalogRequest) error {
+	if err := validateID(ctx, req.ID); err != nil {
+		return err
+	}
 	if err := validateName(ctx, req.Name); err != nil {
 		return err
 	}

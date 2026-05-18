@@ -24,21 +24,23 @@ const (
 
 	NAME_MAX_LENGTH        = 255
 	DESCRIPTION_MAX_LENGTH = 1000
-	TAGS_MAX_NUMBER        = 5
-	TAG_MAX_LENGTH         = 40
-	TAG_INVALID_CHARACTER  = "/:?\\\"<>|：？‘’“”！《》,#[]{}%&*$^!=.'"
 
-	DEFAULT_OFFSET = "0"
-	MIN_OFFSET     = 0
-
-	DEFAULT_LIMIT = "20"
-	MIN_LIMIT     = 1
-	MAX_LIMIT     = 1000
-	NO_LIMIT      = "-1"
-
+	DEFAULT_OFFSET    = "0"
+	DEFAULT_LIMIT     = "20"
 	DEFAULT_DIRECTION = "desc"
 	DESC_DIRECTION    = "desc"
 	ASC_DIRECTION     = "asc"
+	MIN_OFFSET        = 0
+	MIN_LIMIT         = 1
+	MAX_LIMIT         = 1000
+	NO_LIMIT          = "-1"
+
+	TAG_INVALID_CHARACTER = "/:?\\\"<>|：？‘’“”！《》,#[]{}%&*$^!=.'"
+	TAG_MAX_LENGTH        = 40
+	TAGS_MAX_NUMBER       = 5
+	// id的校验
+	RegexPattern_Builtin_ID    = "^[a-z0-9_][a-z0-9_-]{0,39}$"
+	RegexPattern_NonBuiltin_ID = "^[a-z0-9][a-z0-9_-]{0,39}$"
 
 	MODULE_TYPE_CATALOG        = "catalog"
 	MODULE_TYPE_RESOURCE       = "resource"

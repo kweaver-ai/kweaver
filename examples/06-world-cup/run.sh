@@ -6,8 +6,10 @@
 #   Step 2  Import to MySQL    : kweaver ds connect + ds import-csv --recreate
 #   Step 3  Vega scan          : vega catalog create + discover --wait
 #   Step 4  Render BKN         : map table Resources → render worldcup-bkn
-#   Step 5  Push BKN           : kweaver bkn validate + push (build skipped by default)
-#   Step 6  Upload toolbox     : kweaver toolbox import + publish (idempotent by box_name)
+#   Step 5  Push BKN           : kweaver bkn validate + push, then build vega resource
+#                                 OpenSearch indexes for 7 entity tables (DO_INDEX=1 default)
+#   Step 6  Upload toolbox     : kweaver toolbox create + tool upload <OpenAPI> + publish
+#                                 (registers vega_sql_execute; idempotent by box_name)
 #   Step 7  Create Agent       : agent create --config <rendered tpl> + bind KN + publish
 #
 # Prerequisites:
@@ -55,8 +57,8 @@ Steps:
   2  Import MySQL    — kweaver ds connect + ds import-csv → wc_* tables
   3  Vega scan       — vega catalog create + discover --wait
   4  Render BKN      — map Resources → render worldcup-bkn
-  5  Push BKN        — validate + push (resource-backed KN; build skipped by default)
-  6  Upload toolbox  — toolbox import + publish (idempotent; DO_TOOLBOX=0 disables)
+  5  Push BKN        — validate + push (resource-backed KN); build vega indexes for 7 entity tables (DO_INDEX=0 to skip)
+  6  Upload toolbox  — toolbox create + tool upload <OpenAPI> + publish (idempotent; DO_TOOLBOX=0 disables)
   7  Create Agent    — agent create --config + bind KN + (optional) publish
 
 Env (see env.sample):
@@ -702,7 +704,7 @@ PY
     done <"$plan"
     rm -f "$plan"
 
-    echo "  indexes: $created created, $reused reused, $skipped skipped (DO_INDEX=0 to disable; FORCE_INDEX=1 to recreate)" >&2
+    echo "  indexes: $created created, $reused reused, $skipped skipped (DO_INDEX=0 to disable)" >&2
 }
 
 # ─── Step 6: Upload toolbox (OpenAPI) ──────────────────────────────────────
@@ -843,7 +845,8 @@ step_6_toolbox() {
 
 # ─── Step 7: Create Agent ───────────────────────────────────────────────────
 extract_agent_id() {
-    python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("id") or d.get("agent_id") or "")' 2>/dev/null
+    _extract_cli_json | \
+        python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("id") or d.get("agent_id") or "")' 2>/dev/null
 }
 
 find_agent_id_by_name() {

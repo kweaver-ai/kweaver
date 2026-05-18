@@ -18,8 +18,8 @@
    ./run.sh  ─────────►├─ 4) 渲染 BKN     map vega Resources → render worldcup-bkn.tar
                        │
                        ├─ 5) Push BKN +   bkn validate + push（幂等），
-                       │   建索引          再为 27 个 vega resource 建 OpenSearch dataset
-                       │                  （7 张实体表追加向量 embedding）
+                       │   建索引          再为 7 张实体表的 vega resource 建 OpenSearch
+                       │                  dataset（带向量 embedding，便于 LLM 做模糊名匹配）
                        │
                        ├─ 6) 上传工具箱   kweaver toolbox create + tool upload <OpenAPI>
                        │                 （注册 `vega_sql_execute`，让 agent 跑原生 SQL）

@@ -13,8 +13,8 @@ info:
                     ↘ failed
 
     外部仅可触发 `start` / `stop` 两个动作；其它状态由 worker 内部转移，外部只读。
-    `start` / `stop` 的 HTTP 200 仅表示"指令被接受"，**不**表示 status 已切换；
-    持久化 status 由 worker 实际执行时写入，客户端如需感知应轮询 GET。
+    `start` / `stop` 返回 HTTP 202 且 body 为空，仅表示"指令被接受"，**不**表示
+    status 已切换；持久化 status 由 worker 实际执行时写入，客户端如需感知应轮询 GET。
 
     端点设计遵循 [vega-backend/CLAUDE.md] 的"端点设计规则"：批量删除走 path
     （`DELETE /build-tasks/{ids}`，逗号分隔），不提供 `/resources/{id}/build-tasks`
@@ -233,9 +233,9 @@ paths:
       description: |
         合法状态转移：`status ∈ {init, stopped}` → `running`。
 
-        **响应 status 滞后**：HTTP 200 表示"启动指令已被接受并入队"，**不**表示
-        status 已切换为 `running`。响应体里的 `status` 可能仍是 `init` 或 `stopped`，
-        worker 实际执行时才会写为 `running`。客户端如需确认应轮询 GET。
+        **响应 status 滞后**：HTTP 202 表示"启动指令已被接受并入队"，**不**表示
+        status 已切换为 `running`。worker 实际执行时才会写为 `running`，
+        客户端如需确认应轮询 GET。响应 body 为空。
 
         **非幂等**：对已 running 的 task 再次 start 返回 409
         `VegaBackend.BuildTask.InvalidStateTransition`。
@@ -246,12 +246,8 @@ paths:
             schema:
               $ref: "#/components/schemas/StartBuildTaskRequest"
       responses:
-        "200":
-          description: 启动指令已接受
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BuildTask"
+        "202":
+          description: 启动指令已接受（body 为空）
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -275,18 +271,14 @@ paths:
       description: |
         合法状态转移：`status == running` → `stopping`。
 
-        **响应 status 滞后**：HTTP 200 表示"停止指令已被记录"。`stopping → stopped`
-        由 worker 异步推进，客户端可轮询 GET 拿最新 status。
+        **响应 status 滞后**：HTTP 202 表示"停止指令已被记录"。`stopping → stopped`
+        由 worker 异步推进，客户端可轮询 GET 拿最新 status。响应 body 为空。
 
         **非幂等**：对非 running 状态的 task 调 stop 返回 409
         `VegaBackend.BuildTask.InvalidStateTransition`。
       responses:
-        "200":
-          description: 停止指令已接受
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BuildTask"
+        "202":
+          description: 停止指令已接受（body 为空）
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":

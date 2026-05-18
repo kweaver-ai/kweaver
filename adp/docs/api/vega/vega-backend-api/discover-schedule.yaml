@@ -102,6 +102,7 @@ paths:
           schema:
             type: string
             enum:
+              - name
               - create_time
               - update_time
               - next_run
@@ -299,6 +300,7 @@ components:
         - `VegaBackend.DiscoverSchedule.InternalError.CreateFailed`
         - `VegaBackend.DiscoverSchedule.InternalError.UpdateFailed`
         - `VegaBackend.DiscoverSchedule.InternalError.DeleteFailed`
+        - `VegaBackend.DiscoverSchedule.InternalError.GetAccountNamesFailed`
       content:
         application/json:
           schema:

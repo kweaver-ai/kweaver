@@ -45,4 +45,4 @@ releases:
     version: 0.8.0-ebcabc8-20260514.1
   oauth2-ui:
     chart: oauth2-ui
-    version: 0.8.0-2ff8001-20260514.1.tgz
+    version: 0.8.0-2ff8001-20260514.1

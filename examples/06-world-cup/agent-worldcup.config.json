@@ -57,8 +57,8 @@
   "skills": {
     "tools": [
       {
-        "tool_id": "52b35175-cee3-41ea-91c0-1d70e8371f9c",
-        "tool_box_id": "e521d454-4a0b-4dc9-8a28-d0986de1cef9",
+        "tool_id": "__SEARCH_SCHEMA_TOOL_ID__",
+        "tool_box_id": "__CONTEXTLOADER_BOX_ID__",
         "tool_timeout": 300,
         "tool_input": [
           {
@@ -243,8 +243,8 @@
         "result_process_strategies": null
       },
       {
-        "tool_id": "f46fa5df-f371-447f-8451-2d2f34cc78e9",
-        "tool_box_id": "e521d454-4a0b-4dc9-8a28-d0986de1cef9",
+        "tool_id": "__QUERY_OBJECT_INSTANCE_TOOL_ID__",
+        "tool_box_id": "__CONTEXTLOADER_BOX_ID__",
         "tool_timeout": 300,
         "tool_input": [
           {
@@ -357,7 +357,7 @@
     {
       "is_default": true,
       "llm_config": {
-        "id": "2053831336808026112",
+        "id": "__AGENT_LLM_ID__",
         "name": "qwen-plus",
         "model_type": "llm",
         "temperature": 0.7,

@@ -8,8 +8,8 @@ Input: JSON object mapping placeholder name → uuid, e.g.:
 Paths default to sibling dirs under examples/06-world-cup/.
 
 Example:
-  kweaver vega catalog resources <cid> --category table --limit 500 > /tmp/res.json
-  # Build mapping by hand from names wc_* → MATCHES_RES_ID style keys, or use jq.
+  kweaver vega resource list --catalog-id <cid> --category table --limit 500 \\
+    | python3 scripts/map_vega_table_resources.py > mappings.json
   python3 scripts/render_worldcup_bkn_vega_placeholders.py --mapping mappings.json \\
     --src worldcup-bkn --dst .rendered-bkn-vega
 """

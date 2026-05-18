@@ -9,7 +9,6 @@ Each table resource yields worldcup.wc_<stem> in source_identifier; maps to key
 from __future__ import annotations
 
 import json
-import re
 import sys
 
 # Keep in sync with scripts/worldcup_dataset_stems.inc.sh

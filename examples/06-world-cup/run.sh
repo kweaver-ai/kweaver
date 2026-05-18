@@ -890,35 +890,91 @@ print(f"  .env AGENT_ID={agent_id}")
 PY
 }
 
+# Resolve the platform-builtin contextloader toolbox + its two tools.
+# Echos a TSV line: "<box_id>\t<search_schema_tool_id>\t<query_object_instance_tool_id>".
+# Exits the script on failure since step 7 cannot render the agent without these.
+resolve_contextloader_ids() {
+    local kw="${CONTEXTLOADER_BOX_NAME:-contextloader}" box_id tools_raw search_id qoi_id
+    local list_raw
+    list_raw="$("${KWEAV[@]}" toolbox list --keyword "$kw" --limit 20 2>/dev/null || true)"
+    # Pick the most recently updated toolbox whose name contains "contextloader".
+    box_id="$(printf '%s' "$list_raw" | _extract_cli_json | jq -r '
+        (.entries // .data // .items // [])
+        | if type == "array" then . else [] end
+        | map(select((.box_name // .name // "") | test("contextloader"; "i")))
+        | sort_by(.updated_at // .created_at // 0) | reverse
+        | (.[0].box_id // .[0].id // empty)
+    ' 2>/dev/null | head -1)"
+    if [ -z "$box_id" ]; then
+        echo "Error: no contextloader toolbox found on this platform." >&2
+        echo "       Set CONTEXTLOADER_BOX_NAME in .env, or check 'kweaver toolbox list --keyword contextloader'." >&2
+        exit 1
+    fi
+    tools_raw="$("${KWEAV[@]}" tool list --toolbox "$box_id" 2>/dev/null | _extract_cli_json)" || true
+    search_id="$(printf '%s' "$tools_raw" | jq -r '
+        (.tools // .entries // .data // .items // [])[]?
+        | select(.name == "search_schema") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
+    qoi_id="$(printf '%s' "$tools_raw" | jq -r '
+        (.tools // .entries // .data // .items // [])[]?
+        | select(.name == "query_object_instance") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
+    [ -z "$search_id" ] && { echo "Error: search_schema tool not found in contextloader toolbox $box_id" >&2; exit 1; }
+    [ -z "$qoi_id" ]    && { echo "Error: query_object_instance tool not found in contextloader toolbox $box_id" >&2; exit 1; }
+    printf '%s\t%s\t%s\n' "$box_id" "$search_id" "$qoi_id"
+}
+
 render_agent_config() {
     local kn_id="$1" out="$2"
     [ -f "$AGENT_TEMPLATE" ] || { echo "Error: $AGENT_TEMPLATE missing" >&2; exit 1; }
 
-    # If TOOLBOX_BOX_ID/VEGA_TOOL_ID not set (step 6 skipped), drop the
-    # vega_sql_execute tool from the template so the agent doesn't bind a
-    # placeholder id. Otherwise substitute placeholders.
-    local tmp_in="$AGENT_TEMPLATE"
+    # AGENT_LLM_ID is required: the template's LLM placeholder won't resolve
+    # on this platform without it, so fail fast instead of creating a broken agent.
+    if [ -z "${AGENT_LLM_ID:-}" ]; then
+        echo "Error: AGENT_LLM_ID is not set." >&2
+        echo "       Run 'kweaver model llm list' to find a model_id and set AGENT_LLM_ID in .env." >&2
+        exit 1
+    fi
+
+    # Resolve the contextloader builtin toolbox + its search_schema / query_object_instance
+    # tool ids on this platform (UUIDs differ per cluster).
+    local ctx_raw ctx_box ctx_search ctx_qoi
+    ctx_raw="$(resolve_contextloader_ids)"
+    ctx_box="$(printf '%s' "$ctx_raw" | cut -f1)"
+    ctx_search="$(printf '%s' "$ctx_raw" | cut -f2)"
+    ctx_qoi="$(printf '%s' "$ctx_raw" | cut -f3)"
+    echo "  contextloader box=$ctx_box  search_schema=$ctx_search  query_object_instance=$ctx_qoi" >&2
+
+    # Step 1: substitute the contextloader placeholders for every tool entry.
+    local tmp_in
+    tmp_in="$(mktemp -t wc_agent_tpl.XXXXXX.json)"
+    jq --arg cb "$ctx_box" --arg cs "$ctx_search" --arg cq "$ctx_qoi" '
+        .skills.tools |= map(
+            (if .tool_box_id == "__CONTEXTLOADER_BOX_ID__"       then .tool_box_id = $cb else . end)
+            | (if .tool_id  == "__SEARCH_SCHEMA_TOOL_ID__"         then .tool_id     = $cs else . end)
+            | (if .tool_id  == "__QUERY_OBJECT_INSTANCE_TOOL_ID__" then .tool_id     = $cq else . end)
+        )
+    ' "$AGENT_TEMPLATE" >"$tmp_in"
+
+    # Step 2: substitute the vega_sql_execute tool, or drop it if step 6 was skipped.
+    local tmp_b
+    tmp_b="$(mktemp -t wc_agent_tpl.XXXXXX.json)"
     if [ -n "${VEGA_TOOL_ID:-}" ] && [ -n "${TOOLBOX_BOX_ID:-}" ]; then
-        tmp_in="$(mktemp -t wc_agent_tpl.XXXXXX.json)"
         jq --arg vt "$VEGA_TOOL_ID" --arg vb "$TOOLBOX_BOX_ID" '
             (.skills.tools[] | select(.tool_id == "__VEGA_TOOL_ID__")) |= (
                 .tool_id = $vt | .tool_box_id = $vb
             )
-        ' "$AGENT_TEMPLATE" >"$tmp_in"
+        ' "$tmp_in" >"$tmp_b"
     else
         echo "  warn: VEGA_TOOL_ID/TOOLBOX_BOX_ID not set — dropping vega_sql_execute from agent" >&2
-        tmp_in="$(mktemp -t wc_agent_tpl.XXXXXX.json)"
-        jq '.skills.tools |= map(select(.tool_id != "__VEGA_TOOL_ID__"))' "$AGENT_TEMPLATE" >"$tmp_in"
+        jq '.skills.tools |= map(select(.tool_id != "__VEGA_TOOL_ID__"))' "$tmp_in" >"$tmp_b"
     fi
+    rm -f "$tmp_in"
 
-    local filter='.data_source.knowledge_network = [{"knowledge_network_id": $kn, "object_types": null}]'
-    if [ -n "${AGENT_LLM_ID:-}" ]; then
-        filter+=' | (.llms[0].llm_config.id) = $llm'
-        jq --arg kn "$kn_id" --arg llm "$AGENT_LLM_ID" "$filter" "$tmp_in" >"$out"
-    else
-        jq --arg kn "$kn_id" "$filter" "$tmp_in" >"$out"
-    fi
-    [ "$tmp_in" != "$AGENT_TEMPLATE" ] && rm -f "$tmp_in"
+    # Step 3: substitute kn id + llm id.
+    jq --arg kn "$kn_id" --arg llm "$AGENT_LLM_ID" '
+        .data_source.knowledge_network = [{"knowledge_network_id": $kn, "object_types": null}]
+        | (.llms[0].llm_config.id) = $llm
+    ' "$tmp_b" >"$out"
+    rm -f "$tmp_b"
 }
 
 step_7_agent() {

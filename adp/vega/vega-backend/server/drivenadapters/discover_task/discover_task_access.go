@@ -40,6 +40,17 @@ type discoverTaskAccess struct {
 	db         *sql.DB
 }
 
+// NewDiscoverTaskAccess creates a new DiscoverTaskAccess.
+func NewDiscoverTaskAccess(appSetting *common.AppSetting) interfaces.DiscoverTaskAccess {
+	dtAccessOnce.Do(func() {
+		dtAccess = &discoverTaskAccess{
+			appSetting: appSetting,
+			db:         libdb.NewDB(&appSetting.DBSetting),
+		}
+	})
+	return dtAccess
+}
+
 // GetScheduledTaskStrategies retrieves strategies from t_discover_schedule table by ID.
 func (da *discoverTaskAccess) GetScheduledTaskStrategies(ctx context.Context, scheduledTaskID string) ([]string, error) {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Query discover_schedule by ID")
@@ -82,17 +93,6 @@ func (da *discoverTaskAccess) GetScheduledTaskStrategies(ctx context.Context, sc
 
 	span.SetStatus(codes.Ok, "")
 	return strategies, nil
-}
-
-// NewDiscoverTaskAccess creates a new DiscoverTaskAccess.
-func NewDiscoverTaskAccess(appSetting *common.AppSetting) interfaces.DiscoverTaskAccess {
-	dtAccessOnce.Do(func() {
-		dtAccess = &discoverTaskAccess{
-			appSetting: appSetting,
-			db:         libdb.NewDB(&appSetting.DBSetting),
-		}
-	})
-	return dtAccess
 }
 
 // Create creates a new DiscoverTask.

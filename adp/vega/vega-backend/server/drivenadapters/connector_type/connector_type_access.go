@@ -288,10 +288,7 @@ func (cta *connectorTypeAccess) List(ctx context.Context, params interfaces.Conn
 		return nil, 0, err
 	}
 
-	// 分页
-	// if params.Limit > 0 {
-	// 	builder = builder.Limit(uint64(params.Limit)).Offset(uint64(params.Offset))
-	// }
+	// Pagination is applied in service after permission filtering.
 	// 排序
 	if params.Sort != "" {
 		builder = builder.OrderBy(fmt.Sprintf("%s %s", params.Sort, params.Direction))

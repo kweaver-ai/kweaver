@@ -18,7 +18,7 @@ type DiscoverScheduleService interface {
 	// List lists discover schedules.
 	List(ctx context.Context, params DiscoverScheduleQueryParams) ([]*DiscoverSchedule, int64, error)
 	// Update updates a discover schedule.
-	Update(ctx context.Context, id string, req *DiscoverSchedule) error
+	Update(ctx context.Context, current *DiscoverSchedule, req *DiscoverScheduleRequest) error
 	// Delete deletes a discover schedule by ID.
 	Delete(ctx context.Context, id string) error
 	// Enable enables a discover schedule.

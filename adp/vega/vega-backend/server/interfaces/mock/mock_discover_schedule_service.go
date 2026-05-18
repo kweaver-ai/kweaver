@@ -159,17 +159,17 @@ func (mr *MockDiscoverScheduleServiceMockRecorder) List(ctx, params any) *gomock
 }
 
 // Update mocks base method.
-func (m *MockDiscoverScheduleService) Update(ctx context.Context, id string, req *interfaces.DiscoverSchedule) error {
+func (m *MockDiscoverScheduleService) Update(ctx context.Context, current *interfaces.DiscoverSchedule, req *interfaces.DiscoverScheduleRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, req)
+	ret := m.ctrl.Call(m, "Update", ctx, current, req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockDiscoverScheduleServiceMockRecorder) Update(ctx, id, req any) *gomock.Call {
+func (mr *MockDiscoverScheduleServiceMockRecorder) Update(ctx, current, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDiscoverScheduleService)(nil).Update), ctx, id, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDiscoverScheduleService)(nil).Update), ctx, current, req)
 }
 
 // UpdateLastRun mocks base method.

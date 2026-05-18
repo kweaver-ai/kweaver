@@ -13,6 +13,11 @@ Description = "采集策略非法"
 Solution = "strategies 必须是 [insert, delete, update] 的子集；空数组表示全部"
 ErrorLink = "暂无"
 
+[VegaBackend.DiscoverSchedule.InvalidTimeRange]
+Description = "采集调度时间范围非法"
+Solution = "start_time 和 end_time 必须大于等于 0；end_time 为 0 表示无结束时间，否则 start_time 必须小于等于 end_time"
+ErrorLink = "暂无"
+
 [VegaBackend.DiscoverSchedule.IdMismatch]
 Description = "请求体中的 id 与 path 中的 id 不一致"
 Solution = "请保持两者一致或省略 body.id"

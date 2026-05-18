@@ -17,8 +17,6 @@ import (
 	"github.com/kweaver-ai/kweaver-go-lib/logger"
 	"github.com/kweaver-ai/kweaver-go-lib/otel/oteltrace"
 	"github.com/kweaver-ai/kweaver-go-lib/rest"
-	"github.com/robfig/cron/v3"
-	"go.opentelemetry.io/otel/trace"
 
 	"vega-backend/common/visitor"
 	verrors "vega-backend/errors"
@@ -59,9 +57,8 @@ func (r *restHandler) createDiscoverSchedule(c *gin.Context, visitor hydra.Visit
 		return
 	}
 
-	if req.CatalogID == "" {
-		httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_InvalidParameter_RequestBody).
-			WithErrorDetails("catalog_id is required")
+	if err := ValidateDiscoverScheduleRequest(ctx, &req); err != nil {
+		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
 		return
@@ -78,10 +75,6 @@ func (r *restHandler) createDiscoverSchedule(c *gin.Context, visitor hydra.Visit
 		httpErr := rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_Catalog_NotFound)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
-		return
-	}
-
-	if err := validateCronExprAndStrategies(ctx, span, c, req.CronExpr, req.Strategies); err != nil {
 		return
 	}
 
@@ -248,7 +241,7 @@ func (r *restHandler) updateDiscoverSchedule(c *gin.Context, visitor hydra.Visit
 		return
 	}
 
-	var req interfaces.DiscoverSchedule
+	var req interfaces.DiscoverScheduleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_InvalidParameter_RequestBody).
 			WithErrorDetails(err.Error())
@@ -257,15 +250,15 @@ func (r *restHandler) updateDiscoverSchedule(c *gin.Context, visitor hydra.Visit
 		return
 	}
 
-	// Strict checks: id / catalog_id / enabled are read-only here.
-	if req.ID != "" && req.ID != id {
-		httpErr := rest.NewHTTPError(ctx, http.StatusConflict, verrors.VegaBackend_DiscoverSchedule_IdMismatch).
-			WithErrorDetails(fmt.Sprintf("body.id=%s does not match path id=%s", req.ID, id))
+	if err := ValidateDiscoverScheduleRequest(ctx, &req); err != nil {
+		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
 		return
 	}
-	if req.CatalogID != "" && req.CatalogID != current.CatalogID {
+
+	// Strict checks: catalog_id / enabled are read-only here.
+	if req.CatalogID != current.CatalogID {
 		httpErr := rest.NewHTTPError(ctx, http.StatusConflict, verrors.VegaBackend_DiscoverSchedule_CatalogMismatch).
 			WithErrorDetails(fmt.Sprintf("catalog_id is read-only; current=%s, body=%s", current.CatalogID, req.CatalogID))
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
@@ -280,16 +273,7 @@ func (r *restHandler) updateDiscoverSchedule(c *gin.Context, visitor hydra.Visit
 		return
 	}
 
-	if err := validateCronExprAndStrategies(ctx, span, c, req.CronExpr, req.Strategies); err != nil {
-		return
-	}
-
-	// Force authoritative fields from path / current state.
-	req.ID = id
-	req.CatalogID = current.CatalogID
-	req.Enabled = current.Enabled
-
-	if err := r.dss.Update(ctx, id, &req); err != nil {
+	if err := r.dss.Update(ctx, current, &req); err != nil {
 		httpErr := rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_DiscoverSchedule_InternalError_UpdateFailed).
 			WithErrorDetails(err.Error())
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
@@ -466,34 +450,4 @@ func (r *restHandler) toggleDiscoverSchedule(c *gin.Context, visitor hydra.Visit
 
 	oteltrace.AddHttpAttrs4Ok(span, http.StatusNoContent)
 	rest.ReplyOK(c, http.StatusNoContent, nil)
-}
-
-// =========================== helpers ===========================
-
-// validateCronExprAndStrategies validates cron expression and strategies; on failure replies error and returns non-nil.
-func validateCronExprAndStrategies(ctx context.Context, span trace.Span, c *gin.Context, cronExpr string, strategies []string) error {
-	if cronExpr == "" {
-		httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_DiscoverSchedule_InvalidCronExpr).
-			WithErrorDetails("cron_expr is required")
-		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
-		rest.ReplyError(c, httpErr)
-		return httpErr
-	}
-	if _, err := cron.ParseStandard(cronExpr); err != nil {
-		httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_DiscoverSchedule_InvalidCronExpr).
-			WithErrorDetails(fmt.Sprintf("invalid cron expression: %v", err))
-		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
-		rest.ReplyError(c, httpErr)
-		return httpErr
-	}
-	if len(strategies) > 0 {
-		if err := validateStrategies(strategies); err != nil {
-			httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_DiscoverSchedule_InvalidStrategies).
-				WithErrorDetails(err.Error())
-			oteltrace.AddHttpAttrs4HttpError(span, httpErr)
-			rest.ReplyError(c, httpErr)
-			return httpErr
-		}
-	}
-	return nil
 }

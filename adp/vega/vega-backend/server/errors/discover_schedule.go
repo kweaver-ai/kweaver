@@ -13,6 +13,7 @@ const (
 	// 400 Bad Request
 	VegaBackend_DiscoverSchedule_InvalidCronExpr   = "VegaBackend.DiscoverSchedule.InvalidCronExpr"
 	VegaBackend_DiscoverSchedule_InvalidStrategies = "VegaBackend.DiscoverSchedule.InvalidStrategies"
+	VegaBackend_DiscoverSchedule_InvalidTimeRange  = "VegaBackend.DiscoverSchedule.InvalidTimeRange"
 
 	// 409 Conflict
 	VegaBackend_DiscoverSchedule_IdMismatch             = "VegaBackend.DiscoverSchedule.IdMismatch"
@@ -31,6 +32,7 @@ var (
 		VegaBackend_DiscoverSchedule_NotFound,
 		VegaBackend_DiscoverSchedule_InvalidCronExpr,
 		VegaBackend_DiscoverSchedule_InvalidStrategies,
+		VegaBackend_DiscoverSchedule_InvalidTimeRange,
 		VegaBackend_DiscoverSchedule_IdMismatch,
 		VegaBackend_DiscoverSchedule_CatalogMismatch,
 		VegaBackend_DiscoverSchedule_EnabledFieldNotAllowed,

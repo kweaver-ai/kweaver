@@ -41,6 +41,20 @@ func (m *MockResourceAccess) EXPECT() *MockResourceAccessMockRecorder {
 	return m.recorder
 }
 
+// AttachListExtensions mocks base method.
+func (m *MockResourceAccess) AttachListExtensions(ctx context.Context, params interfaces.ResourcesQueryParams, resources []*interfaces.Resource) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AttachListExtensions", ctx, params, resources)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AttachListExtensions indicates an expected call of AttachListExtensions.
+func (mr *MockResourceAccessMockRecorder) AttachListExtensions(ctx, params, resources any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachListExtensions", reflect.TypeOf((*MockResourceAccess)(nil).AttachListExtensions), ctx, params, resources)
+}
+
 // CheckExistByCategories mocks base method.
 func (m *MockResourceAccess) CheckExistByCategories(ctx context.Context, catalogID string, categories []string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -156,20 +170,6 @@ func (m *MockResourceAccess) GetByIDsBasic(ctx context.Context, ids []string) ([
 func (mr *MockResourceAccessMockRecorder) GetByIDsBasic(ctx, ids any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDsBasic", reflect.TypeOf((*MockResourceAccess)(nil).GetByIDsBasic), ctx, ids)
-}
-
-// AttachListExtensions mocks base method.
-func (m *MockResourceAccess) AttachListExtensions(ctx context.Context, params interfaces.ResourcesQueryParams, resources []*interfaces.Resource) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachListExtensions", ctx, params, resources)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AttachListExtensions indicates an expected call of AttachListExtensions.
-func (mr *MockResourceAccessMockRecorder) AttachListExtensions(ctx, params, resources any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachListExtensions", reflect.TypeOf((*MockResourceAccess)(nil).AttachListExtensions), ctx, params, resources)
 }
 
 // GetByName mocks base method.

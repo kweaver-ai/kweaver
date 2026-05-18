@@ -69,6 +69,34 @@ func (mr *MockDiscoverScheduleAccessMockRecorder) Delete(ctx, id any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDiscoverScheduleAccess)(nil).Delete), ctx, id)
 }
 
+// Disable mocks base method.
+func (m *MockDiscoverScheduleAccess) Disable(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Disable", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Disable indicates an expected call of Disable.
+func (mr *MockDiscoverScheduleAccessMockRecorder) Disable(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Disable", reflect.TypeOf((*MockDiscoverScheduleAccess)(nil).Disable), ctx, id)
+}
+
+// Enable mocks base method.
+func (m *MockDiscoverScheduleAccess) Enable(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Enable", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Enable indicates an expected call of Enable.
+func (mr *MockDiscoverScheduleAccessMockRecorder) Enable(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Enable", reflect.TypeOf((*MockDiscoverScheduleAccess)(nil).Enable), ctx, id)
+}
+
 // GetByID mocks base method.
 func (m *MockDiscoverScheduleAccess) GetByID(ctx context.Context, id string) (*interfaces.DiscoverSchedule, error) {
 	m.ctrl.T.Helper()

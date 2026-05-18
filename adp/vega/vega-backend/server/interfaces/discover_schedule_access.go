@@ -19,6 +19,10 @@ type DiscoverScheduleAccess interface {
 	List(ctx context.Context, params DiscoverScheduleQueryParams) ([]*DiscoverSchedule, int64, error)
 	// Update updates a discover schedule.
 	Update(ctx context.Context, schedule *DiscoverSchedule) error
+	// Enable enables a discover schedule.
+	Enable(ctx context.Context, id string) error
+	// Disable disables a discover schedule.
+	Disable(ctx context.Context, id string) error
 	// Delete deletes a discover schedule by ID.
 	Delete(ctx context.Context, id string) error
 	// GetEnabledSchedules retrieves all enabled discover schedules.

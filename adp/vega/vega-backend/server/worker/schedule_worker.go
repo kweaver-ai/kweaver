@@ -243,8 +243,14 @@ func (sw *ScheduleWorker) executeSchedule(scheduleID string) {
 		return
 	}
 
+	now := time.Now().UnixMilli()
+	if schedule.StartTime > 0 && now < schedule.StartTime {
+		logger.Infof("Schedule %s has not reached start_time, skipping execution", schedule.ID)
+		return
+	}
+
 	// 检查任务是否已过期
-	if schedule.EndTime > 0 && time.Now().UnixMilli() > schedule.EndTime {
+	if schedule.EndTime > 0 && now > schedule.EndTime {
 		logger.Warnf("Schedule %s has expired, disabling and unscheduling", schedule.ID)
 
 		// 禁用过期任务

@@ -560,6 +560,10 @@ func (ra *resourceAccess) ListIDs(ctx context.Context, params interfaces.Resourc
 
 	builder := sq.Select(resourceExtCol(params, "f_id")).From(RESOURCE_TABLE_NAME)
 
+	if params.Name != "" {
+		name := "%" + params.Name + "%"
+		builder = builder.Where(sq.Like{resourceExtCol(params, "f_name"): name})
+	}
 	if params.CatalogID != "" {
 		builder = builder.Where(sq.Eq{resourceExtCol(params, "f_catalog_id"): params.CatalogID})
 	}
@@ -641,6 +645,11 @@ func (ra *resourceAccess) List(ctx context.Context, params interfaces.ResourcesQ
 
 	countBuilder := sq.Select("COUNT(*)").From(RESOURCE_TABLE_NAME)
 
+	if params.Name != "" {
+		name := "%" + params.Name + "%"
+		builder = builder.Where(sq.Like{resourceExtCol(params, "f_name"): name})
+		countBuilder = countBuilder.Where(sq.Like{resourceExtCol(params, "f_name"): name})
+	}
 	if params.CatalogID != "" {
 		builder = builder.Where(sq.Eq{resourceExtCol(params, "f_catalog_id"): params.CatalogID})
 		countBuilder = countBuilder.Where(sq.Eq{resourceExtCol(params, "f_catalog_id"): params.CatalogID})

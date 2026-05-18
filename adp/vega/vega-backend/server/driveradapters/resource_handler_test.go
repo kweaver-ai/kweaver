@@ -57,15 +57,16 @@ func Test_ResourceRestHandler_ListResources(t *testing.T) {
 			So(w.Body.String(), ShouldContainSubstring, "invalid status: unknown")
 		})
 
-		Convey("Success list resources with category and status\n", func() {
+		Convey("Success list resources with name category and status\n", func() {
 			rs.EXPECT().List(gomock.Any(), gomock.Any()).
 				DoAndReturn(func(_ context.Context, params interfaces.ResourcesQueryParams) ([]*interfaces.Resource, int64, error) {
+					So(params.Name, ShouldEqual, "orders")
 					So(params.Category, ShouldEqual, interfaces.ResourceCategoryDataset)
 					So(params.Status, ShouldEqual, interfaces.ResourceStatusActive)
 					return []*interfaces.Resource{}, int64(0), nil
 				})
 
-			req := httptest.NewRequest(http.MethodGet, url+"?category=dataset&status=active", nil)
+			req := httptest.NewRequest(http.MethodGet, url+"?name=orders&category=dataset&status=active", nil)
 			w := httptest.NewRecorder()
 			engine.ServeHTTP(w, req)
 

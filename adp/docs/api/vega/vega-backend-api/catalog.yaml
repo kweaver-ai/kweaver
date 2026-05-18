@@ -52,12 +52,17 @@ paths:
     get:
       summary: 获取 catalog 列表
       description: |
-        分页获取 catalog；支持按 tag、type、health_check_status 过滤。
+        分页获取 catalog；支持按 name、tag、type、health_check_status 过滤。
 
         **KV 筛选**：`extension_key` / `extension_value` 为数组 query。
         序列化形如 `extension_key=a&extension_key=b&extension_value=1&extension_value=2`。参与筛选的一组参数 **必须等长**，
         按下标配对为 AND 等值条件；长度不一致或未成对 → 400。
       parameters:
+        - name: name
+          description: 按名称模糊过滤，匹配名称中包含该值的 catalog
+          in: query
+          schema:
+            type: string
         - name: tag
           description: 按标签精确过滤
           in: query

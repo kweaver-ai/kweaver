@@ -181,9 +181,10 @@ func Test_ConnectorTypeRestHandler_ListConnectorTypes(t *testing.T) {
 			So(w.Body.String(), ShouldContainSubstring, "invalid category: unknown")
 		})
 
-		Convey("Success list connector types with mode category and enabled\n", func() {
+		Convey("Success list connector types with name mode category and enabled\n", func() {
 			cts.EXPECT().List(gomock.Any(), gomock.Any()).
 				DoAndReturn(func(_ context.Context, params interfaces.ConnectorTypesQueryParams) ([]*interfaces.ConnectorType, int64, error) {
+					So(params.Name, ShouldEqual, "share")
 					So(params.Mode, ShouldEqual, interfaces.ConnectorModeLocal)
 					So(params.Category, ShouldEqual, interfaces.ConnectorCategoryFileset)
 					So(params.Enabled, ShouldNotBeNil)
@@ -191,7 +192,7 @@ func Test_ConnectorTypeRestHandler_ListConnectorTypes(t *testing.T) {
 					return []*interfaces.ConnectorType{}, int64(0), nil
 				})
 
-			req := httptest.NewRequest(http.MethodGet, url+"?mode=local&category=fileset&enabled=true", nil)
+			req := httptest.NewRequest(http.MethodGet, url+"?name=share&mode=local&category=fileset&enabled=true", nil)
 			w := httptest.NewRecorder()
 			engine.ServeHTTP(w, req)
 

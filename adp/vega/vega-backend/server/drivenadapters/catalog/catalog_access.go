@@ -460,6 +460,10 @@ func (ca *catalogAccess) ListIDs(ctx context.Context, params interfaces.Catalogs
 
 	builder := sq.Select(catalogExtCol(params, "f_id")).From(CATALOG_TABLE_NAME)
 
+	if params.Name != "" {
+		name := "%" + params.Name + "%"
+		builder = builder.Where(sq.Like{catalogExtCol(params, "f_name"): name})
+	}
 	if params.Tag != "" {
 		tag := "%" + params.Tag + "%"
 		builder = builder.Where(sq.Like{catalogExtCol(params, "f_tags"): tag})
@@ -540,6 +544,11 @@ func (ca *catalogAccess) List(ctx context.Context, params interfaces.CatalogsQue
 
 	countBuilder := sq.Select("COUNT(*)").From(CATALOG_TABLE_NAME)
 
+	if params.Name != "" {
+		name := "%" + params.Name + "%"
+		builder = builder.Where(sq.Like{catalogExtCol(params, "f_name"): name})
+		countBuilder = countBuilder.Where(sq.Like{catalogExtCol(params, "f_name"): name})
+	}
 	if params.Tag != "" {
 		tag := "%" + params.Tag + "%"
 		builder = builder.Where(sq.Like{catalogExtCol(params, "f_tags"): tag})

@@ -45,6 +45,7 @@ func (r *restHandler) ListConnectorTypes(c *gin.Context) {
 	oteltrace.AddHttpAttrs4API(span, oteltrace.GetAttrsByGinCtx(c))
 
 	// 获取查询参数
+	name := strings.TrimSpace(c.Query("name"))
 	tag := strings.TrimSpace(c.Query("tag"))
 	var enabled *bool
 	if enabledStr := c.Query("enabled"); enabledStr != "" {
@@ -83,6 +84,7 @@ func (r *restHandler) ListConnectorTypes(c *gin.Context) {
 
 	params := interfaces.ConnectorTypesQueryParams{
 		PaginationQueryParams: pageParam,
+		Name:                  name,
 		Tag:                   tag,
 		Mode:                  mode,
 		Category:              category,

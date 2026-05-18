@@ -59,6 +59,7 @@ func (r *restHandler) listResources(c *gin.Context, visitor hydra.Visitor) {
 
 	oteltrace.AddHttpAttrs4API(span, oteltrace.GetAttrsByGinCtx(c))
 
+	name := strings.TrimSpace(c.Query("name"))
 	catalogID := c.Query("catalog_id")
 	category := c.Query("category")
 	status := c.Query("status")
@@ -87,6 +88,7 @@ func (r *restHandler) listResources(c *gin.Context, visitor hydra.Visitor) {
 
 	params := interfaces.ResourcesQueryParams{
 		PaginationQueryParams: pageParam,
+		Name:                  name,
 		CatalogID:             catalogID,
 		Category:              category,
 		Status:                status,

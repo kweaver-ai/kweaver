@@ -18,6 +18,7 @@ func Test_ValidateDiscoverScheduleRequest(t *testing.T) {
 	Convey("Test ValidateDiscoverScheduleRequest\n", t, func() {
 		validReq := func() *interfaces.DiscoverScheduleRequest {
 			return &interfaces.DiscoverScheduleRequest{
+				Name:       "schedule-1",
 				CatalogID:  "catalog-1",
 				CronExpr:   "*/5 * * * *",
 				StartTime:  1000,
@@ -29,6 +30,13 @@ func Test_ValidateDiscoverScheduleRequest(t *testing.T) {
 		Convey("Valid request\n", func() {
 			err := ValidateDiscoverScheduleRequest(context.Background(), validReq())
 			So(err, ShouldBeNil)
+		})
+
+		Convey("Missing name\n", func() {
+			req := validReq()
+			req.Name = ""
+			err := ValidateDiscoverScheduleRequest(context.Background(), req)
+			So(err, ShouldNotBeNil)
 		})
 
 		Convey("Missing catalog ID\n", func() {

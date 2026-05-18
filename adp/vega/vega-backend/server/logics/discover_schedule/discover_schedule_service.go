@@ -75,6 +75,7 @@ func (dss *discoverScheduleService) Create(ctx context.Context, req *interfaces.
 	now := time.Now().UnixMilli()
 	schedule := &interfaces.DiscoverSchedule{
 		ID:         xid.New().String(),
+		Name:       req.Name,
 		CatalogID:  req.CatalogID,
 		CronExpr:   req.CronExpr,
 		StartTime:  req.StartTime,
@@ -130,6 +131,7 @@ func (dss *discoverScheduleService) Update(ctx context.Context, schedule *interf
 	}
 
 	schedule.CronExpr = req.CronExpr
+	schedule.Name = req.Name
 	schedule.StartTime = req.StartTime
 	schedule.EndTime = req.EndTime
 	schedule.Strategies = req.Strategies

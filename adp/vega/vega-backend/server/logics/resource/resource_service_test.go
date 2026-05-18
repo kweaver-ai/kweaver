@@ -408,13 +408,11 @@ func TestUpdateStatus_Error(t *testing.T) {
 
 // ===== Update =====
 
-func TestUpdate_NilOrigin(t *testing.T) {
+func TestUpdate_NilResource(t *testing.T) {
 	rs, _, _, _, _, _, _ := newTestService(t)
-	err := rs.Update(context.Background(), "r1", &interfaces.ResourceRequest{
-		OriginResource: nil,
-	})
+	err := rs.Update(context.Background(), nil, &interfaces.ResourceRequest{})
 	if err == nil {
-		t.Fatal("expected error for nil origin resource")
+		t.Fatal("expected error for nil resource")
 	}
 }
 
@@ -424,9 +422,8 @@ func TestUpdate_Success(t *testing.T) {
 	mockCS.EXPECT().CheckExistByID(gomock.Any(), gomock.Any()).Return(true, nil)
 	mockRA.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 
-	err := rs.Update(context.Background(), "r1", &interfaces.ResourceRequest{
-		OriginResource: &interfaces.Resource{ID: "r1"},
-		Name:           "updated",
+	err := rs.Update(context.Background(), &interfaces.Resource{ID: "r1", Name: "updated"}, &interfaces.ResourceRequest{
+		Name: "updated",
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

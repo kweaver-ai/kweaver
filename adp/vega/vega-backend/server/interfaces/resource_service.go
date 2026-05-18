@@ -24,7 +24,7 @@ type ResourceService interface {
 	// List lists Resources with filters.
 	List(ctx context.Context, params ResourcesQueryParams) ([]*Resource, int64, error)
 	// Update updates a Resource.
-	Update(ctx context.Context, id string, req *ResourceRequest) error
+	Update(ctx context.Context, resource *Resource, req *ResourceRequest) error
 	// UpdateStatus updates a Resource's status.
 	UpdateStatus(ctx context.Context, id string, status string, statusMessage string) error
 	// DeleteByIDs deletes Resources by IDs.

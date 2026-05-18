@@ -382,7 +382,6 @@ func (r *restHandler) updateCatalog(c *gin.Context, visitor hydra.Visitor) {
 		rest.ReplyError(c, httpErr)
 		return
 	}
-	req.OriginCatalog = catalog
 
 	// Validate immutable fields
 	// connector_type cannot be modified
@@ -452,10 +451,9 @@ func (r *restHandler) updateCatalog(c *gin.Context, visitor hydra.Visitor) {
 			rest.ReplyError(c, httpErr)
 			return
 		}
-		req.IfNameModify = true
 	}
 
-	if err := r.cs.Update(ctx, id, &req); err != nil {
+	if err := r.cs.Update(ctx, catalog, &req); err != nil {
 		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)

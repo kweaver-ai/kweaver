@@ -76,7 +76,7 @@ func Test_ConnectorTypeRestHandler_UpdateConnectorType(t *testing.T) {
 					Mode:     interfaces.ConnectorModeLocal,
 					Category: interfaces.ConnectorCategoryTable,
 				}, nil)
-			cts.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+			cts.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			reqParamByte, _ := sonic.Marshal(reqData)
 			req := httptest.NewRequest(http.MethodPut, url, bytes.NewReader(reqParamByte))
@@ -101,7 +101,7 @@ func Test_ConnectorTypeRestHandler_UpdateConnectorType(t *testing.T) {
 					Mode:     interfaces.ConnectorModeLocal,
 					Category: interfaces.ConnectorCategoryFileset,
 				}, nil)
-			cts.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+			cts.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 			reqParamByte, _ := sonic.Marshal(reqData)
 			req := httptest.NewRequest(http.MethodPut, url, bytes.NewReader(reqParamByte))

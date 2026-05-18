@@ -443,15 +443,15 @@ func (cs *catalogService) List(ctx context.Context, params interfaces.CatalogsQu
 }
 
 // Update updates a Catalog.
-func (cs *catalogService) Update(ctx context.Context, id string, req *interfaces.CatalogRequest) error {
+func (cs *catalogService) Update(ctx context.Context, catalog *interfaces.Catalog, req *interfaces.CatalogRequest) error {
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "Update catalog")
 	defer span.End()
 
-	catalog := req.OriginCatalog
 	if catalog == nil {
 		span.SetStatus(codes.Error, "Catalog not found")
 		return rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_Catalog_NotFound)
 	}
+	nameModified := req.Name != catalog.Name
 
 	// 判断userid是否有修改权限
 	err := cs.ps.CheckPermission(ctx, interfaces.PermissionResource{
@@ -530,7 +530,7 @@ func (cs *catalogService) Update(ctx context.Context, id string, req *interfaces
 	}
 
 	// 请求更新资源名称的接口，更新资源的名称
-	if req.IfNameModify {
+	if nameModified {
 		err = cs.ps.UpdateResource(ctx, interfaces.PermissionResource{
 			ID:   catalog.ID,
 			Type: interfaces.RESOURCE_TYPE_CATALOG,

@@ -14,7 +14,7 @@ type ConnectorTypeService interface {
 	// Register 注册 connector 类型
 	Register(ctx context.Context, ct *ConnectorTypeReq) error
 	// Update 更新 connector 类型
-	Update(ctx context.Context, ct *ConnectorTypeReq) error
+	Update(ctx context.Context, ct *ConnectorType, req *ConnectorTypeReq) error
 	// Delete 删除 connector 类型
 	DeleteByType(ctx context.Context, tp string) error
 	// GetByType 根据类型获取 connector 类型

@@ -455,15 +455,15 @@ func (rs *resourceService) List(ctx context.Context, params interfaces.Resources
 }
 
 // Update updates a Resource.
-func (rs *resourceService) Update(ctx context.Context, id string, req *interfaces.ResourceRequest) error {
+func (rs *resourceService) Update(ctx context.Context, resource *interfaces.Resource, req *interfaces.ResourceRequest) error {
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "Update resource")
 	defer span.End()
 
-	resource := req.OriginResource
 	if resource == nil {
 		span.SetStatus(codes.Error, "Resource not found")
 		return rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_Resource_NotFound)
 	}
+	nameModified := req.Name != resource.Name
 
 	// 判断userid是否有修改权限
 	err := rs.ps.CheckPermission(ctx, interfaces.PermissionResource{
@@ -474,7 +474,7 @@ func (rs *resourceService) Update(ctx context.Context, id string, req *interface
 		return err
 	}
 
-	switch req.OriginResource.Category {
+	switch resource.Category {
 	case interfaces.ResourceCategoryLogicView:
 		logicType, err := rs.validateLogicDefinition(ctx, req)
 		if err != nil {
@@ -537,7 +537,7 @@ func (rs *resourceService) Update(ctx context.Context, id string, req *interface
 	}
 
 	// 请求更新资源名称的接口，更新资源的名称
-	if req.IfNameModify {
+	if nameModified {
 		err = rs.ps.UpdateResource(ctx, interfaces.PermissionResource{
 			ID:   resource.ID,
 			Type: interfaces.RESOURCE_TYPE_RESOURCE,

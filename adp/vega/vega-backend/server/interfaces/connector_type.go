@@ -106,7 +106,4 @@ type ConnectorTypeReq struct {
 	Endpoint    string                          `json:"endpoint"`     // 仅 remote 模式，远程服务地址
 	FieldConfig map[string]ConnectorFieldConfig `json:"field_config"` // 字段配置（兼容 JSON Schema properties）
 	Enabled     bool                            `json:"enabled"`      // 是否启用
-
-	IfNameModify        bool           `json:"-"`
-	OriginConnectorType *ConnectorType `json:"-"`
 }

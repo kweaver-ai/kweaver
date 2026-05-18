@@ -94,12 +94,12 @@ type PropertyFeature struct {
 // ResourcesQueryParams holds resource list query parameters.
 type ResourcesQueryParams struct {
 	PaginationQueryParams
-	CatalogID string
-	Category  string
-	Status    string
-	Database  string
-	ExtensionKeys   []string
-	ExtensionValues []string
+	CatalogID            string
+	Category             string
+	Status               string
+	Database             string
+	ExtensionKeys        []string
+	ExtensionValues      []string
 	IncludeExtensions    bool
 	IncludeExtensionKeys string
 }
@@ -123,9 +123,6 @@ type ResourceRequest struct {
 	LogicDefinition  []*LogicDefinitionNode `json:"logic_definition,omitempty"`  // 逻辑定义
 
 	Extensions *map[string]string `json:"extensions,omitempty"`
-
-	IfNameModify   bool      `json:"-"`
-	OriginResource *Resource `json:"-"`
 }
 
 type ListResourcesQueryParams struct {

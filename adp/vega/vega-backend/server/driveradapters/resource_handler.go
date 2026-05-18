@@ -369,7 +369,6 @@ func (r *restHandler) updateResource(c *gin.Context, visitor hydra.Visitor) {
 		rest.ReplyError(c, httpErr)
 		return
 	}
-	req.OriginResource = resource
 
 	// Apply updates
 	if req.Name != resource.Name {
@@ -387,10 +386,9 @@ func (r *restHandler) updateResource(c *gin.Context, visitor hydra.Visitor) {
 			rest.ReplyError(c, httpErr)
 			return
 		}
-		req.IfNameModify = true
 	}
 
-	if err := r.rs.Update(ctx, id, &req); err != nil {
+	if err := r.rs.Update(ctx, resource, &req); err != nil {
 		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)

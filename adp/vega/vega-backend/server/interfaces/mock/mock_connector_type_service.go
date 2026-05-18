@@ -145,15 +145,15 @@ func (mr *MockConnectorTypeServiceMockRecorder) SetEnabled(ctx, tp, enabled any)
 }
 
 // Update mocks base method.
-func (m *MockConnectorTypeService) Update(ctx context.Context, ct *interfaces.ConnectorTypeReq) error {
+func (m *MockConnectorTypeService) Update(ctx context.Context, ct *interfaces.ConnectorType, req *interfaces.ConnectorTypeReq) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, ct)
+	ret := m.ctrl.Call(m, "Update", ctx, ct, req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockConnectorTypeServiceMockRecorder) Update(ctx, ct any) *gomock.Call {
+func (mr *MockConnectorTypeServiceMockRecorder) Update(ctx, ct, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConnectorTypeService)(nil).Update), ctx, ct)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConnectorTypeService)(nil).Update), ctx, ct, req)
 }

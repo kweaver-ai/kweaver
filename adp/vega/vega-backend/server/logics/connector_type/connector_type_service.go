@@ -186,15 +186,15 @@ func (cts *connectorTypeService) List(ctx context.Context, params interfaces.Con
 }
 
 // Update updates a ConnectorType.
-func (cts *connectorTypeService) Update(ctx context.Context, req *interfaces.ConnectorTypeReq) error {
+func (cts *connectorTypeService) Update(ctx context.Context, ct *interfaces.ConnectorType, req *interfaces.ConnectorTypeReq) error {
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "Update connector type")
 	defer span.End()
 
-	ct := req.OriginConnectorType
 	if ct == nil {
 		span.SetStatus(codes.Error, "Connector type not found")
 		return rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_ConnectorType_NotFound)
 	}
+	nameModified := req.Name != ct.Name
 
 	// 判断userid是否有创建业务知识网络的权限（策略决策）
 	err := cts.ps.CheckPermission(ctx, interfaces.PermissionResource{
@@ -242,7 +242,7 @@ func (cts *connectorTypeService) Update(ctx context.Context, req *interfaces.Con
 	}
 
 	// 请求更新资源名称的接口，更新资源的名称
-	if req.IfNameModify {
+	if nameModified {
 		err = cts.ps.UpdateResource(ctx, interfaces.PermissionResource{
 			ID:   ct.Type,
 			Type: interfaces.RESOURCE_TYPE_CONNECTOR_TYPE,

@@ -208,17 +208,17 @@ func (mr *MockResourceServiceMockRecorder) ListResourceSrcs(ctx, params any) *go
 }
 
 // Update mocks base method.
-func (m *MockResourceService) Update(ctx context.Context, id string, req *interfaces.ResourceRequest) error {
+func (m *MockResourceService) Update(ctx context.Context, resource *interfaces.Resource, req *interfaces.ResourceRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, req)
+	ret := m.ctrl.Call(m, "Update", ctx, resource, req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockResourceServiceMockRecorder) Update(ctx, id, req any) *gomock.Call {
+func (mr *MockResourceServiceMockRecorder) Update(ctx, resource, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockResourceService)(nil).Update), ctx, id, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockResourceService)(nil).Update), ctx, resource, req)
 }
 
 // UpdateResource mocks base method.

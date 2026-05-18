@@ -280,7 +280,6 @@ func (r *restHandler) UpdateConnectorType(c *gin.Context) {
 		rest.ReplyError(c, httpErr)
 		return
 	}
-	req.OriginConnectorType = connectorType
 
 	// Apply updates
 	if req.Name != connectorType.Name {
@@ -297,10 +296,9 @@ func (r *restHandler) UpdateConnectorType(c *gin.Context) {
 			rest.ReplyError(c, httpErr)
 			return
 		}
-		req.IfNameModify = true
 	}
 
-	if err := r.cts.Update(ctx, &req); err != nil {
+	if err := r.cts.Update(ctx, connectorType, &req); err != nil {
 		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)

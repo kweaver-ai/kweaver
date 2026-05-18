@@ -67,8 +67,8 @@ type CatalogsQueryParams struct {
 	Type              string
 	HealthCheckStatus string
 	// ExtensionKeys / ExtensionValues 成对等长，多对 AND（列表筛选）
-	ExtensionKeys   []string
-	ExtensionValues []string
+	ExtensionKeys        []string
+	ExtensionValues      []string
 	IncludeExtensions    bool
 	IncludeExtensionKeys string
 }
@@ -84,9 +84,6 @@ type CatalogRequest struct {
 
 	// Extensions 根对象出现该键（含 null 需客户端避免）时整包替换；指针为 nil 表示请求体未携带该字段
 	Extensions *map[string]string `json:"extensions,omitempty"`
-
-	IfNameModify  bool     `json:"-"`
-	OriginCatalog *Catalog `json:"-"`
 }
 
 type ListCatalogsQueryParams struct {

@@ -20,9 +20,9 @@ type BuildTaskService interface {
 	// ListBuildTasks retrieves build tasks with filters and pagination.
 	ListBuildTasks(ctx context.Context, params BuildTasksQueryParams) ([]*BuildTask, int64, error)
 	// StartBuildTask transitions a task from {init, stopped} to running (asynchronous; status persisted by worker).
-	StartBuildTask(ctx context.Context, taskID string, executeType string) (*BuildTask, error)
+	StartBuildTask(ctx context.Context, taskID string, executeType string) error
 	// StopBuildTask transitions a task from running to stopping (asynchronous; status persisted by worker).
-	StopBuildTask(ctx context.Context, taskID string) (*BuildTask, error)
+	StopBuildTask(ctx context.Context, taskID string) error
 	// DeleteBuildTasks atomically deletes build tasks by IDs.
 	// Pre-validates: any missing id returns 404 unless ignoreMissing=true; any running/stopping id returns 409 (cannot be skipped).
 	DeleteBuildTasks(ctx context.Context, ids []string, ignoreMissing bool) error

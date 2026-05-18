@@ -248,7 +248,7 @@ func (bts *buildTaskService) ListBuildTasks(ctx context.Context, params interfac
 
 // StartBuildTask transitions a task from {init/stopped/completed, failed task auto retry} to running.
 // Note: persisted status remains init/stopped/completed until the worker picks it up — clients should poll.
-func (bts *buildTaskService) StartBuildTask(ctx context.Context, taskID string, executeType string) (*interfaces.BuildTask, error) {
+func (bts *buildTaskService) StartBuildTask(ctx context.Context, taskID string, executeType string) error {
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "Start build task")
 	defer span.End()
 
@@ -257,23 +257,25 @@ func (bts *buildTaskService) StartBuildTask(ctx context.Context, taskID string, 
 	}
 	if executeType != interfaces.BuildTaskExecuteTypeIncremental && executeType != interfaces.BuildTaskExecuteTypeFull {
 		span.SetStatus(codes.Error, "Invalid execute type")
-		return nil, rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_BuildTask_InvalidExecuteType).
+		return rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_BuildTask_InvalidExecuteType).
 			WithErrorDetails("Invalid execute type")
 	}
 
 	buildTask, err := bts.bta.GetByID(ctx, taskID)
 	if err != nil {
 		span.SetStatus(codes.Error, "Get build task failed")
-		return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_GetFailed).
+		return rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_GetFailed).
 			WithErrorDetails(err.Error())
 	}
 	if buildTask == nil {
 		span.SetStatus(codes.Error, "Build task not found")
-		return nil, rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_BuildTask_NotFound)
+		return rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_BuildTask_NotFound)
 	}
-	if buildTask.Status != interfaces.BuildTaskStatusInit && buildTask.Status != interfaces.BuildTaskStatusStopped && buildTask.Status != interfaces.BuildTaskStatusCompleted {
+	if buildTask.Status != interfaces.BuildTaskStatusInit &&
+		buildTask.Status != interfaces.BuildTaskStatusStopped &&
+		buildTask.Status != interfaces.BuildTaskStatusCompleted {
 		span.SetStatus(codes.Error, "Invalid state transition for start")
-		return nil, rest.NewHTTPError(ctx, http.StatusConflict, verrors.VegaBackend_BuildTask_InvalidStateTransition).
+		return rest.NewHTTPError(ctx, http.StatusConflict, verrors.VegaBackend_BuildTask_InvalidStateTransition).
 			WithErrorDetails(fmt.Sprintf("cannot start task in status: %s", buildTask.Status))
 	}
 
@@ -304,28 +306,28 @@ func (bts *buildTaskService) StartBuildTask(ctx context.Context, taskID string, 
 	}
 
 	span.SetStatus(codes.Ok, "")
-	return buildTask, nil
+	return nil
 }
 
 // StopBuildTask transitions a task from running to stopping.
 // Note: persisted status remains running until the worker advances it — clients should poll.
-func (bts *buildTaskService) StopBuildTask(ctx context.Context, taskID string) (*interfaces.BuildTask, error) {
+func (bts *buildTaskService) StopBuildTask(ctx context.Context, taskID string) error {
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "Stop build task")
 	defer span.End()
 
 	buildTask, err := bts.bta.GetByID(ctx, taskID)
 	if err != nil {
 		span.SetStatus(codes.Error, "Get build task failed")
-		return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_GetFailed).
+		return rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_GetFailed).
 			WithErrorDetails(err.Error())
 	}
 	if buildTask == nil {
 		span.SetStatus(codes.Error, "Build task not found")
-		return nil, rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_BuildTask_NotFound)
+		return rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_BuildTask_NotFound)
 	}
 	if buildTask.Status != interfaces.BuildTaskStatusRunning {
 		span.SetStatus(codes.Error, "Invalid state transition for stop")
-		return nil, rest.NewHTTPError(ctx, http.StatusConflict, verrors.VegaBackend_BuildTask_InvalidStateTransition).
+		return rest.NewHTTPError(ctx, http.StatusConflict, verrors.VegaBackend_BuildTask_InvalidStateTransition).
 			WithErrorDetails(fmt.Sprintf("cannot stop task in status: %s", buildTask.Status))
 	}
 
@@ -334,12 +336,12 @@ func (bts *buildTaskService) StopBuildTask(ctx context.Context, taskID string) (
 	}
 	if err := bts.bta.UpdateStatus(ctx, taskID, updates); err != nil {
 		otellog.LogError(ctx, "Update build task status failed", err)
-		return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_UpdateFailed).
+		return rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_UpdateFailed).
 			WithErrorDetails(err.Error())
 	}
 
 	span.SetStatus(codes.Ok, "")
-	return buildTask, nil
+	return nil
 }
 
 // DeleteBuildTasks atomically deletes build tasks by IDs after pre-validating existence and status.

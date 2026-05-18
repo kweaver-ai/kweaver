@@ -330,8 +330,7 @@ func (r *restHandler) startBuildTask(c *gin.Context, visitor hydra.Visitor) {
 	// body is optional; bind errors are tolerated
 	_ = c.ShouldBindJSON(&req)
 
-	buildTask, err := r.bts.StartBuildTask(ctx, taskID, req.ExecuteType)
-	if err != nil {
+	if err := r.bts.StartBuildTask(ctx, taskID, req.ExecuteType); err != nil {
 		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
@@ -341,8 +340,8 @@ func (r *restHandler) startBuildTask(c *gin.Context, visitor hydra.Visitor) {
 	audit.NewInfoLog(audit.OPERATION, "start", audit.TransforOperator(visitor),
 		interfaces.GenerateResourceAuditObject(taskID, ""), "")
 
-	oteltrace.AddHttpAttrs4Ok(span, http.StatusOK)
-	rest.ReplyOK(c, http.StatusOK, buildTask)
+	oteltrace.AddHttpAttrs4Ok(span, http.StatusAccepted)
+	rest.ReplyOK(c, http.StatusAccepted, nil)
 }
 
 // =========================== POST /build-tasks/:id/stop ===========================
@@ -372,8 +371,7 @@ func (r *restHandler) stopBuildTask(c *gin.Context, visitor hydra.Visitor) {
 	oteltrace.AddHttpAttrs4API(span, oteltrace.GetAttrsByGinCtx(c))
 
 	taskID := c.Param("id")
-	buildTask, err := r.bts.StopBuildTask(ctx, taskID)
-	if err != nil {
+	if err := r.bts.StopBuildTask(ctx, taskID); err != nil {
 		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
@@ -383,8 +381,8 @@ func (r *restHandler) stopBuildTask(c *gin.Context, visitor hydra.Visitor) {
 	audit.NewInfoLog(audit.OPERATION, "stop", audit.TransforOperator(visitor),
 		interfaces.GenerateResourceAuditObject(taskID, ""), "")
 
-	oteltrace.AddHttpAttrs4Ok(span, http.StatusOK)
-	rest.ReplyOK(c, http.StatusOK, buildTask)
+	oteltrace.AddHttpAttrs4Ok(span, http.StatusAccepted)
+	rest.ReplyOK(c, http.StatusAccepted, nil)
 }
 
 // =========================== helpers ===========================

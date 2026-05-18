@@ -16,9 +16,11 @@ import (
 	"github.com/kweaver-ai/kweaver-go-lib/audit"
 	"github.com/kweaver-ai/kweaver-go-lib/hydra"
 	"github.com/kweaver-ai/kweaver-go-lib/logger"
+	"github.com/kweaver-ai/kweaver-go-lib/otel/otellog"
 	"github.com/kweaver-ai/kweaver-go-lib/otel/oteltrace"
 	"github.com/kweaver-ai/kweaver-go-lib/rest"
 
+	"vega-backend/common"
 	"vega-backend/common/visitor"
 	verrors "vega-backend/errors"
 	"vega-backend/interfaces"
@@ -49,21 +51,32 @@ func (r *restHandler) listDiscoverTasks(c *gin.Context, visitor hydra.Visitor) {
 	ctx = context.WithValue(ctx, interfaces.ACCOUNT_INFO_KEY, accountInfo)
 	oteltrace.AddHttpAttrs4API(span, oteltrace.GetAttrsByGinCtx(c))
 
-	var params interfaces.DiscoverTaskQueryParams
-	if err := c.ShouldBindQuery(&params); err != nil {
-		httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_InvalidParameter_RequestBody).
-			WithErrorDetails(err.Error())
+	offset := common.GetQueryOrDefault(c, "offset", interfaces.DEFAULT_OFFSET)
+	limit := common.GetQueryOrDefault(c, "limit", interfaces.DEFAULT_LIMIT)
+	sort := common.GetQueryOrDefault(c, "sort", "create_time")
+	direction := common.GetQueryOrDefault(c, "direction", interfaces.DESC_DIRECTION)
+
+	pageParam, err := validatePaginationQueryParams(ctx,
+		offset, limit, sort, direction, interfaces.DISCOVER_TASK_SORT)
+	if err != nil {
+		httpErr := err.(*rest.HTTPError)
+		otellog.LogError(ctx, fmt.Sprintf("%s. %v", httpErr.BaseError.Description,
+			httpErr.BaseError.ErrorDetails), nil)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
 		return
 	}
-	if params.Limit == 0 {
-		params.Limit = 20
+
+	params := interfaces.DiscoverTaskQueryParams{
+		PaginationQueryParams: pageParam,
+		CatalogID:             c.Query("catalog_id"),
+		ScheduleID:            c.Query("schedule_id"),
+		Status:                c.Query("status"),
+		TriggerType:           c.Query("trigger_type"),
 	}
 
-	if params.Status != "" && !isValidDiscoverTaskStatus(params.Status) {
-		httpErr := rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_DiscoverTask_InvalidStatus).
-			WithErrorDetails(fmt.Sprintf("invalid status: %s", params.Status))
+	if err := ValidateDiscoverTaskQueryParams(ctx, params); err != nil {
+		httpErr := err.(*rest.HTTPError)
 		oteltrace.AddHttpAttrs4HttpError(span, httpErr)
 		rest.ReplyError(c, httpErr)
 		return
@@ -191,17 +204,4 @@ func (r *restHandler) deleteDiscoverTasks(c *gin.Context, visitor hydra.Visitor)
 	logger.Debug("Handler DeleteDiscoverTasksByEx Success")
 	oteltrace.AddHttpAttrs4Ok(span, http.StatusNoContent)
 	rest.ReplyOK(c, http.StatusNoContent, nil)
-}
-
-// =========================== helpers ===========================
-
-func isValidDiscoverTaskStatus(s string) bool {
-	switch s {
-	case interfaces.DiscoverTaskStatusPending,
-		interfaces.DiscoverTaskStatusRunning,
-		interfaces.DiscoverTaskStatusCompleted,
-		interfaces.DiscoverTaskStatusFailed:
-		return true
-	}
-	return false
 }

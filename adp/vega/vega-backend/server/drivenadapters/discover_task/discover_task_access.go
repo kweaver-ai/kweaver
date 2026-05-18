@@ -301,7 +301,11 @@ func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.Discov
 	if params.Limit > 0 {
 		builder = builder.Limit(uint64(params.Limit)).Offset(uint64(params.Offset))
 	}
-	builder = builder.OrderBy("f_create_time DESC")
+	if params.Sort != "" && params.Direction != "" {
+		builder = builder.OrderBy(fmt.Sprintf("%s %s", params.Sort, params.Direction))
+	} else {
+		builder = builder.OrderBy("f_create_time DESC")
+	}
 
 	sqlStr, vals, err := builder.ToSql()
 	if err != nil {

@@ -327,7 +327,7 @@ func (dsa *discoverScheduleAccess) List(ctx context.Context, params interfaces.D
 
 	// Apply filters
 	if params.Name != "" {
-		name := "%" + params.Name + "%"
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
 		builder = builder.Where(sq.Like{"f_name": name})
 	}
 	if params.CatalogID != "" {
@@ -340,7 +340,7 @@ func (dsa *discoverScheduleAccess) List(ctx context.Context, params interfaces.D
 	// Get total count
 	countBuilder := sq.Select("COUNT(*)").From(DISCOVER_SCHEDULE_TABLE_NAME)
 	if params.Name != "" {
-		name := "%" + params.Name + "%"
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
 		countBuilder = countBuilder.Where(sq.Like{"f_name": name})
 	}
 	if params.CatalogID != "" {

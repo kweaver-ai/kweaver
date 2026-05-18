@@ -561,7 +561,7 @@ func (ra *resourceAccess) ListIDs(ctx context.Context, params interfaces.Resourc
 	builder := sq.Select(resourceExtCol(params, "f_id")).From(RESOURCE_TABLE_NAME)
 
 	if params.Name != "" {
-		name := "%" + params.Name + "%"
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
 		builder = builder.Where(sq.Like{resourceExtCol(params, "f_name"): name})
 	}
 	if params.CatalogID != "" {
@@ -646,7 +646,7 @@ func (ra *resourceAccess) List(ctx context.Context, params interfaces.ResourcesQ
 	countBuilder := sq.Select("COUNT(*)").From(RESOURCE_TABLE_NAME)
 
 	if params.Name != "" {
-		name := "%" + params.Name + "%"
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
 		builder = builder.Where(sq.Like{resourceExtCol(params, "f_name"): name})
 		countBuilder = countBuilder.Where(sq.Like{resourceExtCol(params, "f_name"): name})
 	}
@@ -975,7 +975,7 @@ func (ra *resourceAccess) ListResourceSrcsIDs(ctx context.Context, params interf
 	}
 
 	if params.Keyword != "" {
-		keyword := "%" + params.Keyword + "%"
+		keyword := "%" + common.EscapeLikePattern(params.Keyword) + "%"
 		builder = builder.Where(sq.Like{"f_name": keyword})
 	}
 
@@ -1078,7 +1078,7 @@ func (ra *resourceAccess) ListResourceSrcs(ctx context.Context, params interface
 	}
 
 	if params.Keyword != "" {
-		keyword := "%" + params.Keyword + "%"
+		keyword := "%" + common.EscapeLikePattern(params.Keyword) + "%"
 		builder = builder.Where(sq.Like{"f_name": keyword})
 		countBuilder = countBuilder.Where(sq.Like{"f_name": keyword})
 	}

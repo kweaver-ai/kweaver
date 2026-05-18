@@ -26,6 +26,7 @@ type DiscoverSchedule struct {
 
 var (
 	DISCOVER_SCHEDULE_SORT = map[string]string{
+		"name":        "f_name",
 		"create_time": "f_create_time",
 		"update_time": "f_update_time",
 		"next_run":    "f_next_run",

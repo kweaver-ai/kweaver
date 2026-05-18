@@ -228,7 +228,7 @@ func (cta *connectorTypeAccess) List(ctx context.Context, params interfaces.Conn
 
 	// Apply filters
 	if params.Name != "" {
-		name := "%" + params.Name + "%"
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
 		builder = builder.Where(sq.Like{"f_name": name})
 		countBuilder = countBuilder.Where(sq.Like{"f_name": name})
 	}

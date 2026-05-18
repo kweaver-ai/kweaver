@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fjelstul 世界杯 · BKN 知识网络结构</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --ink-900: #0f172a;
+    --ink-700: #334155;
+    --ink-500: #64748b;
+    --ink-400: #94a3b8;
+    --line: #e2e8f0;
+    --line-soft: #f1f5f9;
+
+    --c-comp: #2563eb;  --c-comp-bg: #eff6ff;  --c-comp-soft: #dbeafe;
+    --c-part: #059669;  --c-part-bg: #ecfdf5;  --c-part-soft: #d1fae5;
+    --c-evt:  #d97706;  --c-evt-bg:  #fffbeb;  --c-evt-soft:  #fef3c7;
+    --c-hon:  #7c3aed;  --c-hon-bg:  #f5f3ff;  --c-hon-soft:  #ede9fe;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink-900);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;
+    font-size: 14px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1280px; margin: 0 auto; padding: 40px 32px 64px; }
+
+  /* ── Header ──────────────────────────────────────────────────────── */
+  header { margin-bottom: 32px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-500); font-weight: 500;
+  }
+  h1 {
+    margin: 6px 0 4px;
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--ink-900);
+  }
+  .subtitle { color: var(--ink-500); font-size: 14px; }
+  .stats {
+    display: flex; gap: 28px; margin-top: 18px; padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat .v { font-size: 22px; font-weight: 600; color: var(--ink-900); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--ink-500); }
+
+  /* ── Section heading ─────────────────────────────────────────────── */
+  .section-title {
+    display: flex; align-items: baseline; gap: 10px;
+    margin: 40px 0 16px;
+  }
+  .section-title h2 {
+    margin: 0; font-size: 14px; font-weight: 600;
+    color: var(--ink-700); letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .section-title .hint { font-size: 13px; color: var(--ink-400); }
+
+  /* ── Diagram ─────────────────────────────────────────────────────── */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; min-width: 880px; }
+  .diagram-legend {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    font-size: 12px; color: var(--ink-500);
+    display: flex; flex-wrap: wrap; gap: 18px;
+  }
+  .diagram-legend .swatch {
+    display: inline-block; width: 24px; height: 12px;
+    border: 1.5px solid var(--ink-400); border-radius: 3px;
+    vertical-align: middle; margin-right: 6px;
+  }
+  .diagram-legend .swatch.dashed {
+    border-style: dashed; opacity: 0.55;
+  }
+  .diagram-legend .swatch.hub {
+    border-width: 2px; border-color: var(--ink-900);
+  }
+
+  /* SVG token styling */
+  .node-bg { fill: var(--surface); stroke-width: 1.5; }
+  .node-bg.isolated { stroke-dasharray: 3 3; opacity: 0.55; }
+  .node-title { font: 600 12px -apple-system, "Segoe UI", "PingFang SC", sans-serif; }
+  .node-title.isolated { opacity: 0.7; }
+  .node-sub { font: 11px -apple-system, "Segoe UI", "PingFang SC", sans-serif; fill: var(--ink-500); }
+  .node-sub.isolated { opacity: 0.7; }
+  .edge { fill: none; stroke: var(--ink-400); stroke-width: 1.25; }
+  .edge-strong { stroke: var(--ink-700); stroke-width: 1.5; }
+  .edge-label {
+    font: 500 10.5px -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+    fill: var(--ink-500);
+  }
+  .edge-label-bg { fill: var(--surface); }
+  .group-frame {
+    fill: none; stroke-dasharray: 4 4; stroke-width: 1.25;
+  }
+  .group-label {
+    font: 600 11px -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  /* ── Concept groups (cards) ──────────────────────────────────────── */
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .group-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left-width: 3px;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .group-card.comp { border-left-color: var(--c-comp); }
+  .group-card.part { border-left-color: var(--c-part); }
+  .group-card.evt  { border-left-color: var(--c-evt); }
+  .group-card.hon  { border-left-color: var(--c-hon); }
+
+  .group-card .head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .group-card .name { font-size: 15px; font-weight: 600; color: var(--ink-900); }
+  .group-card .id { font-size: 11px; color: var(--ink-400); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .group-card .count { font-size: 11px; color: var(--ink-500); font-variant-numeric: tabular-nums; }
+  .group-card .desc { font-size: 12.5px; color: var(--ink-500); margin: 4px 0 14px; }
+  .group-card ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .group-card li {
+    font-size: 12px; padding: 3px 9px; border-radius: 999px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    border: 1px solid transparent;
+  }
+  .group-card.comp li { background: var(--c-comp-bg); color: var(--c-comp); border-color: var(--c-comp-soft); }
+  .group-card.part li { background: var(--c-part-bg); color: var(--c-part); border-color: var(--c-part-soft); }
+  .group-card.evt  li { background: var(--c-evt-bg);  color: var(--c-evt);  border-color: var(--c-evt-soft); }
+  .group-card.hon  li { background: var(--c-hon-bg);  color: var(--c-hon);  border-color: var(--c-hon-soft); }
+
+  /* ── Relations table ─────────────────────────────────────────────── */
+  .rel-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden;
+    font-size: 13px;
+  }
+  .rel-table th, .rel-table td {
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .rel-table th {
+    font-weight: 600; color: var(--ink-500); font-size: 11px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    background: var(--bg);
+  }
+  .rel-table tr:last-child td { border-bottom: none; }
+  .rel-table tbody tr:hover { background: var(--bg); }
+  .rel-table code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+    color: var(--ink-700); background: var(--line-soft); padding: 1.5px 5px; border-radius: 4px;
+  }
+  .rel-arrow { color: var(--ink-400); margin: 0 4px; }
+  .badge {
+    display: inline-block; font-size: 10.5px; padding: 1.5px 6px; border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .badge.comp { background: var(--c-comp-bg); color: var(--c-comp); }
+  .badge.part { background: var(--c-part-bg); color: var(--c-part); }
+  .badge.evt  { background: var(--c-evt-bg);  color: var(--c-evt); }
+  .badge.hon  { background: var(--c-hon-bg);  color: var(--c-hon); }
+
+  /* ── Footnote ────────────────────────────────────────────────────── */
+  footer {
+    margin-top: 40px; padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-500); font-size: 12px;
+  }
+  footer code { font-family: ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════ HEADER ═══════════════════════════════════════════════ -->
+  <header>
+    <div class="eyebrow">Knowledge Network · BKN Structure</div>
+    <h1>Fjelstul 世界杯 · BKN 知识网络</h1>
+    <div class="subtitle"><code>worldcup_vega_catalog_bkn</code> — 基于 Joshua C. Fjelstul 世界杯开放数据库的领域模型</div>
+    <div class="stats">
+      <div class="stat"><div class="v">27</div><div class="l">ObjectTypes 对象类</div></div>
+      <div class="stat"><div class="v">29</div><div class="l">RelationTypes 关系类</div></div>
+      <div class="stat"><div class="v">4</div><div class="l">ConceptGroups 概念组</div></div>
+    </div>
+  </header>
+
+  <!-- ═══════ DIAGRAM ══════════════════════════════════════════════ -->
+  <div class="section-title">
+    <h2>核心关系图</h2>
+    <span class="hint">以 <code>tournaments</code> 与 <code>matches</code> 为枢纽的主要外键路径</span>
+  </div>
+  <div class="diagram">
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+        </marker>
+        <marker id="arrow-strong" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+        </marker>
+      </defs>
+
+      <!-- ───── Group frames ───── -->
+      <rect class="group-frame" x="20"  y="40"  width="580" height="320" rx="10" stroke="var(--c-comp)" opacity="0.55"/>
+      <text class="group-label" x="40" y="64" fill="var(--c-comp)">赛会与赛程 · COMPETITION</text>
+
+      <rect class="group-frame" x="660" y="40"  width="600" height="320" rx="10" stroke="var(--c-part)" opacity="0.55"/>
+      <text class="group-label" x="680" y="64" fill="var(--c-part)">球队与人员 · PARTICIPANTS</text>
+
+      <rect class="group-frame" x="20"  y="390" width="580" height="290" rx="10" stroke="var(--c-evt)" opacity="0.55"/>
+      <text class="group-label" x="40" y="414" fill="var(--c-evt)">场上事件 · EVENTS</text>
+
+      <rect class="group-frame" x="660" y="390" width="600" height="290" rx="10" stroke="var(--c-hon)" opacity="0.55"/>
+      <text class="group-label" x="680" y="414" fill="var(--c-hon)">奖项与荣誉 · HONORS</text>
+
+      <!-- ───── Edges (drawn first so nodes sit on top) ───── -->
+
+      <!-- Competition internal -->
+      <!-- matches → tournaments (vertical, central spine) -->
+      <path class="edge edge-strong" d="M 290 195 L 290 145" marker-end="url(#arrow-strong)"/>
+      <!-- matches → stadiums -->
+      <path class="edge" d="M 246 218 L 196 218" marker-end="url(#arrow)"/>
+      <!-- tournaments → stages -->
+      <path class="edge" d="M 334 122 L 380 122" marker-end="url(#arrow)"/>
+      <!-- tournaments → host_countries -->
+      <path class="edge" d="M 246 122 L 202 122" marker-end="url(#arrow)"/>
+      <!-- groups → tournaments -->
+      <path class="edge" d="M 290 280 L 290 145" marker-end="url(#arrow)"/>
+      <!-- group_standings → tournaments  (curve up-left) -->
+      <path class="edge" d="M 420 280 C 420 220, 360 170, 332 142" marker-end="url(#arrow)"/>
+      <!-- tournament_standings → tournaments  (curve up-left) -->
+      <path class="edge" d="M 540 280 C 540 220, 420 160, 340 130" marker-end="url(#arrow)"/>
+
+      <!-- Participants internal -->
+      <!-- teams → confederations -->
+      <path class="edge" d="M 775 122 L 822 122" marker-end="url(#arrow)"/>
+      <!-- Row 3 (qualified_teams · team_appearances · squads · *_appearances) all hold FKs
+           up to teams / players / tournaments — omitted from the diagram to keep the
+           Participants area readable; see the relation table below. -->
+
+      <!-- Cross-group: matches → teams (home / away) -->
+      <path class="edge edge-strong" d="M 334 210 C 480 210, 600 130, 678 122" marker-end="url(#arrow-strong)"/>
+      <rect x="478" y="153" width="122" height="16" fill="var(--surface)"/>
+      <text class="edge-label" x="539" y="165" text-anchor="middle">主/客队 home/away</text>
+
+      <!-- Cross-group: events → matches (bundled) — curve up from the dead space between
+           penalty_kicks and substitutions so it doesn't look like it originates from any
+           single event node. -->
+      <path class="edge edge-strong" d="M 387 390 Q 387 300, 290 240" marker-end="url(#arrow-strong)"/>
+      <rect x="90" y="348" width="220" height="28" fill="var(--surface)"/>
+      <text class="edge-label" x="200" y="360" text-anchor="middle">goals · bookings · player_appear.</text>
+      <text class="edge-label" x="200" y="372" text-anchor="middle">team_appear. → matches</text>
+
+      <!-- Cross-group: events → players (subtle curve into participants) -->
+      <path class="edge" d="M 480 470 C 700 470, 830 250, 880 145" marker-end="url(#arrow)" opacity="0.55"/>
+      <!-- Cross-group: events → teams (subtle) -->
+      <path class="edge" d="M 480 490 C 700 490, 700 160, 712 138" marker-end="url(#arrow)" opacity="0.4"/>
+      <rect x="540" y="478" width="200" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="640" y="488" text-anchor="middle">事件 → players / teams</text>
+
+      <!-- Honors internal: award_winners → awards -->
+      <path class="edge" d="M 850 510 L 902 510" marker-end="url(#arrow)"/>
+      <!-- Honors → teams (clean left-side route around team_appearances; lands on teams).
+           award_winners→players and award_winners→tournaments are documented in the
+           relation table below so we don't crowd this area with more lines. -->
+      <path class="edge" d="M 770 488 C 770 320, 727 220, 727 142" marker-end="url(#arrow)"/>
+      <rect x="704" y="322" width="72" height="14" fill="var(--surface)"/>
+      <text class="edge-label" x="740" y="332" text-anchor="middle">winner · team</text>
+
+      <!-- ───── Nodes ───── -->
+
+      <!-- ◾ COMPETITION ◾ -->
+      <!-- Row 1: host_countries · tournaments(HUB) · stages -->
+      <g transform="translate(102,102)">
+        <rect class="node-bg isolated" width="100" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title isolated" x="50" y="14" text-anchor="middle" fill="var(--c-comp)">host_countries</text>
+        <text class="node-sub isolated" x="50" y="26" text-anchor="middle">东道主</text>
+      </g>
+      <g transform="translate(246,98)">
+        <rect class="node-bg" width="88" height="44" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)" stroke-width="2"/>
+        <text class="node-title" x="44" y="20" text-anchor="middle" fill="var(--c-comp)">tournaments</text>
+        <text class="node-sub" x="44" y="34" text-anchor="middle">届次</text>
+      </g>
+      <g transform="translate(380,102)">
+        <rect class="node-bg isolated" width="64" height="32" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title isolated" x="32" y="14" text-anchor="middle" fill="var(--c-comp)">stages</text>
+        <text class="node-sub isolated" x="32" y="26" text-anchor="middle">阶段</text>
+      </g>
+
+      <!-- Row 2: stadiums · matches(HUB) -->
+      <g transform="translate(116,198)">
+        <rect class="node-bg" width="80" height="40" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="40" y="18" text-anchor="middle" fill="var(--c-comp)">stadiums</text>
+        <text class="node-sub" x="40" y="31" text-anchor="middle">球场</text>
+      </g>
+      <g transform="translate(246,196)">
+        <rect class="node-bg" width="88" height="44" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)" stroke-width="2"/>
+        <text class="node-title" x="44" y="20" text-anchor="middle" fill="var(--c-comp)">matches</text>
+        <text class="node-sub" x="44" y="34" text-anchor="middle">场次</text>
+      </g>
+
+      <!-- Row 3: groups · group_standings · tournament_standings -->
+      <g transform="translate(252,280)">
+        <rect class="node-bg" width="76" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="38" y="15" text-anchor="middle" fill="var(--c-comp)">groups</text>
+        <text class="node-sub" x="38" y="27" text-anchor="middle">小组</text>
+      </g>
+      <g transform="translate(355,280)">
+        <rect class="node-bg" width="130" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title" x="65" y="15" text-anchor="middle" fill="var(--c-comp)">group_standings</text>
+        <text class="node-sub" x="65" y="27" text-anchor="middle">小组榜</text>
+      </g>
+      <g transform="translate(500,280)">
+        <rect class="node-bg isolated" width="80" height="34" rx="6" fill="var(--c-comp-bg)" stroke="var(--c-comp)"/>
+        <text class="node-title isolated" x="40" y="15" text-anchor="middle" fill="var(--c-comp)">standings</text>
+        <text class="node-sub isolated" x="40" y="27" text-anchor="middle">总积分</text>
+      </g>
+
+      <!-- ◾ PARTICIPANTS ◾ -->
+      <!-- Row 1: teams(HUB) · confederations · players(HUB) · managers · referees -->
+      <g transform="translate(680,98)">
+        <rect class="node-bg" width="95" height="44" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-width="2"/>
+        <text class="node-title" x="47" y="20" text-anchor="middle" fill="var(--c-part)">teams</text>
+        <text class="node-sub" x="47" y="34" text-anchor="middle">国家队</text>
+      </g>
+      <g transform="translate(822,102)">
+        <rect class="node-bg" width="105" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="52" y="15" text-anchor="middle" fill="var(--c-part)">confederations</text>
+        <text class="node-sub" x="52" y="28" text-anchor="middle">足联</text>
+      </g>
+      <!-- Row 2: players(HUB) · managers · referees -->
+      <g transform="translate(840,148)">
+        <rect class="node-bg" width="80" height="40" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)" stroke-width="2"/>
+        <text class="node-title" x="40" y="18" text-anchor="middle" fill="var(--c-part)">players</text>
+        <text class="node-sub" x="40" y="31" text-anchor="middle">球员</text>
+      </g>
+      <g transform="translate(950,150)">
+        <rect class="node-bg isolated" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title isolated" x="40" y="15" text-anchor="middle" fill="var(--c-part)">managers</text>
+        <text class="node-sub isolated" x="40" y="28" text-anchor="middle">主教练</text>
+      </g>
+      <g transform="translate(1060,150)">
+        <rect class="node-bg isolated" width="80" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title isolated" x="40" y="15" text-anchor="middle" fill="var(--c-part)">referees</text>
+        <text class="node-sub isolated" x="40" y="28" text-anchor="middle">裁判</text>
+      </g>
+
+      <!-- Row 3: qualified_teams · team_appearances · player_appearances · squads · *_appearances
+           (player_appearances is split out as its own solid node since it has 3 rels;
+           the dashed *_appearances box now holds only the 4 truly-isolated OTs.) -->
+      <g transform="translate(680,232)">
+        <rect class="node-bg" width="100" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="50" y="15" text-anchor="middle" fill="var(--c-part)">qualified_teams</text>
+        <text class="node-sub" x="50" y="28" text-anchor="middle">出线资格</text>
+      </g>
+      <g transform="translate(788,232)">
+        <rect class="node-bg" width="110" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="55" y="15" text-anchor="middle" fill="var(--c-part)">team_appearances</text>
+        <text class="node-sub" x="55" y="28" text-anchor="middle">球队参赛</text>
+      </g>
+      <g transform="translate(906,232)">
+        <rect class="node-bg" width="120" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="60" y="15" text-anchor="middle" fill="var(--c-part)">player_appearances</text>
+        <text class="node-sub" x="60" y="28" text-anchor="middle">球员出场</text>
+      </g>
+      <g transform="translate(1034,232)">
+        <rect class="node-bg" width="64" height="36" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title" x="32" y="15" text-anchor="middle" fill="var(--c-part)">squads</text>
+        <text class="node-sub" x="32" y="28" text-anchor="middle">阵容</text>
+      </g>
+      <g transform="translate(1106,225)">
+        <rect class="node-bg isolated" width="140" height="52" rx="6" fill="var(--c-part-bg)" stroke="var(--c-part)"/>
+        <text class="node-title isolated" x="70" y="17" text-anchor="middle" fill="var(--c-part)">*_appearances</text>
+        <text class="node-sub isolated" x="70" y="30" text-anchor="middle">manager / referee</text>
+        <text class="node-sub isolated" x="70" y="43" text-anchor="middle">+ *_appointments</text>
+      </g>
+
+      <!-- ◾ EVENTS ◾ -->
+      <g transform="translate(58,460)">
+        <rect class="node-bg" width="84" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title" x="42" y="18" text-anchor="middle" fill="var(--c-evt)">goals</text>
+        <text class="node-sub" x="42" y="31" text-anchor="middle">进球</text>
+      </g>
+      <g transform="translate(162,460)">
+        <rect class="node-bg" width="84" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title" x="42" y="18" text-anchor="middle" fill="var(--c-evt)">bookings</text>
+        <text class="node-sub" x="42" y="31" text-anchor="middle">黄红牌</text>
+      </g>
+      <g transform="translate(280,460)">
+        <rect class="node-bg isolated" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title isolated" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">penalty_kicks</text>
+        <text class="node-sub isolated" x="49" y="31" text-anchor="middle">点球</text>
+      </g>
+      <g transform="translate(396,460)">
+        <rect class="node-bg isolated" width="98" height="40" rx="6" fill="var(--c-evt-bg)" stroke="var(--c-evt)"/>
+        <text class="node-title isolated" x="49" y="18" text-anchor="middle" fill="var(--c-evt)">substitutions</text>
+        <text class="node-sub isolated" x="49" y="31" text-anchor="middle">换人</text>
+      </g>
+
+      <!-- ◾ HONORS ◾ -->
+      <g transform="translate(690,488)">
+        <rect class="node-bg" width="160" height="50" rx="6" fill="var(--c-hon-bg)" stroke="var(--c-hon)" stroke-width="2"/>
+        <text class="node-title" x="80" y="20" text-anchor="middle" fill="var(--c-hon)">award_winners</text>
+        <text class="node-sub" x="80" y="36" text-anchor="middle">获奖记录（FK → 4 表）</text>
+      </g>
+      <g transform="translate(902,494)">
+        <rect class="node-bg" width="86" height="40" rx="6" fill="var(--c-hon-bg)" stroke="var(--c-hon)"/>
+        <text class="node-title" x="43" y="18" text-anchor="middle" fill="var(--c-hon)">awards</text>
+        <text class="node-sub" x="43" y="31" text-anchor="middle">奖项</text>
+      </g>
+    </svg>
+    <div class="diagram-legend">
+      <span><span class="swatch hub"></span>枢纽 hub</span>
+      <span><span class="swatch"></span>有 FK 关系</span>
+      <span><span class="swatch dashed"></span>minimal 模式无 FK 边</span>
+      <span style="color: var(--ink-400);">·</span>
+      <span>骨架边只画到 row 1（teams · players · tournaments · matches）；row 3 与 honors 的 FK 见下方关系表</span>
+    </div>
+  </div>
+
+  <!-- ═══════ CONCEPT GROUPS ═══════════════════════════════════════ -->
+  <div class="section-title">
+    <h2>四个概念组</h2>
+    <span class="hint">按业务域聚类的全部 27 个对象类</span>
+  </div>
+  <div class="groups-grid">
+    <article class="group-card comp">
+      <div class="head">
+        <div>
+          <div class="name">赛会与赛程</div>
+          <div class="id">worldcup_competition</div>
+        </div>
+        <div class="count">8 OTs</div>
+      </div>
+      <div class="desc">赛事、阶段、场次、球场、东道主与小组结构 — 回答「哪一届、哪一场、在哪踢」。</div>
+      <ul>
+        <li>tournaments</li>
+        <li>tournament_stages</li>
+        <li>matches</li>
+        <li>stadiums</li>
+        <li>host_countries</li>
+        <li>groups</li>
+        <li>group_standings</li>
+        <li>tournament_standings</li>
+      </ul>
+    </article>
+
+    <article class="group-card part">
+      <div class="head">
+        <div>
+          <div class="name">球队与人员</div>
+          <div class="id">worldcup_participants</div>
+        </div>
+        <div class="count">13 OTs</div>
+      </div>
+      <div class="desc">国家队、球员、教练、裁判及其任命 / 出场 / 执法记录 — 回答「谁、代表谁、何时上场」。</div>
+      <ul>
+        <li>teams</li>
+        <li>players</li>
+        <li>managers</li>
+        <li>referees</li>
+        <li>confederations</li>
+        <li>squads</li>
+        <li>qualified_teams</li>
+        <li>manager_appointments</li>
+        <li>referee_appointments</li>
+        <li>team_appearances</li>
+        <li>player_appearances</li>
+        <li>manager_appearances</li>
+        <li>referee_appearances</li>
+      </ul>
+    </article>
+
+    <article class="group-card evt">
+      <div class="head">
+        <div>
+          <div class="name">场上事件</div>
+          <div class="id">worldcup_events</div>
+        </div>
+        <div class="count">4 OTs</div>
+      </div>
+      <div class="desc">进球、点球、换人、得牌等可回放事件 — 回答「谁进球、何时换人」。</div>
+      <ul>
+        <li>goals</li>
+        <li>penalty_kicks</li>
+        <li>substitutions</li>
+        <li>bookings</li>
+      </ul>
+    </article>
+
+    <article class="group-card hon">
+      <div class="head">
+        <div>
+          <div class="name">奖项与荣誉</div>
+          <div class="id">worldcup_honors</div>
+        </div>
+        <div class="count">2 OTs</div>
+      </div>
+      <div class="desc">奖项定义与获奖记录 — 回答「金靴 / 金球得主是谁」。</div>
+      <ul>
+        <li>awards</li>
+        <li>award_winners</li>
+      </ul>
+    </article>
+  </div>
+
+  <!-- ═══════ RELATION SUMMARY ═════════════════════════════════════ -->
+  <div class="section-title">
+    <h2>关系类全集（29 条）</h2>
+    <span class="hint">命名约定：<code>rel_&lt;来源表&gt;_&lt;外键列&gt;</code></span>
+  </div>
+  <table class="rel-table">
+    <thead>
+      <tr><th style="width:26%">关系</th><th>From</th><th>To</th><th>语义</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>rel_matches_tournament</code></td><td><span class="badge comp">matches</span></td><td><span class="badge comp">tournaments</span></td><td>场次所属届次</td></tr>
+      <tr><td><code>rel_matches_home_team</code></td><td><span class="badge comp">matches</span></td><td><span class="badge part">teams</span></td><td>主队</td></tr>
+      <tr><td><code>rel_matches_away_team</code></td><td><span class="badge comp">matches</span></td><td><span class="badge part">teams</span></td><td>客队</td></tr>
+      <tr><td><code>rel_matches_stadium</code></td><td><span class="badge comp">matches</span></td><td><span class="badge comp">stadiums</span></td><td>比赛球场</td></tr>
+      <tr><td><code>rel_groups_tournament</code></td><td><span class="badge comp">groups</span></td><td><span class="badge comp">tournaments</span></td><td>小组归属</td></tr>
+      <tr><td><code>rel_group_standings_team</code></td><td><span class="badge comp">group_standings</span></td><td><span class="badge part">teams</span></td><td>积分对应球队</td></tr>
+      <tr><td><code>rel_group_standings_tournament</code></td><td><span class="badge comp">group_standings</span></td><td><span class="badge comp">tournaments</span></td><td>积分对应届次</td></tr>
+      <tr><td><code>rel_teams_confederation</code></td><td><span class="badge part">teams</span></td><td><span class="badge part">confederations</span></td><td>球队所属足联</td></tr>
+      <tr><td><code>rel_qualified_teams_team</code></td><td><span class="badge part">qualified_teams</span></td><td><span class="badge part">teams</span></td><td>出线球队</td></tr>
+      <tr><td><code>rel_qualified_teams_tournament</code></td><td><span class="badge part">qualified_teams</span></td><td><span class="badge comp">tournaments</span></td><td>出线对应届次</td></tr>
+      <tr><td><code>rel_squads_player</code></td><td><span class="badge part">squads</span></td><td><span class="badge part">players</span></td><td>阵容成员</td></tr>
+      <tr><td><code>rel_squads_team</code></td><td><span class="badge part">squads</span></td><td><span class="badge part">teams</span></td><td>阵容归属球队</td></tr>
+      <tr><td><code>rel_squads_tournament</code></td><td><span class="badge part">squads</span></td><td><span class="badge comp">tournaments</span></td><td>阵容报名届次</td></tr>
+      <tr><td><code>rel_team_appearances_team</code></td><td><span class="badge part">team_appearances</span></td><td><span class="badge part">teams</span></td><td>球队</td></tr>
+      <tr><td><code>rel_team_appearances_opponent</code></td><td><span class="badge part">team_appearances</span></td><td><span class="badge part">teams</span></td><td>对手</td></tr>
+      <tr><td><code>rel_team_appearances_match</code></td><td><span class="badge part">team_appearances</span></td><td><span class="badge comp">matches</span></td><td>对应场次</td></tr>
+      <tr><td><code>rel_player_appearances_player</code></td><td><span class="badge part">player_appearances</span></td><td><span class="badge part">players</span></td><td>出场球员</td></tr>
+      <tr><td><code>rel_player_appearances_team</code></td><td><span class="badge part">player_appearances</span></td><td><span class="badge part">teams</span></td><td>所属球队</td></tr>
+      <tr><td><code>rel_player_appearances_match</code></td><td><span class="badge part">player_appearances</span></td><td><span class="badge comp">matches</span></td><td>对应场次</td></tr>
+      <tr><td><code>rel_goals_player</code></td><td><span class="badge evt">goals</span></td><td><span class="badge part">players</span></td><td>射手</td></tr>
+      <tr><td><code>rel_goals_team</code></td><td><span class="badge evt">goals</span></td><td><span class="badge part">teams</span></td><td>进球方球队</td></tr>
+      <tr><td><code>rel_goals_match</code></td><td><span class="badge evt">goals</span></td><td><span class="badge comp">matches</span></td><td>所属场次</td></tr>
+      <tr><td><code>rel_bookings_player</code></td><td><span class="badge evt">bookings</span></td><td><span class="badge part">players</span></td><td>领牌球员</td></tr>
+      <tr><td><code>rel_bookings_team</code></td><td><span class="badge evt">bookings</span></td><td><span class="badge part">teams</span></td><td>球队</td></tr>
+      <tr><td><code>rel_bookings_match</code></td><td><span class="badge evt">bookings</span></td><td><span class="badge comp">matches</span></td><td>所属场次</td></tr>
+      <tr><td><code>rel_award_winners_award</code></td><td><span class="badge hon">award_winners</span></td><td><span class="badge hon">awards</span></td><td>奖项</td></tr>
+      <tr><td><code>rel_award_winners_tournament</code></td><td><span class="badge hon">award_winners</span></td><td><span class="badge comp">tournaments</span></td><td>颁奖届次</td></tr>
+      <tr><td><code>rel_award_winners_player</code></td><td><span class="badge hon">award_winners</span></td><td><span class="badge part">players</span></td><td>获奖球员</td></tr>
+      <tr><td><code>rel_award_winners_team</code></td><td><span class="badge hon">award_winners</span></td><td><span class="badge part">teams</span></td><td>获奖球队</td></tr>
+    </tbody>
+  </table>
+
+  <footer>
+    <strong>骨架模式（minimal · 默认）</strong> · 不含 <code>substitutions.*</code> RelationType 与 <code>goals.player_team_id</code>；换人分析需经
+    <code>substitutions</code> 表本体属性串联 <code>matches</code> / <code>player_appearances</code>。
+    数据来自 <em>Joshua C. Fjelstul, The Fjelstul World Cup Database</em>，许可 <code>CC-BY-SA 4.0</code>。
+  </footer>
+</div>
+</body>
+</html>

@@ -33,7 +33,7 @@ vim .env        # 填写 DB_HOST、DB_USER、DB_PASS 等
 
 各示例的详细前置条件见对应 README。
 
-**06-world-cup** 不使用 `./run.sh`，请按其 README：`download.sh`、`ds import-csv`、`run-branch-vega.sh`、`run-vega-bkn-push.sh`。
+**06-world-cup** 使用单脚本 `./run.sh` 驱动全部 7 步（可逐步运行、幂等），详见其 README。
 
 ## 清理
 

@@ -335,6 +335,34 @@ SQL
 }
 
 # ─── Step 3: Vega scan ──────────────────────────────────────────────────────
+_write_catalog_id_to_env() {
+    local catalog_id="$1"
+    [ "${SKIP_WRITE_ENV:-0}" = 1 ] && return 0
+    _WC_PATCH_CATALOG_ID="$catalog_id" ENV_FILE="$SCRIPT_DIR/.env" python3 - <<'PY'
+import os, pathlib, re
+catalog_id = os.environ["_WC_PATCH_CATALOG_ID"]
+env_file   = pathlib.Path(os.environ["ENV_FILE"])
+nl = "\n"
+if env_file.is_file():
+    text = env_file.read_text(encoding="utf-8", errors="replace")
+    if not text.endswith("\n"): text += nl
+    pat = re.compile(r"^\s*VEGA_CATALOG_ID=")
+    out, found = [], False
+    for line in text.splitlines(keepends=True):
+        if pat.match(line):
+            if not found:
+                out.append(f"VEGA_CATALOG_ID={catalog_id}{nl}")
+                found = True
+        else:
+            out.append(line)
+    if not found: out.append(f"VEGA_CATALOG_ID={catalog_id}{nl}")
+    env_file.write_text("".join(out), encoding="utf-8")
+else:
+    env_file.write_text(f"VEGA_CATALOG_ID={catalog_id}{nl}", encoding="utf-8")
+print(f"  .env VEGA_CATALOG_ID={catalog_id}", flush=True)
+PY
+}
+
 build_connector_config() {
     local host port user pass dbs port_num
     host="${VEGA_MYSQL_HOST:-${DB_HOST:?Set DB_HOST in .env}}"
@@ -406,6 +434,7 @@ step_3_vega_scan() {
         if [ "${n_resources:-0}" -ge 27 ]; then
             echo "  skip discover — $n_resources table resources already present (FORCE_DISCOVER=1 to redo)" >&2
             VEGA_CATALOG_ID="$catalog_id"; export VEGA_CATALOG_ID
+            _write_catalog_id_to_env "$catalog_id"
             return 0
         fi
     fi
@@ -418,6 +447,7 @@ step_3_vega_scan() {
 
     VEGA_CATALOG_ID="$catalog_id"
     export VEGA_CATALOG_ID
+    _write_catalog_id_to_env "$catalog_id"
 }
 
 # ─── Step 4: Render BKN ─────────────────────────────────────────────────────
@@ -546,19 +576,8 @@ _lookup_embedding_model_id() {
             .model_id' 2>/dev/null | head -1
 }
 
-# Tables that benefit from vector embedding (LLM gets fuzzy/cross-language name match).
-# Format: "table_name:embedding_fields_csv"
-_vector_index_tables() {
-    cat <<'EOF'
-awards:award_name
-tournaments:tournament_name,host_country
-teams:team_name
-stadiums:stadium_name,city_name
-managers:family_name,given_name
-referees:family_name,given_name,country_name
-players:family_name,given_name
-EOF
-}
+# Tables that benefit from vector embedding are defined inline in
+# _build_vega_indexes (the `vec = {...}` dict in the Python heredoc below).
 
 _build_vega_indexes() {
     [ -f "$MAPPING_TMP" ] || { echo "  warn: $MAPPING_TMP missing — step 4 must run first; skipping indexes." >&2; return 0; }
@@ -830,7 +849,7 @@ extract_agent_id() {
 find_agent_id_by_name() {
     local name="$1" raw
     raw="$("${KWEAV[@]}" agent personal-list --name "$name" --size 48 2>/dev/null)" || true
-    printf '%s' "$raw" | jq -r --arg n "$name" '
+    printf '%s' "$raw" | _extract_cli_json | jq -r --arg n "$name" '
         (if type == "array" then . elif .entries then .entries else .data // .items // [] end)
         | if type == "array" then . else [] end
         | map(select(.name == $n))

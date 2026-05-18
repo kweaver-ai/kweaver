@@ -34,7 +34,7 @@ All examples require:
 
 See the README inside each example for specific prerequisites.
 
-**06-world-cup** does **not** use `./run.sh`; use `download.sh`, `ds import-csv`, `run-branch-vega.sh`, and `run-vega-bkn-push.sh` as documented there.
+**06-world-cup** uses a single `./run.sh` entry point (steps 1–7, separately runnable, idempotent). See its README for details.
 
 ## Cleanup
 

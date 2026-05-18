@@ -898,10 +898,10 @@ resolve_contextloader_ids() {
     local list_raw
     list_raw="$("${KWEAV[@]}" toolbox list --keyword "$kw" --limit 20 2>/dev/null || true)"
     # Pick the most recently updated toolbox whose name contains "contextloader".
-    box_id="$(printf '%s' "$list_raw" | _extract_cli_json | jq -r '
+    box_id="$(printf '%s' "$list_raw" | _extract_cli_json | jq -r --arg kw "$kw" '
         (.entries // .data // .items // [])
         | if type == "array" then . else [] end
-        | map(select((.box_name // .name // "") | test("contextloader"; "i")))
+        | map(select((.box_name // .name // "") | test($kw; "i")))
         | sort_by(.updated_at // .created_at // 0) | reverse
         | (.[0].box_id // .[0].id // empty)
     ' 2>/dev/null | head -1)"
@@ -936,11 +936,18 @@ render_agent_config() {
 
     # Resolve the contextloader builtin toolbox + its search_schema / query_object_instance
     # tool ids on this platform (UUIDs differ per cluster).
+    # Note: bash quirk — `local var=$(cmd)` masks the subshell's exit status,
+    # so an `exit 1` inside resolve_contextloader_ids would NOT terminate the
+    # script. Split the declaration and capture so set -e catches a non-zero exit.
     local ctx_raw ctx_box ctx_search ctx_qoi
-    ctx_raw="$(resolve_contextloader_ids)"
+    ctx_raw="$(resolve_contextloader_ids)" || exit $?
     ctx_box="$(printf '%s' "$ctx_raw" | cut -f1)"
     ctx_search="$(printf '%s' "$ctx_raw" | cut -f2)"
     ctx_qoi="$(printf '%s' "$ctx_raw" | cut -f3)"
+    if [ -z "$ctx_box" ] || [ -z "$ctx_search" ] || [ -z "$ctx_qoi" ]; then
+        echo "Error: contextloader id resolution returned empty values." >&2
+        exit 1
+    fi
     echo "  contextloader box=$ctx_box  search_schema=$ctx_search  query_object_instance=$ctx_qoi" >&2
 
     # Step 1: substitute the contextloader placeholders for every tool entry.

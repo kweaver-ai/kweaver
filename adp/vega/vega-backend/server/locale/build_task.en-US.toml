@@ -1,8 +1,3 @@
-[VegaBackend.Task.NotFound]
-Description = "Task not found"
-Solution = "Please check the parameters"
-ErrorLink = "No solution"
-
 [VegaBackend.BuildTask.NotFound]
 Description = "Build task not found"
 Solution = "Please check if the build task ID exists"
@@ -68,27 +63,7 @@ Description = "Failed to delete build task"
 Solution = "Please contact the administrator"
 ErrorLink = "No solution"
 
-[VegaBackend.DiscoverTask.NotFound]
-Description = "Discover task not found"
-Solution = "Please check if the discover task ID exists"
-ErrorLink = "No solution"
-
-[VegaBackend.DiscoverTask.InvalidStatus]
-Description = "Invalid discover task status"
-Solution = "Status must be one of: pending, running, completed, failed"
-ErrorLink = "No solution"
-
-[VegaBackend.DiscoverTask.HasRunningExecution]
-Description = "Discover task is pending or running and cannot be deleted"
-Solution = "Wait for the task to complete or fail before deleting"
-ErrorLink = "No solution"
-
-[VegaBackend.DiscoverTask.InternalError.GetFailed]
-Description = "Failed to get discover task"
-Solution = "Please contact the administrator"
-ErrorLink = "No solution"
-
-[VegaBackend.DiscoverTask.InternalError.DeleteFailed]
-Description = "Failed to delete discover task"
+[VegaBackend.BuildTask.InternalError.GetAccountNamesFailed]
+Description = "Failed to get account names"
 Solution = "Please contact the administrator"
 ErrorLink = "No solution"

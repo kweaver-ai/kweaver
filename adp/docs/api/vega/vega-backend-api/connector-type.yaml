@@ -16,8 +16,13 @@ paths:
   /api/vega-backend/v1/connector-types:
     get:
       summary: 获取连接器类型列表
-      description: 分页获取已注册的连接器类型；支持按 tag、mode、category、enabled 过滤。
+      description: 分页获取已注册的连接器类型；支持按 name、tag、mode、category、enabled 过滤。
       parameters:
+        - name: name
+          description: 按名称模糊过滤，匹配名称中包含该值的连接器类型
+          in: query
+          schema:
+            type: string
         - name: tag
           description: 按标签精确过滤，默认为空
           in: query

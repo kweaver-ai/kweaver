@@ -94,6 +94,7 @@ type PropertyFeature struct {
 // ResourcesQueryParams holds resource list query parameters.
 type ResourcesQueryParams struct {
 	PaginationQueryParams
+	Name                 string
 	CatalogID            string
 	Category             string
 	Status               string

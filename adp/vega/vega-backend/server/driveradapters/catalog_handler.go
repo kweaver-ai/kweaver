@@ -76,6 +76,7 @@ func (r *restHandler) listCatalogs(c *gin.Context, visitor hydra.Visitor) {
 	oteltrace.AddHttpAttrs4API(span, oteltrace.GetAttrsByGinCtx(c))
 
 	// 获取查询参数
+	name := strings.TrimSpace(c.Query("name"))
 	tag := strings.TrimSpace(c.Query("tag"))
 	typ := c.Query("type")
 	healthCheckStatus := c.Query("health_check_status")
@@ -103,6 +104,7 @@ func (r *restHandler) listCatalogs(c *gin.Context, visitor hydra.Visitor) {
 
 	params := interfaces.CatalogsQueryParams{
 		PaginationQueryParams: pageParam,
+		Name:                  name,
 		Tag:                   tag,
 		Type:                  typ,
 		HealthCheckStatus:     healthCheckStatus,

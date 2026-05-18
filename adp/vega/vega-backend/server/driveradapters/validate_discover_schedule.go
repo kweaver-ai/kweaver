@@ -18,6 +18,9 @@ import (
 )
 
 func ValidateDiscoverScheduleRequest(ctx context.Context, req *interfaces.DiscoverScheduleRequest) error {
+	if err := validateName(ctx, req.Name); err != nil {
+		return err
+	}
 	if req.CatalogID == "" {
 		return rest.NewHTTPError(ctx, http.StatusBadRequest, verrors.VegaBackend_InvalidParameter_RequestBody).
 			WithErrorDetails("catalog_id is required")

@@ -52,3 +52,8 @@ ErrorLink = "No solution"
 Description = "Failed to delete discover schedule"
 Solution = "Please contact the administrator"
 ErrorLink = "No solution"
+
+[VegaBackend.DiscoverSchedule.InternalError.GetAccountNamesFailed]
+Description = "Failed to get account names"
+Solution = "Please contact the administrator"
+ErrorLink = "No solution"

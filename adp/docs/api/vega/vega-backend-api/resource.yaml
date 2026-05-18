@@ -61,6 +61,11 @@ paths:
         **KV 筛选**：`extension_key` / `extension_value`（数组 query）；
         语义同 [catalog.yaml](catalog.yaml) 列表；与 `catalog_id`、`category` 等过滤 **AND** 组合。
       parameters:
+        - name: name
+          description: 按名称模糊过滤，匹配名称中包含该值的资源
+          in: query
+          schema:
+            type: string
         - name: catalog_id
           description: 按归属 catalog 过滤
           in: query

@@ -8,6 +8,7 @@ package interfaces
 // DiscoverSchedule represents a scheduled discover task configuration.
 type DiscoverSchedule struct {
 	ID         string   `json:"id"`
+	Name       string   `json:"name"`
 	CatalogID  string   `json:"catalog_id"`
 	CronExpr   string   `json:"cron_expr"`
 	StartTime  int64    `json:"start_time"` // Unix timestamp in milliseconds
@@ -25,6 +26,7 @@ type DiscoverSchedule struct {
 
 var (
 	DISCOVER_SCHEDULE_SORT = map[string]string{
+		"name":        "f_name",
 		"create_time": "f_create_time",
 		"update_time": "f_update_time",
 		"next_run":    "f_next_run",
@@ -34,6 +36,7 @@ var (
 // DiscoverScheduleQueryParams holds query parameters for scheduled discover tasks.
 type DiscoverScheduleQueryParams struct {
 	PaginationQueryParams
+	Name      string `json:"name"`
 	CatalogID string `json:"catalog_id"`
 	Enabled   *bool  `json:"enabled"`
 }
@@ -42,6 +45,7 @@ type DiscoverScheduleQueryParams struct {
 // Note: This is a simplified version for API requests.
 // The full DiscoverSchedule structure is defined in discover_schedule.go
 type DiscoverScheduleRequest struct {
+	Name      string `json:"name"`
 	CatalogID string `json:"catalog_id"`
 	// Cron expression for scheduling
 	CronExpr string `json:"cron_expr"`

@@ -25,7 +25,7 @@ paths:
     post:
       summary: 创建发现调度
       description: |
-        创建 DiscoverSchedule。`catalog_id` 必填且 catalog 必须存在；不存在返回 404
+        创建 DiscoverSchedule。`name` 与 `catalog_id` 必填且 catalog 必须存在；不存在返回 404
         `VegaBackend.Catalog.NotFound`。
 
         - body 中 `enabled=true` 时，创建后立即注册到 cron 引擎；`false` 时仅入库不调度。
@@ -64,8 +64,13 @@ paths:
           $ref: "#/components/responses/InternalServerError"
     get:
       summary: 获取调度列表
-      description: 分页 + filter 获取 DiscoverSchedule 列表。
+      description: 分页 + filter 获取 DiscoverSchedule 列表；支持按 name 模糊过滤。
       parameters:
+        - name: name
+          description: 按名称模糊过滤，匹配名称中包含该值的调度
+          in: query
+          schema:
+            type: string
         - name: catalog_id
           description: 按归属 catalog 过滤
           in: query
@@ -97,6 +102,7 @@ paths:
           schema:
             type: string
             enum:
+              - name
               - create_time
               - update_time
               - next_run
@@ -149,7 +155,7 @@ paths:
     put:
       summary: 严格更新调度
       description: |
-        **严格全量替换**，**只允许变更"配置"字段**（`cron_expr` / `strategies` /
+        **严格全量替换**，**只允许变更"配置"字段**（`name` / `cron_expr` / `strategies` /
         `start_time` / `end_time`）。下列字段约束如下：
 
         | 字段 | 约束 | 失败 errcode |
@@ -294,6 +300,7 @@ components:
         - `VegaBackend.DiscoverSchedule.InternalError.CreateFailed`
         - `VegaBackend.DiscoverSchedule.InternalError.UpdateFailed`
         - `VegaBackend.DiscoverSchedule.InternalError.DeleteFailed`
+        - `VegaBackend.DiscoverSchedule.InternalError.GetAccountNamesFailed`
       content:
         application/json:
           schema:
@@ -337,6 +344,7 @@ components:
       type: object
       required:
         - id
+        - name
         - catalog_id
         - cron_expr
         - enabled
@@ -349,6 +357,10 @@ components:
         id:
           description: 全局唯一 ID
           type: string
+        name:
+          description: 调度名称
+          type: string
+          maxLength: 255
         catalog_id:
           description: 关联 catalog；创建后**不可修改**
           type: string
@@ -407,14 +419,22 @@ components:
       description: |
         创建 / 更新请求体。
 
-        - 创建时 `catalog_id` 与 `cron_expr` 必填；`enabled` 默认 false（可同时传 true 一步启用）
+        - 创建时 `name`、`catalog_id` 与 `cron_expr` 必填；`enabled` 默认 false（可同时传 true 一步启用）
         - PUT 时 `catalog_id` 必填且必须与当前一致（空串 / 缺失视为不一致 → 409 CatalogMismatch）；
           `enabled` 必须与当前一致（否则 409 EnabledFieldNotAllowed）；`id` 可省略，携带时被忽略
       type: object
+      required:
+        - name
+        - catalog_id
+        - cron_expr
       properties:
         id:
           description: 创建时省略；PUT 时如携带必须与 path 一致
           type: string
+        name:
+          description: 调度名称，必填，最大长度 255
+          type: string
+          maxLength: 255
         catalog_id:
           description: 关联 catalog；创建必填，PUT 时必须与当前一致
           type: string

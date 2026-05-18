@@ -89,6 +89,7 @@ type ConnectorType struct {
 // ConnectorTypesQueryParams 查询参数
 type ConnectorTypesQueryParams struct {
 	PaginationQueryParams
+	Name     string `json:"name"`     // 按名称模糊筛选
 	Tag      string `json:"tag"`      // 按标签筛选
 	Mode     string `json:"mode"`     // 按模式筛选
 	Category string `json:"category"` // 按分类筛选

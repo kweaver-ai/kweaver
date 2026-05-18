@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kweaver-ai/kweaver-go-lib/audit"
@@ -146,6 +147,7 @@ func (r *restHandler) listDiscoverSchedules(c *gin.Context, visitor hydra.Visito
 
 	params := interfaces.DiscoverScheduleQueryParams{
 		PaginationQueryParams: pageParam,
+		Name:                  strings.TrimSpace(c.Query("name")),
 		CatalogID:             c.Query("catalog_id"),
 	}
 	if enabledStr := c.Query("enabled"); enabledStr != "" {

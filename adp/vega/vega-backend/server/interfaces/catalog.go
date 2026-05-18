@@ -63,6 +63,7 @@ var (
 // CatalogsQueryParams holds catalog list query parameters.
 type CatalogsQueryParams struct {
 	PaginationQueryParams
+	Name              string
 	Tag               string
 	Type              string
 	HealthCheckStatus string

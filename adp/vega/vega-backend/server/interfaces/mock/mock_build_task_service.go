@@ -117,12 +117,11 @@ func (mr *MockBuildTaskServiceMockRecorder) ListBuildTasks(ctx, params any) *gom
 }
 
 // StartBuildTask mocks base method.
-func (m *MockBuildTaskService) StartBuildTask(ctx context.Context, taskID, executeType string) (*interfaces.BuildTask, error) {
+func (m *MockBuildTaskService) StartBuildTask(ctx context.Context, taskID, executeType string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartBuildTask", ctx, taskID, executeType)
-	ret0, _ := ret[0].(*interfaces.BuildTask)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // StartBuildTask indicates an expected call of StartBuildTask.
@@ -132,12 +131,11 @@ func (mr *MockBuildTaskServiceMockRecorder) StartBuildTask(ctx, taskID, executeT
 }
 
 // StopBuildTask mocks base method.
-func (m *MockBuildTaskService) StopBuildTask(ctx context.Context, taskID string) (*interfaces.BuildTask, error) {
+func (m *MockBuildTaskService) StopBuildTask(ctx context.Context, taskID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StopBuildTask", ctx, taskID)
-	ret0, _ := ret[0].(*interfaces.BuildTask)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // StopBuildTask indicates an expected call of StopBuildTask.

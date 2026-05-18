@@ -9,17 +9,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/kweaver-ai/kweaver-go-lib/logger"
 	"github.com/kweaver-ai/kweaver-go-lib/otel/otellog"
 	"github.com/kweaver-ai/kweaver-go-lib/otel/oteltrace"
+	"github.com/kweaver-ai/kweaver-go-lib/rest"
 	"github.com/rs/xid"
+	"go.opentelemetry.io/otel/codes"
 
 	"vega-backend/common"
 	"vega-backend/drivenadapters/discover_schedule"
+	verrors "vega-backend/errors"
 	"vega-backend/interfaces"
+	"vega-backend/logics/user_mgmt"
 )
 
 var (
@@ -31,6 +36,7 @@ type discoverScheduleService struct {
 	appSetting *common.AppSetting
 	dsa        interfaces.DiscoverScheduleAccess
 	dts        interfaces.DiscoverTaskService
+	ums        interfaces.UserMgmtService
 }
 
 func (dss *discoverScheduleService) UpdateLastRun(ctx context.Context, id string, lastRun int64) error {
@@ -44,6 +50,7 @@ func NewDiscoverScheduleService(appSetting *common.AppSetting, dts interfaces.Di
 			appSetting: appSetting,
 			dsa:        discover_schedule.NewDiscoverScheduleAccess(appSetting),
 			dts:        dts,
+			ums:        user_mgmt.NewUserMgmtService(appSetting),
 		}
 	})
 	return dsService
@@ -75,6 +82,7 @@ func (dss *discoverScheduleService) Create(ctx context.Context, req *interfaces.
 	now := time.Now().UnixMilli()
 	schedule := &interfaces.DiscoverSchedule{
 		ID:         xid.New().String(),
+		Name:       req.Name,
 		CatalogID:  req.CatalogID,
 		CronExpr:   req.CronExpr,
 		StartTime:  req.StartTime,
@@ -104,7 +112,18 @@ func (dss *discoverScheduleService) GetByID(ctx context.Context, id string) (*in
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "DiscoverScheduleService.GetByID")
 	defer span.End()
 
-	return dss.dsa.GetByID(ctx, id)
+	schedule, err := dss.dsa.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if schedule != nil {
+		if err := dss.ums.GetAccountNames(ctx, []*interfaces.AccountInfo{&schedule.Creator, &schedule.Updater}); err != nil {
+			span.SetStatus(codes.Error, "GetAccountNames error")
+			return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+				verrors.VegaBackend_DiscoverSchedule_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+		}
+	}
+	return schedule, nil
 }
 
 // List lists discover schedules.
@@ -112,7 +131,21 @@ func (dss *discoverScheduleService) List(ctx context.Context, params interfaces.
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "DiscoverScheduleService.List")
 	defer span.End()
 
-	return dss.dsa.List(ctx, params)
+	schedules, total, err := dss.dsa.List(ctx, params)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	accountInfos := make([]*interfaces.AccountInfo, 0, len(schedules)*2)
+	for _, s := range schedules {
+		accountInfos = append(accountInfos, &s.Creator, &s.Updater)
+	}
+	if err := dss.ums.GetAccountNames(ctx, accountInfos); err != nil {
+		span.SetStatus(codes.Error, "GetAccountNames error")
+		return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+			verrors.VegaBackend_DiscoverSchedule_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+	}
+	return schedules, total, nil
 }
 
 // Update updates a discover schedule.
@@ -130,6 +163,7 @@ func (dss *discoverScheduleService) Update(ctx context.Context, schedule *interf
 	}
 
 	schedule.CronExpr = req.CronExpr
+	schedule.Name = req.Name
 	schedule.StartTime = req.StartTime
 	schedule.EndTime = req.EndTime
 	schedule.Strategies = req.Strategies

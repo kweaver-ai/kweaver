@@ -73,6 +73,7 @@ type discoverScheduleScanner interface {
 func discoverScheduleColumns() []string {
 	return []string{
 		"f_id",
+		"f_name",
 		"f_catalog_id",
 		"f_cron_expr",
 		"f_start_time",
@@ -96,6 +97,7 @@ func scanDiscoverSchedule(scanner discoverScheduleScanner) (*interfaces.Discover
 
 	err := scanner.Scan(
 		&schedule.ID,
+		&schedule.Name,
 		&schedule.CatalogID,
 		&schedule.CronExpr,
 		&schedule.StartTime,
@@ -232,6 +234,7 @@ func (dsa *discoverScheduleAccess) Create(ctx context.Context, schedule *interfa
 	sqlStr, vals, err := sq.Insert(DISCOVER_SCHEDULE_TABLE_NAME).
 		Columns(
 			"f_id",
+			"f_name",
 			"f_catalog_id",
 			"f_cron_expr",
 			"f_start_time",
@@ -246,6 +249,7 @@ func (dsa *discoverScheduleAccess) Create(ctx context.Context, schedule *interfa
 		).
 		Values(
 			schedule.ID,
+			schedule.Name,
 			schedule.CatalogID,
 			schedule.CronExpr,
 			schedule.StartTime,
@@ -322,6 +326,10 @@ func (dsa *discoverScheduleAccess) List(ctx context.Context, params interfaces.D
 		From(DISCOVER_SCHEDULE_TABLE_NAME)
 
 	// Apply filters
+	if params.Name != "" {
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
+		builder = builder.Where(sq.Like{"f_name": name})
+	}
 	if params.CatalogID != "" {
 		builder = builder.Where(sq.Eq{"f_catalog_id": params.CatalogID})
 	}
@@ -331,6 +339,10 @@ func (dsa *discoverScheduleAccess) List(ctx context.Context, params interfaces.D
 
 	// Get total count
 	countBuilder := sq.Select("COUNT(*)").From(DISCOVER_SCHEDULE_TABLE_NAME)
+	if params.Name != "" {
+		name := "%" + common.EscapeLikePattern(params.Name) + "%"
+		countBuilder = countBuilder.Where(sq.Like{"f_name": name})
+	}
 	if params.CatalogID != "" {
 		countBuilder = countBuilder.Where(sq.Eq{"f_catalog_id": params.CatalogID})
 	}
@@ -414,6 +426,7 @@ func (dsa *discoverScheduleAccess) Update(ctx context.Context, schedule *interfa
 
 	// Build update SQL - only update non-zero value fields
 	updateBuilder := sq.Update(DISCOVER_SCHEDULE_TABLE_NAME).
+		Set("f_name", schedule.Name).
 		Set("f_catalog_id", schedule.CatalogID).
 		Set("f_cron_expr", schedule.CronExpr).
 		Set("f_start_time", schedule.StartTime).
@@ -508,6 +521,7 @@ func (dsa *discoverScheduleAccess) GetEnabledSchedules(ctx context.Context) ([]*
 	// Build select SQL
 	sqlStr, vals, err := sq.Select(
 		"f_id",
+		"f_name",
 		"f_catalog_id",
 		"f_cron_expr",
 		"f_start_time",
@@ -548,6 +562,7 @@ func (dsa *discoverScheduleAccess) GetEnabledSchedules(ctx context.Context) ([]*
 		schedule := &interfaces.DiscoverSchedule{}
 		err := rows.Scan(
 			&schedule.ID,
+			&schedule.Name,
 			&schedule.CatalogID,
 			&schedule.CronExpr,
 			&schedule.StartTime,

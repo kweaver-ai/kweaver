@@ -40,6 +40,55 @@ type connectorTypeAccess struct {
 	db         *sql.DB
 }
 
+type connectorTypeScanner interface {
+	Scan(dest ...any) error
+}
+
+func connectorTypeColumns() []string {
+	return []string{
+		"f_type",
+		"f_name",
+		"f_tags",
+		"f_description",
+		"f_mode",
+		"f_category",
+		"f_endpoint",
+		"f_field_config",
+		"f_enabled",
+	}
+}
+
+func scanConnectorType(scanner connectorTypeScanner) (*interfaces.ConnectorType, error) {
+	ct := &interfaces.ConnectorType{}
+	var tagsStr string
+	var fieldConfigStr string
+
+	err := scanner.Scan(
+		&ct.Type,
+		&ct.Name,
+		&tagsStr,
+		&ct.Description,
+		&ct.Mode,
+		&ct.Category,
+		&ct.Endpoint,
+		&fieldConfigStr,
+		&ct.Enabled,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	ct.Tags = libCommon.TagString2TagSlice(tagsStr)
+
+	if fieldConfigStr != "" {
+		if err := sonic.UnmarshalString(fieldConfigStr, &ct.FieldConfig); err != nil {
+			return nil, err
+		}
+	}
+
+	return ct, nil
+}
+
 // NewConnectorTypeAccess creates a new ConnectorTypeAccess.
 func NewConnectorTypeAccess(appSetting *common.AppSetting) interfaces.ConnectorTypeAccess {
 	ctAccessOnce.Do(func() {
@@ -71,17 +120,7 @@ func (cta *connectorTypeAccess) Create(ctx context.Context, ct *interfaces.Conne
 	}
 
 	sqlStr, vals, err := sq.Insert(CONNECTOR_TYPE_TABLE_NAME).
-		Columns(
-			"f_type",
-			"f_name",
-			"f_tags",
-			"f_description",
-			"f_mode",
-			"f_category",
-			"f_endpoint",
-			"f_field_config",
-			"f_enabled",
-		).
+		Columns(connectorTypeColumns()...).
 		Values(
 			ct.Type,
 			ct.Name,
@@ -117,17 +156,8 @@ func (cta *connectorTypeAccess) GetByType(ctx context.Context, tp string) (*inte
 
 	span.SetAttributes(attr.Key("connector_type").String(tp))
 
-	sqlStr, vals, err := sq.Select(
-		"f_type",
-		"f_name",
-		"f_tags",
-		"f_description",
-		"f_mode",
-		"f_category",
-		"f_endpoint",
-		"f_field_config",
-		"f_enabled",
-	).From(CONNECTOR_TYPE_TABLE_NAME).
+	sqlStr, vals, err := sq.Select(connectorTypeColumns()...).
+		From(CONNECTOR_TYPE_TABLE_NAME).
 		Where(sq.Eq{"f_type": tp}).
 		ToSql()
 	if err != nil {
@@ -136,22 +166,8 @@ func (cta *connectorTypeAccess) GetByType(ctx context.Context, tp string) (*inte
 		return nil, err
 	}
 
-	ct := &interfaces.ConnectorType{}
-	var tagsStr string
-	var fieldConfigStr string
-
 	row := cta.db.QueryRowContext(ctx, sqlStr, vals...)
-	err = row.Scan(
-		&ct.Type,
-		&ct.Name,
-		&tagsStr,
-		&ct.Description,
-		&ct.Mode,
-		&ct.Category,
-		&ct.Endpoint,
-		&fieldConfigStr,
-		&ct.Enabled,
-	)
+	ct, err := scanConnectorType(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "")
 		return nil, nil
@@ -160,18 +176,6 @@ func (cta *connectorTypeAccess) GetByType(ctx context.Context, tp string) (*inte
 		logger.Errorf("Scan connector_type failed: %v", err)
 		span.SetStatus(codes.Error, "Scan failed")
 		return nil, err
-	}
-
-	// tags string 转成数组的格式
-	ct.Tags = libCommon.TagString2TagSlice(tagsStr)
-
-	// Deserialize FieldConfig
-	if fieldConfigStr != "" {
-		err = sonic.UnmarshalString(fieldConfigStr, &ct.FieldConfig)
-		if err != nil {
-			otellog.LogError(ctx, "Failed to unmarshal field config", err)
-			return nil, err
-		}
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -185,17 +189,8 @@ func (cta *connectorTypeAccess) GetByName(ctx context.Context, name string) (*in
 
 	span.SetAttributes(attr.Key("name").String(name))
 
-	sqlStr, vals, err := sq.Select(
-		"f_type",
-		"f_name",
-		"f_tags",
-		"f_description",
-		"f_mode",
-		"f_category",
-		"f_endpoint",
-		"f_field_config",
-		"f_enabled",
-	).From(CONNECTOR_TYPE_TABLE_NAME).
+	sqlStr, vals, err := sq.Select(connectorTypeColumns()...).
+		From(CONNECTOR_TYPE_TABLE_NAME).
 		Where(sq.Eq{"f_name": name}).
 		ToSql()
 	if err != nil {
@@ -204,22 +199,8 @@ func (cta *connectorTypeAccess) GetByName(ctx context.Context, name string) (*in
 		return nil, err
 	}
 
-	ct := &interfaces.ConnectorType{}
-	var tagsStr string
-	var fieldConfigStr string
-
 	row := cta.db.QueryRowContext(ctx, sqlStr, vals...)
-	err = row.Scan(
-		&ct.Type,
-		&ct.Name,
-		&tagsStr,
-		&ct.Description,
-		&ct.Mode,
-		&ct.Category,
-		&ct.Endpoint,
-		&fieldConfigStr,
-		&ct.Enabled,
-	)
+	ct, err := scanConnectorType(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "")
 		return nil, nil
@@ -228,18 +209,6 @@ func (cta *connectorTypeAccess) GetByName(ctx context.Context, name string) (*in
 		logger.Errorf("Scan connector_type failed: %v", err)
 		span.SetStatus(codes.Error, "Scan failed")
 		return nil, err
-	}
-
-	// tags string 转成数组的格式
-	ct.Tags = libCommon.TagString2TagSlice(tagsStr)
-
-	// Deserialize FieldConfig
-	if fieldConfigStr != "" {
-		err = sonic.UnmarshalString(fieldConfigStr, &ct.FieldConfig)
-		if err != nil {
-			otellog.LogError(ctx, "Failed to unmarshal field config", err)
-			return nil, err
-		}
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -251,19 +220,11 @@ func (cta *connectorTypeAccess) List(ctx context.Context, params interfaces.Conn
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "List connector_types")
 	defer span.End()
 
-	builder := sq.Select(
-		"f_type",
-		"f_name",
-		"f_tags",
-		"f_description",
-		"f_mode",
-		"f_category",
-		"f_endpoint",
-		"f_field_config",
-		"f_enabled",
-	).From(CONNECTOR_TYPE_TABLE_NAME)
+	builder := sq.Select(connectorTypeColumns()...).
+		From(CONNECTOR_TYPE_TABLE_NAME)
 
-	countBuilder := sq.Select("COUNT(*)").From(CONNECTOR_TYPE_TABLE_NAME)
+	countBuilder := sq.Select("COUNT(*)").
+		From(CONNECTOR_TYPE_TABLE_NAME)
 
 	// Apply filters
 	if params.Mode != "" {
@@ -311,35 +272,10 @@ func (cta *connectorTypeAccess) List(ctx context.Context, params interfaces.Conn
 
 	connectorTypes := make([]*interfaces.ConnectorType, 0)
 	for rows.Next() {
-		ct := &interfaces.ConnectorType{}
-		var tagsStr string
-		var fieldConfigStr string
-		err := rows.Scan(
-			&ct.Type,
-			&ct.Name,
-			&tagsStr,
-			&ct.Description,
-			&ct.Mode,
-			&ct.Category,
-			&ct.Endpoint,
-			&fieldConfigStr,
-			&ct.Enabled,
-		)
+		ct, err := scanConnectorType(rows)
 		if err != nil {
 			span.SetStatus(codes.Error, "Scan row failed")
 			return nil, 0, err
-		}
-
-		// tags string 转成数组的格式
-		ct.Tags = libCommon.TagString2TagSlice(tagsStr)
-
-		// Deserialize FieldConfig
-		if fieldConfigStr != "" {
-			err = sonic.UnmarshalString(fieldConfigStr, &ct.FieldConfig)
-			if err != nil {
-				otellog.LogError(ctx, "Failed to unmarshal field config", err)
-				return nil, 0, err
-			}
 		}
 
 		connectorTypes = append(connectorTypes, ct)

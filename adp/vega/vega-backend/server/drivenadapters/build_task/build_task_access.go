@@ -32,27 +32,29 @@ const (
 	BUILD_TASK_TABLE_NAME = "t_build_task"
 )
 
-var buildTaskColumns = []string{
-	"f_id",
-	"f_resource_id",
-	"f_catalog_id",
-	"f_status",
-	"f_mode",
-	"f_total_count",
-	"f_synced_count",
-	"f_vectorized_count",
-	"f_synced_mark",
-	"f_error_msg",
-	"f_creator",
-	"f_creator_type",
-	"f_create_time",
-	"f_updater",
-	"f_updater_type",
-	"f_update_time",
-	"f_embedding_fields",
-	"f_build_key_fields",
-	"f_embedding_model",
-	"f_model_dimensions",
+func buildTaskColumns() []string {
+	return []string{
+		"f_id",
+		"f_resource_id",
+		"f_catalog_id",
+		"f_status",
+		"f_mode",
+		"f_total_count",
+		"f_synced_count",
+		"f_vectorized_count",
+		"f_synced_mark",
+		"f_error_msg",
+		"f_creator",
+		"f_creator_type",
+		"f_create_time",
+		"f_updater",
+		"f_updater_type",
+		"f_update_time",
+		"f_embedding_fields",
+		"f_build_key_fields",
+		"f_embedding_model",
+		"f_model_dimensions",
+	}
 }
 
 type buildTaskAccess struct {
@@ -114,7 +116,7 @@ func (bta *buildTaskAccess) Create(ctx context.Context, buildTask *interfaces.Bu
 	defer span.End()
 
 	sqlStr, vals, err := sq.Insert(BUILD_TASK_TABLE_NAME).
-		Columns(buildTaskColumns...).
+		Columns(buildTaskColumns()...).
 		Values(
 			buildTask.ID,
 			buildTask.ResourceID,
@@ -157,7 +159,7 @@ func (bta *buildTaskAccess) GetByID(ctx context.Context, id string) (*interfaces
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build task by ID")
 	defer span.End()
 
-	sqlStr, vals, err := sq.Select(buildTaskColumns...).
+	sqlStr, vals, err := sq.Select(buildTaskColumns()...).
 		From(BUILD_TASK_TABLE_NAME).
 		Where(sq.Eq{"f_id": id}).
 		ToSql()
@@ -166,7 +168,8 @@ func (bta *buildTaskAccess) GetByID(ctx context.Context, id string) (*interfaces
 		return nil, err
 	}
 
-	buildTask, err := scanBuildTask(bta.db.QueryRowContext(ctx, sqlStr, vals...))
+	row := bta.db.QueryRowContext(ctx, sqlStr, vals...)
+	buildTask, err := scanBuildTask(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "Build task not found")
 		return nil, nil
@@ -186,7 +189,7 @@ func (bta *buildTaskAccess) GetByResourceID(ctx context.Context, resourceID stri
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build task by resource ID")
 	defer span.End()
 
-	sqlStr, vals, err := sq.Select(buildTaskColumns...).
+	sqlStr, vals, err := sq.Select(buildTaskColumns()...).
 		From(BUILD_TASK_TABLE_NAME).
 		Where(sq.Eq{"f_resource_id": resourceID}).
 		Limit(1).
@@ -196,7 +199,8 @@ func (bta *buildTaskAccess) GetByResourceID(ctx context.Context, resourceID stri
 		return nil, err
 	}
 
-	buildTask, err := scanBuildTask(bta.db.QueryRowContext(ctx, sqlStr, vals...))
+	row := bta.db.QueryRowContext(ctx, sqlStr, vals...)
+	buildTask, err := scanBuildTask(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "Build task not found")
 		return nil, nil
@@ -216,7 +220,7 @@ func (bta *buildTaskAccess) GetByCatalogID(ctx context.Context, catalogID string
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build tasks by catalog ID")
 	defer span.End()
 
-	sqlStr, vals, err := sq.Select(buildTaskColumns...).
+	sqlStr, vals, err := sq.Select(buildTaskColumns()...).
 		From(BUILD_TASK_TABLE_NAME).
 		Where(sq.Eq{"f_catalog_id": catalogID}).
 		ToSql()
@@ -327,9 +331,11 @@ func (bta *buildTaskAccess) List(ctx context.Context, params interfaces.BuildTas
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build tasks with filters")
 	defer span.End()
 
-	builder := sq.Select(buildTaskColumns...).From(BUILD_TASK_TABLE_NAME)
+	builder := sq.Select(buildTaskColumns()...).
+		From(BUILD_TASK_TABLE_NAME)
 
-	countBuilder := sq.Select("COUNT(*)").From(BUILD_TASK_TABLE_NAME)
+	countBuilder := sq.Select("COUNT(*)").
+		From(BUILD_TASK_TABLE_NAME)
 
 	if params.ResourceID != "" {
 		builder = builder.Where(sq.Eq{"f_resource_id": params.ResourceID})

@@ -92,3 +92,13 @@ ErrorLink = "暂无"
 Description = "删除采集任务失败"
 Solution = "请联系管理员"
 ErrorLink = "暂无"
+
+[VegaBackend.BuildTask.InternalError.GetAccountNamesFailed]
+Description = "获取账户名称失败"
+Solution = "请联系管理员"
+ErrorLink = "暂无"
+
+[VegaBackend.DiscoverTask.InternalError.GetAccountNamesFailed]
+Description = "获取账户名称失败"
+Solution = "请联系管理员"
+ErrorLink = "暂无"

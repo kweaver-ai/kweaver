@@ -24,7 +24,8 @@ const (
 	VegaBackend_DiscoverSchedule_InternalError_GetFailed    = "VegaBackend.DiscoverSchedule.InternalError.GetFailed"
 	VegaBackend_DiscoverSchedule_InternalError_CreateFailed = "VegaBackend.DiscoverSchedule.InternalError.CreateFailed"
 	VegaBackend_DiscoverSchedule_InternalError_UpdateFailed = "VegaBackend.DiscoverSchedule.InternalError.UpdateFailed"
-	VegaBackend_DiscoverSchedule_InternalError_DeleteFailed = "VegaBackend.DiscoverSchedule.InternalError.DeleteFailed"
+	VegaBackend_DiscoverSchedule_InternalError_DeleteFailed           = "VegaBackend.DiscoverSchedule.InternalError.DeleteFailed"
+	VegaBackend_DiscoverSchedule_InternalError_GetAccountNamesFailed  = "VegaBackend.DiscoverSchedule.InternalError.GetAccountNamesFailed"
 )
 
 var (
@@ -40,5 +41,6 @@ var (
 		VegaBackend_DiscoverSchedule_InternalError_CreateFailed,
 		VegaBackend_DiscoverSchedule_InternalError_UpdateFailed,
 		VegaBackend_DiscoverSchedule_InternalError_DeleteFailed,
+		VegaBackend_DiscoverSchedule_InternalError_GetAccountNamesFailed,
 	}
 )

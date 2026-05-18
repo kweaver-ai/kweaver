@@ -92,3 +92,13 @@ ErrorLink = "No solution"
 Description = "Failed to delete discover task"
 Solution = "Please contact the administrator"
 ErrorLink = "No solution"
+
+[VegaBackend.BuildTask.InternalError.GetAccountNamesFailed]
+Description = "Failed to get account names"
+Solution = "Please contact the administrator"
+ErrorLink = "No solution"
+
+[VegaBackend.DiscoverTask.InternalError.GetAccountNamesFailed]
+Description = "Failed to get account names"
+Solution = "Please contact the administrator"
+ErrorLink = "No solution"

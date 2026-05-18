@@ -28,12 +28,14 @@ const (
 	VegaBackend_DiscoverTask_HasRunningExecution = "VegaBackend.DiscoverTask.HasRunningExecution"
 
 	// 500 Internal Server Error
-	VegaBackend_BuildTask_InternalError_CreateFailed    = "VegaBackend.BuildTask.InternalError.CreateFailed"
-	VegaBackend_BuildTask_InternalError_GetFailed       = "VegaBackend.BuildTask.InternalError.GetFailed"
-	VegaBackend_BuildTask_InternalError_UpdateFailed    = "VegaBackend.BuildTask.InternalError.UpdateFailed"
-	VegaBackend_BuildTask_InternalError_DeleteFailed    = "VegaBackend.BuildTask.InternalError.DeleteFailed"
-	VegaBackend_DiscoverTask_InternalError_GetFailed    = "VegaBackend.DiscoverTask.InternalError.GetFailed"
-	VegaBackend_DiscoverTask_InternalError_DeleteFailed = "VegaBackend.DiscoverTask.InternalError.DeleteFailed"
+	VegaBackend_BuildTask_InternalError_CreateFailed           = "VegaBackend.BuildTask.InternalError.CreateFailed"
+	VegaBackend_BuildTask_InternalError_GetFailed              = "VegaBackend.BuildTask.InternalError.GetFailed"
+	VegaBackend_BuildTask_InternalError_UpdateFailed           = "VegaBackend.BuildTask.InternalError.UpdateFailed"
+	VegaBackend_BuildTask_InternalError_DeleteFailed           = "VegaBackend.BuildTask.InternalError.DeleteFailed"
+	VegaBackend_BuildTask_InternalError_GetAccountNamesFailed  = "VegaBackend.BuildTask.InternalError.GetAccountNamesFailed"
+	VegaBackend_DiscoverTask_InternalError_GetFailed           = "VegaBackend.DiscoverTask.InternalError.GetFailed"
+	VegaBackend_DiscoverTask_InternalError_DeleteFailed        = "VegaBackend.DiscoverTask.InternalError.DeleteFailed"
+	VegaBackend_DiscoverTask_InternalError_GetAccountNamesFailed = "VegaBackend.DiscoverTask.InternalError.GetAccountNamesFailed"
 )
 
 var (
@@ -55,7 +57,9 @@ var (
 		VegaBackend_BuildTask_InternalError_GetFailed,
 		VegaBackend_BuildTask_InternalError_UpdateFailed,
 		VegaBackend_BuildTask_InternalError_DeleteFailed,
+		VegaBackend_BuildTask_InternalError_GetAccountNamesFailed,
 		VegaBackend_DiscoverTask_InternalError_GetFailed,
 		VegaBackend_DiscoverTask_InternalError_DeleteFailed,
+		VegaBackend_DiscoverTask_InternalError_GetAccountNamesFailed,
 	}
 )

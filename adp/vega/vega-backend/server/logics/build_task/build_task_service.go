@@ -31,6 +31,7 @@ import (
 	verrors "vega-backend/errors"
 	"vega-backend/interfaces"
 	"vega-backend/logics/catalog"
+	"vega-backend/logics/user_mgmt"
 )
 
 var (
@@ -44,6 +45,7 @@ type buildTaskService struct {
 	ra         interfaces.ResourceAccess
 	bta        interfaces.BuildTaskAccess
 	mfa        interfaces.ModelFactoryAccess
+	ums        interfaces.UserMgmtService
 }
 
 // NewBuildTaskService creates a new BuildTaskService.
@@ -55,6 +57,7 @@ func NewBuildTaskService(appSetting *common.AppSetting) interfaces.BuildTaskServ
 			ra:         resourceAccess.NewResourceAccess(appSetting),
 			bta:        taskAccess.NewBuildTaskAccess(appSetting),
 			mfa:        model_factory.NewModelFactoryAccess(appSetting),
+			ums:        user_mgmt.NewUserMgmtService(appSetting),
 		}
 	})
 	return btsInst
@@ -181,6 +184,13 @@ func (bts *buildTaskService) GetBuildTaskByID(ctx context.Context, id string) (*
 		return nil, rest.NewHTTPError(ctx, http.StatusNotFound, verrors.VegaBackend_BuildTask_NotFound)
 	}
 
+	accountInfos := []*interfaces.AccountInfo{&buildTask.Creator, &buildTask.Updater}
+	if err := bts.ums.GetAccountNames(ctx, accountInfos); err != nil {
+		span.SetStatus(codes.Error, "GetAccountNames error")
+		return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+			verrors.VegaBackend_BuildTask_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+	}
+
 	span.SetStatus(codes.Ok, "")
 	return buildTask, nil
 }
@@ -195,6 +205,15 @@ func (bts *buildTaskService) GetBuildTaskByResourceID(ctx context.Context, resou
 		span.SetStatus(codes.Error, "Get build task failed")
 		return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_GetFailed).
 			WithErrorDetails(err.Error())
+	}
+
+	if buildTask != nil {
+		accountInfos := []*interfaces.AccountInfo{&buildTask.Creator, &buildTask.Updater}
+		if err := bts.ums.GetAccountNames(ctx, accountInfos); err != nil {
+			span.SetStatus(codes.Error, "GetAccountNames error")
+			return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+				verrors.VegaBackend_BuildTask_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+		}
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -212,6 +231,17 @@ func (bts *buildTaskService) ListBuildTasks(ctx context.Context, params interfac
 		return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError, verrors.VegaBackend_BuildTask_InternalError_GetFailed).
 			WithErrorDetails(err.Error())
 	}
+
+	accountInfos := make([]*interfaces.AccountInfo, 0, len(buildTasks)*2)
+	for _, bt := range buildTasks {
+		accountInfos = append(accountInfos, &bt.Creator, &bt.Updater)
+	}
+	if err := bts.ums.GetAccountNames(ctx, accountInfos); err != nil {
+		span.SetStatus(codes.Error, "GetAccountNames error")
+		return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+			verrors.VegaBackend_BuildTask_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+	}
+
 	span.SetStatus(codes.Ok, "")
 	return buildTasks, total, nil
 }

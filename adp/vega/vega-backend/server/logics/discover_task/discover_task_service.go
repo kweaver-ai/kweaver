@@ -27,6 +27,7 @@ import (
 	discovertaskaccess "vega-backend/drivenadapters/discover_task"
 	verrors "vega-backend/errors"
 	"vega-backend/interfaces"
+	"vega-backend/logics/user_mgmt"
 )
 
 var (
@@ -38,6 +39,7 @@ type discoverTaskService struct {
 	appSetting *common.AppSetting
 	client     *asynq.Client
 	dta        interfaces.DiscoverTaskAccess
+	ums        interfaces.UserMgmtService
 }
 
 // NewDiscoverTaskService creates or returns the singleton DiscoverTaskService.
@@ -48,6 +50,7 @@ func NewDiscoverTaskService(appSetting *common.AppSetting) interfaces.DiscoverTa
 			appSetting: appSetting,
 			client:     asynqAccess.CreateClient(context.Background()),
 			dta:        discovertaskaccess.NewDiscoverTaskAccess(appSetting),
+			ums:        user_mgmt.NewUserMgmtService(appSetting),
 		}
 	})
 	return dtsService
@@ -143,7 +146,18 @@ func (dts *discoverTaskService) GetByID(ctx context.Context, id string) (*interf
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "DiscoverTaskService.GetByID")
 	defer span.End()
 
-	return dts.dta.GetByID(ctx, id)
+	task, err := dts.dta.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if task != nil {
+		if err := dts.ums.GetAccountNames(ctx, []*interfaces.AccountInfo{&task.Creator}); err != nil {
+			span.SetStatus(codes.Error, "GetAccountNames error")
+			return nil, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+				verrors.VegaBackend_DiscoverTask_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+		}
+	}
+	return task, nil
 }
 
 // List lists DiscoverTasks for a catalog.
@@ -151,7 +165,21 @@ func (dts *discoverTaskService) List(ctx context.Context, params interfaces.Disc
 	ctx, span := oteltrace.StartNamedInternalSpan(ctx, "DiscoverTaskService.List")
 	defer span.End()
 
-	return dts.dta.List(ctx, params)
+	tasks, total, err := dts.dta.List(ctx, params)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	accountInfos := make([]*interfaces.AccountInfo, 0, len(tasks))
+	for _, t := range tasks {
+		accountInfos = append(accountInfos, &t.Creator)
+	}
+	if err := dts.ums.GetAccountNames(ctx, accountInfos); err != nil {
+		span.SetStatus(codes.Error, "GetAccountNames error")
+		return nil, 0, rest.NewHTTPError(ctx, http.StatusInternalServerError,
+			verrors.VegaBackend_DiscoverTask_InternalError_GetAccountNamesFailed).WithErrorDetails(err.Error())
+	}
+	return tasks, total, nil
 }
 
 // UpdateStatus updates a DiscoverTask's status.

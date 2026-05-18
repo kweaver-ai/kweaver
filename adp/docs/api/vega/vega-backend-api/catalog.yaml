@@ -257,7 +257,7 @@ paths:
         全量更新指定 catalog。catalog 由路径参数 `id` 唯一确定（主键不可改）。
 
         请求体的 `id` 字段**必填**，且必须与路径参数完全一致：
-        - 缺失 → 400 `VegaBackend.Catalog.InvalidParameter.ID`。
+        - 缺失 / 格式非法 → 400 `VegaBackend.InvalidParameter.ID`。
         - 不一致 → 409 `VegaBackend.Catalog.IDMismatch`。
 
         `name` 改动后若新名称已被其它 catalog 占用，返回 409 `VegaBackend.Catalog.NameExists`。
@@ -349,7 +349,9 @@ components:
   responses:
     BadRequest:
       description: |
-        请求参数 / 请求体非法。与 `extensions` 相关的常见 errcode（命名以合入代码为准）：
+        请求参数 / 请求体非法。常见 errcode（命名以合入代码为准）：
+        - `VegaBackend.InvalidParameter.RequestBody`：body schema 不合法
+        - `VegaBackend.InvalidParameter.ID`：`id` 缺失或格式非法（小写字母/数字/`_`/`-`，首字符须为字母或数字，长度 ≤40）
         - `VegaBackend.Extensions.InvalidFormat`：`extensions` 非 object 或 key/value 非 string
         - `VegaBackend.Extensions.QuotaExceeded`：条数或长度超限
         - `VegaBackend.Extensions.ReservedKey`：key 以 `vega_` 开头
@@ -526,7 +528,7 @@ components:
         catalog 创建 / 更新请求体。
 
         - POST：`id` 可省略，由后端生成；若携带且已存在，返回 409 `VegaBackend.Catalog.IdExists`。
-        - PUT：`id` **必填**，且必须与路径参数 `id` 完全一致。缺失返回 400 `VegaBackend.Catalog.InvalidParameter.ID`，不一致返回 409 `VegaBackend.Catalog.IDMismatch`。
+        - PUT：`id` **必填**，且必须与路径参数 `id` 完全一致。缺失或格式非法返回 400 `VegaBackend.InvalidParameter.ID`，不一致返回 409 `VegaBackend.Catalog.IDMismatch`。
 
         可选 **`extensions`**（见 `EntityExtensions`）：写入规则见 `info.description`。
       type: object

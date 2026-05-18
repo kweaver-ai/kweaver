@@ -135,8 +135,8 @@
             "input_name": "enable_rerank",
             "input_type": "boolean",
             "input_desc": "是否启用重排序。如果为true，则启用重排序。",
-            "map_type": "auto",
-            "map_value": "",
+            "map_type": "fixedValue",
+            "map_value": "false",
             "enable": true
           },
           {

@@ -31,6 +31,8 @@ paths:
         - body 中 `enabled=true` 时，创建后立即注册到 cron 引擎；`false` 时仅入库不调度。
         - `cron_expr` 必填，标准 5 字段格式；非法返回 400 `VegaBackend.DiscoverSchedule.InvalidCronExpr`。
         - `strategies` 可空（表示全部）；非空时元素必须是 `insert` / `delete` / `update` 的子集。
+        - `start_time` / `end_time` 均 ≥ 0；`end_time>0` 时要求 `start_time ≤ end_time`；非法返回
+          400 `VegaBackend.DiscoverSchedule.InvalidTimeRange`。
       requestBody:
         required: true
         content:
@@ -114,15 +116,15 @@ paths:
       summary: 严格更新调度
       description: |
         **严格全量替换**，**只允许变更"配置"字段**（`cron_expr` / `strategies` /
-        `start_time` / `end_time`）。下列字段在 body 中携带且与当前不一致时返回 409：
+        `start_time` / `end_time`）。下列字段约束如下：
 
-        | 字段 | errcode | 说明 |
+        | 字段 | 约束 | 失败 errcode |
         |---|---|---|
-        | `id` | `DiscoverSchedule.IdMismatch` | path 为权威来源；body 可省略 |
-        | `catalog_id` | `DiscoverSchedule.CatalogMismatch` | 创建后归属不可改；如要换 catalog 请新建 |
-        | `enabled` | `DiscoverSchedule.EnabledFieldNotAllowed` | 状态切换走 `POST .../enable` `disable` |
+        | `catalog_id` | 必须显式携带且等于当前值（空串 / 缺失同样视为不一致） | `DiscoverSchedule.CatalogMismatch`（409） |
+        | `enabled` | 必须与当前一致；状态切换走 `POST .../enable` `disable` | `DiscoverSchedule.EnabledFieldNotAllowed`（409） |
 
-        其它系统维护字段（`last_run` / `next_run` / 时间戳 / 操作者）携带时静默忽略。
+        `id` 字段在 body 中携带时被忽略，path 为权威来源。其它系统维护字段
+        （`last_run` / `next_run` / 时间戳 / 操作者）携带时静默忽略。
 
         若 schedule 当前 `enabled=true`，更新后调度器会重新注册以应用新 cron。
       requestBody:
@@ -216,6 +218,7 @@ components:
         - `VegaBackend.InvalidParameter.RequestBody`：body schema 不合法
         - `VegaBackend.DiscoverSchedule.InvalidCronExpr`：cron 表达式非法
         - `VegaBackend.DiscoverSchedule.InvalidStrategies`：strategies 元素非法
+        - `VegaBackend.DiscoverSchedule.InvalidTimeRange`：`start_time` / `end_time` 非法
       content:
         application/json:
           schema:
@@ -244,7 +247,6 @@ components:
     Conflict:
       description: |
         PUT 严格更新冲突。errcode：
-        - `VegaBackend.DiscoverSchedule.IdMismatch`
         - `VegaBackend.DiscoverSchedule.CatalogMismatch`
         - `VegaBackend.DiscoverSchedule.EnabledFieldNotAllowed`
       content:
@@ -320,13 +322,19 @@ components:
           description: 标准 5 字段 cron 表达式
           type: string
         start_time:
-          description: 调度生效起始时间，毫秒时间戳
+          description: |
+            调度生效起始时间，毫秒时间戳；0 表示无起始限制。
+            调度器到点触发时，若当前时间小于 `start_time` 则跳过本次执行。
           type: integer
           format: int64
+          minimum: 0
         end_time:
-          description: 调度结束时间，毫秒时间戳；0 表示无结束时间
+          description: |
+            调度结束时间，毫秒时间戳；0 表示无结束时间。
+            调度器到点触发时，若当前时间大于 `end_time` 则**自动 disable** 该 schedule 并从 cron 引擎注销。
           type: integer
           format: int64
+          minimum: 0
         enabled:
           description: |
             是否启用；**只读**输出字段，状态切换走 `POST .../enable` `POST .../disable`
@@ -366,7 +374,8 @@ components:
         创建 / 更新请求体。
 
         - 创建时 `catalog_id` 与 `cron_expr` 必填；`enabled` 默认 false（可同时传 true 一步启用）
-        - PUT 时三个只读字段（id / catalog_id / enabled）允许省略；如携带必须与当前一致
+        - PUT 时 `catalog_id` 必填且必须与当前一致（空串 / 缺失视为不一致 → 409 CatalogMismatch）；
+          `enabled` 必须与当前一致（否则 409 EnabledFieldNotAllowed）；`id` 可省略，携带时被忽略
       type: object
       properties:
         id:
@@ -379,11 +388,17 @@ components:
           description: 标准 5 字段 cron 表达式（必填）
           type: string
         start_time:
+          description: 调度生效起始时间，毫秒时间戳；0 表示无起始限制。须 ≥ 0
           type: integer
           format: int64
+          minimum: 0
         end_time:
+          description: |
+            调度结束时间，毫秒时间戳；0 表示无结束时间。
+            须 ≥ 0，且 `end_time>0` 时要求 `start_time ≤ end_time`
           type: integer
           format: int64
+          minimum: 0
         enabled:
           description: |
             创建时可选（默认 false）；PUT 时必须与当前一致，否则 409 EnabledFieldNotAllowed

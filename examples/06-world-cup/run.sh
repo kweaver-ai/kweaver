@@ -260,10 +260,12 @@ step_2_import() {
             # (type,host,port,db,account) the CLI prints
             # `Reusing existing datasource <uuid> (...)` then errors with
             # HTTP 404 on the follow-up fetch. The datasource is valid;
-            # we just need to grab the id from that text line.
+            # we just need to grab the id from that text line. `|| true`
+            # keeps a no-match grep from tripping set -e and letting the
+            # final empty-check guard fire instead.
             ds_id="$(printf '%s' "$connect_out" \
                 | grep -oE 'Reusing existing datasource [a-f0-9-]+' \
-                | awk '{print $4}' | head -1)"
+                | awk '{print $4}' | head -1 || true)"
         fi
         [ -z "$ds_id" ] && { echo "Error: kweaver ds connect returned no id." >&2; echo "$connect_out" >&2; exit 1; }
         echo "  DS_ID=$ds_id" >&2
@@ -813,10 +815,12 @@ step_6_toolbox() {
         echo "  reusing existing toolbox $box_id" >&2
     fi
 
-    # Find existing vega_sql_execute tool, or upload it
+    # Find existing vega_sql_execute tool, or upload it. `|| true` so a
+    # pipefail (empty toolbox, missing tools key, jq no-match) doesn't kill
+    # the script — empty tool_id flows into the upload branch below.
     local tool_id
     tool_id="$("${KWEAV[@]}" tool list --toolbox "$box_id" 2>/dev/null | _extract_cli_json | \
-        jq -r '.tools[]? | select(.name == "vega_sql_execute") | .tool_id' 2>/dev/null | head -1)"
+        jq -r '.tools[]? | select(.name == "vega_sql_execute") | .tool_id' 2>/dev/null | head -1 || true)"
 
     if [ -z "$tool_id" ]; then
         echo "  uploading $VEGA_OPENAPI_SPEC" >&2

@@ -249,9 +249,22 @@ step_2_import() {
             "${DB_NAME:?Set DB_NAME in .env}" \
             --account "${DB_USER:?Set DB_USER in .env}" \
             --password "${DB_PASS:?Set DB_PASS in .env}" \
-            --name "$ds_name" 2>&1)"
-        ds_id="$(printf '%s' "$connect_out" | _extract_cli_json | \
-            python3 -c 'import sys,json; d=json.load(sys.stdin); r=d[0] if isinstance(d,list) else d; print(r.get("datasource_id") or r.get("id",""))' 2>/dev/null)"
+            --name "$ds_name" 2>&1)" || true
+        # Try parsing a JSON envelope first. The pipe ends with `|| true` so
+        # a failed parse doesn't trip `set -euo pipefail` and silently abort
+        # the script (local-var assignment masks the exit code otherwise).
+        ds_id="$(printf '%s' "$connect_out" | _extract_cli_json 2>/dev/null | \
+            python3 -c 'import sys,json; d=json.load(sys.stdin); r=d[0] if isinstance(d,list) else d; print(r.get("datasource_id") or r.get("id",""))' 2>/dev/null || true)"
+        if [ -z "$ds_id" ]; then
+            # CLI reuse path bug: when an existing datasource matches by
+            # (type,host,port,db,account) the CLI prints
+            # `Reusing existing datasource <uuid> (...)` then errors with
+            # HTTP 404 on the follow-up fetch. The datasource is valid;
+            # we just need to grab the id from that text line.
+            ds_id="$(printf '%s' "$connect_out" \
+                | grep -oE 'Reusing existing datasource [a-f0-9-]+' \
+                | awk '{print $4}' | head -1)"
+        fi
         [ -z "$ds_id" ] && { echo "Error: kweaver ds connect returned no id." >&2; echo "$connect_out" >&2; exit 1; }
         echo "  DS_ID=$ds_id" >&2
         DS_ID="$ds_id"; export DS_ID

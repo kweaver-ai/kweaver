@@ -907,11 +907,12 @@ print(f"  .env AGENT_ID={agent_id}")
 PY
 }
 
-# Resolve the platform-builtin contextloader toolbox + its two tools.
-# Echos a TSV line: "<box_id>\t<search_schema_tool_id>\t<query_object_instance_tool_id>".
+# Resolve the platform-builtin contextloader toolbox + its three tools.
+# Echos a TSV line:
+#   "<box_id>\t<search_schema>\t<query_object_instance>\t<query_instance_subgraph>"
 # Exits the script on failure since step 7 cannot render the agent without these.
 resolve_contextloader_ids() {
-    local kw="${CONTEXTLOADER_BOX_NAME:-contextloader}" box_id tools_raw search_id qoi_id
+    local kw="${CONTEXTLOADER_BOX_NAME:-contextloader}" box_id tools_raw search_id qoi_id subgraph_id
     local list_raw
     list_raw="$("${KWEAV[@]}" toolbox list --keyword "$kw" --limit 20 2>/dev/null || true)"
     # Pick the most recently updated toolbox whose name contains "contextloader".
@@ -934,9 +935,13 @@ resolve_contextloader_ids() {
     qoi_id="$(printf '%s' "$tools_raw" | jq -r '
         (.tools // .entries // .data // .items // [])[]?
         | select(.name == "query_object_instance") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
-    [ -z "$search_id" ] && { echo "Error: search_schema tool not found in contextloader toolbox $box_id" >&2; exit 1; }
-    [ -z "$qoi_id" ]    && { echo "Error: query_object_instance tool not found in contextloader toolbox $box_id" >&2; exit 1; }
-    printf '%s\t%s\t%s\n' "$box_id" "$search_id" "$qoi_id"
+    subgraph_id="$(printf '%s' "$tools_raw" | jq -r '
+        (.tools // .entries // .data // .items // [])[]?
+        | select(.name == "query_instance_subgraph") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
+    [ -z "$search_id" ]   && { echo "Error: search_schema tool not found in contextloader toolbox $box_id" >&2; exit 1; }
+    [ -z "$qoi_id" ]      && { echo "Error: query_object_instance tool not found in contextloader toolbox $box_id" >&2; exit 1; }
+    [ -z "$subgraph_id" ] && { echo "Error: query_instance_subgraph tool not found in contextloader toolbox $box_id" >&2; exit 1; }
+    printf '%s\t%s\t%s\t%s\n' "$box_id" "$search_id" "$qoi_id" "$subgraph_id"
 }
 
 render_agent_config() {
@@ -951,30 +956,32 @@ render_agent_config() {
         exit 1
     fi
 
-    # Resolve the contextloader builtin toolbox + its search_schema / query_object_instance
-    # tool ids on this platform (UUIDs differ per cluster).
-    # Note: bash quirk — `local var=$(cmd)` masks the subshell's exit status,
-    # so an `exit 1` inside resolve_contextloader_ids would NOT terminate the
-    # script. Split the declaration and capture so set -e catches a non-zero exit.
-    local ctx_raw ctx_box ctx_search ctx_qoi
+    # Resolve the contextloader builtin toolbox + its three tools on this platform
+    # (UUIDs differ per cluster). bash quirk: `local var=$(cmd)` masks the subshell
+    # exit code, so an `exit 1` inside resolve_contextloader_ids would NOT
+    # terminate the script — split the declaration and capture so set -e
+    # catches a non-zero exit.
+    local ctx_raw ctx_box ctx_search ctx_qoi ctx_subgraph
     ctx_raw="$(resolve_contextloader_ids)" || exit $?
     ctx_box="$(printf '%s' "$ctx_raw" | cut -f1)"
     ctx_search="$(printf '%s' "$ctx_raw" | cut -f2)"
     ctx_qoi="$(printf '%s' "$ctx_raw" | cut -f3)"
-    if [ -z "$ctx_box" ] || [ -z "$ctx_search" ] || [ -z "$ctx_qoi" ]; then
+    ctx_subgraph="$(printf '%s' "$ctx_raw" | cut -f4)"
+    if [ -z "$ctx_box" ] || [ -z "$ctx_search" ] || [ -z "$ctx_qoi" ] || [ -z "$ctx_subgraph" ]; then
         echo "Error: contextloader id resolution returned empty values." >&2
         exit 1
     fi
-    echo "  contextloader box=$ctx_box  search_schema=$ctx_search  query_object_instance=$ctx_qoi" >&2
+    echo "  contextloader box=$ctx_box  search_schema=$ctx_search  qoi=$ctx_qoi  subgraph=$ctx_subgraph" >&2
 
     # Step 1: substitute the contextloader placeholders for every tool entry.
     local tmp_in
     tmp_in="$(mktemp -t wc_agent_tpl.XXXXXX.json)"
-    jq --arg cb "$ctx_box" --arg cs "$ctx_search" --arg cq "$ctx_qoi" '
+    jq --arg cb "$ctx_box" --arg cs "$ctx_search" --arg cq "$ctx_qoi" --arg cg "$ctx_subgraph" '
         .skills.tools |= map(
             (if .tool_box_id == "__CONTEXTLOADER_BOX_ID__"       then .tool_box_id = $cb else . end)
             | (if .tool_id  == "__SEARCH_SCHEMA_TOOL_ID__"         then .tool_id     = $cs else . end)
             | (if .tool_id  == "__QUERY_OBJECT_INSTANCE_TOOL_ID__" then .tool_id     = $cq else . end)
+            | (if .tool_id  == "__SUBGRAPH_TOOL_ID__"              then .tool_id     = $cg else . end)
         )
     ' "$AGENT_TEMPLATE" >"$tmp_in"
 

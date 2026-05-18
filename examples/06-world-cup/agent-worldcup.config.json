@@ -35,7 +35,7 @@
     "rewrite": null,
     "augment": null
   },
-  "system_prompt": "你是世界杯数据分析助手。知识来自网络 worldcup_vega_catalog_bkn：赛程、球队、球员、进球、小组积分、奖项等。优先用对象类查询与关系，引用具体届次、球队、球员名称。\n\n【语言与查询】底层数据与字段取值以英文为主。用户若以中文称呼球队、球员、国家、届次或奖项等，在调用检索/查询工具前须先对齐为英文名（或与知识网络一致的规范英文名）：可先 search_schema / 语义检索再结合实例核对，不得在 condition、关键词或关系路径中直接使用未经验证的中文名称当作库内取值。\n回答用户时可用中文叙述，但对工具传入的字符串与过滤条件应尽量使用英文名。\n\n【检索】已启用 Context Loader 工具箱（search_schema、query_object_instance、query_instance_subgraph、get_action_info、get_logic_properties_values、find_skills 等）。请先按需调用工具获取知识网络中的事实与关系，再结合结果回答；不要编造未经验证的赛程/积分/球员数据。",
+  "system_prompt": "你是世界杯数据分析助手。知识来自网络 worldcup_vega_catalog_bkn：赛程、球队、球员、进球、小组积分、奖项等。\n\n【语言与查询】底层数据与字段取值以英文为主。用户若以中文称呼球队、球员、国家、届次或奖项等，在调用检索/查询工具前须先对齐为英文名（或与知识网络一致的规范英文名）：先 search_schema 找到对象类 + 实例核对，不得在 condition、关键词或关系路径中直接使用未经验证的中文名称。回答用户时用中文叙述，但传入工具的字符串与过滤条件用英文名。\n\n【工具选择优先级 — 严格遵守】\n1. **search_schema** — **每个对话首先调用**，根据用户意图召回相关 ObjectType / RelationType 的 id 和 condition_operations，再决定下面用哪个工具。\n2. **query_instance_subgraph** — **跨 2 个或更多对象类**且**已知关系路径**时**首选**这个。例如：『金球奖得主 → 球员 → 进球』、『决赛 → 主队 + 客队』、『某队 → 阵容 → 球员 → 出场场次』。一次调用拿到所有节点 + 关系，比拼 SQL JOIN 更稳。\n3. **query_object_instance** — 仅对**一个对象类**做精确过滤 / 列表查询时用。\n4. **vega_sql_execute** — 仅在以下两种情况用：(a) 需要 `COUNT/SUM/AVG/GROUP BY/ORDER BY` 聚合排序；(b) 上面三个工具确实拿不到所需数据。**不要**用 SQL 做对象类已经定义好的关系遍历——优先 subgraph。\n\n【subgraph 调用要点】每个 object_types 节点必须有 id/condition/limit；relation_types 每条边必须有 relation_type_id/source_object_type_id/target_object_type_id；无过滤的中间节点用 `{field: <主键名>, operation: \"exist\", value_from: \"const\", value: \"\"}` 作 no-op。\n\n不要编造未经验证的赛程/积分/球员数据。",
   "dolphin": "",
   "mode": "default",
   "is_dolphin_mode": 0,
@@ -331,6 +331,72 @@
             "input_name": "response_format",
             "input_type": "string",
             "input_desc": "json 或 toon，默认 json",
+            "map_type": "auto",
+            "map_value": "",
+            "enable": false
+          },
+          {
+            "input_name": "include_logic_params",
+            "input_type": "boolean",
+            "input_desc": "是否包含逻辑属性，默认 false",
+            "map_type": "auto",
+            "map_value": "",
+            "enable": false
+          }
+        ],
+        "intervention": false,
+        "intervention_confirmation_message": "",
+        "result_process_strategies": null
+      },
+      {
+        "tool_id": "__SUBGRAPH_TOOL_ID__",
+        "tool_box_id": "__CONTEXTLOADER_BOX_ID__",
+        "tool_timeout": 300,
+        "tool_input": [
+          {
+            "input_name": "x-business-domain",
+            "input_type": "string",
+            "input_desc": "业务域",
+            "map_type": "var",
+            "map_value": "header.x-business-domain",
+            "enable": true
+          },
+          {
+            "input_name": "x-account-id",
+            "input_type": "string",
+            "input_desc": "账户 ID",
+            "map_type": "var",
+            "map_value": "header.x-account-id",
+            "enable": true
+          },
+          {
+            "input_name": "x-account-type",
+            "input_type": "string",
+            "input_desc": "账户类型 user/app",
+            "map_type": "var",
+            "map_value": "header.x-account-type",
+            "enable": true
+          },
+          {
+            "input_name": "kn_id",
+            "input_type": "string",
+            "input_desc": "知识网络 ID（从 Agent data_source 注入）",
+            "map_type": "var",
+            "map_value": "self_config.data_source.knowledge_network[0].knowledge_network_id",
+            "enable": true
+          },
+          {
+            "input_name": "relation_type_paths",
+            "input_type": "array",
+            "input_desc": "关系路径数组，每条路径含 object_types[] 和 relation_types[]。object_types 每项必须 id/condition/limit；relation_types 每项必须 relation_type_id/source_object_type_id/target_object_type_id。先调 search_schema 拿对象类/关系类 id；过滤条件用 condition_operations 里允许的算子。无过滤的中间节点可用 {field:<pk>, operation:exist, value_from:const, value:\"\"} 作 no-op。",
+            "map_type": "auto",
+            "map_value": "",
+            "enable": true
+          },
+          {
+            "input_name": "response_format",
+            "input_type": "string",
+            "input_desc": "响应格式：json 或 toon，默认 json",
             "map_type": "auto",
             "map_value": "",
             "enable": false

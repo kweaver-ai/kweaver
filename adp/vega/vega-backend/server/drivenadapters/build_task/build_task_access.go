@@ -10,10 +10,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/kweaver-ai/kweaver-go-lib/db"
 	"github.com/kweaver-ai/kweaver-go-lib/otel/otellog"
 	"github.com/kweaver-ai/kweaver-go-lib/otel/oteltrace"
@@ -32,8 +32,72 @@ const (
 	BUILD_TASK_TABLE_NAME = "t_build_task"
 )
 
+func buildTaskColumns() []string {
+	return []string{
+		"f_id",
+		"f_resource_id",
+		"f_catalog_id",
+		"f_status",
+		"f_mode",
+		"f_total_count",
+		"f_synced_count",
+		"f_vectorized_count",
+		"f_synced_mark",
+		"f_error_msg",
+		"f_creator",
+		"f_creator_type",
+		"f_create_time",
+		"f_updater",
+		"f_updater_type",
+		"f_update_time",
+		"f_embedding_fields",
+		"f_build_key_fields",
+		"f_embedding_model",
+		"f_model_dimensions",
+	}
+}
+
 type buildTaskAccess struct {
 	db *sql.DB
+}
+
+type buildTaskScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanBuildTask(scanner buildTaskScanner) (*interfaces.BuildTask, error) {
+	buildTask := &interfaces.BuildTask{}
+	var creatorID, creatorType, updaterID, updaterType string
+
+	err := scanner.Scan(
+		&buildTask.ID,
+		&buildTask.ResourceID,
+		&buildTask.CatalogID,
+		&buildTask.Status,
+		&buildTask.Mode,
+		&buildTask.TotalCount,
+		&buildTask.SyncedCount,
+		&buildTask.VectorizedCount,
+		&buildTask.SyncedMark,
+		&buildTask.ErrorMsg,
+		&creatorID,
+		&creatorType,
+		&buildTask.CreateTime,
+		&updaterID,
+		&updaterType,
+		&buildTask.UpdateTime,
+		&buildTask.EmbeddingFields,
+		&buildTask.BuildKeyFields,
+		&buildTask.EmbeddingModel,
+		&buildTask.ModelDimensions,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	buildTask.Creator = interfaces.AccountInfo{ID: creatorID, Type: creatorType}
+	buildTask.Updater = interfaces.AccountInfo{ID: updaterID, Type: updaterType}
+	return buildTask, nil
 }
 
 // NewBuildTaskAccess creates a new BuildTaskAccess.
@@ -51,38 +115,36 @@ func (bta *buildTaskAccess) Create(ctx context.Context, buildTask *interfaces.Bu
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Create build task")
 	defer span.End()
 
-	query := `
-		INSERT INTO ` + BUILD_TASK_TABLE_NAME + ` (
-			f_id, f_resource_id, f_catalog_id, f_status, f_mode, f_total_count, f_synced_count, f_vectorized_count, f_synced_mark, f_error_msg,
-			f_creator, f_creator_type, f_create_time, f_updater, f_updater_type, f_update_time, f_embedding_fields, f_build_key_fields, f_embedding_model, f_model_dimensions
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`
+	sqlStr, vals, err := sq.Insert(BUILD_TASK_TABLE_NAME).
+		Columns(buildTaskColumns()...).
+		Values(
+			buildTask.ID,
+			buildTask.ResourceID,
+			buildTask.CatalogID,
+			buildTask.Status,
+			buildTask.Mode,
+			buildTask.TotalCount,
+			buildTask.SyncedCount,
+			buildTask.VectorizedCount,
+			buildTask.SyncedMark,
+			buildTask.ErrorMsg,
+			buildTask.Creator.ID,
+			buildTask.Creator.Type,
+			buildTask.CreateTime,
+			buildTask.Updater.ID,
+			buildTask.Updater.Type,
+			buildTask.UpdateTime,
+			buildTask.EmbeddingFields,
+			buildTask.BuildKeyFields,
+			buildTask.EmbeddingModel,
+			buildTask.ModelDimensions,
+		).ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return err
+	}
 
-	_, err := bta.db.ExecContext(
-		ctx,
-		query,
-		buildTask.ID,
-		buildTask.ResourceID,
-		buildTask.CatalogID,
-		buildTask.Status,
-		buildTask.Mode,
-		buildTask.TotalCount,
-		buildTask.SyncedCount,
-		buildTask.VectorizedCount,
-		buildTask.SyncedMark,
-		buildTask.ErrorMsg,
-		buildTask.Creator.ID,
-		buildTask.Creator.Type,
-		buildTask.CreateTime,
-		buildTask.Updater.ID,
-		buildTask.Updater.Type,
-		buildTask.UpdateTime,
-		buildTask.EmbeddingFields,
-		buildTask.BuildKeyFields,
-		buildTask.EmbeddingModel,
-		buildTask.ModelDimensions,
-	)
-
+	_, err = bta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		otellog.LogError(ctx, "Create build task failed", err)
 		return err
@@ -97,42 +159,17 @@ func (bta *buildTaskAccess) GetByID(ctx context.Context, id string) (*interfaces
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build task by ID")
 	defer span.End()
 
-	query := `
-		SELECT 
-			f_id, f_resource_id, f_catalog_id, f_status, f_mode, f_total_count, f_synced_count, f_vectorized_count, f_synced_mark, f_error_msg,
-			f_creator, f_creator_type, f_create_time, f_updater, f_updater_type, f_update_time, f_embedding_fields, f_build_key_fields, f_embedding_model, f_model_dimensions
-		FROM ` + BUILD_TASK_TABLE_NAME + `
-		WHERE f_id = ?
-	`
+	sqlStr, vals, err := sq.Select(buildTaskColumns()...).
+		From(BUILD_TASK_TABLE_NAME).
+		Where(sq.Eq{"f_id": id}).
+		ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return nil, err
+	}
 
-	row := bta.db.QueryRowContext(ctx, query, id)
-
-	buildTask := &interfaces.BuildTask{}
-	var creatorID, creatorType, updaterID, updaterType string
-
-	err := row.Scan(
-		&buildTask.ID,
-		&buildTask.ResourceID,
-		&buildTask.CatalogID,
-		&buildTask.Status,
-		&buildTask.Mode,
-		&buildTask.TotalCount,
-		&buildTask.SyncedCount,
-		&buildTask.VectorizedCount,
-		&buildTask.SyncedMark,
-		&buildTask.ErrorMsg,
-		&creatorID,
-		&creatorType,
-		&buildTask.CreateTime,
-		&updaterID,
-		&updaterType,
-		&buildTask.UpdateTime,
-		&buildTask.EmbeddingFields,
-		&buildTask.BuildKeyFields,
-		&buildTask.EmbeddingModel,
-		&buildTask.ModelDimensions,
-	)
-
+	row := bta.db.QueryRowContext(ctx, sqlStr, vals...)
+	buildTask, err := scanBuildTask(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "Build task not found")
 		return nil, nil
@@ -141,16 +178,6 @@ func (bta *buildTaskAccess) GetByID(ctx context.Context, id string) (*interfaces
 	if err != nil {
 		otellog.LogError(ctx, "Get build task by ID failed", err)
 		return nil, err
-	}
-
-	buildTask.Creator = interfaces.AccountInfo{
-		ID:   creatorID,
-		Type: creatorType,
-	}
-
-	buildTask.Updater = interfaces.AccountInfo{
-		ID:   updaterID,
-		Type: updaterType,
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -162,43 +189,18 @@ func (bta *buildTaskAccess) GetByResourceID(ctx context.Context, resourceID stri
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build task by resource ID")
 	defer span.End()
 
-	query := `
-		SELECT 
-			f_id, f_resource_id, f_catalog_id, f_status, f_mode, f_total_count, f_synced_count, f_vectorized_count, f_synced_mark, f_error_msg,
-			f_creator, f_creator_type, f_create_time, f_updater, f_updater_type, f_update_time, f_embedding_fields, f_build_key_fields, f_embedding_model, f_model_dimensions
-		FROM ` + BUILD_TASK_TABLE_NAME + `
-		WHERE f_resource_id = ?
-		LIMIT 1
-	`
+	sqlStr, vals, err := sq.Select(buildTaskColumns()...).
+		From(BUILD_TASK_TABLE_NAME).
+		Where(sq.Eq{"f_resource_id": resourceID}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return nil, err
+	}
 
-	row := bta.db.QueryRowContext(ctx, query, resourceID)
-
-	buildTask := &interfaces.BuildTask{}
-	var creatorID, creatorType, updaterID, updaterType string
-
-	err := row.Scan(
-		&buildTask.ID,
-		&buildTask.ResourceID,
-		&buildTask.CatalogID,
-		&buildTask.Status,
-		&buildTask.Mode,
-		&buildTask.TotalCount,
-		&buildTask.SyncedCount,
-		&buildTask.VectorizedCount,
-		&buildTask.SyncedMark,
-		&buildTask.ErrorMsg,
-		&creatorID,
-		&creatorType,
-		&buildTask.CreateTime,
-		&updaterID,
-		&updaterType,
-		&buildTask.UpdateTime,
-		&buildTask.EmbeddingFields,
-		&buildTask.BuildKeyFields,
-		&buildTask.EmbeddingModel,
-		&buildTask.ModelDimensions,
-	)
-
+	row := bta.db.QueryRowContext(ctx, sqlStr, vals...)
+	buildTask, err := scanBuildTask(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "Build task not found")
 		return nil, nil
@@ -207,16 +209,6 @@ func (bta *buildTaskAccess) GetByResourceID(ctx context.Context, resourceID stri
 	if err != nil {
 		otellog.LogError(ctx, "Scan build task row failed", err)
 		return nil, err
-	}
-
-	buildTask.Creator = interfaces.AccountInfo{
-		ID:   creatorID,
-		Type: creatorType,
-	}
-
-	buildTask.Updater = interfaces.AccountInfo{
-		ID:   updaterID,
-		Type: updaterType,
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -228,15 +220,16 @@ func (bta *buildTaskAccess) GetByCatalogID(ctx context.Context, catalogID string
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build tasks by catalog ID")
 	defer span.End()
 
-	query := `
-		SELECT 
-			f_id, f_resource_id, f_catalog_id, f_status, f_mode, f_total_count, f_synced_count, f_vectorized_count, f_synced_mark, f_error_msg,
-			f_creator, f_creator_type, f_create_time, f_updater, f_updater_type, f_update_time, f_embedding_fields, f_build_key_fields, f_embedding_model, f_model_dimensions
-		FROM ` + BUILD_TASK_TABLE_NAME + `
-		WHERE f_catalog_id = ?
-	`
+	sqlStr, vals, err := sq.Select(buildTaskColumns()...).
+		From(BUILD_TASK_TABLE_NAME).
+		Where(sq.Eq{"f_catalog_id": catalogID}).
+		ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return nil, err
+	}
 
-	rows, err := bta.db.QueryContext(ctx, query, catalogID)
+	rows, err := bta.db.QueryContext(ctx, sqlStr, vals...)
 	if err != nil {
 		otellog.LogError(ctx, "Get build tasks by catalog ID failed", err)
 		return nil, err
@@ -245,45 +238,10 @@ func (bta *buildTaskAccess) GetByCatalogID(ctx context.Context, catalogID string
 
 	buildTasks := []*interfaces.BuildTask{}
 	for rows.Next() {
-		buildTask := &interfaces.BuildTask{}
-		var creatorID, creatorType, updaterID, updaterType string
-
-		err := rows.Scan(
-			&buildTask.ID,
-			&buildTask.ResourceID,
-			&buildTask.CatalogID,
-			&buildTask.Status,
-			&buildTask.Mode,
-			&buildTask.TotalCount,
-			&buildTask.SyncedCount,
-			&buildTask.VectorizedCount,
-			&buildTask.SyncedMark,
-			&buildTask.ErrorMsg,
-			&creatorID,
-			&creatorType,
-			&buildTask.CreateTime,
-			&updaterID,
-			&updaterType,
-			&buildTask.UpdateTime,
-			&buildTask.EmbeddingFields,
-			&buildTask.BuildKeyFields,
-			&buildTask.EmbeddingModel,
-			&buildTask.ModelDimensions,
-		)
-
+		buildTask, err := scanBuildTask(rows)
 		if err != nil {
 			otellog.LogError(ctx, "Scan build task row failed", err)
 			return nil, err
-		}
-
-		buildTask.Creator = interfaces.AccountInfo{
-			ID:   creatorID,
-			Type: creatorType,
-		}
-
-		buildTask.Updater = interfaces.AccountInfo{
-			ID:   updaterID,
-			Type: updaterType,
 		}
 
 		buildTasks = append(buildTasks, buildTask)
@@ -303,11 +261,6 @@ func (bta *buildTaskAccess) UpdateStatus(ctx context.Context, id string, updates
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Update build task status")
 	defer span.End()
 
-	// Build update query dynamically
-	setClauses := []string{}
-	args := []interface{}{}
-
-	// Map field names to column names
 	fieldMap := map[string]string{
 		"status":          "f_status",
 		"totalCount":      "f_total_count",
@@ -317,35 +270,23 @@ func (bta *buildTaskAccess) UpdateStatus(ctx context.Context, id string, updates
 		"errorMsg":        "f_error_msg",
 	}
 
-	// Add fields to update
+	builder := sq.Update(BUILD_TASK_TABLE_NAME)
 	for field, value := range updates {
 		if column, ok := fieldMap[field]; ok {
-			setClauses = append(setClauses, column+" = ?")
-			args = append(args, value)
+			builder = builder.Set(column, value)
 		}
 	}
 
-	// Always update update time
-	setClauses = append(setClauses, "f_update_time = ?")
-	updateTime := time.Now().UnixMilli()
-	args = append(args, updateTime)
+	sqlStr, vals, err := builder.
+		Set("f_update_time", time.Now().UnixMilli()).
+		Where(sq.Eq{"f_id": id}).
+		ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return err
+	}
 
-	// Add id to args
-	args = append(args, id)
-
-	// Build final query
-	query := `
-		UPDATE ` + BUILD_TASK_TABLE_NAME + `
-		SET ` + strings.Join(setClauses, ", ") + `
-		WHERE f_id = ?
-	`
-
-	_, err := bta.db.ExecContext(
-		ctx,
-		query,
-		args...,
-	)
-
+	_, err = bta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		otellog.LogError(ctx, "Update build task status failed", err)
 		return err
@@ -360,14 +301,17 @@ func (bta *buildTaskAccess) GetStatus(ctx context.Context, id string) (string, e
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build task status")
 	defer span.End()
 
-	query := `
-		SELECT f_status
-		FROM ` + BUILD_TASK_TABLE_NAME + `
-		WHERE f_id = ?
-	`
-
 	var status string
-	err := bta.db.QueryRowContext(ctx, query, id).Scan(&status)
+	sqlStr, vals, err := sq.Select("f_status").
+		From(BUILD_TASK_TABLE_NAME).
+		Where(sq.Eq{"f_id": id}).
+		ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return "", err
+	}
+
+	err = bta.db.QueryRowContext(ctx, sqlStr, vals...).Scan(&status)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "Build task not found")
 		return "", fmt.Errorf("build task not found")
@@ -387,61 +331,55 @@ func (bta *buildTaskAccess) List(ctx context.Context, params interfaces.BuildTas
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Get build tasks with filters")
 	defer span.End()
 
-	whereClauses := []string{}
-	args := []interface{}{}
+	builder := sq.Select(buildTaskColumns()...).
+		From(BUILD_TASK_TABLE_NAME)
+
+	countBuilder := sq.Select("COUNT(*)").
+		From(BUILD_TASK_TABLE_NAME)
+
 	if params.ResourceID != "" {
-		whereClauses = append(whereClauses, "f_resource_id = ?")
-		args = append(args, params.ResourceID)
+		builder = builder.Where(sq.Eq{"f_resource_id": params.ResourceID})
+		countBuilder = countBuilder.Where(sq.Eq{"f_resource_id": params.ResourceID})
 	}
 	if params.CatalogID != "" {
-		whereClauses = append(whereClauses, "f_catalog_id = ?")
-		args = append(args, params.CatalogID)
+		builder = builder.Where(sq.Eq{"f_catalog_id": params.CatalogID})
+		countBuilder = countBuilder.Where(sq.Eq{"f_catalog_id": params.CatalogID})
 	}
 	if params.Status != "" {
-		whereClauses = append(whereClauses, "f_status = ?")
-		args = append(args, params.Status)
+		builder = builder.Where(sq.Eq{"f_status": params.Status})
+		countBuilder = countBuilder.Where(sq.Eq{"f_status": params.Status})
 	}
 	if params.Mode != "" {
-		whereClauses = append(whereClauses, "f_mode = ?")
-		args = append(args, params.Mode)
-	}
-	whereClause := ""
-	if len(whereClauses) > 0 {
-		whereClause = "WHERE " + strings.Join(whereClauses, " AND ")
+		builder = builder.Where(sq.Eq{"f_mode": params.Mode})
+		countBuilder = countBuilder.Where(sq.Eq{"f_mode": params.Mode})
 	}
 
+	countSQL, countVals, err := countBuilder.ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build count sql failed")
+		return nil, 0, err
+	}
 	var totalCount int64
-	countQuery := `SELECT COUNT(*) FROM ` + BUILD_TASK_TABLE_NAME + ` ` + whereClause
-	if err := bta.db.QueryRowContext(ctx, countQuery, args...).Scan(&totalCount); err != nil {
+	if err := bta.db.QueryRowContext(ctx, countSQL, countVals...).Scan(&totalCount); err != nil {
 		otellog.LogError(ctx, "Count build tasks failed", err)
 		return nil, 0, err
 	}
 
-	orderBy := "f_update_time"
-	switch params.Sort {
-	case "create_time":
-		orderBy = "f_create_time"
-	case "update_time":
-		orderBy = "f_update_time"
-	case "status":
-		orderBy = "f_status"
-	case "mode":
-		orderBy = "f_mode"
-	}
-	direction := "DESC"
-	if params.Direction == interfaces.ASC_DIRECTION {
-		direction = "ASC"
+	if params.Sort != "" && params.Direction != "" {
+		builder = builder.OrderBy(fmt.Sprintf("%s %s", params.Sort, params.Direction))
+	} else {
+		builder = builder.OrderBy("f_update_time DESC")
 	}
 
-	query := `
-		SELECT
-			f_id, f_resource_id, f_catalog_id, f_status, f_mode, f_total_count, f_synced_count, f_vectorized_count, f_synced_mark, f_error_msg,
-			f_creator, f_creator_type, f_create_time, f_updater, f_updater_type, f_update_time, f_embedding_fields, f_build_key_fields, f_embedding_model, f_model_dimensions
-		FROM ` + BUILD_TASK_TABLE_NAME + ` ` + whereClause + `
-		ORDER BY ` + orderBy + ` ` + direction + `
-		LIMIT ? OFFSET ?
-	`
-	queryArgs := append(args, params.Limit, params.Offset)
+	if params.Limit > 0 {
+		builder = builder.Limit(uint64(params.Limit)).Offset(uint64(params.Offset))
+	}
+
+	query, queryArgs, err := builder.ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return nil, 0, err
+	}
 	rows, err := bta.db.QueryContext(ctx, query, queryArgs...)
 	if err != nil {
 		otellog.LogError(ctx, "Get build tasks with filters failed", err)
@@ -451,19 +389,11 @@ func (bta *buildTaskAccess) List(ctx context.Context, params interfaces.BuildTas
 
 	buildTasks := []*interfaces.BuildTask{}
 	for rows.Next() {
-		buildTask := &interfaces.BuildTask{}
-		var creatorID, creatorType, updaterID, updaterType string
-		if err := rows.Scan(
-			&buildTask.ID, &buildTask.ResourceID, &buildTask.CatalogID, &buildTask.Status, &buildTask.Mode,
-			&buildTask.TotalCount, &buildTask.SyncedCount, &buildTask.VectorizedCount, &buildTask.SyncedMark, &buildTask.ErrorMsg,
-			&creatorID, &creatorType, &buildTask.CreateTime, &updaterID, &updaterType, &buildTask.UpdateTime,
-			&buildTask.EmbeddingFields, &buildTask.BuildKeyFields, &buildTask.EmbeddingModel, &buildTask.ModelDimensions,
-		); err != nil {
+		buildTask, err := scanBuildTask(rows)
+		if err != nil {
 			otellog.LogError(ctx, "Scan build task row failed", err)
 			return nil, 0, err
 		}
-		buildTask.Creator = interfaces.AccountInfo{ID: creatorID, Type: creatorType}
-		buildTask.Updater = interfaces.AccountInfo{ID: updaterID, Type: updaterType}
 		buildTasks = append(buildTasks, buildTask)
 	}
 	if err := rows.Err(); err != nil {
@@ -480,12 +410,15 @@ func (bta *buildTaskAccess) Delete(ctx context.Context, id string) error {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Delete build task")
 	defer span.End()
 
-	query := `
-		DELETE FROM ` + BUILD_TASK_TABLE_NAME + `
-		WHERE f_id = ?
-	`
+	sqlStr, vals, err := sq.Delete(BUILD_TASK_TABLE_NAME).
+		Where(sq.Eq{"f_id": id}).
+		ToSql()
+	if err != nil {
+		span.SetStatus(codes.Error, "Build sql failed")
+		return err
+	}
 
-	result, err := bta.db.ExecContext(ctx, query, id)
+	result, err := bta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		otellog.LogError(ctx, "Delete build task failed", err)
 		return err

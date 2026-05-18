@@ -23,6 +23,14 @@ type DiscoverSchedule struct {
 	UpdateTime int64       `json:"update_time"`
 }
 
+var (
+	DISCOVER_SCHEDULE_SORT = map[string]string{
+		"create_time": "f_create_time",
+		"update_time": "f_update_time",
+		"next_run":    "f_next_run",
+	}
+)
+
 // DiscoverScheduleQueryParams holds query parameters for scheduled discover tasks.
 type DiscoverScheduleQueryParams struct {
 	PaginationQueryParams

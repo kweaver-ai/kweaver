@@ -40,8 +40,84 @@ type discoverTaskAccess struct {
 	db         *sql.DB
 }
 
+type discoverTaskScanner interface {
+	Scan(dest ...any) error
+}
+
+func discoverTaskColumns() []string {
+	return []string{
+		"f_id",
+		"f_catalog_id",
+		"f_schedule_id",
+		"f_strategies",
+		"f_trigger_type",
+		"f_status",
+		"f_progress",
+		"f_message",
+		"f_start_time",
+		"f_finish_time",
+		"f_result",
+		"f_creator",
+		"f_creator_type",
+		"f_create_time",
+	}
+}
+
+func scanDiscoverTask(scanner discoverTaskScanner) (*interfaces.DiscoverTask, error) {
+	task := &interfaces.DiscoverTask{}
+	var resultStr sql.NullString
+	var strategiesStr sql.NullString
+
+	err := scanner.Scan(
+		&task.ID,
+		&task.CatalogID,
+		&task.ScheduleID,
+		&strategiesStr,
+		&task.TriggerType,
+		&task.Status,
+		&task.Progress,
+		&task.Message,
+		&task.StartTime,
+		&task.FinishTime,
+		&resultStr,
+		&task.Creator.ID,
+		&task.Creator.Type,
+		&task.CreateTime,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if strategiesStr.Valid && strategiesStr.String != "" {
+		if err := sonic.Unmarshal([]byte(strategiesStr.String), &task.Strategies); err != nil {
+			logger.Errorf("Failed to unmarshal strategies: %v", err)
+			task.Strategies = []string{}
+		}
+	} else {
+		task.Strategies = []string{}
+	}
+
+	if resultStr.Valid && resultStr.String != "" {
+		task.Result = &interfaces.DiscoverResult{}
+		_ = sonic.UnmarshalString(resultStr.String, task.Result)
+	}
+
+	return task, nil
+}
+
+// NewDiscoverTaskAccess creates a new DiscoverTaskAccess.
+func NewDiscoverTaskAccess(appSetting *common.AppSetting) interfaces.DiscoverTaskAccess {
+	dtAccessOnce.Do(func() {
+		dtAccess = &discoverTaskAccess{
+			appSetting: appSetting,
+			db:         libdb.NewDB(&appSetting.DBSetting),
+		}
+	})
+	return dtAccess
+}
+
 // GetScheduledTaskStrategies retrieves strategies from t_discover_schedule table by ID.
-func (da *discoverTaskAccess) GetScheduledTaskStrategies(ctx context.Context, scheduledTaskID string) ([]string, error) {
+func (dta *discoverTaskAccess) GetScheduledTaskStrategies(ctx context.Context, scheduledTaskID string) ([]string, error) {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Query discover_schedule by ID")
 	defer span.End()
 
@@ -59,7 +135,7 @@ func (da *discoverTaskAccess) GetScheduledTaskStrategies(ctx context.Context, sc
 	}
 
 	var strategiesStr string
-	err = da.db.QueryRowContext(ctx, sqlStr, vals...).Scan(&strategiesStr)
+	err = dta.db.QueryRowContext(ctx, sqlStr, vals...).Scan(&strategiesStr)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "")
 		return []string{}, nil
@@ -84,19 +160,8 @@ func (da *discoverTaskAccess) GetScheduledTaskStrategies(ctx context.Context, sc
 	return strategies, nil
 }
 
-// NewDiscoverTaskAccess creates a new DiscoverTaskAccess.
-func NewDiscoverTaskAccess(appSetting *common.AppSetting) interfaces.DiscoverTaskAccess {
-	dtAccessOnce.Do(func() {
-		dtAccess = &discoverTaskAccess{
-			appSetting: appSetting,
-			db:         libdb.NewDB(&appSetting.DBSetting),
-		}
-	})
-	return dtAccess
-}
-
 // Create creates a new DiscoverTask.
-func (da *discoverTaskAccess) Create(ctx context.Context, task *interfaces.DiscoverTask) error {
+func (dta *discoverTaskAccess) Create(ctx context.Context, task *interfaces.DiscoverTask) error {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Insert into discover_task")
 	defer span.End()
 
@@ -116,22 +181,7 @@ func (da *discoverTaskAccess) Create(ctx context.Context, task *interfaces.Disco
 	}
 
 	sqlStr, vals, err := sq.Insert(DISCOVER_TASK_TABLE_NAME).
-		Columns(
-			"f_id",
-			"f_catalog_id",
-			"f_schedule_id",
-			"f_strategies",
-			"f_trigger_type",
-			"f_status",
-			"f_progress",
-			"f_message",
-			"f_start_time",
-			"f_finish_time",
-			"f_result",
-			"f_creator",
-			"f_creator_type",
-			"f_create_time",
-		).
+		Columns(discoverTaskColumns()...).
 		Values(
 			task.ID,
 			task.CatalogID,
@@ -155,7 +205,7 @@ func (da *discoverTaskAccess) Create(ctx context.Context, task *interfaces.Disco
 
 	otellog.LogInfo(ctx, fmt.Sprintf("Insert discover_task SQL: %s", sqlStr))
 
-	_, err = da.db.ExecContext(ctx, sqlStr, vals...)
+	_, err = dta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		otellog.LogError(ctx, "Insert discover_schedule failed", err)
 		return err
@@ -166,28 +216,14 @@ func (da *discoverTaskAccess) Create(ctx context.Context, task *interfaces.Disco
 }
 
 // GetByID retrieves a DiscoverTask by ID.
-func (da *discoverTaskAccess) GetByID(ctx context.Context, id string) (*interfaces.DiscoverTask, error) {
+func (dta *discoverTaskAccess) GetByID(ctx context.Context, id string) (*interfaces.DiscoverTask, error) {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Query discover_task by ID")
 	defer span.End()
 
 	span.SetAttributes(attr.Key("task_id").String(id))
 
-	sqlStr, vals, err := sq.Select(
-		"f_id",
-		"f_catalog_id",
-		"f_schedule_id",
-		"f_strategies",
-		"f_trigger_type",
-		"f_status",
-		"f_progress",
-		"f_message",
-		"f_start_time",
-		"f_finish_time",
-		"f_result",
-		"f_creator",
-		"f_creator_type",
-		"f_create_time",
-	).From(DISCOVER_TASK_TABLE_NAME).
+	sqlStr, vals, err := sq.Select(discoverTaskColumns()...).
+		From(DISCOVER_TASK_TABLE_NAME).
 		Where(sq.Eq{"f_id": id}).
 		ToSql()
 	if err != nil {
@@ -196,27 +232,8 @@ func (da *discoverTaskAccess) GetByID(ctx context.Context, id string) (*interfac
 		return nil, err
 	}
 
-	task := &interfaces.DiscoverTask{}
-	var resultStr sql.NullString
-	var strategiesStr sql.NullString
-
-	row := da.db.QueryRowContext(ctx, sqlStr, vals...)
-	err = row.Scan(
-		&task.ID,
-		&task.CatalogID,
-		&task.ScheduleID,
-		&strategiesStr,
-		&task.TriggerType,
-		&task.Status,
-		&task.Progress,
-		&task.Message,
-		&task.StartTime,
-		&task.FinishTime,
-		&resultStr,
-		&task.Creator.ID,
-		&task.Creator.Type,
-		&task.CreateTime,
-	)
+	row := dta.db.QueryRowContext(ctx, sqlStr, vals...)
+	task, err := scanDiscoverTask(row)
 	if err == sql.ErrNoRows {
 		span.SetStatus(codes.Ok, "")
 		return nil, nil
@@ -227,47 +244,16 @@ func (da *discoverTaskAccess) GetByID(ctx context.Context, id string) (*interfac
 		return nil, err
 	}
 
-	// Parse strategies string to array
-	if strategiesStr.Valid && strategiesStr.String != "" {
-		if err := sonic.Unmarshal([]byte(strategiesStr.String), &task.Strategies); err != nil {
-			logger.Errorf("Failed to unmarshal strategies: %v", err)
-			task.Strategies = []string{} // Set to empty array on error
-		}
-	} else {
-		task.Strategies = []string{}
-	}
-
-	// Deserialize result
-	if resultStr.Valid && resultStr.String != "" {
-		task.Result = &interfaces.DiscoverResult{}
-		_ = sonic.UnmarshalString(resultStr.String, task.Result)
-	}
-
 	span.SetStatus(codes.Ok, "")
 	return task, nil
 }
 
 // List lists DiscoverTasks with filters.
-func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.DiscoverTaskQueryParams) ([]*interfaces.DiscoverTask, int64, error) {
+func (dta *discoverTaskAccess) List(ctx context.Context, params interfaces.DiscoverTaskQueryParams) ([]*interfaces.DiscoverTask, int64, error) {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "List discover_tasks")
 	defer span.End()
 
-	builder := sq.Select(
-		"f_id",
-		"f_catalog_id",
-		"f_schedule_id",
-		"f_strategies",
-		"f_trigger_type",
-		"f_status",
-		"f_progress",
-		"f_message",
-		"f_start_time",
-		"f_finish_time",
-		"f_result",
-		"f_creator",
-		"f_creator_type",
-		"f_create_time",
-	).From(DISCOVER_TASK_TABLE_NAME)
+	builder := sq.Select(discoverTaskColumns()...).From(DISCOVER_TASK_TABLE_NAME)
 
 	countBuilder := sq.Select("COUNT(*)").From(DISCOVER_TASK_TABLE_NAME)
 
@@ -290,7 +276,7 @@ func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.Discov
 
 	countSql, countVals, _ := countBuilder.ToSql()
 	var total int64
-	err := da.db.QueryRowContext(ctx, countSql, countVals...).Scan(&total)
+	err := dta.db.QueryRowContext(ctx, countSql, countVals...).Scan(&total)
 	if err != nil {
 		logger.Errorf("Failed to count discover_tasks: %v", err)
 		span.SetStatus(codes.Error, "Count failed")
@@ -301,7 +287,11 @@ func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.Discov
 	if params.Limit > 0 {
 		builder = builder.Limit(uint64(params.Limit)).Offset(uint64(params.Offset))
 	}
-	builder = builder.OrderBy("f_create_time DESC")
+	if params.Sort != "" && params.Direction != "" {
+		builder = builder.OrderBy(fmt.Sprintf("%s %s", params.Sort, params.Direction))
+	} else {
+		builder = builder.OrderBy("f_create_time DESC")
+	}
 
 	sqlStr, vals, err := builder.ToSql()
 	if err != nil {
@@ -309,7 +299,7 @@ func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.Discov
 		return nil, 0, err
 	}
 
-	rows, err := da.db.QueryContext(ctx, sqlStr, vals...)
+	rows, err := dta.db.QueryContext(ctx, sqlStr, vals...)
 	if err != nil {
 		span.SetStatus(codes.Error, "Query failed")
 		return nil, 0, err
@@ -318,45 +308,10 @@ func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.Discov
 
 	tasks := make([]*interfaces.DiscoverTask, 0)
 	for rows.Next() {
-		task := &interfaces.DiscoverTask{}
-		var resultStr sql.NullString
-		var strategiesStr sql.NullString
-
-		err := rows.Scan(
-			&task.ID,
-			&task.CatalogID,
-			&task.ScheduleID,
-			&strategiesStr,
-			&task.TriggerType,
-			&task.Status,
-			&task.Progress,
-			&task.Message,
-			&task.StartTime,
-			&task.FinishTime,
-			&resultStr,
-			&task.Creator.ID,
-			&task.Creator.Type,
-			&task.CreateTime,
-		)
+		task, err := scanDiscoverTask(rows)
 		if err != nil {
 			span.SetStatus(codes.Error, "Scan row failed")
 			return nil, 0, err
-		}
-
-		// Parse strategies string to array
-		if strategiesStr.Valid && strategiesStr.String != "" {
-			if err := sonic.Unmarshal([]byte(strategiesStr.String), &task.Strategies); err != nil {
-				logger.Errorf("Failed to unmarshal strategies: %v", err)
-				task.Strategies = []string{} // Set to empty array on error
-			}
-		} else {
-			task.Strategies = []string{}
-		}
-
-		// Deserialize result
-		if resultStr.Valid && resultStr.String != "" {
-			task.Result = &interfaces.DiscoverResult{}
-			_ = sonic.UnmarshalString(resultStr.String, task.Result)
 		}
 
 		tasks = append(tasks, task)
@@ -367,7 +322,7 @@ func (da *discoverTaskAccess) List(ctx context.Context, params interfaces.Discov
 }
 
 // UpdateStatus updates a DiscoverTask's status and message.
-func (da *discoverTaskAccess) UpdateStatus(ctx context.Context, id, status, message string, stime int64) error {
+func (dta *discoverTaskAccess) UpdateStatus(ctx context.Context, id, status, message string, stime int64) error {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Update discover_task status")
 	defer span.End()
 
@@ -392,7 +347,7 @@ func (da *discoverTaskAccess) UpdateStatus(ctx context.Context, id, status, mess
 		return err
 	}
 
-	_, err = da.db.ExecContext(ctx, sqlStr, vals...)
+	_, err = dta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		span.SetStatus(codes.Error, "Update failed")
 		return err
@@ -403,7 +358,7 @@ func (da *discoverTaskAccess) UpdateStatus(ctx context.Context, id, status, mess
 }
 
 // UpdateProgress updates a DiscoverTask's progress.
-func (da *discoverTaskAccess) UpdateProgress(ctx context.Context, id string, progress int) error {
+func (dta *discoverTaskAccess) UpdateProgress(ctx context.Context, id string, progress int) error {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Update discover_task progress")
 	defer span.End()
 
@@ -417,7 +372,7 @@ func (da *discoverTaskAccess) UpdateProgress(ctx context.Context, id string, pro
 		return err
 	}
 
-	_, err = da.db.ExecContext(ctx, sqlStr, vals...)
+	_, err = dta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		span.SetStatus(codes.Error, "Update failed")
 		return err
@@ -428,7 +383,7 @@ func (da *discoverTaskAccess) UpdateProgress(ctx context.Context, id string, pro
 }
 
 // UpdateResult updates a DiscoverTask's result and sets status to completed.
-func (da *discoverTaskAccess) UpdateResult(ctx context.Context, id string, result *interfaces.DiscoverResult, stime int64) error {
+func (dta *discoverTaskAccess) UpdateResult(ctx context.Context, id string, result *interfaces.DiscoverResult, stime int64) error {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Update discover_task result")
 	defer span.End()
 
@@ -446,7 +401,7 @@ func (da *discoverTaskAccess) UpdateResult(ctx context.Context, id string, resul
 		return err
 	}
 
-	_, err = da.db.ExecContext(ctx, sqlStr, vals...)
+	_, err = dta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		span.SetStatus(codes.Error, "Update failed")
 		return err
@@ -457,7 +412,7 @@ func (da *discoverTaskAccess) UpdateResult(ctx context.Context, id string, resul
 }
 
 // CheckExistByStatuses checks if DiscoverTasks exist by catalog ID and statuses.
-func (da *discoverTaskAccess) CheckExistByStatuses(ctx context.Context, catalogID string, statuses []string) (bool, error) {
+func (dta *discoverTaskAccess) CheckExistByStatuses(ctx context.Context, catalogID string, statuses []string) (bool, error) {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Check discover_tasks exist")
 	defer span.End()
 
@@ -472,7 +427,7 @@ func (da *discoverTaskAccess) CheckExistByStatuses(ctx context.Context, catalogI
 
 	countSql, countVals, _ := countBuilder.ToSql()
 	var total int64
-	err := da.db.QueryRowContext(ctx, countSql, countVals...).Scan(&total)
+	err := dta.db.QueryRowContext(ctx, countSql, countVals...).Scan(&total)
 	if err != nil {
 		logger.Errorf("Failed to count discover_tasks: %v", err)
 		span.SetStatus(codes.Error, "Count failed")
@@ -484,7 +439,7 @@ func (da *discoverTaskAccess) CheckExistByStatuses(ctx context.Context, catalogI
 }
 
 // Delete deletes a DiscoverTask by ID. Returns sql.ErrNoRows if no row was affected.
-func (da *discoverTaskAccess) Delete(ctx context.Context, id string) error {
+func (dta *discoverTaskAccess) Delete(ctx context.Context, id string) error {
 	ctx, span := oteltrace.StartNamedClientSpan(ctx, "Delete discover_task")
 	defer span.End()
 
@@ -499,7 +454,7 @@ func (da *discoverTaskAccess) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	res, err := da.db.ExecContext(ctx, sqlStr, vals...)
+	res, err := dta.db.ExecContext(ctx, sqlStr, vals...)
 	if err != nil {
 		otellog.LogError(ctx, "Delete discover_task failed", err)
 		return err

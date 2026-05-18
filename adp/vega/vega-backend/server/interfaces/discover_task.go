@@ -24,6 +24,14 @@ const (
 	DiscoverTaskTopic = "adp-vega-discover-task"
 )
 
+var (
+	DISCOVER_TASK_SORT = map[string]string{
+		"create_time": "f_create_time",
+		"start_time":  "f_start_time",
+		"finish_time": "f_finish_time",
+	}
+)
+
 // DiscoverTask represents a discover task entity.
 type DiscoverTask struct {
 	ID          string   `json:"id"`

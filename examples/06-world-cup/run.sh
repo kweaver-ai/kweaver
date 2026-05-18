@@ -911,13 +911,15 @@ resolve_contextloader_ids() {
         exit 1
     fi
     tools_raw="$("${KWEAV[@]}" tool list --toolbox "$box_id" 2>/dev/null | _extract_cli_json)" || true
+    # In our docs we call this tool "search_schema" (its purpose); the platform
+    # exposes it under the name `kn_search` and we drive it with only_schema=true.
     search_id="$(printf '%s' "$tools_raw" | jq -r '
         (.tools // .entries // .data // .items // [])[]?
-        | select(.name == "search_schema") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
+        | select(.name == "kn_search") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
     qoi_id="$(printf '%s' "$tools_raw" | jq -r '
         (.tools // .entries // .data // .items // [])[]?
         | select(.name == "query_object_instance") | (.tool_id // .id // empty)' 2>/dev/null | head -1)"
-    [ -z "$search_id" ] && { echo "Error: search_schema tool not found in contextloader toolbox $box_id" >&2; exit 1; }
+    [ -z "$search_id" ] && { echo "Error: kn_search tool (search_schema) not found in contextloader toolbox $box_id" >&2; exit 1; }
     [ -z "$qoi_id" ]    && { echo "Error: query_object_instance tool not found in contextloader toolbox $box_id" >&2; exit 1; }
     printf '%s\t%s\t%s\n' "$box_id" "$search_id" "$qoi_id"
 }

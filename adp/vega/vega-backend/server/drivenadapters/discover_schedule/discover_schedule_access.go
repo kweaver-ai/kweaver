@@ -353,7 +353,11 @@ func (dsa *discoverScheduleAccess) List(ctx context.Context, params interfaces.D
 	}
 
 	// Apply ordering and pagination
-	builder = builder.OrderBy("f_create_time DESC")
+	if params.Sort != "" {
+		builder = builder.OrderBy(fmt.Sprintf("%s %s", params.Sort, params.Direction))
+	} else {
+		builder = builder.OrderBy("f_create_time DESC")
+	}
 	// Pagination
 	if params.Limit > 0 {
 		builder = builder.Limit(uint64(params.Limit)).Offset(uint64(params.Offset))

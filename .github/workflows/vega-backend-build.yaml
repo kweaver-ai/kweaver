@@ -1,0 +1,26 @@
+name: vega-backend-build
+
+on:
+  push:
+    branches: [main, "release/*"]
+    paths:
+      - "adp/vega/vega-backend/**"
+      - ".github/workflows/vega-backend-build.yaml"
+      - ".github/workflows/reusable-build-service.yaml"
+      - "VERSION"
+  workflow_dispatch:
+
+concurrency:
+  group: vega-backend-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-build-service.yaml
+    with:
+      service_name: vega-backend
+      image_name: core/vega-backend
+      chart_dir: adp/vega/vega-backend/helm/vega-backend
+      dockerfile: adp/vega/vega-backend/docker/Dockerfile
+      build_context: adp/vega/vega-backend
+    secrets: inherit

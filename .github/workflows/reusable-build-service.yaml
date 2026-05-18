@@ -1,0 +1,575 @@
+name: Reusable - Build And Push Service
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: "Service name (used for job names, chart name, cache scope)"
+        required: true
+        type: string
+      image_name:
+        description: "Image name under IMAGE_NAMESPACE, e.g. core/xxx"
+        required: true
+        type: string
+      chart_dir:
+        description: "Path to helm chart directory"
+        required: true
+        type: string
+      dockerfile:
+        description: "Path to Dockerfile"
+        required: true
+        type: string
+      build_context:
+        description: "Docker build context relative to repo root (e.g. adp/vega/vega-backend). Defaults to repo root."
+        required: false
+        type: string
+        default: "."
+      image_repository:
+        description: "Full repository value for Helm values.yaml (e.g. kweaver-ai/core/xxx)"
+        required: false
+        type: string
+        default: ""
+      chart_name:
+        description: "Helm chart name (defaults to service_name)"
+        required: false
+        type: string
+        default: ""
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: kweaver-ai
+  # Mirror images to Huawei SWR alongside GHCR. Same image_name suffix on both.
+  # Login uses HUAWEI_SWR_USERNAME / HUAWEI_SWR_PASSWORD repository secrets.
+  SWR_REGISTRY: swr.cn-east-3.myhuaweicloud.com
+  SWR_NAMESPACE: kweaver-ai
+
+jobs:
+  release-version:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      base_version: ${{ steps.version.outputs.base_version }}
+      release_tag: ${{ steps.version.outputs.release_tag }}
+      release_tag_no_sha: ${{ steps.version.outputs.release_tag_no_sha }}
+      chart_tag: ${{ steps.version.outputs.chart_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute release version
+        id: version
+        env:
+          CHART_DIR: ${{ inputs.chart_dir }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          # Use committer date (UTC) so the version is deterministic for a given commit.
+          COMMIT_TS="$(TZ=UTC git show -s --format=%cd --date=format-local:%Y%m%d%H%M%S HEAD)"
+
+          # Resolve the base version (single source of truth).
+          # Priority: git tag > repo-root VERSION file > chart Chart.yaml (fallback).
+          # The repo-root VERSION file is the canonical place to bump the whole
+          # product line; individual Chart.yaml files should NOT be edited per
+          # release (the helm-chart job rewrites them from RELEASE_TAG at package time).
+          BASE_VERSION=""
+          VERSION_SOURCE=""
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            BASE_VERSION="${GITHUB_REF_NAME#v}"
+            VERSION_SOURCE="git-tag(${GITHUB_REF_NAME})"
+          elif [ -f "${GITHUB_WORKSPACE}/VERSION" ]; then
+            BASE_VERSION="$(tr -d '[:space:]' < "${GITHUB_WORKSPACE}/VERSION")"
+            VERSION_SOURCE="VERSION file"
+          fi
+          if [ -z "${BASE_VERSION}" ]; then
+            BASE_VERSION="$(
+              grep -m1 -E '^version:' "${CHART_DIR}/Chart.yaml" \
+                | awk '{print $2}' | tr -d '"' | tr -d "'" | tr -d '\r'
+            )"
+            VERSION_SOURCE="Chart.yaml fallback"
+          fi
+          if [ -z "${BASE_VERSION}" ]; then
+            echo "ERROR: unable to resolve base version (no tag, no VERSION file, no Chart.yaml version)" >&2
+            exit 1
+          fi
+          echo "Base version: ${BASE_VERSION} (source: ${VERSION_SOURCE})"
+
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            RELEASE_TAG="${BASE_VERSION}-${SHORT_SHA}"
+            RELEASE_TAG_NO_SHA="${BASE_VERSION}"
+            # Tag pushes produce an immutable chart version equal to BASE_VERSION
+            # (e.g. 0.6.0). Production deployments pin to this.
+            CHART_TAG="${BASE_VERSION}"
+          else
+            # Collapse any release/* branch to plain "release" so tags read
+            #   0.6.0-release.20260425050751.e9e972b7
+            # instead of the noisy 0.6.0-release-<slug>.<ts>.<sha>.
+            # The version itself comes from VERSION/git-tag/Chart.yaml, not
+            # from the branch name.
+            if [[ "${GITHUB_REF_NAME}" == release/* ]]; then
+              BRANCH_OR_REF="release"
+            else
+              BRANCH_OR_REF="${GITHUB_REF_NAME//\//-}"
+            fi
+            # RELEASE_TAG: immutable per-build tag for images.
+            # Format: <baseVer>-<branch>.<UTC-commit-timestamp>.<shortSha>
+            # Timestamp as a numeric SemVer pre-release identifier makes tags
+            # sortable by commit time via `sort -V`.
+            RELEASE_TAG="${BASE_VERSION}-${BRANCH_OR_REF}.${COMMIT_TS}.${SHORT_SHA}"
+            RELEASE_TAG_NO_SHA="${BASE_VERSION}-${BRANCH_OR_REF}"
+            # CHART_TAG:
+            #   main           -> main-latest  (floating, overwritten every push)
+            #   release/*      -> RELEASE_TAG  (immutable, new tag every push)
+            #   feature/foo    -> RELEASE_TAG  (immutable, no manifest update)
+            #   tag v0.6.0     -> BASE_VERSION (e.g. 0.6.0, single canonical tag)
+            #
+            # Only main gets a floating chart tag so that main/kweaver-core.yaml
+            # never needs editing. Release and feature branches use the same
+            # immutable tag as the image; update-manifest writes it to the
+            # release manifest on every push.
+            if [ "${BRANCH_OR_REF}" = "main" ]; then
+              CHART_TAG="main-latest"
+            else
+              CHART_TAG="${RELEASE_TAG}"
+            fi
+          fi
+
+          {
+            echo "base_version=${BASE_VERSION}"
+            echo "release_tag=${RELEASE_TAG}"
+            echo "release_tag_no_sha=${RELEASE_TAG_NO_SHA}"
+            echo "chart_tag=${CHART_TAG}"
+          } >> "${GITHUB_OUTPUT}"
+
+  # Build each platform on a native runner in parallel, push by digest.
+  docker-build:
+    needs:
+      - release-version
+    if: github.event_name != 'pull_request'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ inputs.image_name }}
+    steps:
+      - name: Prepare platform pair
+        id: platform
+        run: |
+          platform="${{ matrix.platform }}"
+          echo "pair=${platform//\//-}" >> "$GITHUB_OUTPUT"
+          # e.g. linux/amd64 -> amd64 ; used as an explicit tag suffix.
+          echo "arch=${platform##*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log In To GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ inputs.image_name }}
+          # Explicit per-arch tag so each architecture shows up as a distinct
+          # entry in the registry UI (alongside the multi-arch manifest list
+          # produced by docker-merge under the un-suffixed tag).
+          tags: |
+            type=raw,value=${{ needs.release-version.outputs.release_tag }}.${{ steps.platform.outputs.arch }}
+
+      - name: Build and push (GHCR, per-arch tag)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.build_context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ matrix.platform }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          sbom: false
+          push: true
+          build-args: |
+            SERVER_VERSION=${{ needs.release-version.outputs.release_tag_no_sha }}
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          cache-from: type=gha,scope=${{ inputs.service_name }}-${{ steps.platform.outputs.pair }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.service_name }}-${{ steps.platform.outputs.pair }}
+
+  # Build a multi-arch manifest list from the per-arch tags pushed by docker-build.
+  # Sources are <image>:<RELEASE_TAG>.amd64 and <image>:<RELEASE_TAG>.arm64.
+  # Targets: <RELEASE_TAG> (immutable) and <RELEASE_TAG_NO_SHA> (floating per-branch).
+  docker-merge:
+    needs:
+      - release-version
+      - docker-build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log In To GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-arch manifest list (GHCR)
+        env:
+          IMG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ inputs.image_name }}
+          RELEASE_TAG: ${{ needs.release-version.outputs.release_tag }}
+          RELEASE_TAG_NO_SHA: ${{ needs.release-version.outputs.release_tag_no_sha }}
+        run: |
+          set -euo pipefail
+          # Immutable per-build manifest list.
+          docker buildx imagetools create -t "${IMG}:${RELEASE_TAG}" \
+            "${IMG}:${RELEASE_TAG}.amd64" \
+            "${IMG}:${RELEASE_TAG}.arm64"
+          # Floating per-branch alias (e.g. 0.6.0-main) — just retag the
+          # manifest list we just created. Skipped on tag pushes where
+          # RELEASE_TAG_NO_SHA == RELEASE_TAG.
+          if [ "${RELEASE_TAG_NO_SHA}" != "${RELEASE_TAG}" ]; then
+            docker buildx imagetools create -t "${IMG}:${RELEASE_TAG_NO_SHA}" "${IMG}:${RELEASE_TAG}"
+          fi
+
+      - name: Inspect manifest list
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ inputs.image_name }}:${{ needs.release-version.outputs.release_tag }}
+
+  helm-chart:
+    if: github.event_name != 'pull_request'
+    needs:
+      - release-version
+      - docker-merge
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.2
+
+      - name: Align chart appVersion and image fields
+        env:
+          # appVersion and values.image.tag both carry the immutable per-build
+          # image tag so `helm pull <any chart tag>` always resolves to a
+          # specific, traceable image build.
+          RELEASE_TAG: ${{ needs.release-version.outputs.release_tag }}
+          CHART_DIR: ${{ inputs.chart_dir }}
+          IMAGE_REPOSITORY_OVERRIDE: ${{ inputs.image_repository }}
+          IMAGE_NAME: ${{ inputs.image_name }}
+        run: |
+          python3 <<'PY'
+          import os, re
+          from pathlib import Path
+
+          release_tag = os.environ["RELEASE_TAG"]
+          chart_dir   = Path(os.environ["CHART_DIR"])
+          override    = os.environ.get("IMAGE_REPOSITORY_OVERRIDE", "").strip()
+          # IMAGE_NAME is used as-is (e.g. core/vega-backend); IMAGE_NAMESPACE
+          # is the registry-level prefix and is not duplicated here.
+          repo        = override or os.environ["IMAGE_NAME"]
+
+          chart = chart_dir / "Chart.yaml"
+          text = chart.read_text(encoding="utf-8")
+          text = re.sub(r"(?m)^appVersion:.*$", f'appVersion: "{release_tag}"', text)
+          chart.write_text(text, encoding="utf-8")
+
+          values = chart_dir / "values.yaml"
+          vt = values.read_text(encoding="utf-8")
+          vt = re.sub(r"(?m)^(\s*registry:\s*).*$",   r'\1ghcr.io',           vt, count=1)
+          vt = re.sub(r"(?m)^(\s*repository:\s*).*$", rf'\1{repo}',           vt, count=1)
+          vt = re.sub(r"(?m)^(\s*tag:\s*).*$",        rf'\1"{release_tag}"',  vt, count=1)
+          values.write_text(vt, encoding="utf-8")
+          PY
+
+      - name: Lint Helm Chart (non-blocking)
+        env:
+          CHART_DIR: ${{ inputs.chart_dir }}
+        run: helm lint "${CHART_DIR}" || echo "::warning::helm lint reported issues (non-blocking, matches legacy pipeline behavior)"
+
+      - name: Render Helm Chart (non-blocking, default values)
+        env:
+          CHART_DIR: ${{ inputs.chart_dir }}
+          CHART_NAME: ${{ inputs.chart_name != '' && inputs.chart_name || inputs.service_name }}
+        run: helm template "${CHART_NAME}" "${CHART_DIR}" > /dev/null || echo "::warning::helm template render failed with default values (non-blocking; real deployments inject values)"
+
+      - name: Log In To GHCR (Helm OCI)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Package and Push Chart (immutable + floating)
+        env:
+          CHART_DIR: ${{ inputs.chart_dir }}
+          RELEASE_TAG: ${{ needs.release-version.outputs.release_tag }}
+          CHART_TAG: ${{ needs.release-version.outputs.chart_tag }}
+          OCI_REPO: oci://${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/charts
+        run: |
+          set -euo pipefail
+          mkdir -p dist-chart
+
+          # Helper: package the chart with a specific Chart.yaml::version,
+          # then push the resulting tgz to OCI.
+          package_and_push() {
+            local version="$1"
+            python3 - <<PY
+          import os, re
+          from pathlib import Path
+          chart = Path(os.environ["CHART_DIR"]) / "Chart.yaml"
+          t = chart.read_text(encoding="utf-8")
+          t = re.sub(r'(?m)^version:.*$', f'version: "${version}"', t)
+          chart.write_text(t, encoding="utf-8")
+          PY
+            helm package "${CHART_DIR}" --destination dist-chart
+            local tgz
+            tgz="$(ls -1t dist-chart/*-${version}.tgz | head -n1)"
+            echo "Pushing ${tgz} to ${OCI_REPO}"
+            helm push "${tgz}" "${OCI_REPO}"
+          }
+
+          # 1) Immutable per-build tag (e.g. 0.6.0-main.20260425050751.e9e972b7)
+          package_and_push "${RELEASE_TAG}"
+
+          # 2) Floating per-branch tag (e.g. main-latest, 0.6.0-release-latest).
+          # Skipped when RELEASE_TAG == CHART_TAG (tag pushes use a single
+          # immutable tag like 0.6.0).
+          if [ "${CHART_TAG}" != "${RELEASE_TAG}" ]; then
+            package_and_push "${CHART_TAG}"
+          else
+            echo "CHART_TAG == RELEASE_TAG (${CHART_TAG}); skipping floating push."
+          fi
+
+      - name: Upload Chart Package (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.service_name }}-chart
+          path: dist-chart/*.tgz
+          if-no-files-found: error
+
+  # Mirror the finished GHCR multi-arch image to Huawei SWR.
+  # Runs LAST, after both the image (docker-merge) and the chart (helm-chart)
+  # are already published to GHCR. If this job fails, GHCR artifacts remain
+  # fully usable for testing; rerunning only this job is sufficient.
+  # Cross-registry copy uses `buildx imagetools create`, so no rebuild happens.
+  swr-mirror:
+    if: github.event_name != 'pull_request'
+    needs:
+      - release-version
+      - docker-merge
+      - helm-chart
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log In To GHCR (source)
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log In To Huawei SWR (target)
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.SWR_REGISTRY }}
+          username: ${{ secrets.HUAWEI_SWR_USERNAME }}
+          password: ${{ secrets.HUAWEI_SWR_PASSWORD }}
+
+      - name: Mirror per-arch images GHCR -> SWR
+        env:
+          SRC: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ inputs.image_name }}
+          DST: ${{ env.SWR_REGISTRY }}/${{ env.SWR_NAMESPACE }}/${{ inputs.image_name }}
+          RELEASE_TAG: ${{ needs.release-version.outputs.release_tag }}
+        run: |
+          set -euo pipefail
+          for arch in amd64 arm64; do
+            echo "Mirroring ${SRC}:${RELEASE_TAG}.${arch} -> ${DST}:${RELEASE_TAG}.${arch}"
+            docker buildx imagetools create -t "${DST}:${RELEASE_TAG}.${arch}" "${SRC}:${RELEASE_TAG}.${arch}"
+          done
+
+      - name: Create multi-arch manifest list (SWR)
+        env:
+          DST: ${{ env.SWR_REGISTRY }}/${{ env.SWR_NAMESPACE }}/${{ inputs.image_name }}
+          RELEASE_TAG: ${{ needs.release-version.outputs.release_tag }}
+          RELEASE_TAG_NO_SHA: ${{ needs.release-version.outputs.release_tag_no_sha }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create -t "${DST}:${RELEASE_TAG}" \
+            "${DST}:${RELEASE_TAG}.amd64" \
+            "${DST}:${RELEASE_TAG}.arm64"
+          if [ "${RELEASE_TAG_NO_SHA}" != "${RELEASE_TAG}" ]; then
+            docker buildx imagetools create -t "${DST}:${RELEASE_TAG_NO_SHA}" "${DST}:${RELEASE_TAG}"
+          fi
+
+      - name: Inspect SWR manifest list
+        run: |
+          docker buildx imagetools inspect \
+            ${{ env.SWR_REGISTRY }}/${{ env.SWR_NAMESPACE }}/${{ inputs.image_name }}:${{ needs.release-version.outputs.release_tag }}
+
+  # Manifest update / verification.
+  #
+  #   main:        verify-only mode. CI compares the manifest entry against
+  #                the expected chart_tag and FAILS on mismatch. It never
+  #                writes; the manifest is human-maintained for main.
+  #                Because main uses CHART_TAG="main-latest" (no version
+  #                prefix), bumping VERSION never causes a mismatch.
+  #
+  #   release/*:  write mode. CI runs `yq` to set the release entry to the
+  #                expected immutable chart tag (same as RELEASE_TAG, e.g.
+  #                0.6.0-release.20260425050751.e9e972b7). On regular pushes
+  #                this may advance to a new immutable value for the touched
+  #                service. It auto-corrects manual drift and commits with
+  #                [skip ci].
+  #
+  # Other refs (feature branches, master, tags) skip this job entirely.
+  update-manifest:
+    if: >-
+      github.event_name == 'push' && (
+        github.ref == 'refs/heads/main' ||
+        startsWith(github.ref, 'refs/heads/release/')
+      )
+    needs:
+      - release-version
+      - helm-chart
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    concurrency:
+      # Serialize manifest updates across parallel service builds on the same branch
+      # so concurrent yq edits don't clobber each other.
+      group: update-manifest-${{ github.ref_name }}
+      cancel-in-progress: false
+    env:
+      RELEASE_KEY: ${{ inputs.chart_name != '' && inputs.chart_name || inputs.service_name }}
+      EXPECTED_VERSION: ${{ needs.release-version.outputs.chart_tag }}
+      BASE_VERSION: ${{ needs.release-version.outputs.base_version }}
+    steps:
+      - name: Checkout (with full history on target ref)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Resolve manifest path for this ref
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            MODE="verify"
+            MANIFEST_PATH="deploy/release-manifests/main/kweaver-core.yaml"
+          elif [[ "${GITHUB_REF_NAME}" == release/* ]]; then
+            MODE="write"
+            # Manifest dir is keyed by the resolved BASE_VERSION (from VERSION
+            # / git-tag / Chart.yaml), not by the branch name slug.
+            MANIFEST_PATH="deploy/release-manifests/${BASE_VERSION}/kweaver-core.yaml"
+          else
+            echo "::error::update-manifest job triggered on unexpected ref ${GITHUB_REF}"
+            exit 1
+          fi
+          echo "MODE=${MODE}"               >> "${GITHUB_ENV}"
+          echo "MANIFEST_PATH=${MANIFEST_PATH}" >> "${GITHUB_ENV}"
+          echo "Mode: ${MODE}, manifest: ${MANIFEST_PATH}"
+
+      - name: Validate manifest file and key exist
+        run: |
+          set -euo pipefail
+          if [ ! -f "${MANIFEST_PATH}" ]; then
+            echo "::error::${MANIFEST_PATH} does not exist."
+            if [ "${MODE}" = "write" ]; then
+              echo "::error::Run 'cp -r deploy/release-manifests/main deploy/release-manifests/${MANIFEST_PATH##*/release-manifests/}' (then adjust cross-product deps) before pushing release branch."
+            fi
+            exit 1
+          fi
+          if ! yq -e ".releases.\"${RELEASE_KEY}\"" "${MANIFEST_PATH}" >/dev/null 2>&1; then
+            echo "::error::release key '${RELEASE_KEY}' not found in ${MANIFEST_PATH}."
+            echo "::error::Add an entry under 'releases:' before merging this service."
+            exit 1
+          fi
+
+      - name: Verify (main) — fail on drift, never write
+        if: env.MODE == 'verify'
+        run: |
+          set -euo pipefail
+          CURRENT="$(yq -r ".releases.\"${RELEASE_KEY}\".version // \"\"" "${MANIFEST_PATH}")"
+          if [ "${CURRENT}" = "${EXPECTED_VERSION}" ]; then
+            echo "OK: ${MANIFEST_PATH} releases.${RELEASE_KEY}.version = ${EXPECTED_VERSION}"
+            exit 0
+          fi
+          echo "::error file=${MANIFEST_PATH}::releases.${RELEASE_KEY}.version is '${CURRENT}', expected '${EXPECTED_VERSION}'"
+          echo "::error::Fix locally then push:"
+          echo "::error::  RELEASE_KEY=${RELEASE_KEY} NEW=${EXPECTED_VERSION} yq -i '.releases[strenv(RELEASE_KEY)].version = strenv(NEW)' ${MANIFEST_PATH}"
+          exit 1
+
+      - name: Write (release/*) — auto-correct drift and commit
+        if: env.MODE == 'write'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          RELEASE_KEY="${RELEASE_KEY}" NEW_VERSION="${EXPECTED_VERSION}" \
+            yq -i '.releases[strenv(RELEASE_KEY)].version = strenv(NEW_VERSION)' "${MANIFEST_PATH}"
+
+          if git diff --quiet -- "${MANIFEST_PATH}"; then
+            echo "Manifest already pinned to ${EXPECTED_VERSION}; no commit."
+            exit 0
+          fi
+
+          # Retry loop: concurrency group serializes us, but be defensive
+          # against human pushes racing with the bot.
+          for attempt in 1 2 3 4 5; do
+            git add "${MANIFEST_PATH}"
+            if git diff --cached --quiet; then
+              echo "No staged changes after attempt ${attempt}."
+              exit 0
+            fi
+            git commit -m "chore(manifest): bump ${RELEASE_KEY} to ${EXPECTED_VERSION} [skip ci]"
+            if git push origin HEAD:"${GITHUB_REF_NAME}"; then
+              echo "Pushed manifest update on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}); pulling --rebase and retrying."
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            RELEASE_KEY="${RELEASE_KEY}" NEW_VERSION="${EXPECTED_VERSION}" \
+              yq -i '.releases[strenv(RELEASE_KEY)].version = strenv(NEW_VERSION)' "${MANIFEST_PATH}"
+          done
+          echo "::error::Failed to push manifest update after 5 attempts."
+          echo "::error::Run locally:  yq -i '.releases.\"${RELEASE_KEY}\".version = \"${EXPECTED_VERSION}\"' ${MANIFEST_PATH} && git commit && git push"
+          exit 1

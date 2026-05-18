@@ -31,6 +31,15 @@ const (
 	BUILD_PREFIX = "vega-build"
 )
 
+var (
+	BUILD_TASK_SORT = map[string]string{
+		"create_time": "f_create_time",
+		"update_time": "f_update_time",
+		"status":      "f_status",
+		"mode":        "f_mode",
+	}
+)
+
 // BuildTask represents a build task entity.
 type BuildTask struct {
 	ID              string      `json:"id"`

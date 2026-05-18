@@ -418,19 +418,12 @@ func (bta *buildTaskAccess) List(ctx context.Context, params interfaces.BuildTas
 	}
 
 	orderBy := "f_update_time"
-	switch params.Sort {
-	case "create_time":
-		orderBy = "f_create_time"
-	case "update_time":
-		orderBy = "f_update_time"
-	case "status":
-		orderBy = "f_status"
-	case "mode":
-		orderBy = "f_mode"
+	if params.Sort != "" {
+		orderBy = params.Sort
 	}
-	direction := "DESC"
-	if params.Direction == interfaces.ASC_DIRECTION {
-		direction = "ASC"
+	direction := strings.ToUpper(params.Direction)
+	if direction == "" {
+		direction = "DESC"
 	}
 
 	query := `
@@ -439,9 +432,12 @@ func (bta *buildTaskAccess) List(ctx context.Context, params interfaces.BuildTas
 			f_creator, f_creator_type, f_create_time, f_updater, f_updater_type, f_update_time, f_embedding_fields, f_build_key_fields, f_embedding_model, f_model_dimensions
 		FROM ` + BUILD_TASK_TABLE_NAME + ` ` + whereClause + `
 		ORDER BY ` + orderBy + ` ` + direction + `
-		LIMIT ? OFFSET ?
 	`
-	queryArgs := append(args, params.Limit, params.Offset)
+	queryArgs := args
+	if params.Limit > 0 {
+		query += ` LIMIT ? OFFSET ?`
+		queryArgs = append(queryArgs, params.Limit, params.Offset)
+	}
 	rows, err := bta.db.QueryContext(ctx, query, queryArgs...)
 	if err != nil {
 		otellog.LogError(ctx, "Get build tasks with filters failed", err)
